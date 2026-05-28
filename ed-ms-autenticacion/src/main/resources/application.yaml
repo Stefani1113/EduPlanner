@@ -1,3 +1,28 @@
 spring:
-  application:
-    name: ed-ms-autenticacion
+  datasource:
+    url: jdbc:mysql://localhost:3306/ms_auth
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: eduplanerr@gmail.com
+    password: xogu ovkh uxdb bgll
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+
+server:
+  port: 3306
+  servlet:
+    context-path: /eduplanner/
+
+security:
+  jwt:
+    secret-key: czyYSEj017tCB8M8mnOSvhgV4gSdI4P5Bql+3HrWZtM=
+    token-expiration: 600000 # 10 min en ms
