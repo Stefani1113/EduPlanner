@@ -1,6 +1,6 @@
 package com.eduplanner.ed_ms_autenticacion.repository;
 
-import eduplanner.ed_ms_autenticacion.entity.User;
+import com.eduplanner.ed_ms_autenticacion.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

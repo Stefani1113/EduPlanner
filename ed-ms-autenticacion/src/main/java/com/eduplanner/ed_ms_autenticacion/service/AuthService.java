@@ -7,9 +7,11 @@ import com.eduplanner.ed_lib_comun.dto.LoginRequestDTO;
 import com.eduplanner.ed_lib_comun.dto.LoginResponseDTO;
 import com.eduplanner.ed_lib_comun.dto.ResetPasswordRequestDTO;
 
-import eduplanner.ed_ms_autenticacion.entity.User;
+import com.eduplanner.ed_ms_autenticacion.entity.User;
 import com.eduplanner.ed_lib_comun.enums.RolEnum;
-import eduplanner.ed_ms_autenticacion.repository.UsuarioRepository;
+import com.eduplanner.ed_ms_autenticacion.repository.UsuarioRepository;
+
+import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -44,7 +46,6 @@ public class AuthService {
             return response;
         }
         User usuario = found.get();
-
         // Usuario inactivo
         if (Boolean.FALSE.equals(usuario.getState())) {
             response.setMessage("La cuenta está desactivada. Contacte al administrador.");
@@ -89,5 +90,67 @@ public class AuthService {
         response.setMessage("Sesión cerrada correctamente");
         return response;
         
+    }
+
+        /**
+     * Refresco del JWT
+     */
+    public JwtDTO refreshToken(String token) throws Exception {
+        if (tokenBlacklistService.isBlacklisted(token)) {
+            throw new Exception("Token revocado. Inicie sesión nuevamente.");
+        }
+        JwtDTO dto = new JwtDTO();
+        dto.setToken(jwtService.refreshToken(token));
+        return dto;
+    }
+
+    /**
+     * Petición para restablecimiento de contraseña
+     * @param request
+     * @return
+     */
+    @Transactional
+        public String forgotPassword(ForgotPasswordRequestDTO request) {
+        Optional<User> userFound =
+                usuarioRepository.findByEmail(request.getEmail());
+
+        if (userFound.isEmpty()) {
+            return "Usuario no encontrado";
+        }
+
+        // Generar token JWT firmado
+        String token = jwtService.generatePasswordResetToken(request.getEmail());
+
+        System.out.println("TOKEN DE RESET: " + token);
+
+        return "Token generado correctamente";
+    }
+
+    @Transactional
+        public String resetPassword(ResetPasswordRequestDTO request) {
+        String email;
+
+        try {
+            email = jwtService.validatePasswordResetToken(request.getToken());
+        } catch (RuntimeException e) {
+            return e.getMessage(); 
+        }
+
+        Optional<User> userFound =
+                usuarioRepository.findByEmail(email);
+
+        if (userFound.isEmpty()) {
+            return "Usuario no encontrado";
+        }
+
+        User user = userFound.get();
+
+        // Encriptar y guarda nueva contraseña
+        user.setPassword(
+                passwordEncoder.encode(request.getNewPassword())
+        );
+        usuarioRepository.save(user);
+
+        return "Contraseña actualizada correctamente";
     }
 }

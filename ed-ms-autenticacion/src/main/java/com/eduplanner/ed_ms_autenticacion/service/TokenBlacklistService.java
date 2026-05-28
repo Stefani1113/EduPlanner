@@ -1,10 +1,10 @@
 package com.eduplanner.ed_ms_autenticacion.service;
 
+import org.springframework.stereotype.Service;
+
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-
-import org.springframework.stereotype.Service;
 
 /**
  * RF 1.6 - Cierre de sesión: invalida tokens JWT en memoria.

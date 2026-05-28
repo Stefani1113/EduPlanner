@@ -1,12 +1,12 @@
-package eduplanner.ed_ms_autenticacion.service;
+package com.eduplanner.ed_ms_autenticacion.service;
 
 import com.eduplanner.ed_lib_comun.dto.HttpGlobalResponse;
 import com.eduplanner.ed_lib_comun.dto.UserResponseDTO;
 import com.eduplanner.ed_lib_comun.dto.UpdateRolRequestDTO;
 
-import eduplanner.ed_ms_autenticacion.entity.User;
+import com.eduplanner.ed_ms_autenticacion.entity.User;
 import com.eduplanner.ed_lib_comun.enums.RolEnum;
-import eduplanner.ed_ms_autenticacion.repository.UsuarioRepository;
+import com.eduplanner.ed_ms_autenticacion.repository.UsuarioRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

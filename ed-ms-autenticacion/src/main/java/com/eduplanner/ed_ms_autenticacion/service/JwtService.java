@@ -87,4 +87,43 @@ public class JwtService {
             throw new Exception("Token inválido: " + e.getMessage());
         }
     }
+
+    /**
+     * Generar token de reset de contraseña 
+     */
+    public String generatePasswordResetToken(String email) {
+        return Jwts.builder()
+                .subject(email)
+                .claim("type", "password-reset")  
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + 15 * 60 * 1000L)) // 15 min
+                .signWith(getSignKey())            
+                .compact();
+    }
+
+    /**
+     * Validar token de reset y retornar el correo
+     */
+    public String validatePasswordResetToken(String token) {
+        try {
+            Claims claims = Jwts.parser()          
+                    .verifyWith(getSignKey())       
+                    .build()
+                    .parseSignedClaims(token)       
+                    .getPayload();                  
+
+            String type = claims.get("type", String.class);
+            if (!"password-reset".equals(type)) {
+                throw new RuntimeException("Tipo de token inválido");
+            }
+
+            return claims.getSubject();
+
+        } catch (ExpiredJwtException e) {           
+            throw new RuntimeException("El token expiró");
+        } catch (JwtException e) {                  
+            throw new RuntimeException("Token inválido");
+        }
+    }
+
 }

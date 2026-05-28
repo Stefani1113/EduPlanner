@@ -7,7 +7,7 @@ import com.eduplanner.ed_lib_comun.dto.LoginRequestDTO;
 import com.eduplanner.ed_lib_comun.dto.LoginResponseDTO;
 import com.eduplanner.ed_lib_comun.dto.ResetPasswordRequestDTO;
 
-import eduplanner.ed_ms_autenticacion.service.AuthService;
+import com.eduplanner.ed_ms_autenticacion.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
@@ -94,4 +94,20 @@ public class AuthController {
         return ResponseEntity.ok(response);
         }
 
+        /**
+        * Cambio de contraseña
+        * @param request
+        * @return
+        */
+        @PostMapping("/reset-password")
+        public ResponseEntity<?> resetPassword(
+        @RequestBody
+        ResetPasswordRequestDTO request){
+        
+            String result = authService.resetPassword(request);
+        
+            Map<String, String> response = new HashMap<>();
+            response.put("message", result);
+        return ResponseEntity.ok(response);
+    }
 }

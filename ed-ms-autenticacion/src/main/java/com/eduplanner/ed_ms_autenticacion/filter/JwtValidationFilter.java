@@ -1,7 +1,7 @@
 package com.eduplanner.ed_ms_autenticacion.filter;
 
-import eduplanner.ed_ms_autenticacion.service.JwtService;
-import eduplanner.ed_ms_autenticacion.service.TokenBlacklistService;
+import com.eduplanner.ed_ms_autenticacion.service.JwtService;
+import com.eduplanner.ed_ms_autenticacion.service.TokenBlacklistService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
