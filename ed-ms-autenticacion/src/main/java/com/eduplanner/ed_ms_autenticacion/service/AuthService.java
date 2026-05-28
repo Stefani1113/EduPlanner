@@ -1,4 +1,4 @@
-package eduplanner.ed_ms_autenticacion.service;
+package com.eduplanner.ed_ms_autenticacion.service;
 
 import com.eduplanner.ed_lib_comun.dto.ForgotPasswordRequestDTO;
 import com.eduplanner.ed_lib_comun.dto.HttpGlobalResponse;

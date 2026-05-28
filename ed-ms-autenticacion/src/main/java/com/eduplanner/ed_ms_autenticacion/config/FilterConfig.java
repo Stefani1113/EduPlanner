@@ -1,9 +1,10 @@
-package eduplanner.ed_ms_autenticacion.config;
+package com.eduplanner.ed_ms_autenticacion.config;
 
-import eduplanner.ed_ms_autenticacion.filter.JwtValidationFilter;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import eduplanner.ed_ms_autenticacion.filter.JwtValidationFilter;
 
 @Configuration
 public class FilterConfig {

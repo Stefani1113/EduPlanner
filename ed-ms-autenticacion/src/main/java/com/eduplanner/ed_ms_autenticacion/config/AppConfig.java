@@ -1,4 +1,4 @@
-package eduplanner.ed_ms_autenticacion.config;
+package com.eduplanner.ed_ms_autenticacion.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

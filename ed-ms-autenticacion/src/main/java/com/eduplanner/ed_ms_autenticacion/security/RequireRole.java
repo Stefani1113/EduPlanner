@@ -1,4 +1,4 @@
-package eduplanner.ed_ms_autenticacion.security;
+package com.eduplanner.ed_ms_autenticacion.security;
 
 import com.eduplanner.ed_lib_comun.enums.RolEnum;
 import java.lang.annotation.ElementType;

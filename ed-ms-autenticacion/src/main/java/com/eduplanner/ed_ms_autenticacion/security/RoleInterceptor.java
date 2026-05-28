@@ -1,4 +1,4 @@
-package eduplanner.ed_ms_autenticacion.security;
+package com.eduplanner.ed_ms_autenticacion.security;
 
 import java.util.Arrays;
 import org.springframework.stereotype.Component;

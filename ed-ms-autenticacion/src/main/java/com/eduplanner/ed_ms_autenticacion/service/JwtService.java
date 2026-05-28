@@ -1,4 +1,4 @@
-package eduplanner.ed_ms_autenticacion.service;
+package com.eduplanner.ed_ms_autenticacion.service;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;

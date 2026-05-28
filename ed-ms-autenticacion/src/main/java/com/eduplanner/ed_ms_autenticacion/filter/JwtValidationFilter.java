@@ -1,4 +1,4 @@
-package eduplanner.ed_ms_autenticacion.filter;
+package com.eduplanner.ed_ms_autenticacion.filter;
 
 import eduplanner.ed_ms_autenticacion.service.JwtService;
 import eduplanner.ed_ms_autenticacion.service.TokenBlacklistService;
