@@ -109,6 +109,8 @@
     		<scope>runtime</scope>
 		</dependency>
 
+
+	<!--Libreria-->
 		<dependency>
 			<groupId>com.eduplanner</groupId>
 			<artifactId>ed-lib-comun</artifactId>
