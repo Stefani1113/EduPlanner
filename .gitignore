@@ -1,0 +1,14 @@
+# Editor
+.vscode/
+.idea/
+
+# Maven
+target/
+*.class
+
+# Variables de entorno
+.env
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
