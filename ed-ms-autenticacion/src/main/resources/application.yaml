@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/microservicio_autenticacion
+    url: jdbc:mysql://localhost:8080/microservicio_autenticacion
     username: root
     password: root
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -18,7 +18,7 @@ spring:
       mail.smtp.starttls.enable: true
 
 server:
-  port: 3306
+  port: 8080
   servlet:
     context-path: /eduplanner/
 
