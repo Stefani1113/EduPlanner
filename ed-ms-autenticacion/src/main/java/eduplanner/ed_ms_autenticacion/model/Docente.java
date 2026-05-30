@@ -19,9 +19,11 @@ public class Docente {
     private String asignatura;
     private boolean disponibilidad;
 
+    // Constructor vacío (necesario para JPA)
     public Docente() {
     }
 
+    // Constructor con parámetros
     public Docente(String nombre, String area, String asignatura, boolean disponibilidad) {
         this.nombre = nombre;
         this.area = area;
