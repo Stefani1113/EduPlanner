@@ -108,7 +108,7 @@ public class User {
     @Column(name = "last_access")
     private LocalDateTime lastAccess;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER) // carga el rol junto con el user
     @JoinColumn(name = "id_role", nullable = false)
     private Role role;
 
