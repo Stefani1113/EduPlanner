@@ -8,9 +8,6 @@ import com.eduplanner.ed_lib_common.entity.User;
 import com.eduplanner.ed_lib_common.enums.RolEnum;
 import com.eduplanner.ed_ms_autenticacion.repository.UserRepository;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.transaction.Transactional;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
@@ -18,7 +15,6 @@ import lombok.extern.log4j.Log4j2;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import java.time.LocalDateTime;
 
 import java.util.Optional;
 
