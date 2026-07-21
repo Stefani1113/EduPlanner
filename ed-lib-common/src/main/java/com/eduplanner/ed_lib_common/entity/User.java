@@ -3,8 +3,6 @@ package com.eduplanner.ed_lib_common.entity;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-import javax.management.relation.Role;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -33,7 +31,7 @@ public class User {
     @Column(name = "id_user")
     private Integer idUser;
 
-    @Column(nullable = false, unique = true, length = 100)
+    @Column(name = "email", nullable = false, unique = true, length = 100)
     private String email;
 
     @Column(nullable = false, length = 255)

@@ -21,6 +21,6 @@ public class NotifierFactory {
     public Notifier create(NotificationType type) {
         return switch (type) {
             case EMAIL -> emailNotifier;
-        }
+        };
     }
 }

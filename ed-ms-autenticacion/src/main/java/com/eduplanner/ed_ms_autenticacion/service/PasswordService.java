@@ -1,12 +1,17 @@
 package com.eduplanner.ed_ms_autenticacion.service;
 
+import java.util.Optional;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.eduplanner.ed_lib_common.dto.ForgotPasswordRequestDTO;
 import com.eduplanner.ed_lib_common.dto.ResetPasswordRequestDTO;
+import com.eduplanner.ed_lib_common.entity.User;
 import com.eduplanner.ed_lib_common.notifications.NotificationType;
 import com.eduplanner.ed_lib_common.notifications.Notifier;
 import com.eduplanner.ed_ms_autenticacion.notifications.NotifierFactory;
+import com.eduplanner.ed_ms_autenticacion.repository.UserRepository;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class PasswordService {
     
-    private final UsuarioRepository usuarioRepository;
+    private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;                 
     private final NotifierFactory notifierFactory;  
@@ -25,7 +30,7 @@ public class PasswordService {
      */
     @Transactional
     public String forgotPassword(ForgotPasswordRequestDTO request) {
-        Optional<User> userFound = usuarioRepository.findByEmail(request.getEmail());
+        Optional<User> userFound = userRepository.findByEmail(request.getEmail());
 
         // Se responde igual exista o no el correo, para no revelar
         // qué correos están registrados en el sistema (seguridad).
@@ -58,14 +63,14 @@ public class PasswordService {
             return e.getMessage(); // "El token expiró" / "Token inválido"
         }
 
-        Optional<User> userFound = usuarioRepository.findByEmail(email);
+        Optional<User> userFound = userRepository.findByEmail(email);
         if (userFound.isEmpty()) {
             return "Usuario no encontrado";
         }
 
         User user = userFound.get();
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
-        usuarioRepository.save(user);
+        userRepository.save(user);
 
         return "Contraseña actualizada correctamente";
     }
