@@ -114,7 +114,7 @@
 	<!--Libreria-->
 		<dependency>
 			<groupId>com.eduplanner</groupId>
-			<artifactId>ed-lib-comun</artifactId>
+			<artifactId>ed-lib-common</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
 	</dependencies>

@@ -5,7 +5,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.eduplanner.ed_lib_comun.enums.RolEnum;
+import com.eduplanner.ed_lib_common.enums.RolEnum;
+
 
 //Define donde se puede usar la anotación
 @Target(ElementType.METHOD)

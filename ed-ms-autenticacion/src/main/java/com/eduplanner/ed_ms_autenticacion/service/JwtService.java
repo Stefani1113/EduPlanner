@@ -125,5 +125,4 @@ public class JwtService {
             throw new RuntimeException("Token inválido");
         }
     }
-
 }

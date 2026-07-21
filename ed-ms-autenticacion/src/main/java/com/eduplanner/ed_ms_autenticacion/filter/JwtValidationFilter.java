@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.eduplanner.ed_ms_autenticacion.service.JwtService;
+import com.eduplanner.ed_ms_autenticacion.service.TokenBlacklistService;
 
 import java.io.IOException;
 

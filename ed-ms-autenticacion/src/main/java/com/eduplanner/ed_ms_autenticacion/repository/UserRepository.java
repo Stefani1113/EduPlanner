@@ -1,7 +1,8 @@
 package com.eduplanner.ed_ms_autenticacion.repository;
 
-import org.apache.catalina.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.eduplanner.ed_lib_common.entity.User;
 
 import java.util.List;
 import java.util.Optional;
