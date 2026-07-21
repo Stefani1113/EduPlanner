@@ -1,21 +1,20 @@
 package com.eduplanner.ed_ms_autenticacion.controller;
 
-import com.eduplanner.ed_lib_comun.dto.ForgotPasswordRequestDTO;
-import com.eduplanner.ed_lib_comun.dto.HttpGlobalResponse;
-import com.eduplanner.ed_lib_comun.dto.JwtDTO;
-import com.eduplanner.ed_lib_comun.dto.LoginRequestDTO;
-import com.eduplanner.ed_lib_comun.dto.LoginResponseDTO;
-import com.eduplanner.ed_lib_comun.dto.ResetPasswordRequestDTO;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import com.eduplanner.ed_lib_common.dto.HttpGlobalResponse;
+import com.eduplanner.ed_lib_common.dto.JwtDTO;
+import com.eduplanner.ed_lib_common.dto.LoginRequestDTO;
+import com.eduplanner.ed_lib_common.dto.LoginResponseDTO;
+import com.eduplanner.ed_ms_autenticacion.service.JwtService;
+import com.eduplanner.ed_ms_autenticacion.service.LoginService;
+
 import jakarta.validation.Valid;
 
 
@@ -24,7 +23,8 @@ import jakarta.validation.Valid;
 @RequestMapping("/auth")
 public class LoginController {
 
-    //private final AuthService authService;
+    private final LoginService loginService;
+    private final JwtService jwtService;
 
     /**
      * RF 1.2 / RF 1.2.1 / RF 1.2.1.1
@@ -34,7 +34,7 @@ public class LoginController {
     @PostMapping("/login")
     public ResponseEntity<HttpGlobalResponse<LoginResponseDTO>> login(
             @Valid @RequestBody LoginRequestDTO request) {
-        HttpGlobalResponse<LoginResponseDTO> response = authService.login(request);
+        HttpGlobalResponse<LoginResponseDTO> response = loginService.login(request);
         if (response.getData() == null) {
             // RF 1.2.1.1 - Error de credenciales, respuesta inmediata
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
@@ -53,7 +53,7 @@ public class LoginController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         try {
-            return ResponseEntity.ok(authService.refreshToken(authHeader.substring(7)));
+            return ResponseEntity.ok(new JwtDTO(jwtService.refreshToken(authHeader.substring(7))));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
