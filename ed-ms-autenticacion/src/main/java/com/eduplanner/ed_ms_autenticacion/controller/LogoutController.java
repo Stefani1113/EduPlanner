@@ -6,15 +6,18 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.eduplanner.ed_lib_common.dto.HttpGlobalResponse;
 import com.eduplanner.ed_ms_autenticacion.service.TokenBlacklistService;
 
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.AllArgsConstructor;
 
+@AllArgsConstructor
 @RestController
 @RequestMapping("/auth")
 public class LogoutController {
     
-private final TokenBlacklistService tokenBlacklistService;
+    private final TokenBlacklistService tokenBlacklistService;
 
     /**
      * POST /eduplanner/auth/logout
