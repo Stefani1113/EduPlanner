@@ -11,8 +11,8 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: eduplanerr@gmail.com
-    password: xogu ovkh uxdb bgll
+    username: eduplannerr@gmail.com
+    password: xoguovkhuxdbbgll
     properties:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
