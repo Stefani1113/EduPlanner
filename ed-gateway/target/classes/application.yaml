@@ -1,0 +1,67 @@
+spring:
+  application:
+    name: ed-gateway
+
+  cloud:
+    gateway:
+      routes:
+
+        # ── Microservicio Autenticación (ACTIVO: 8081) ─────────────────────────
+        - id: ed-ms-autenticacion
+          uri: http://localhost:8081
+          predicates:
+            - Path=/autenticacion/**
+          filters:
+            - StripPrefix=1
+
+        # ── PENDIENTES: descomentar cuando se creen los microservicios ─────────
+        #
+        # - id: ed-ms-administracion
+        #   uri: http://localhost:PUERTO
+        #   predicates:
+        #     - Path=/administracion/**
+        #   filters:
+        #     - StripPrefix=1
+        #
+        # - id: ed-ms-gestion-academica
+        #   uri: http://localhost:PUERTO
+        #   predicates:
+        #     - Path=/gestion-academica/**
+        #   filters:
+        #     - StripPrefix=1
+        #
+        # - id: ed-ms-notas
+        #   uri: http://localhost:PUERTO
+        #   predicates:
+        #     - Path=/notas/**
+        #   filters:
+        #     - StripPrefix=1
+        #
+        # - id: ed-ms-ia
+        #   uri: http://localhost:PUERTO
+        #   predicates:
+        #     - Path=/ia/**
+        #   filters:
+        #     - StripPrefix=1
+        #
+        # - id: ed-ms-configuracion-institucional
+        #   uri: http://localhost:PUERTO
+        #   predicates:
+        #     - Path=/configuracion-institucional/**
+        #   filters:
+        #     - StripPrefix=1
+
+server:
+  port: 8080
+
+security:
+  jwt:
+    secret-key: czyYSEj017tCB8M8mnOSvhgV4gSdI4P5Bql+3HrWZtM=
+  public-paths:
+    - /autenticacion/eduplanner/auth/login
+    - /autenticacion/eduplanner/auth/forgot-password
+    - /autenticacion/eduplanner/auth/reset-password
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
