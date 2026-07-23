@@ -1,4 +1,4 @@
-package com.eduplaner.gateway;
+package com.eduplanner.gateway;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
