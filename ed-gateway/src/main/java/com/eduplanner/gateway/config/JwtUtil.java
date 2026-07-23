@@ -17,6 +17,7 @@ import java.util.logging.Logger;
 @Component
 public class JwtUtil {
 
+
     private static final Logger log = Logger.getLogger(JwtUtil.class.getName());
 
     @Value("${security.jwt.secret-key}")
@@ -40,4 +41,29 @@ public class JwtUtil {
             return false;
         }
     }
+
+ public <T> T extractClaim(String token, Function<Claims, T> resolver) {
+        Claims claims = Jwts.parser()
+                .verifyWith(getSignKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+        return resolver.apply(claims);
+    }
+
+    
+    public String extractUsername(String token) {
+        return extractClaim(token, Claims::getSubject);
+    }
+
+    
+    public Integer extractUserId(String token) {
+        return extractClaim(token, claims -> claims.get("idUser", Integer.class));
+    }
+
+  
+    public Integer extractRolId(String token) {
+        return extractClaim(token, claims -> claims.get("idRole", Integer.class));
+    }
+    
 }
