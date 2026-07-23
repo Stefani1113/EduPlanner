@@ -1,3 +1,18 @@
 spring:
   application:
     name: ed-gateway
+
+  cloud:
+    gateway:
+      routes:
+      
+server:
+  port: 8080
+
+security:
+  jwt:
+    secret-key: czyYSEj017tCB8M8mnOSvhgV4gSdI4P5Bql+3HrWZtM=
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
