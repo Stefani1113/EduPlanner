@@ -1,7 +1,13 @@
 import { Routes } from '@angular/router';
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'auth', pathMatch: 'full' },
+  { path: '', redirectTo: 'inicio', pathMatch: 'full' },
+  {
+    path: 'inicio',
+    loadChildren: () =>
+      import('./features/home/home.module')
+        .then(m => m.HomeModule)
+  },
   {
     path: 'auth',
     loadChildren: () =>
