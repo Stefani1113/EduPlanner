@@ -28,5 +28,11 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         ServerHttpRequest request = exchange.getRequest();
         String path = request.getURI().getPath();
+
+
+        if (esRutaPublica(path)) {
+            log.fine("Ruta pública, sin validación JWT: " + path);
+            return chain.filter(exchange);
+        }
     }
 }
