@@ -2,9 +2,15 @@ package com.eduplanner.gateway.filter;
 
 import com.eduplanner.gateway.config.GatewayConfig;
 import com.eduplanner.gateway.config.JwtUtil;
+
+import reactor.core.publisher.Mono;
+
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Component;
+import org.springframework.web.server.ServerWebExchange;
 
 @Component
 public class JwtAuthFilter implements GlobalFilter, Ordered {
@@ -34,5 +40,16 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
             log.fine("Ruta pública, sin validación JWT: " + path);
             return chain.filter(exchange);
         }
+
+
+        String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            log.warning("Petición sin token en ruta protegida: " + path);
+            return responderError(exchange, HttpStatus.UNAUTHORIZED,
+                    "Header Authorization es requerido (Bearer <token>)");
+        }
+
+        String token = authHeader.substring(7);
     }
 }
