@@ -1,15 +1,15 @@
 .navbar {
-  background-color: #252525;
+  background: #252525;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 60px;
-  color:#fff;
+  padding: 20px 70px;
   border-bottom: 2px solid #53BB1B;
 
   .logo img {
-    background-color: #252525;
-    height: 40px;
+      background: #252525;
+      height: 40px;
+      display: block;
   }
 
   .menu {
@@ -17,6 +17,7 @@
     background-color: #252525;
     display: flex;
     gap: 32px;
+    padding-left: 700px;
 
     a {
     background-color: #252525;
@@ -31,18 +32,18 @@
 }
 
 .btn-login {
-    background-color: #252525;
     display: flex;
+    background: #252525;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     color: #53BB1B;
     text-decoration: none;
     font-size: 14px;
-    font-weight: 600;
+    font-weight: bold;
 
 .icon-small {
-    background-color: #252525;
-    width: 30px;
+    background: #2c2c2c;
+    width: auto;
     height: 30px;
 }
 
@@ -63,18 +64,23 @@
     min-width: 300px;
 
 .in{
-    background: #53bb1b47;
-    border-radius: 30px;
-    padding: 15px 25px;
-    color: #fff;
-    text-decoration: none;
+  background: #53bb1b31;
+  padding: 5px;
+  width: 165px;
+  border-radius: 30px;
+  display: flex;
+  align-items: center;
+  font-size: 11px;
+  color: #ffffff;
+  text-decoration: none;
+  margin-top: 5px;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 400;
 }
 
-.icon-menu{
-    height: 30px;
-    padding-right: 20px;
-    background: #53bb1b00;
-    border-radius: 0px;
+.icon-menu {
+  background: #53bb1b00;
+  height: 20px;
 }
 
 .tag {
@@ -153,28 +159,28 @@ p {
     text-align: left;
 
 .icon-circle {
-    width: 36px;
+    width: 50px;
     height: 36px;
-    background-color: rgba(83, 187, 27, 0.15);
-    border-radius: 50%;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
     margin-bottom: 16px;
+    background: #53BB1B;
+    padding: 20px;
 
     img {
-    width: 18px;
-    height: 18px;
-    background-color: rgba(83, 187, 27, 0);
-
+    background-color: #53bb1b00;
+    width: 45px;
+    height: 35px;
       }
     }
 
     h3 {
     background-color: #262626;
-      color: #53BB1B;
-      font-size: 18px;
-      margin-bottom: 12px;
+    color: #ffffff;
+    font-size: 25px;
+    margin-bottom: 12px;
     }
 
     p {
