@@ -13,7 +13,10 @@ import javax.crypto.SecretKey;
 import java.util.function.Function;
 import java.util.logging.Logger;
 
-
+/**
+ * Utilidad JWT para el Gateway.
+ * Valida el token usando la misma clave secreta que ed-ms-autenticacion.
+ */
 @Component
 public class JwtUtil {
 

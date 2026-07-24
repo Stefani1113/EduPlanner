@@ -17,9 +17,9 @@ import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
 import java.util.logging.Logger;
-
-
-
+/**
+ * Filtro global JWT del Gateway.
+ */
 @Component
 public class JwtAuthFilter implements GlobalFilter, Ordered {
 
@@ -43,13 +43,13 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
         ServerHttpRequest request = exchange.getRequest();
         String path = request.getURI().getPath();
 
-
+       // Rutas públicas: dejar pasar sin validar
         if (esRutaPublica(path)) {
             log.fine("Ruta pública, sin validación JWT: " + path);
             return chain.filter(exchange);
         }
 
-
+ // Rutas protegidas: leer header Authorization
         String authHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
@@ -60,14 +60,14 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
 
         String token = authHeader.substring(7);
 
-
+            //  Validar JWT
          if (!jwtUtil.isTokenValid(token)) {
             log.warning("Token inválido o expirado para ruta: " + path);
             return responderError(exchange, HttpStatus.UNAUTHORIZED,
                     "Token inválido o expirado. Por favor inicia sesión nuevamente.");
         }
 
-
+        //Token válido: extraer claims e inyectarlos como headers 
          String email   = jwtUtil.extractUsername(token);
         Integer userId = jwtUtil.extractUserId(token);
         Integer rolId  = jwtUtil.extractRolId(token);
@@ -83,7 +83,7 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
         return chain.filter(exchange.mutate().request(mutatedRequest).build());
     }
 
-
+    // Helpers
 
     private boolean esRutaPublica(String path) {
         if (gatewayConfig.getPublicPaths() == null) return false;
