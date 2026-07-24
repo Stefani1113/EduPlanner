@@ -28,7 +28,7 @@ server:
   servlet:
     context-path: /eduplanner/
 
-services:
+service:
   auth:
     base-url: http://localhost:8081/eduplanner
 
