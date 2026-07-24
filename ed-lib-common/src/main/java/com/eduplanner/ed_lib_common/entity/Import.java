@@ -15,7 +15,7 @@ import lombok.Data;
 @Data
 
 /**
- * Tabla import
+ * Tabla importación
  * Import
  */
 @Table(name = "Import")
