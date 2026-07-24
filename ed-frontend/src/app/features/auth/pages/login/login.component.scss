@@ -8,12 +8,13 @@
   padding: 20px 60px;
   border-bottom: 2px solid #53BB1B;
 
-.logo img {
+.logo {
+  img {
       background: #252525;
       height: 40px;
       display: block;
   }
-
+}
 
 .Return-home {
   a {
@@ -56,6 +57,7 @@
 //cuerpo-login
 
  .form-login {
+
   display: flex;
   flex-direction: column;
   min-height: 150px;
@@ -115,22 +117,22 @@ p {
   flex-direction: column;
 
 .input-group {
-  background: #1E1E1E;
+  background: #202020;
   display: flex;
   flex-direction: column;
   gap: 8px;
 
 label {
-  background: #1E1E1E;
+  background: #202020;
   font-size: 12px;
   color: #9a9a9a;
 }
 
 .input-wrapper {
+  background: #252525;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: #141414;
   border-radius: 8px;
   padding: 12px 14px;
 
@@ -208,6 +210,7 @@ input {
 }
 
 .btn-update {
+    background: #252525;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -263,6 +266,7 @@ input {
 
 .security-badge {
   background: #171717;
+  background: radial-gradient(circle 150px at top right, #53bb1b1e, #171717);
   padding: 20px;
   border-radius: 8px;
   display: flex;
@@ -286,7 +290,6 @@ input {
 }
 
 .badge-text {
-  background: #171717;
   display: flex;
   flex-direction: column;
   background: transparent;
@@ -369,6 +372,15 @@ img {
   width: 36px;
   height: 36px;
   background: transparent;
+}
+
+.dual{
+  height: 65px;
+  width: 90px;
+}
+.line{
+  margin-bottom: 10px;
+  margin-top: 12px;
 }
 
 span {
