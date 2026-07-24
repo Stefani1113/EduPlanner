@@ -20,7 +20,7 @@ import lombok.Data;
 @Data
 
 /**
- * Tabla User 
+ * Tabla Usuario
  * User
  */
 @Table(name = "User")

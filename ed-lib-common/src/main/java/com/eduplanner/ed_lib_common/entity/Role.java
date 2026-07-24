@@ -12,7 +12,7 @@ import lombok.Data;
 @Data
 
 /**
- * Tabla User
+ * Tabla Rol
  * Role
  */
 @Table(name = "Role")
