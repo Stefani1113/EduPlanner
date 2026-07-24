@@ -1,0 +1,66 @@
+spring:
+  application:
+    name: ed-gateway
+
+  cloud:
+    gateway:
+      routes:
+
+        # ── Microservicio Autenticación (ACTIVO: 8081) ─────────────────────────
+        - id: ed-ms-autenticacion
+          uri: http://localhost:8081
+          predicates:
+            - Path=/autenticacion/**
+          filters:
+            - StripPrefix=1
+
+        # ── Microservicio Administración (ACTIVO: 8082) ─────────────────────────
+        - id: ed-ms-administracion
+          uri: http://localhost:8082
+          predicates:
+             - Path=/administracion/**
+          filters:
+            - StripPrefix=1
+        
+         # ── Microservicio Gestion Academica (ACTIVO: 8083) ─────────────────────────
+        - id: ed-ms-gestion-academica
+          uri: http://localhost:8083
+          predicates:
+            - Path=/gestion-academica/**
+          filters:
+            - StripPrefix=1
+        
+         # ── Microservicio Notas (ACTIVO: 8084) ─────────────────────────
+        - id: ed-ms-notas
+          uri: http://localhost:8084
+          predicates:
+            - Path=/notas/**
+          filters:
+            - StripPrefix=1
+
+      # ── Microservicio Inteligencia Artificial (ACTIVO: 8085) ─────────────────────────
+        - id: ed-ms-ia
+          uri: http://localhost:8085
+          predicates:
+            - Path=/ia/**
+          filters:
+            - StripPrefix=1
+        
+      # ── Microservicio Administración (ACTIVO: 8086) ─────────────────────────
+        - id: ed-ms-configuracion-institucional
+          uri: http://localhost:8086
+          predicates:
+            - Path=/configuracion-institucional/**
+          filters:
+            - StripPrefix=1
+
+server:
+  port: 8080
+
+security:
+  jwt:
+    secret-key: czyYSEj017tCB8M8mnOSvhgV4gSdI4P5Bql+3HrWZtM=
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
