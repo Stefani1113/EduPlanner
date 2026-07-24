@@ -25,8 +25,6 @@ public class RegisterStudentDTO {
 
     private String documentIssuePlace;
 
-    private boolean status;
-
     private String gender;
 
     private LocalDate birthdate;
@@ -48,8 +46,6 @@ public class RegisterStudentDTO {
     private Integer idImport;
 
     private Integer idInstitution;
-
-    private Integer idRole;
 
     //datos anidados de acudiente 
     private GuardianDTO guardian;

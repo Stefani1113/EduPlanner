@@ -25,8 +25,6 @@ public class RegisterTeacherDTO {
 
     private String documentIssuePlace;
 
-    private boolean status;
-
     private String gender;
 
     private LocalDate birthdate;
@@ -52,7 +50,4 @@ public class RegisterTeacherDTO {
     private Integer idImport;
 
     private Integer idInstitution;
-
-    private Integer idRole;
-
 }

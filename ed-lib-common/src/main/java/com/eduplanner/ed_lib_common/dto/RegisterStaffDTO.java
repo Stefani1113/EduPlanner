@@ -25,8 +25,6 @@ public class RegisterStaffDTO {
 
     private String documentIssuePlace;
 
-    private boolean status;
-
     private String gender;
 
     private LocalDate birthdate;
