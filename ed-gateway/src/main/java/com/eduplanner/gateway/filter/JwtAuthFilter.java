@@ -58,5 +58,20 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
             return responderError(exchange, HttpStatus.UNAUTHORIZED,
                     "Token inválido o expirado. Por favor inicia sesión nuevamente.");
         }
+
+
+         String email   = jwtUtil.extractUsername(token);
+        Integer userId = jwtUtil.extractUserId(token);
+        Integer rolId  = jwtUtil.extractRolId(token);
+
+        log.fine("Token válido → userId=" + userId + " | rolId=" + rolId + " | ruta=" + path);
+
+        ServerHttpRequest mutatedRequest = exchange.getRequest().mutate()
+                .header("X-User-Id",    String.valueOf(userId))
+                .header("X-User-Email", email)
+                .header("X-User-Rol",   String.valueOf(rolId))
+                .build();
+
+        return chain.filter(exchange.mutate().request(mutatedRequest).build());
     }
-}
+    }
