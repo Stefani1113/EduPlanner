@@ -46,8 +46,4 @@ public class RegisterTeacherDTO {
     private String professionalDegrees;
 
     private String qualificationsDesc;
-
-    private Integer idImport;
-
-    private Integer idInstitution;
 }
