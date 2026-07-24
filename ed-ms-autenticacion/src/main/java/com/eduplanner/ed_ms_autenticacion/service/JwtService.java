@@ -125,4 +125,42 @@ public class JwtService {
             throw new RuntimeException("Token inválido");
         }
     }
+
+    /**
+     * Genera un token de activación de cuenta
+     */
+    public String generateAccountActivationToken(String email) {
+        return Jwts.builder()
+                .subject(email)
+                .claim("type", "account-activation")
+                .issuedAt(new Date())
+                .expiration(new Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000L)) // 24 Horas
+                .signWith(getSignKey())
+                .compact();
+    }
+
+    /**
+     * Valida el token de activación y devuelve el correo del usuario
+     */
+    public String validateAccountActivationToken(String token) {
+        try {
+            Claims claims = Jwts.parser()
+                    .verifyWith(getSignKey())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+            
+            String type = claims.get("type", String.class);
+            if (!"account-activation".equals(type)) {
+                throw new RuntimeException("Tipo de token invalido");
+            }
+
+            return claims.getSubject();
+
+        } catch (ExpiredJwtException e) {
+            throw new RuntimeException("El enlace de expiración expiró");
+        } catch (JwtException e) {
+            throw new RuntimeException("Token de activavión inválido");
+        }
+    }
 }
