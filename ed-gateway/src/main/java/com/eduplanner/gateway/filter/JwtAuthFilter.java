@@ -51,5 +51,12 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
         }
 
         String token = authHeader.substring(7);
+
+
+         if (!jwtUtil.isTokenValid(token)) {
+            log.warning("Token inválido o expirado para ruta: " + path);
+            return responderError(exchange, HttpStatus.UNAUTHORIZED,
+                    "Token inválido o expirado. Por favor inicia sesión nuevamente.");
+        }
     }
 }
