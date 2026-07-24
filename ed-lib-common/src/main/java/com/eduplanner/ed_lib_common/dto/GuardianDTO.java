@@ -12,6 +12,4 @@ public class GuardianDTO {
     private String guardianName;
 
     private String guardianPhone;
-
-    private Integer idUser;
 }

@@ -45,9 +45,5 @@ public class RegisterStaffDTO {
 
     private String position;
 
-    private Integer idImport;
-
-    private Integer idInstitution;
-
     private Integer idRole;
 }

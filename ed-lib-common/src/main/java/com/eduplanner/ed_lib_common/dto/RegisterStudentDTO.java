@@ -45,8 +45,6 @@ public class RegisterStudentDTO {
 
     private Integer idImport;
 
-    private Integer idInstitution;
-
     //datos anidados de acudiente 
     private GuardianDTO guardian;
 
