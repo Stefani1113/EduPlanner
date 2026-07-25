@@ -43,3 +43,6 @@ app:
   csv:
     export-path: ./exports/
     max-rows-import: 5000  
+
+intitucion: 
+  id: 1  #Id fijo de la institución
