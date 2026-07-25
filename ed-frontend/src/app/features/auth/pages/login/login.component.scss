@@ -148,6 +148,7 @@ input {
 
 .icon-toggle {
   img {
+    background: #2b2b2b;
     width: 15px;
     height: 17px;
     opacity: 0.7;
@@ -161,24 +162,24 @@ input {
 }
 
 .strength-group {
-  background: #1E1E1E;
+  background: #202020;
   display: flex;
   flex-direction: column;
   gap: 8px;
 
 .strength-labels{
-  background: #1E1E1E;
+  background: #202020;
 }
 
 .strength-header {
   display: flex;
-  background: #1E1E1E;
+  background: #202020;
   justify-content: space-between;
   font-size: 12px;
   color: #9a9a9a;
 
   .strength-label.excelente {
-  background: #1E1E1E;
+  background: #202020;
   color: #53BB1B;
   }
 }
@@ -266,7 +267,7 @@ input {
 
 .security-badge {
   background: #171717;
-  background: radial-gradient(circle 150px at top right, #53bb1b1e, #171717);
+  background: radial-gradient(circle 150px at top right, #53bb1b49, #171717);
   padding: 20px;
   border-radius: 8px;
   display: flex;
