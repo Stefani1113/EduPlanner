@@ -34,7 +34,7 @@ public class RoleInterceptor implements HandlerInterceptor{
             return true;
         }
 
-        Object rol = request.getAttribute("rolId");
+        Object rol = request.getAttribute("idRole");
 
         if (!(rol instanceof Integer roleId)) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
