@@ -56,8 +56,6 @@ public class JwtValidationFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        String path = request.getRequestURI();
-        // Ajusta según qué rutas de administración deban ser públicas (probablemente ninguna)
         return false;
     }
 
