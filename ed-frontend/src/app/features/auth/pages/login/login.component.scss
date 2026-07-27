@@ -426,4 +426,130 @@ padding: 20px 60px;
 
 }
 
+@media (max-width:1024px){
 
+.body-login{
+    gap:50px;
+    padding:50px 30px;
+}
+
+.encryption-info{
+    width:360px;
+    margin-top:20px;
+}
+
+}
+
+@media (max-width:768px){
+
+.navigation-bar{
+  gap:15px;
+  padding:25px;
+
+.logo img{
+    height:35px;
+}
+
+.Return-home a{
+    font-size:15px;
+    padding-right: 20px;
+}
+
+}
+
+.body-login{
+  flex-direction:column;
+  align-items:center;
+  gap:40px;
+  padding:40px 20px;
+}
+
+.form-login{
+  width:100%;
+
+.Title{
+  font-size:38px;
+  padding-left:0;
+  line-height:1.2;
+  word-break:break-word;
+}
+
+p{
+  padding-left:0;
+  max-width:100%;
+}
+
+}
+
+.left{
+  width:100%;
+  padding:0;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+
+.form{
+  width:100%;
+  max-width:360px;
+}
+
+.strength-bar{
+  width:100%;
+  padding-right: 60px;
+}
+
+.btn-update{
+  width:100%;
+}
+
+.in{
+  text-align:center;
+  width:100%;
+}
+
+.encryption-info{
+  width:100%;
+  max-width:360px;
+  margin-top:0;
+}
+
+
+footer{
+  justify-content:center;
+  padding:20px;
+}
+
+}
+
+@media (max-width:480px){
+
+.navigation-bar{
+  padding:15px;
+}
+
+.form-login{
+
+.Title{
+  font-size:32px;
+}
+
+p{
+  font-size:12px;
+}
+
+}
+
+.form{
+  padding:20px;
+}
+
+.badge-value{
+  font-size:16px;
+}
+
+.encryption-detail{
+  padding:16px;
+}
+
+}
