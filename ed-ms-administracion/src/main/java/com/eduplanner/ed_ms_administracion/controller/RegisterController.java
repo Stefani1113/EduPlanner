@@ -41,23 +41,6 @@ public class RegisterController {
     }
 
 
-    @PostMapping("/teacher")
-    public ResponseEntity<HttpGlobalResponse<Void>> registerTeacher(@RequestBody RegisterTeacherDTO dto) {
-        HttpGlobalResponse<Void> response = new HttpGlobalResponse<>();
-        try {
-            registerService.registerTeacher(dto);
-            response.setMessage("Docente registrado correctamente. Se envió un correo de activación.");
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } catch (IllegalArgumentException e) {
-            response.setMessage(e.getMessage());
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
-        } catch (IllegalStateException e) {
-            response.setMessage(e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
-    }
-
-
     @PostMapping("/staff")
     public ResponseEntity<HttpGlobalResponse<Void>> registerStaff(@RequestBody RegisterStaffDTO dto) {
         HttpGlobalResponse<Void> response = new HttpGlobalResponse<>();
