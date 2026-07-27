@@ -1,30 +1,20 @@
 <section class="navbar">
-
-<button class="menu-toggle" (click)="toggleMenu()">
-  <span></span>
-  <span></span>
-  <span></span>
-</button>
-
   <div class="logo">
     <img src="assets/img/Logo-nav.png" alt="Edu Planner">
   </div>
 
-    <nav class="menu" [class.active]="menuOpen">
-      <a href="#identidad">Identidad</a>
-      <a href="#beneficios">Beneficios</a>
-      <a href="#faq">FAQ</a>
-      <a href="#contacto">Contacto</a>
-      <a href="#soporte">Soporte técnico</a>
-    </nav>
-
-
+  <nav class="menu">
+    <a href="#identidad">Identidad</a>
+    <a href="#beneficios">Beneficios</a>
+    <a href="#faq">FAQ</a>
+    <a href="#contacto">Contacto</a>
+    <a href="#soporte">Soporte técnico</a>
+  </nav>
 
   <a routerLink="/auth" class="btn-login">
     Iniciar Sesión
-    <img src="assets/img/profile.png" class="icon-small" alt="Perfil">
+    <img src="assets/img/profile.png" alt="/ed-frontend/src/app/features/auth/pages/login-page/login-page.component.html" class="icon-small">
   </a>
-
 </section>
 
 <section class="hero">
