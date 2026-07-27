@@ -44,5 +44,8 @@ app:
     export-path: ./exports/
     max-rows-import: 5000  
 
-intitucion: 
+frontend:
+  activation-url: http://localhost:4200/activate
+
+institution: 
   id: 1  #Id fijo de la institución

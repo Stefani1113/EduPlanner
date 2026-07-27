@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.eduplanner.ed_lib_common.dto.HttpGlobalResponse;
 import com.eduplanner.ed_lib_common.dto.RegisterStaffDTO;
 import com.eduplanner.ed_lib_common.dto.RegisterStudentDTO;
-import com.eduplanner.ed_lib_common.dto.RegisterTeacherDTO;
 import com.eduplanner.ed_ms_administracion.service.RegisterService;
 
 import lombok.RequiredArgsConstructor;
