@@ -70,30 +70,6 @@ public class RegisterService {
         sendActivationEmail(user);
     }
 
-    // REGISTRO DE DOCENTE
-    @Transactional
-    public void registerTeacher(RegisterTeacherDTO dto) {
-        validateNotDuplicated(dto.getEmail(), dto.getDocument());
-
-        Role role = getRoleOrThrow(RolEnum.DOCENTE.getId());
-
-        User user = buildBaseUser(
-                dto.getEmail(), dto.getName(), dto.getSurnames(),
-                dto.getDocumentType(), dto.getDocument(), dto.getDocumentIssuePlace(),
-                dto.getBirthdate(), dto.getPhoneNumber(), dto.getGender(),
-                dto.getAddress(), dto.getBloodType(), dto.getDisabilities(),
-                dto.getStratum(), dto.getPopulationType(), dto.getHealthRegime(), dto.getEps()
-        );
-        user.setProfessionalDegrees(dto.getProfessionalDegrees());
-        user.setQualificationsDesc(dto.getQualificationsDesc());
-        user.setPosition("Docente");
-        user.setRole(role);
-
-        userRepository.save(user);
-
-        sendActivationEmail(user);
-    }
-
     // REGISTRO DE ADMINISTRADOR / DIRECTIVO
     @Transactional
     public void registerStaff(RegisterStaffDTO dto) {
@@ -137,7 +113,7 @@ public class RegisterService {
     }
 
     /**
-     * User con los campos comunes a los 3 roles.
+     * User con los campos comunes a los 2 roles.
      */
     private User buildBaseUser(String email, String name, String surnames,
                                 String documentType, String document, String documentIssuePlace,
