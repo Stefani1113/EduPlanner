@@ -3,12 +3,17 @@
     <img src="assets/img/Logo-nav.png" alt="Edu Planner">
   </div>
 
-  <nav class="menu">
-    <a href="#identidad">Identidad</a>
-    <a href="#beneficios">Beneficios</a>
-    <a href="#faq">FAQ</a>
-    <a href="#contacto">Contacto</a>
-    <a href="#soporte">Soporte técnico</a>
+  <button class="menu-toggle" (click)="toggleMenu()" aria-label="Menú">
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+  <nav class="menu" [class.active]="menuOpen">
+    <a href="#identidad" (click)="closeMenu()">Identidad</a>
+    <a href="#beneficios" (click)="closeMenu()">Beneficios</a>
+    <a href="#faq" (click)="closeMenu()">FAQ</a>
+    <a href="#contacto" (click)="closeMenu()">Contacto</a>
+    <a href="#soporte" (click)="closeMenu()">Soporte técnico</a>
   </nav>
 
   <a routerLink="/auth" class="btn-login">
