@@ -41,7 +41,7 @@ preguntasFrecuentes = [
   }
 ];
 
-  toggleFaq(index: number) {
-    this.preguntasFrecuentes[index].abierta = !this.preguntasFrecuentes[index].abierta;
-  }
+toggleFaq(index: number) {
+  this.preguntasFrecuentes[index].abierta = !this.preguntasFrecuentes[index].abierta;
+}
 }
