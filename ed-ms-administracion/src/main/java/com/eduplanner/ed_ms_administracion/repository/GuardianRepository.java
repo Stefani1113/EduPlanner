@@ -6,6 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.eduplanner.ed_lib_common.entity.Guardian;
 
-public interface GuardianRepository extends JpaRepository<Guardian, Integer>{
+public interface GuardianRepository extends JpaRepository<Guardian, Integer> {
     Optional<Guardian> findByIdUser(Integer idUser);
 }
