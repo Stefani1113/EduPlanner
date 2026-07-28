@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.eduplanner.ed_lib_common.dto.ForgotPasswordRequestDTO;
-import com.eduplanner.ed_lib_common.dto.ResetPasswordRequestDTO;
+import com.eduplanner.ed_lib_common.dto.TokenPasswordDTO;
 import com.eduplanner.ed_ms_autenticacion.service.PasswordService;
 
 import jakarta.validation.Valid;
@@ -49,7 +49,7 @@ public class PasswordController {
      * @return
      */
     @PutMapping("/reset-password")
-    public ResponseEntity<?> resetPassword(@Valid @RequestBody ResetPasswordRequestDTO request) {
+    public ResponseEntity<?> resetPassword(@Valid @RequestBody TokenPasswordDTO request) {
         String result = passwordService.resetPassword(request);
         Map<String, String> response = new HashMap<>();
         response.put("message", result);
