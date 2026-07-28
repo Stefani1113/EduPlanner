@@ -1,4 +1,3 @@
-// ed-ms-administracion/src/main/java/com/eduplanner/ed_ms_administracion/controller/UserController.java
 package com.eduplanner.ed_ms_administracion.controller;
 
 import com.eduplanner.ed_lib_common.dto.HttpGlobalResponse;
