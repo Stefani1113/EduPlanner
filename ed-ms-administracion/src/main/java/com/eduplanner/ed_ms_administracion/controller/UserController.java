@@ -7,7 +7,6 @@ import com.eduplanner.ed_lib_common.dto.UpdateStatusDTO;
 import com.eduplanner.ed_lib_common.dto.UpdateStudentDTO;
 import com.eduplanner.ed_lib_common.dto.UserResponseDTO;
 import com.eduplanner.ed_lib_common.enums.RolEnum;
-import com.eduplanner.ed_ms_administracion.config.RestTemplateConfig;
 import com.eduplanner.ed_ms_administracion.security.RequireRole;
 import com.eduplanner.ed_ms_administracion.service.UserEditService;
 import com.eduplanner.ed_ms_administracion.service.UserQueryService;
