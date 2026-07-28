@@ -69,7 +69,8 @@ public class JwtValidationFilter extends OncePerRequestFilter {
         // Solo el login y cambio de contraseña es público
         return path.startsWith("/eduplanner/auth/login")
                         || path.startsWith("/eduplanner/auth/forgot-password")
-                        || path.startsWith("/eduplanner/auth/reset-password");
+                        || path.startsWith("/eduplanner/auth/reset-password")
+                        || path.startsWith("/eduplanner/activation-account");
     }
 
     private void sendError(HttpServletResponse response, int status, String message) throws IOException {
