@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 
 @Data
-public class ResetPasswordRequestDTO {
+public class TokenPasswordDTO {
 
     /**
      * Token generado para la restauración de contraseña
@@ -27,7 +27,5 @@ public class ResetPasswordRequestDTO {
     )
 
     private String newPassword;
-
-
 
 }

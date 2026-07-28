@@ -33,6 +33,6 @@ public class Guardian {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_user", nullable = false)
-    private User user;
+    private User idUser;
 
 }

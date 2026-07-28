@@ -6,7 +6,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.eduplanner.ed_lib_common.dto.ForgotPasswordRequestDTO;
-import com.eduplanner.ed_lib_common.dto.ResetPasswordRequestDTO;
+import com.eduplanner.ed_lib_common.dto.TokenPasswordDTO;
 import com.eduplanner.ed_lib_common.entity.User;
 import com.eduplanner.ed_lib_common.notifications.NotificationType;
 import com.eduplanner.ed_lib_common.notifications.Notifier;
@@ -55,7 +55,7 @@ public class PasswordService {
      * Confirmar cambio de contraseña
      */
     @Transactional
-    public String resetPassword(ResetPasswordRequestDTO request) {
+    public String resetPassword(TokenPasswordDTO request) {
         String email;
         try {
             email = jwtService.validatePasswordResetToken(request.getToken());
@@ -73,5 +73,22 @@ public class PasswordService {
         userRepository.save(user);
 
         return "Contraseña actualizada correctamente";
+    }
+
+    /**
+     * Método para activación de cuenta
+     * @param request
+     */
+
+    public void activationAccount(TokenPasswordDTO request) {
+        String email = jwtService.validateAccountActivationToken(request.getToken());
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        user.setStatus(true); // Activa la cuenta
+        userRepository.save(user);
     }
 }

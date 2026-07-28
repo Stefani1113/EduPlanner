@@ -62,7 +62,7 @@ public class RegisterService {
         Guardian guardian = new Guardian();
         guardian.setGuardianName(dto.getGuardian().getGuardianName());
         guardian.setGuardianPhone(dto.getGuardian().getGuardianPhone());
-        guardian.setUser(user);
+        guardian.setIdUser(user);
         guardianRepository.save(guardian);
 
         sendActivationEmail(user);
