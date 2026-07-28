@@ -7,6 +7,7 @@ import com.eduplanner.ed_lib_common.dto.UpdateStatusDTO;
 import com.eduplanner.ed_lib_common.dto.UpdateStudentDTO;
 import com.eduplanner.ed_lib_common.dto.UserResponseDTO;
 import com.eduplanner.ed_lib_common.enums.RolEnum;
+import com.eduplanner.ed_ms_administracion.config.RestTemplateConfig;
 import com.eduplanner.ed_ms_administracion.security.RequireRole;
 import com.eduplanner.ed_ms_administracion.service.UserEditService;
 import com.eduplanner.ed_ms_administracion.service.UserQueryService;
@@ -43,6 +44,20 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
+
+    // GET /users/search?name=Juan
+    //Consultar usuario por nombre
+    @RequireRole(RolEnum.ADMINISTRADOR)
+    @GetMapping("/search")
+    public ResponseEntity<HttpGlobalResponse<List<UserResponseDTO>>> getUserByName(@RequestParam String name) {
+        HttpGlobalResponse<List<UserResponseDTO>> response = new HttpGlobalResponse<>();
+            List<UserResponseDTO> users = userQueryService.findByName(name);
+            response.setData(users);
+            response.setMessage(users.isEmpty()
+                    ? "No se encontraron usuarios con ese nombre"
+                    : "Usuarios encontrador por nombre");
+            return ResponseEntity.ok(response);
+    }
 
     // Consultar usuario por Id
     @RequireRole(RolEnum.ADMINISTRADOR)

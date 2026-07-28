@@ -10,6 +10,15 @@ import com.eduplanner.ed_ms_administracion.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
+
+/**
+ * Servicio para busqueda de usuarios 
+ * Listar todos
+ * Por rol
+ * Por nombre
+ * Por id
+ * UserQueryService
+ */
 @Service
 @RequiredArgsConstructor
 public class UserQueryService {
@@ -24,6 +33,12 @@ public class UserQueryService {
 
     public List<UserResponseDTO> findByRole(Integer idRole) {
         return userRepository.findByRoleIdRole(idRole).stream()
+                .map(UserResponseDTO::fromEntity)
+                .toList();
+    }
+
+    public List<UserResponseDTO> findByName( String name) {
+        return userRepository.findByNameContainingIgnoreCase(name).stream()
                 .map(UserResponseDTO::fromEntity)
                 .toList();
     }
