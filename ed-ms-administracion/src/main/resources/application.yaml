@@ -28,6 +28,10 @@ server:
   servlet:
     context-path: /eduplanner/
 
+service:
+  auth:
+    base-url: http://localhost:8081/eduplanner
+
 security:
   jwt:
     secret-key: czyYSEj017tCB8M8mnOSvhgV4gSdI4P5Bql+3HrWZtM=
@@ -39,3 +43,9 @@ app:
   csv:
     export-path: ./exports/
     max-rows-import: 5000  
+
+frontend:
+  activation-url: http://localhost:4200/activate
+
+institution: 
+  id: 1  #Id fijo de la institución

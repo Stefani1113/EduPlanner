@@ -1,27 +1,16 @@
 package com.eduplanner.ed_lib_common.dto;
 
 import java.time.LocalDate;
-
 import lombok.Data;
 
-/**
- * Registro de estudiante 
- * RegisterStudentDTO
- */
 @Data
-public class RegisterStudentDTO {
-    
+public class UpdateStudentDTO {
+
     private String name;
 
     private String surnames;
 
-    private String email;
-
     private String phoneNumber;
-
-    private String document;
-
-    private String documentType;
 
     private String documentIssuePlace;
 
@@ -43,9 +32,6 @@ public class RegisterStudentDTO {
 
     private String eps;
 
-    private Integer idImport;
-
-    //datos anidados de acudiente 
+    // Se actualiza junto con el estudiante
     private GuardianDTO guardian;
-
 }

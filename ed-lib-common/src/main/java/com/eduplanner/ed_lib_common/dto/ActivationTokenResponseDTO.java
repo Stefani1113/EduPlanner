@@ -8,6 +8,6 @@ import lombok.Data;
  */
 @Data
 public class ActivationTokenResponseDTO {
-    
+
     private String token;
 }
