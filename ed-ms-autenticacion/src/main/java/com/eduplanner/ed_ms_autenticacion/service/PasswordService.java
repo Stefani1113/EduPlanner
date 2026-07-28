@@ -6,7 +6,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.eduplanner.ed_lib_common.dto.ForgotPasswordRequestDTO;
-import com.eduplanner.ed_lib_common.dto.ResetPasswordRequestDTO;
+import com.eduplanner.ed_lib_common.dto.TokenPasswordDTO;
 import com.eduplanner.ed_lib_common.entity.User;
 import com.eduplanner.ed_lib_common.notifications.NotificationType;
 import com.eduplanner.ed_lib_common.notifications.Notifier;
@@ -55,7 +55,7 @@ public class PasswordService {
      * Confirmar cambio de contraseña
      */
     @Transactional
-    public String resetPassword(ResetPasswordRequestDTO request) {
+    public String resetPassword(TokenPasswordDTO request) {
         String email;
         try {
             email = jwtService.validatePasswordResetToken(request.getToken());
