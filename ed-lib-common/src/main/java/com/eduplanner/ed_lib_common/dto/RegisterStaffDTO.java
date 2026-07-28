@@ -35,7 +35,7 @@ public class RegisterStaffDTO {
 
     private String disabilities;
 
-    private Byte stratum;
+    private Integer stratum;
 
     private String populationType;
 

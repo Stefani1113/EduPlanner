@@ -1,4 +1,5 @@
-package com.eduplanner.ed_ms_autenticacion.security;
+// ed-ms-administracion/src/main/java/com/eduplanner/ed_ms_administracion/security/RoleInterceptor.java
+package com.eduplanner.ed_ms_administracion.security;
 
 import java.util.Arrays;
 
@@ -9,23 +10,18 @@ import org.springframework.web.servlet.HandlerInterceptor;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-/**
- * Interceptor de peticiones http
- */
 @Component
-public class RoleInterceptor implements HandlerInterceptor{
+public class RoleInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
         throws Exception {
-            if (!(handler instanceof HandlerMethod method)) {
-                return true;
+        if (!(handler instanceof HandlerMethod method)) {
+            return true;
         }
 
-        //Busca la anotación @RequireRole en el método
         RequireRole annotation = method.getMethodAnnotation(RequireRole.class);
 
-        //Si no esta en el método, la busca en la clase del controller 
         if (annotation == null) {
             annotation = method.getBeanType().getAnnotation(RequireRole.class);
         }
@@ -48,12 +44,10 @@ public class RoleInterceptor implements HandlerInterceptor{
         if (!hastRole) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             response.setContentType("application/json");
-            response.getWriter().write("{\"error\": \"No tienes permisos para relizar esta acción\"}");
+            response.getWriter().write("{\"error\": \"No tienes permisos para realizar esta acción\"}");
             return false;
         }
 
         return true;
-
     }
 }
-
