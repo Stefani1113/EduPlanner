@@ -74,4 +74,21 @@ public class PasswordService {
 
         return "Contraseña actualizada correctamente";
     }
+
+    /**
+     * Método para activación de cuenta
+     * @param request
+     */
+
+    public void activationAccount(TokenPasswordDTO request) {
+        String email = jwtService.validateAccountActivationToken(request.getToken());
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        user.setStatus(true); // Activa la cuenta
+        userRepository.save(user);
+    }
 }
