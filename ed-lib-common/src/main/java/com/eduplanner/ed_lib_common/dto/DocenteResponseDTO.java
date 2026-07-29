@@ -1,4 +1,5 @@
-package com.eduplanner.ed_ms_administracion.dto;
+package com.eduplanner.ed_lib_common.dto;
+
 
 import lombok.Data;
 import java.time.LocalDate;
