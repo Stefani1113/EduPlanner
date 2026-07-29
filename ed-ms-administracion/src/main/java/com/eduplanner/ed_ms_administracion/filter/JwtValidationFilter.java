@@ -59,6 +59,8 @@ public class JwtValidationFilter extends OncePerRequestFilter {
         return false;
     }
 
+ 
+
     private void sendError(HttpServletResponse response, int status, String message) throws IOException {
         response.setStatus(status);
         response.setContentType("application/json");
