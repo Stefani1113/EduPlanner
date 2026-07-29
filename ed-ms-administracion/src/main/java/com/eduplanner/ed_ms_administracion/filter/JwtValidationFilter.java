@@ -1,4 +1,5 @@
-package com.eduplanner.ed_ms_autenticacion.filter;
+// ed-ms-administracion/src/main/java/com/eduplanner/ed_ms_administracion/filter/JwtValidationFilter.java
+package com.eduplanner.ed_ms_administracion.filter;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
@@ -8,22 +9,19 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.eduplanner.ed_ms_autenticacion.service.JwtService;
-import com.eduplanner.ed_ms_autenticacion.service.TokenBlacklistService;
+import com.eduplanner.ed_ms_administracion.service.JwtValidatorService;
 
 import java.io.IOException;
 
 /**
- * RF 1.2.1 - Valida el JWT en cada petición protegida.
- * RF 1.6    - Rechaza tokens revocados (sesión cerrada).
+ * Valida el JWT en cada petición protegida de este microservicio.
  */
 @Component
 @RequiredArgsConstructor
 @Log4j2
 public class JwtValidationFilter extends OncePerRequestFilter {
 
-    private final JwtService jwtService;
-    private final TokenBlacklistService tokenBlacklistService;
+    private final JwtValidatorService jwtValidatorService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -39,18 +37,11 @@ public class JwtValidationFilter extends OncePerRequestFilter {
 
         String token = authHeader.substring(7);
 
-        // RF 1.6 - Token revocado por logout
-        if (tokenBlacklistService.isBlacklisted(token)) {
-            sendError(response, HttpServletResponse.SC_UNAUTHORIZED,
-                    "Sesión cerrada. Por favor inicie sesión nuevamente.");
-            return;
-        }
-
         try {
-            if (jwtService.isTokenValid(token)) {
-                request.setAttribute("email",     jwtService.extractEmail(token));
-                request.setAttribute("idUser",  jwtService.extractIdUser(token));
-                request.setAttribute("idRole",      jwtService.extractIdRole(token));
+            if (jwtValidatorService.isTokenValid(token)) {
+                request.setAttribute("email", jwtValidatorService.extractEmail(token));
+                request.setAttribute("idUser", jwtValidatorService.extractIdUser(token));
+                request.setAttribute("idRole", jwtValidatorService.extractIdRole(token));
                 filterChain.doFilter(request, response);
             } else {
                 sendError(response, HttpServletResponse.SC_UNAUTHORIZED,
@@ -65,13 +56,7 @@ public class JwtValidationFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        String path = request.getRequestURI();
-        // Solo el login y cambio de contraseña es público
-        return path.startsWith("/eduplanner/auth/login")
-                        || path.startsWith("/eduplanner/auth/forgot-password")
-                        || path.startsWith("/eduplanner/auth/reset-password")
-                        || path.startsWith("/eduplanner/activation-account")
-                        || path.startsWith("/eduplanner/internal/tokens");
+        return false;
     }
 
     private void sendError(HttpServletResponse response, int status, String message) throws IOException {
