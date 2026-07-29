@@ -2,15 +2,20 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { AuthRoutingModule } from './auth-routing.module';
-import { LoginPageComponent } from './pages/login-page/login-page.component';
 
+import { LoginPageComponent } from './pages/login-page/login-page.component';
+import { ForgotPasswordPageComponent } from './pages/forgot-password-page/forgot-password-page';
+import { ResetPasswordPageComponent } from './pages/reset-password-page/reset-password-page.component';
+import { ForgotPasswordFormComponent } from './components/forgot-password-form/forgot-password-form.component';
 
 @NgModule({
-  declarations: [],
   imports: [
     CommonModule,
     AuthRoutingModule,
-    LoginPageComponent
-  ],
+    LoginPageComponent,
+    ForgotPasswordPageComponent,
+    ResetPasswordPageComponent,
+    ForgotPasswordFormComponent
+  ]
 })
-export class AuthModule { }
+export class AuthModule {}

@@ -4,9 +4,9 @@
   </div>
 
   <div class="back-login">
-    <a routerLink="/">
-      <img src="assets/img/right-arrow.png" alt="assets/img/right-arrow.png" alt="/ed-frontend/src/app/features/home/pages/inicio/inicio.component.html">
-      Volver al Inicio
+     <a href="#">
+        <img class="icon-menu" src="assets/img/right-arrow.png" alt="/ed-frontend/src/app/features/home/pages/inicio/inicio.component.html" >
+            volver al inicio
     </a>
   </div>
 </header>
@@ -14,28 +14,41 @@
 <section class="login-screen">
 
   <div class="login-left">
-     <img
+    <img
       class="main-logo"
       src="assets/img/Logo-nav.png"
       alt="EduPlanner">
   </div>
 
   <div class="login-right">
+
     <div class="login-box">
-      <h1>INICIAR SESION</h1>
+
+      <h1>INICIAR SESIÓN</h1>
+
       <p>
         Ingresa tus credenciales institucionales para continuar
       </p>
 
-      <div class="field-login">
+      <div class="field-login error">
+
         <label>Correo Institucional</label>
+
         <input
           type="email"
           placeholder="EduPlanner@gmail.com">
+
+        <div class="error-message">
+          <img src="assets/img/error.png" alt="">
+          <span>El correo institucional es obligatorio.</span>
+        </div>
+
       </div>
 
-      <div class="field-login">
+      <div class="field-login error">
+
         <label>Contraseña</label>
+
         <div class="password-login">
 
           <input
@@ -44,18 +57,24 @@
 
           <img
             src="assets/img/eye.png"
-            alt="">
+            alt="Mostrar contraseña">
 
         </div>
 
-      </div>
+        <div class="error-message">
+          <img src="assets/img/error.png" alt="">
+          <span>La contraseña es obligatoria.</span>
+        </div>
 
-      <a href="#" alt="/ed-frontend/src/app/features/auth/pages/reset-password-page/reset-password-page.component.html" class="forgot-login">
-        ¿Olvidaste tu contraseña?
-      </a>
+      </div> 
+
+    <a (click)="irForgotPassword()" class="forgot-login">
+      ¿Olvidaste tu contraseña?
+    </a>
 
       <div class="divider-login"></div>
-      <button class="button-login">
+
+      <button type="submit" class="button-login">
         Iniciar Sesión
         <img src="assets/img/arrow-right.png" alt="">
       </button>
@@ -66,11 +85,13 @@
           Contactar soporte técnico.
         </a>
       </p>
+
     </div>
 
   </div>
 
 </section>
+
 <footer class="footer-login">
-    <img src="assets/img/logo-footer.png" alt="">
+  <img src="assets/img/logo-footer.png" alt="Logo">
 </footer>
