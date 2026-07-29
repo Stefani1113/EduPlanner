@@ -130,7 +130,6 @@ public class DocenteService {
         user.setBloodType(dto.getBloodType());
         user.setDisabilities(dto.getDisabilities());
         user.setStratum(dto.getStratum());
-        user.setPopulationType(dto.getPopulationType());
         user.setHealthRegime(dto.getHealthRegime());
         user.setEps(dto.getEps());
         user.setPosition(dto.getPosition());
