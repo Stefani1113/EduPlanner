@@ -36,7 +36,7 @@
 .login-screen {
   display: grid;
   grid-template-columns: 60% 40%;
-  min-height: calc(100vh - 145px);
+  height: calc(100vh - 145px);
 }
 
 
@@ -54,7 +54,7 @@
   overflow: hidden;
 }
 
-.main-logo {
+.main-logo img{
   background: transparent;
   position: relative;
   z-index: 1;
@@ -70,6 +70,7 @@
   align-items: center;
   padding: 40px 32px;
   background: transparent;
+  overflow-y: auto; 
 }
 
 .login-box {
@@ -143,7 +144,7 @@
 }
 
 .field-login.has-eye input {
-  padding-right: 46px;
+  padding-right: 20px;
 }
 
 .field-login.error label {
@@ -152,7 +153,6 @@
 
 .field-login.error input {
   border-color: #ff4b4b;
-  box-shadow: 0 0 0 4px rgba(255, 75, 75, .12);
 }
 
 
@@ -179,8 +179,8 @@
 
 
 .error-message {
+  margin-bottom: 16px;
   background: transparent;
-  margin-top: 7px;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -197,8 +197,6 @@
 }
 
 .server-error {
-  background: rgba(255, 75, 75, .08);
-  border: 1px solid rgba(255, 75, 75, .3);
   border-radius: 7px;
   padding: 10px 14px;
   margin-bottom: 16px;
@@ -288,7 +286,6 @@
 
 .footer-login {
   height: 60px;
-  background: #252525;
   display: flex;
   align-items: center;
   padding-left: 60px;
