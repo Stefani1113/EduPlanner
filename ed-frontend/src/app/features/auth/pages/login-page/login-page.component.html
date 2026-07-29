@@ -22,11 +22,11 @@
 
       <h1>INICIAR SESIÓN</h1>
       <p>
-        Ingresa tus credenciales institucionales para continuar
+        Ingresa tus credenciales para continuar
       </p>
 
       <div class="field-login" [class.error]="emailTouched && !email">
-        <label>Correo Institucional</label>
+        <label>Correo </label>
 
         <input
           type="email"
@@ -36,7 +36,7 @@
 
         <div class="error-message" *ngIf="emailTouched && !email">
           <img src="assets/img/error.png" alt="">
-          <span>El correo institucional es obligatorio.</span>
+          <span>• El correo es obligatorio.</span>
         </div>
 
       </div>
@@ -59,7 +59,7 @@
 
         <div class="error-message" *ngIf="passwordTouched && !password">
           <img src="assets/img/error.png" alt="">
-          <span>La contraseña es obligatoria.</span>
+          <span> • La contraseña es obligatoria.</span>
         </div>
       </div>
       <div class="error-message server-error" *ngIf="serverError">
