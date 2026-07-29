@@ -1,97 +1,73 @@
-<header class="top-login">
-  <div class="brand-login">
-    <img src="assets/img/Logo-nav.png" alt="Logo">
-  </div>
+<div class="login-box">
 
-  <div class="back-login">
-     <a href="#">
-        <img class="icon-menu" src="assets/img/right-arrow.png" alt="/ed-frontend/src/app/features/home/pages/inicio/inicio.component.html" >
-            volver al inicio
-    </a>
-  </div>
-</header>
+  <h1>INICIAR SESIÓN</h1>
 
-<section class="login-screen">
+  <p>
+    Ingresa tus credenciales institucionales para continuar
+  </p>
 
-  <div class="login-left">
-    <img
-      class="main-logo"
-      src="assets/img/Logo-nav.png"
-      alt="EduPlanner">
-  </div>
+  <div class="field-login">
 
-  <div class="login-right">
+    <label>Correo Institucional</label>
 
-    <div class="login-box">
+    <input
+      type="email"
+      [(ngModel)]="email"
+      placeholder="EduPlanner@gmail.com">
 
-      <h1>INICIAR SESIÓN</h1>
-
-      <p>
-        Ingresa tus credenciales institucionales para continuar
-      </p>
-
-      <div class="field-login error">
-
-        <label>Correo Institucional</label>
-
-        <input
-          type="email"
-          placeholder="EduPlanner@gmail.com">
-
-        <div class="error-message">
-          <img src="assets/img/error.png" alt="">
-          <span>El correo institucional es obligatorio.</span>
-        </div>
-
-      </div>
-
-      <div class="field-login error">
-
-        <label>Contraseña</label>
-
-        <div class="password-login">
-
-          <input
-            type="password"
-            placeholder="••••••••••">
-
-          <img
-            src="assets/img/eye.png"
-            alt="Mostrar contraseña">
-
-        </div>
-
-        <div class="error-message">
-          <img src="assets/img/error.png" alt="">
-          <span>La contraseña es obligatoria.</span>
-        </div>
-
-      </div> 
-
-    <a (click)="irForgotPassword()" class="forgot-login">
-      ¿Olvidaste tu contraseña?
-    </a>
-
-      <div class="divider-login"></div>
-
-      <button type="submit" class="button-login">
-        Iniciar Sesión
-        <img src="assets/img/arrow-right.png" alt="">
-      </button>
-
-      <p class="support-login">
-        ¿Problemas para acceder?
-        <a href="#">
-          Contactar soporte técnico.
-        </a>
-      </p>
-
+    <div class="error-message">
+      <img src="assets/img/error.png" alt="">
+      <span>El correo institucional es obligatorio.</span>
     </div>
 
   </div>
 
-</section>
+  <div class="field-login">
 
-<footer class="footer-login">
-  <img src="assets/img/logo-footer.png" alt="Logo">
-</footer>
+    <label>Contraseña</label>
+
+    <div class="password-login">
+
+      <input
+        type="password"
+        [(ngModel)]="password"
+        placeholder="••••••••••">
+
+      <img
+        src="assets/img/eye.png"
+        alt="Mostrar contraseña">
+
+    </div>
+
+    <div class="error-message">
+      <img src="assets/img/error.png" alt="">
+      <span>La contraseña es obligatoria.</span>
+    </div>
+
+  </div>
+
+  <a (click)="irForgotPassword()" class="forgot-login">
+    ¿Olvidaste tu contraseña?
+  </a>
+
+  <div class="divider-login"></div>
+
+  <button
+    type="button"
+    class="button-login"
+    (click)="login()">
+
+    Iniciar Sesión
+
+    <img src="assets/img/arrow-right.png" alt="">
+
+  </button>
+
+  <p class="support-login">
+    ¿Problemas para acceder?
+    <a href="#">
+      Contactar soporte técnico.
+    </a>
+  </p>
+
+</div>
