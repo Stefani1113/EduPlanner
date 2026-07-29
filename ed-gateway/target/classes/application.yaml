@@ -60,6 +60,10 @@ server:
 security:
   jwt:
     secret-key: czyYSEj017tCB8M8mnOSvhgV4gSdI4P5Bql+3HrWZtM=
+  public-paths:
+    - /autenticacion/eduplanner/auth/login
+    - /autenticacion/eduplanner/auth/forgot-password
+    - /autenticacion/eduplanner/auth/reset-password
 
 logging:
   level:
