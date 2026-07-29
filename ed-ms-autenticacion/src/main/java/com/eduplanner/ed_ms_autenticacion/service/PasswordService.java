@@ -39,7 +39,7 @@ public class PasswordService {
         }
 
         String token = jwtService.generatePasswordResetToken(request.getEmail());
-        String enlace = "http://localhost:4200/reset-password?token=" + token;
+        String enlace = "http://localhost:4200/auth/reset-password?token=" + token;
 
         Notifier notificador = notifierFactory.create(NotificationType.EMAIL);
         notificador.send(
