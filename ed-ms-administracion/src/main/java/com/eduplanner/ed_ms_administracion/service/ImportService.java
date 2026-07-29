@@ -1,13 +1,15 @@
 package com.eduplanner.ed_ms_administracion.service;
 
 import com.eduplanner.ed_lib_common.dto.GuardianDTO;
+import com.eduplanner.ed_lib_common.dto.ImportErrorDetailDTO;
+import com.eduplanner.ed_lib_common.dto.ImportReportDTO;
 import com.eduplanner.ed_lib_common.dto.RegisterStudentDTO;
 import com.eduplanner.ed_lib_common.entity.Import;
 import com.eduplanner.ed_lib_common.entity.ImportError;
 import com.eduplanner.ed_ms_administracion.repository.ImportErrorRepository;
 import com.eduplanner.ed_ms_administracion.repository.ImportRepository;
 import com.opencsv.CSVReader;
-import com.opencsv.exceptions.CsvValidationException;
+import com.opencsv.exceptions.CsvException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -55,7 +57,7 @@ public class ImportService {
     /**
      * Procesa el CSV completo: crea el registro Import, recorre fila por fila
      */
-    public Integer importStudents(MultipartFile file) throws IOException, CsvValidationException {
+    public Integer importStudents(MultipartFile file) throws IOException, CsvException {
 
         /**
          * Crear el registro de importación 
@@ -156,4 +158,34 @@ public class ImportService {
         error.setError(errorMessage != null ? errorMessage : "Error desconocido al procesar la fila");
         importErrorRepository.save(error);
     }
+
+
+    /**
+     * Metodo para armar reporte
+     */
+    public ImportReportDTO getImportReport(Integer idImport) {
+    Import importRecord = importRepository.findById(idImport)
+            .orElseThrow(() -> new IllegalArgumentException("Importación no encontrada con id: " + idImport));
+
+    ImportReportDTO report = new ImportReportDTO();
+    report.setIdImport(importRecord.getIdImport());
+    report.setFileName(importRecord.getFileName());
+    report.setImportDate(importRecord.getImportDate());
+    report.setTotalRows(importRecord.getTotalRows());
+    report.setSuccessRows(importRecord.getSuccessRows());
+    report.setFailedRows(importRecord.getFailedRows());
+
+    List<ImportErrorDetailDTO> errors = importErrorRepository.findByIdImport(idImport).stream()
+            .map(e -> {
+                ImportErrorDetailDTO dto = new ImportErrorDetailDTO();
+                dto.setRowNumber(e.getRowNumber());
+                dto.setRowData(e.getRowData());
+                dto.setError(e.getError());
+                return dto;
+            })
+            .toList();
+    report.setErrors(errors);
+
+    return report;
+}
 }
