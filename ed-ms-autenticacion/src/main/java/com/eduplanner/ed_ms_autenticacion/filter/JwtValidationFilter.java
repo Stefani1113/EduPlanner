@@ -70,7 +70,7 @@ public class JwtValidationFilter extends OncePerRequestFilter {
         return path.startsWith("/eduplanner/auth/login")
                         || path.startsWith("/eduplanner/auth/forgot-password")
                         || path.startsWith("/eduplanner/auth/reset-password")
-                        || path.startsWith("/eduplanner/activation-account");
+                        || path.startsWith("/eduplanner/activation-account")
                         || path.startsWith("/eduplanner/internal/tokens");
     }
 
