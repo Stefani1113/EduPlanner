@@ -1,22 +1,29 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-
-export interface LoginRequest {
-  email: string;
-  password: string;
-}
+import { LoginRequest } from '../models/login-request';
+import { LoginResponse } from '../models/login-response';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
 
-  private apiUrl = 'http://localhost:8080/auth';
+  models(data: LoginRequest) {
+  return this.http.post<any>(
+    'http://localhost:8081/eduplanner/auth/login',
+    data
+  );
+}
+
+  private api = 'http://localhost:8081/eduplanner/auth';
 
   constructor(private http: HttpClient) {}
 
-  login(data: LoginRequest): Observable<any> {
-    return this.http.post(`${this.apiUrl}/login`, data);
+  login(email: string, password: string): Observable<any> {
+    return this.http.post<any>(`${this.api}/login`, {
+      email,
+      password
+    });
   }
 }
