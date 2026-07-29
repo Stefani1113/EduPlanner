@@ -14,6 +14,11 @@ import java.util.List;
 
 /**
  * RF 5 / RF 5.1 / RF 5.2 / RF 5.3 / RF 5.4 - Gestión de perfiles de docentes.
+ * Todos los endpoints requieren JWT válido (validado en JwtValidationFilter).
+ * POST, PUT, DELETE → solo ADMINISTRADOR.
+ * GET               → cualquier rol autenticado.
+ *
+ * Base: /eduplanner/docentes
  */
 @RestController
 @RequestMapping("/docentes")
