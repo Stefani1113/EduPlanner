@@ -6,4 +6,9 @@ import lombok.Data;
 public class UpdateRoleDTO {
     
     private Integer idRole;
+
+    /**
+     * Solo es obligatorio cuando el rol es administrador o directivo
+     */
+    private String position;
 }
