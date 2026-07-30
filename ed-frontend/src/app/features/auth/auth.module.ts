@@ -8,12 +8,13 @@ import { LoginPageComponent } from './pages/login-page/login-page.component';
 import { ForgotPasswordPageComponent } from './pages/forgot-password-page/forgot-password-page';
 import { ResetPasswordPageComponent } from './pages/reset-password-page/reset-password-page.component';
 import { ForgotPasswordFormComponent } from './components/forgot-password-form/forgot-password-form.component';
- 
+
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     AuthRoutingModule,
+
     LoginPageComponent,
     ForgotPasswordPageComponent,
     ResetPasswordPageComponent,
