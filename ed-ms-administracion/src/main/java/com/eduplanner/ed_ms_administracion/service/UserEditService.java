@@ -43,6 +43,10 @@ public class UserEditService {
             guardian.setGuardianPhone(dto.getGuardian().getGuardianPhone());
             guardianRepository.save(guardian);
         }
+
+        if (userRepository.existsByPhoneNumberAndIdUserNot(dto.getPhoneNumber(), idUser)) {
+            throw new IllegalArgumentException("El número de celular ya está registrado por otro usuario");
+        }
     }
 
     //Actualizar Staff (administrador, directivo)
@@ -55,7 +59,13 @@ public class UserEditService {
                 dto.getStratum(), dto.getPopulationType(), dto.getHealthRegime(), dto.getEps());
         user.setPosition(dto.getPosition());
         userRepository.save(user);
+
+        if (userRepository.existsByPhoneNumberAndIdUserNot(dto.getPhoneNumber(), idUser)) {
+            throw new IllegalArgumentException("El número de celular ya está registrado por otro usuario");
+        }
     }
+
+    
 
     //Actualizar rol
 
