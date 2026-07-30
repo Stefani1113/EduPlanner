@@ -12,6 +12,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -66,8 +68,8 @@ public class DocenteService {
 
     /** RF 5.2 - Listar todos los docentes activos */
     public List<DocenteResponseDTO> listarDocentes() {
-        return userRepository.findByRoleIdRole(ROL_DOCENTE).stream()
-                .filter(User::getStatus)
+        return userRepository.findByRoleIdRoleAndStatusTrue(ROL_DOCENTE)
+                .stream()
                 .map(this::toDTO)
                 .toList();
     }
@@ -85,16 +87,25 @@ public class DocenteService {
         log.info("Docente desactivado: id={}", id);
     }
 
-    /** RF 5.4 - Buscar por nombre, apellido, cargo o área profesional */
+    /** RF 5.4 - Buscar por nombre, apellido, cargo o títulos profesionales */
     public List<DocenteResponseDTO> buscarDocentes(String query) {
-        return userRepository.searchDocentes(query).stream()
+        List<User> porNombre   = userRepository.findByRoleIdRoleAndStatusTrueAndNameContainingIgnoreCase(ROL_DOCENTE, query);
+        List<User> porApellido = userRepository.findByRoleIdRoleAndStatusTrueAndSurnamesContainingIgnoreCase(ROL_DOCENTE, query);
+        List<User> porCargo    = userRepository.findByRoleIdRoleAndStatusTrueAndPositionContainingIgnoreCase(ROL_DOCENTE, query);
+        List<User> porTitulos  = userRepository.findByRoleIdRoleAndStatusTrueAndProfessionalDegreesContainingIgnoreCase(ROL_DOCENTE, query);
+
+        return Stream.of(porNombre, porApellido, porCargo, porTitulos)
+                .flatMap(List::stream)
+                .collect(Collectors.toMap(User::getIdUser, u -> u, (a, b) -> a))
+                .values().stream()
                 .map(this::toDTO)
                 .toList();
     }
 
     /** RF 5.4 - Filtrar por cargo/posición */
     public List<DocenteResponseDTO> filtrarPorCargo(String position) {
-        return userRepository.findDocentesByPosition(position).stream()
+        return userRepository.findByRoleIdRoleAndStatusTrueAndPositionContainingIgnoreCase(ROL_DOCENTE, position)
+                .stream()
                 .map(this::toDTO)
                 .toList();
     }
@@ -130,6 +141,7 @@ public class DocenteService {
         user.setBloodType(dto.getBloodType());
         user.setDisabilities(dto.getDisabilities());
         user.setStratum(dto.getStratum());
+        user.setPopulationType(dto.getPopulationType());
         user.setHealthRegime(dto.getHealthRegime());
         user.setEps(dto.getEps());
         user.setPosition(dto.getPosition());
