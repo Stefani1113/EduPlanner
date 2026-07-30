@@ -55,7 +55,7 @@ public class PasswordService {
                 "expirationMinutes", EXPIRATION_MINUTES
         );
 
-        String htmlContent = emailTemplateService.render("reset-password", variables);
+        String htmlContent = emailTemplateService.render("email/reset-password", variables);
         
         Notifier notificator = notifierFactory.create(NotificationType.EMAIL);
         notificator.send(
