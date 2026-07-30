@@ -17,7 +17,7 @@
 
 .menu {
   display: flex;
-  gap: 32px;
+  gap: 30px;
   font-family: 'Poppins', sans-serif;
   background: transparent;
 
@@ -50,7 +50,7 @@ a {
   text-decoration: none;
   font-size: 14px;
   font-weight: 600;
-  margin-left: 15px;
+  margin-left: 30px;
 
 .icon-small {
   height : 30px;
@@ -88,6 +88,7 @@ a {
 }
 
 .icon-menu {
+  margin-right: 5px;
   background: #53bb1b00;
   height: 20px;
 }
