@@ -50,7 +50,7 @@ public class PasswordService {
         String link = "http://localhost:4200/auth/reset-password?token=" + token;
 
         Map<String, Object> variables = Map.of(
-                "nombre", user.getName(),
+                "name", user.getName(),
                 "resetLink", link,
                 "expirationMinutes", EXPIRATION_MINUTES
         );
