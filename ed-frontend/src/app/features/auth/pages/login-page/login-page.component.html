@@ -1,0 +1,95 @@
+<header class="top-login">
+
+<div class="brand-login">
+  <img src="assets/img/Logo-nav.png" alt="EduPlanner">
+</div>
+
+<div class="back-login">
+  <a routerLink="/inicio">
+    <img src="assets/img/right-arrow.png" alt="">
+    Volver al Inicio
+  </a>
+</div> 
+</header>
+
+<section class="login-screen">
+  <div class="login-left">
+    <img class="main-logo" src="assets/img/Logo-nav.png" alt="EduPlanner">
+  </div>
+
+  <div class="login-right">
+    <div class="login-box">
+
+      <h1>INICIAR SESIÓN</h1>
+      <p>
+        Ingresa tus credenciales institucionales para continuar
+      </p>
+
+      <div class="field-login" [class.error]="emailTouched && !email">
+        <label>Correo Institucional</label>
+
+        <input
+          type="email"
+          [(ngModel)]="email"
+          placeholder="EduPlanner@gmail.com"
+          (blur)="emailTouched = true">
+
+        <div class="error-message" *ngIf="emailTouched && !email">
+          <img src="assets/img/error.png" alt="">
+          <span>El correo institucional es obligatorio.</span>
+        </div>
+
+      </div>
+
+      <div class="field-login has-eye" [class.error]="passwordTouched && !password">
+
+        <label>Contraseña</label>
+
+        <div class="password-login">
+          <input
+            [type]="showPassword ? 'text' : 'password'"
+            [(ngModel)]="password"
+            placeholder="••••••••••"
+            (blur)="passwordTouched = true">
+          <img
+            [src]="showPassword ? 'assets/img/eye-off.png' : 'assets/img/eye.png'"
+            alt="Mostrar contraseña"
+            (click)="togglePassword()">
+        </div>
+
+        <div class="error-message" *ngIf="passwordTouched && !password">
+          <img src="assets/img/error.png" alt="">
+          <span>La contraseña es obligatoria.</span>
+        </div>
+      </div>
+      <div class="error-message server-error" *ngIf="serverError">
+        <img src="assets/img/error.png" alt="">
+        <span>{{ serverError }}</span>
+      </div>
+      <a (click)="irForgotPassword()" class="forgot-login">
+        ¿Olvidaste tu contraseña?
+      </a>
+      <div class="divider-login"></div>
+
+      <button
+        type="button"
+        class="button-login"
+        [disabled]="loading"
+        (click)="login()">
+        <span *ngIf="!loading">Iniciar Sesión</span>
+        <span *ngIf="loading">Ingresando...</span>
+        <img *ngIf="!loading" src="assets/img/arrow-right.png" alt="">
+      </button>
+
+      <p class="support-login">
+        ¿Problemas para acceder?
+        <a href="#">Contactar soporte técnico.</a>
+      </p>
+    </div>
+  </div>
+
+</section>
+
+<footer class="footer-login">
+  <img src="assets/img/logo-footer.png" alt="EduPlanner">
+</footer>
