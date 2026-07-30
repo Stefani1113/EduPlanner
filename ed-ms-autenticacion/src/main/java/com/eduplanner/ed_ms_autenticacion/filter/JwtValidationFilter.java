@@ -48,7 +48,6 @@ public class JwtValidationFilter extends OncePerRequestFilter {
 
         try {
             if (jwtService.isTokenValid(token)) {
-                request.setAttribute("email",     jwtService.extractEmail(token));
                 request.setAttribute("idUser",  jwtService.extractIdUser(token));
                 request.setAttribute("idRole",      jwtService.extractIdRole(token));
                 filterChain.doFilter(request, response);
