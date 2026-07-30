@@ -45,10 +45,6 @@ public class JwtValidatorService {
         return resolver.apply(claims);
     }
 
-    public String extractEmail(String token) {
-        return extractClaim(token, Claims::getSubject);
-    }
-
     public Long extractIdUser(String token) {
         return extractClaim(token, c -> c.get("idUser", Long.class));
     }
