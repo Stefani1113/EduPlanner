@@ -3,10 +3,11 @@ package com.eduplanner.ed_ms_administracion.repository;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import com.eduplanner.ed_lib_common.entity.User;
+
+ @Repository
 
 public interface UserRepository extends JpaRepository<User, Integer> {
     boolean existsByEmail(String email);
@@ -14,22 +15,20 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     List<User> findByRoleIdRole(Integer idRole);
     List<User> findByNameContainingIgnoreCase(String name);
 
-      @Query("""
-        SELECT u FROM User u
-      WHERE u.role.idRole = 3
-          AND u.status = true
-          AND (
-            LOWER(u.name)               LIKE LOWER(CONCAT('%', :q, '%')) OR
-            LOWER(u.surnames)           LIKE LOWER(CONCAT('%', :q, '%')) OR
-            LOWER(u.position)           LIKE LOWER(CONCAT('%', :q, '%')) OR
-            LOWER(u.professionalDegrees) LIKE LOWER(CONCAT('%', :q, '%'))
-          )
-    """)
-    List<User> searchDocentes(@Param("q") String query);
 
-    /** RF 5.4 - Filtrar docentes activos por cargo/posición */
-    @Query("SELECT u FROM User u WHERE u.role.idRole = 3 AND u.status = true AND LOWER(u.position) LIKE LOWER(CONCAT('%', :position, '%'))")
-    List<User> findDocentesByPosition(@Param("position") String position);
+
+    List<User> findByRoleIdRoleAndStatusTrue(Integer idRole);  
+    List<User> findByRoleIdRoleAndStatusTrueAndNameContainingIgnoreCase(Integer idRole, String name);
+
+    // RF 5.4 - buscar por apellido
+    List<User> findByRoleIdRoleAndStatusTrueAndSurnamesContainingIgnoreCase(Integer idRole, String surnames);
+
+    // RF 5.4 - buscar por cargo
+    List<User> findByRoleIdRoleAndStatusTrueAndPositionContainingIgnoreCase(Integer idRole, String position);
+
+    // RF 5.4 - buscar por títulos profesionales
+    List<User> findByRoleIdRoleAndStatusTrueAndProfessionalDegreesContainingIgnoreCase(Integer idRole, String degrees);
 }
+
 
 
