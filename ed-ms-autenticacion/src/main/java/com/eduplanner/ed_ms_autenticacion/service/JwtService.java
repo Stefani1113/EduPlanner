@@ -9,6 +9,9 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.eduplanner.ed_lib_common.entity.Role;
+import com.eduplanner.ed_lib_common.enums.RolEnum;
+
 import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.Map;
@@ -29,10 +32,11 @@ public class JwtService {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String generateToken(int idUser, int idRole, String email) {
+    public String generateToken(int idUser, int idRole) {
+        String roleName = RolEnum.fromId(idRole).name(); 
         return Jwts.builder()
-                .claims(Map.of("idUser", idUser, "idRole", idRole))
-                .subject(email)
+                .claims(Map.of("role", roleName))
+                .subject(String.valueOf(idUser))
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + tokenExpiration))
                 .signWith(getSignKey())
@@ -57,10 +61,6 @@ public class JwtService {
         return resolver.apply(claims);
     }
 
-    public String extractEmail(String token) {
-        return extractClaim(token, Claims::getSubject);
-    }
-
     public Long extractIdUser(String token) {
         return extractClaim(token, c -> c.get("idUser", Long.class));
     }
@@ -78,8 +78,7 @@ public class JwtService {
                     .getPayload();
             return generateToken(
                     claims.get("idUser", Integer.class),
-                    claims.get("idRole", Integer.class),
-                    claims.getSubject()
+                    claims.get("idRole", Integer.class)
             );
         } catch (ExpiredJwtException e) {
             throw new Exception("Token expirado: " + e.getMessage());
