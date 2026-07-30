@@ -1,4 +1,4 @@
-package com.eduplanner.ed_ms_administracion.config;
+package com.eduplanner.ed_ms_administracion.client;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
