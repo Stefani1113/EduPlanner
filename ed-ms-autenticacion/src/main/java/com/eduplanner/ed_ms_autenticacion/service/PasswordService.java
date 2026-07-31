@@ -1,5 +1,6 @@
 package com.eduplanner.ed_ms_autenticacion.service;
 
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -10,6 +11,7 @@ import com.eduplanner.ed_lib_common.dto.TokenPasswordDTO;
 import com.eduplanner.ed_lib_common.entity.User;
 import com.eduplanner.ed_lib_common.notifications.NotificationType;
 import com.eduplanner.ed_lib_common.notifications.Notifier;
+import com.eduplanner.ed_ms_autenticacion.notifications.EmailTemplateService;
 import com.eduplanner.ed_ms_autenticacion.notifications.NotifierFactory;
 import com.eduplanner.ed_ms_autenticacion.repository.UserRepository;
 
@@ -23,7 +25,11 @@ public class PasswordService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;                 
-    private final NotifierFactory notifierFactory;  
+    private final NotifierFactory notifierFactory;
+    private final EmailTemplateService emailTemplateService;
+
+
+    private static final int EXPIRATION_MINUTES = 10;
 
     /**
      * Recuperación de contraseña
@@ -38,14 +44,24 @@ public class PasswordService {
             return "Si el correo está registrado, se envió un enlace de recuperación";
         }
 
-        String token = jwtService.generatePasswordResetToken(request.getEmail());
-        String enlace = "http://localhost:4200/reset-password?token=" + token;
+        User user = userFound.get();
 
-        Notifier notificador = notifierFactory.create(NotificationType.EMAIL);
-        notificador.send(
-                request.getEmail(),
-                "Recuperación de contraseña",
-                "Haz clic para restablecer tu contraseña:\n" + enlace + "\n\nExpira en 15 minutos."
+        String token = jwtService.generatePasswordResetToken(request.getEmail());
+        String link = "http://localhost:4200/auth/reset-password?token=" + token;
+
+        Map<String, Object> variables = Map.of(
+                "name", user.getName(),
+                "resetLink", link,
+                "expirationMinutes", EXPIRATION_MINUTES
+        );
+
+        String htmlContent = emailTemplateService.render("email/reset-password", variables);
+        
+        Notifier notificator = notifierFactory.create(NotificationType.EMAIL);
+        notificator.send(
+            request.getEmail(),
+            "Recuperación de contraseña",
+            htmlContent
         );
 
         return "Si el correo está registrado, se envió un enlace de recuperación";
