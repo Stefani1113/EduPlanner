@@ -11,7 +11,6 @@ import java.util.List;
 public class GatewayConfig {
 
     
-    
     private List<String> publicPaths;
 
     public List<String> getPublicPaths() {
