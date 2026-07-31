@@ -9,6 +9,8 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.eduplanner.ed_lib_common.enums.RolEnum;
+
 import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.Map;
@@ -29,10 +31,11 @@ public class JwtService {
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public String generateToken(int idUser, int idRole, String email) {
+    public String generateToken(int idUser, int idRole) {
+        String roleName = RolEnum.fromId(idRole).name(); 
         return Jwts.builder()
-                .claims(Map.of("idUser", idUser, "idRole", idRole))
-                .subject(email)
+                .claims(Map.of("role", roleName))
+                .subject(String.valueOf(idUser))
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + tokenExpiration))
                 .signWith(getSignKey())
@@ -57,16 +60,12 @@ public class JwtService {
         return resolver.apply(claims);
     }
 
-    public String extractEmail(String token) {
-        return extractClaim(token, Claims::getSubject);
-    }
-
     public Long extractIdUser(String token) {
-        return extractClaim(token, c -> c.get("idUser", Long.class));
+        return extractClaim(token, c -> Long.valueOf(c.getSubject()));
     }
 
-    public Integer extractIdRole(String token) {
-        return extractClaim(token, c -> c.get("idRole", Integer.class));
+    public String extractIdRole(String token) {
+        return extractClaim(token, c -> c.get("role", String.class));
     }
 
     public String refreshToken(String token) throws Exception {
@@ -76,10 +75,13 @@ public class JwtService {
                     .build()
                     .parseSignedClaims(token)
                     .getPayload();
+
+            String roleName = claims.get("role", String.class);
+            Integer idRole = RolEnum.valueOf(roleName).getId();
+
             return generateToken(
-                    claims.get("idUser", Integer.class),
-                    claims.get("idRole", Integer.class),
-                    claims.getSubject()
+                    Integer.parseInt(claims.getSubject()),
+                    idRole
             );
         } catch (ExpiredJwtException e) {
             throw new Exception("Token expirado: " + e.getMessage());
