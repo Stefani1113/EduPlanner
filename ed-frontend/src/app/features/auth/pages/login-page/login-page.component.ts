@@ -62,11 +62,11 @@ export class LoginPageComponent {
         console.error(error);
 
         if (error.status === 401 || error.status === 403) {
-          this.serverError = 'Correo o contraseña incorrectos.';
+          this.serverError = '• Correo o contraseña incorrectos.';
         } else if (error.status === 0) {
-          this.serverError = 'No se pudo conectar con el servidor. Verifica tu conexión.';
+          this.serverError = '• No se pudo conectar con el servidor. Verifica tu conexión.';
         } else {
-          this.serverError = 'Ocurrió un error. Intenta de nuevo más tarde.';
+          this.serverError = '• Ocurrió un error. Intenta de nuevo más tarde.';
         }
 
       }
