@@ -71,15 +71,18 @@
   align-items: center;
   padding: 30px 32px;
   background: transparent;
-  overflow-y: auto; 
+  overflow-y: hidden; 
 }
 
 .login-box {
+  margin-top: 170px;
+  margin-bottom: 150px;
+  margin-left: 100px;
   width: 100%;
   max-width: 460px;
   background: #242424;
   border-radius: 14px;
-  padding: 52px 48px 44px;
+  padding: 32px 38px 13px;
 }
 
 .login-box h1 {
