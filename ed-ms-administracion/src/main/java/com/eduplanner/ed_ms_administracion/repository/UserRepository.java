@@ -7,7 +7,7 @@ import org.springframework.stereotype.Repository;
 
 import com.eduplanner.ed_lib_common.entity.User;
 
- @Repository
+
 
 public interface UserRepository extends JpaRepository<User, Integer> {
     boolean existsByEmail(String email);
