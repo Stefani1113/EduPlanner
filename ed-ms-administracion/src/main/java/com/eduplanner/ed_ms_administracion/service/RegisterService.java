@@ -48,7 +48,7 @@ public class RegisterService {
 
     @Transactional
     public void registerStudentInternal(RegisterStudentDTO dto, Integer idImport) {
-        validateNotDuplicated(dto.getEmail(), dto.getDocument());
+        validateNotDuplicated(dto.getEmail(), dto.getDocument(), dto.getPhoneNumber());
 
         Role role = getRoleOrThrow(RolEnum.ESTUDIANTE.getId());
 
@@ -83,7 +83,7 @@ public class RegisterService {
     // REGISTRO DE ADMINISTRADOR / DIRECTIVO
     @Transactional
     public void registerStaff(RegisterStaffDTO dto) {
-        validateNotDuplicated(dto.getEmail(), dto.getDocument());
+        validateNotDuplicated(dto.getEmail(), dto.getDocument(), dto.getPhoneNumber());
 
         // idRole viene del DTO porque este endpoint cubre 2 roles distintos
         if (!dto.getIdRole().equals(RolEnum.ADMINISTRADOR.getId())
@@ -108,12 +108,15 @@ public class RegisterService {
     }
 
 
-    private void validateNotDuplicated(String email, String document) {
+    private void validateNotDuplicated(String email, String document, String phoneNumber) {
         if (userRepository.existsByEmail(email)) {
             throw new IllegalArgumentException("El correo ya está registrado");
         }
         if (userRepository.existsByDocument(document)) {
             throw new IllegalArgumentException("El documento ya está registrado");
+        }
+        if (userRepository.existsByPhoneNumber(phoneNumber)) {
+            throw new IllegalArgumentException("El número de celular ya está registrado por otro usuario");
         }
     }
 

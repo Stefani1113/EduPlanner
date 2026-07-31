@@ -2,6 +2,8 @@ package com.eduplanner.ed_lib_common.dto;
 
 import java.time.LocalDate;
 
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
 
 /**
@@ -10,11 +12,13 @@ import lombok.Data;
  */
 @Data
 public class RegisterStudentDTO {
-    
+
     private String name;
 
     private String surnames;
 
+    @NotBlank(message = "El correo es obligatorio")
+    @Email(message = "El correo no tiene un formato válido")
     private String email;
 
     private String phoneNumber;
