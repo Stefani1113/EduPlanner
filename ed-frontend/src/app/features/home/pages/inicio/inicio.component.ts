@@ -20,23 +20,23 @@ closeMenu() {
 
 preguntasFrecuentes = [
   {
-    texto: '¿Los pilares fundamentales de nuestro sistema institución, permitirán mejorar la organización y la gestión de los procesos dentro de la institución?',
-    respuesta: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Nemo, excepturi nesciunt natus iste culpa quisquam voluptas facere perspiciatis dolorem alias voluptates enim fuga amet, quaerat dolore repellendus deleniti necessitatibus odit obcaecati! Sint officia tempore assumenda porro incidunt quos vel voluptatum.',
+    texto: '¿Qué problema busca solucionar EduPlanner?',
+    respuesta: 'EduPlanner busca optimizar la gestión académica de las instituciones educativas, automatizando la generación de horarios, el control de asistencia y la organización de la información institucional en una sola plataforma.',
     abierta: false
   },
   {
-    texto: '¿Los pilares fundamentales de nuestro sistema institución, permitirán mejorar la organización y la gestión de los procesos dentro de la institución?',
-    respuesta: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Nemo, excepturi nesciunt natus iste culpa quisquam voluptas facere perspiciatis dolorem alias voluptates enim fuga amet, quaerat dolore repellendus deleniti necessitatibus odit obcaecati! Sint officia tempore assumenda porro incidunt quos vel voluptatum.',
+    texto: '¿Cómo utiliza EduPlanner la Inteligencia Artificial?',
+    respuesta: 'EduPlanner utiliza inteligencia artificial para encontrar las combinaciones más eficientes al generar horarios académicos, reduciendo conflictos de espacios, docentes y grupos, y optimizando el uso de los recursos institucionales.',
     abierta: false
   },
   {
-    texto: '¿Los pilares fundamentales de nuestro sistema institución, permitirán mejorar la organización y la gestión de los procesos dentro de la institución?',
-    respuesta: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Nemo, excepturi nesciunt natus iste culpa quisquam voluptas facere perspiciatis dolorem alias voluptates enim fuga amet, quaerat dolore repellendus deleniti necessitatibus odit obcaecati! Sint officia tempore assumenda porro incidunt quos vel voluptatum.',
+    texto: '¿EduPlanner se encarga de toda la gestión de una institución educativa?',
+    respuesta: 'EduPlanner centraliza los procesos más importantes, como la gestión de horarios, asistencia, notas y reportes, ofreciendo una solución integral y accesible para toda la comunidad educativa.',
     abierta: false
   },
   {
-    texto: '¿Los pilares fundamentales de nuestro sistema institución, permitirán mejorar la organización y la gestión de los procesos dentro de la institución?',
-    respuesta: 'Lorem ipsum dolor sit amet consectetur adipisicing elit. Nemo, excepturi nesciunt natus iste culpa quisquam voluptas facere perspiciatis dolorem alias voluptates enim fuga amet, quaerat dolore repellendus deleniti necessitatibus odit obcaecati! Sint officia tempore assumenda porro incidunt quos vel voluptatum.',
+    texto: '¿Qué beneficios ofrece EduPlanner frente a realizarlo manualmente?',
+    respuesta: 'Ahorra tiempo, reduce errores humanos, centraliza la información académica en un solo lugar y facilita el acceso, la organización y la consulta de datos para toda la institución.',
     abierta: false
   }
 ];
