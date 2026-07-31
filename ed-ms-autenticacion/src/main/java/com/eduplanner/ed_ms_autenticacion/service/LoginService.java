@@ -57,16 +57,12 @@ public class LoginService {
 
         String token = jwtService.generateToken(
                 user.getIdUser(),
-                user.getRole().getIdRole(),
-                user.getEmail()
+                user.getRole().getIdRole()
         );
 
         LoginResponseDTO data = new LoginResponseDTO();
         data.setToken(token);
         data.setIdUser(user.getIdUser());
-        data.setName(user.getName());
-        data.setLastName(user.getSurnames());
-        data.setEmail(user.getEmail());
         data.setRole(RolEnum.fromId(user.getRole().getIdRole()).name());
 
         response.setMessage("Inicio de sesión exitoso");
