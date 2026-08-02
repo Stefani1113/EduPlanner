@@ -1,0 +1,141 @@
+<div class="modal-overlay" (click)="onOverlayClick($event)">
+  <div class="modal">
+
+    <div class="modal-header">
+      <h2>{{ tipo === 'Docente' ? 'Docentes' : 'Estudiante' }}</h2>
+
+      <div class="foto-wrapper">
+        <img [src]="fotoPreview ?? 'assets/img/profile.png'" alt="Foto del usuario">
+      </div>
+
+      <input #fotoInput type="file" accept="image/*" hidden (change)="onFotoSeleccionada($event)">
+      <button type="button" class="btn-foto" (click)="seleccionarFoto(fotoInput)">Fotos</button>
+    </div>
+
+    <form *ngIf="tipo === 'Docente'" [formGroup]="formDocente" class="modal-form" (ngSubmit)="guardarUsuario()">
+
+      <div class="grid-2">
+
+        <div class="field">
+          <label>Nombres completo</label>
+          <input type="text" formControlName="nombreCompleto" placeholder="Ej: Ana María Pérez">
+        </div>
+
+        <div class="field">
+          <label>ID/Cédula</label>
+          <input type="text" formControlName="cedula" placeholder="Ej: 123456709">
+        </div>
+
+        <div class="field">
+          <label>Área académica</label>
+          <select formControlName="areaAcademica">
+            <option value="" disabled>Seleccionar área</option>
+            <option *ngFor="let area of areasAcademicas" [value]="area">{{ area }}</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Estado</label>
+          <select formControlName="estado">
+            <option value="Activo">Activo</option>
+            <option value="Inactivo">Inactivo</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Correo electrónico</label>
+          <input type="email" formControlName="correo" placeholder="correo@institucion.edu">
+        </div>
+
+        <div class="field">
+          <label>Teléfono</label>
+          <input type="text" formControlName="telefono" placeholder="Ej: 123456787">
+        </div>
+
+      </div>
+
+      <div class="field full">
+        <label>Asignaturas (separadas por comas)</label>
+        <input type="text" formControlName="asignaturas" placeholder="Ej: Biología, química, ciencias naturales">
+      </div>
+
+      <div class="field full">
+        <label>Título profesional</label>
+        <div class="titulo-row">
+          <input type="text" [(ngModel)]="tituloNuevo" [ngModelOptions]="{standalone: true}" placeholder="Título profesional">
+          <button type="button" class="btn-agregar" (click)="agregarTitulo()">+ Agregar</button>
+        </div>
+
+        <div class="titulos-lista" *ngIf="titulosProfesionales.length">
+          <span class="titulo-chip" *ngFor="let titulo of titulosProfesionales">
+            {{ titulo }}
+            <button type="button" (click)="quitarTitulo(titulo)">×</button>
+          </span>
+        </div>
+      </div>
+
+      <div class="field full">
+        <label>Observación</label>
+        <textarea formControlName="observacion" placeholder="Nota adicional..."></textarea>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-cancelar" (click)="cancelar()">Cancelar</button>
+        <button type="submit" class="btn-guardar">Guardar docente</button>
+      </div>
+
+    </form>
+
+    <form *ngIf="tipo === 'Estudiante'" [formGroup]="formEstudiante" class="modal-form" (ngSubmit)="guardarUsuario()">
+
+      <div class="grid-2">
+
+        <div class="field">
+          <label>Nombres</label>
+          <input type="text" formControlName="nombres" placeholder="Ej: Ana María">
+        </div>
+
+        <div class="field">
+          <label>Apellidos</label>
+          <input type="text" formControlName="apellidos" placeholder="Ej: Pérez Gómez">
+        </div>
+
+        <div class="field">
+          <label>Fecha de nacimiento</label>
+          <input type="date" formControlName="fechaNacimiento">
+        </div>
+
+        <div class="field">
+          <label>Grado/Grupo</label>
+          <select formControlName="gradoGrupo">
+            <option value="" disabled>Seleccionar grado</option>
+            <option *ngFor="let grado of gradosGrupo" [value]="grado">{{ grado }}</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Correo electrónico</label>
+          <input type="email" formControlName="correo" placeholder="correo@institucion.edu">
+        </div>
+
+        <div class="field">
+          <label>Teléfono</label>
+          <input type="text" formControlName="telefono" placeholder="Ej: 123456787">
+        </div>
+
+      </div>
+
+      <div class="field full">
+        <label>Contraseña</label>
+        <input type="password" formControlName="contrasena" placeholder="xxxxxxxxxx">
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-cancelar" (click)="cancelar()">Cancelar</button>
+        <button type="submit" class="btn-guardar">Guardar estudiante</button>
+      </div>
+
+    </form>
+
+  </div>
+</div>
