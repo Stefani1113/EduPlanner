@@ -48,12 +48,11 @@ export class LoginPageComponent {
     this.authService.login(this.email, this.password).subscribe({
 
       next: (response: any) => {
-
+        
         this.loading = false;
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('usuario', JSON.stringify(response.data));
-        this.router.navigate(['/dashboard']);
-
+        this.router.navigate(['/admin/dashboard']); // antes decía '/dashboard'
       },
 
       error: (error) => {

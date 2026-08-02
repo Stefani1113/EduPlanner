@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { AuthService } from '../../../auth/services/auth.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -9,4 +10,15 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.scss']
 })
-export class SidebarComponent {}
+export class SidebarComponent {
+
+  constructor(
+    private authService: AuthService,
+    private router: Router
+  ) {}
+
+  cerrarSesion(): void {
+    this.authService.logout();
+    this.router.navigate(['/auth']);
+  }
+}
