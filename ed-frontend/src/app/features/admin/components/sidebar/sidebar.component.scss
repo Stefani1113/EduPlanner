@@ -62,15 +62,13 @@
 }
 
 .menu-item:hover {
-  color: #4ed10b;
   background: rgba(78, 209, 11, 0.07);
 }
 
 .menu-item.active {
   color: #ffffff;
   background: rgba(78, 209, 11, 0.18);
-  box-shadow:
-    inset 3px 0 0 #4ed10b;
+
 }
 
 .menu-item.active::before {
@@ -79,9 +77,8 @@
   left: 0;
   top: 50%;
   width: 3px;
-  height: 20px;
+  height: 10px;
   transform: translateY(-50%);
-  background: #4ed10b;
   border-radius: 0 4px 4px 0;
 }
 
