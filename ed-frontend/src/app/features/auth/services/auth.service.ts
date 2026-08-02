@@ -9,13 +9,6 @@ import { LoginResponse } from '../models/login-response';
 })
 export class AuthService {
 
-  models(data: LoginRequest) {
-  return this.http.post<any>(
-    'http://localhost:8081/eduplanner/auth/login',
-    data
-  );
-}
-
   private api = 'http://localhost:8081/eduplanner/auth';
 
   constructor(private http: HttpClient) {}
@@ -25,5 +18,10 @@ export class AuthService {
       email,
       password
     });
+  }
+
+  logout(): void {
+    localStorage.removeItem('token');
+    localStorage.removeItem('usuario');
   }
 }
