@@ -1,12 +1,12 @@
+
 .sidebar {
   position: relative;
-  width: 230px;
+  width: 195px;
   height: calc(100% - 24px);
   display: flex;
   border-radius: 30px;
   margin-left: 40px;
   margin-top: 24px;
-  margin-bottom: 24px;
   flex-direction: column;
   justify-content: space-between;
   overflow: hidden;
@@ -47,7 +47,7 @@
   width: calc(100% - 30px);
   min-height: 38px;
   margin-bottom: 2px;
-  padding: 0 5px 0 120px;
+  padding: 0 5px 0 90px;
   display: flex;
   align-items: center;
   color: #e7e7e7;
