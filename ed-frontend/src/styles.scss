@@ -1,15 +1,19 @@
 *{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    background-color: #1B1C1C;
-    font-family: 'Poppins', sans-serif;
-
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
 }
-.body-login{
-    display:flex;
-    justify-content:center;
-    align-items:flex-start;
-    gap:120px;
-    font-family: 'Poppins', sans-serif;
+
+html, body {
+  min-height: 100%;
+  background-color: #1B1C1C;
+}
+
+.body-login {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 120px;
+  font-family: 'Poppins', sans-serif;
 }

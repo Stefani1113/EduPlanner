@@ -8,7 +8,9 @@ import com.eduplanner.ed_lib_common.entity.Import;
 import com.eduplanner.ed_lib_common.entity.ImportError;
 import com.eduplanner.ed_ms_administracion.repository.ImportErrorRepository;
 import com.eduplanner.ed_ms_administracion.repository.ImportRepository;
+import com.opencsv.CSVParserBuilder;
 import com.opencsv.CSVReader;
+import com.opencsv.CSVReaderBuilder;
 import com.opencsv.exceptions.CsvException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -74,10 +76,13 @@ public class ImportService {
         int successRows = 0;
         int failedRows = 0;
 
-        try (Reader reader = new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8);
-            CSVReader csvReader = new CSVReader(reader)) {
+        // COnfiguración con excel en español 
+        try (Reader reader = new InputStreamReader(file.getInputStream(), StandardCharsets.ISO_8859_1);
+            CSVReader csvReader = new CSVReaderBuilder(reader)
+                .withCSVParser(new CSVParserBuilder().withSeparator(';').build())
+                .build()) {
 
-            List<String[]> allRows = csvReader.readAll();
+    List<String[]> allRows = csvReader.readAll();
 
             // La primera fila son encabezados, se salta
             for (int i = 1; i < allRows.size(); i++) {
