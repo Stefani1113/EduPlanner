@@ -1,0 +1,42 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden;
+}
+
+header.navar {
+  flex-shrink: 0;
+}
+
+.admin-container {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  width: 100%;
+  overflow: hidden;
+
+  background: #161616;
+  background-image: radial-gradient(rgba(255, 255, 255, .08) 1px, transparent 1px);
+  background-size: 18px 18px;
+}
+
+.sidebar-slot {
+  flex-shrink: 0;
+  height: 100%;
+}
+
+main.admin-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.admin-page {
+  flex: 1;
+  overflow: auto;
+  padding: 25px 35px;
+}

@@ -11,6 +11,7 @@ import com.eduplanner.ed_ms_administracion.client.AuthServiceClient;
 
 import com.eduplanner.ed_ms_administracion.notifications.Notifierfactory;
 import com.eduplanner.ed_ms_administracion.repository.GuardianRepository;
+import com.eduplanner.ed_ms_administracion.repository.ImportRepository;
 import com.eduplanner.ed_ms_administracion.repository.RoleRepository;
 import com.eduplanner.ed_ms_administracion.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -31,6 +32,7 @@ public class RegisterService {
     private final PasswordEncoder passwordEncoder;
     private final AuthServiceClient authServiceClient;
     private final Notifierfactory notifierFactory;
+    private final ImportRepository importRepository;
 
     @Value("${institution.id}")
     private Integer institutionId;
@@ -41,7 +43,12 @@ public class RegisterService {
     // REGISTRO DE ESTUDIANTE
     @Transactional
     public void registerStudent(RegisterStudentDTO dto) {
-        validateNotDuplicated(dto.getEmail(), dto.getDocument());
+        registerStudentInternal(dto, null);
+    }
+
+    @Transactional
+    public void registerStudentInternal(RegisterStudentDTO dto, Integer idImport) {
+        validateNotDuplicated(dto.getEmail(), dto.getDocument(), dto.getPhoneNumber());
 
         Role role = getRoleOrThrow(RolEnum.ESTUDIANTE.getId());
 
@@ -54,7 +61,12 @@ public class RegisterService {
         );
         user.setPosition("Estudiante");
         user.setRole(role);
-        // idImport queda null: solo se llena cuando el registro viene de una importación CSV
+        
+        //Si viene de una importación, se asocia el resgistro Import correspondiente;
+        //Se el resgitro es manual queda null
+        if (idImport != null) {
+            user.setImportEntity(importRepository.getReferenceById(idImport));
+        }
 
         userRepository.save(user);
 
@@ -71,7 +83,7 @@ public class RegisterService {
     // REGISTRO DE ADMINISTRADOR / DIRECTIVO
     @Transactional
     public void registerStaff(RegisterStaffDTO dto) {
-        validateNotDuplicated(dto.getEmail(), dto.getDocument());
+        validateNotDuplicated(dto.getEmail(), dto.getDocument(), dto.getPhoneNumber());
 
         // idRole viene del DTO porque este endpoint cubre 2 roles distintos
         if (!dto.getIdRole().equals(RolEnum.ADMINISTRADOR.getId())
@@ -96,12 +108,15 @@ public class RegisterService {
     }
 
 
-    private void validateNotDuplicated(String email, String document) {
+    private void validateNotDuplicated(String email, String document, String phoneNumber) {
         if (userRepository.existsByEmail(email)) {
             throw new IllegalArgumentException("El correo ya está registrado");
         }
         if (userRepository.existsByDocument(document)) {
             throw new IllegalArgumentException("El documento ya está registrado");
+        }
+        if (userRepository.existsByPhoneNumber(phoneNumber)) {
+            throw new IllegalArgumentException("El número de celular ya está registrado por otro usuario");
         }
     }
 

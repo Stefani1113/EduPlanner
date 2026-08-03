@@ -4,12 +4,17 @@ import com.eduplanner.ed_lib_common.dto.*;
 import com.eduplanner.ed_lib_common.entity.Guardian;
 import com.eduplanner.ed_lib_common.entity.Role;
 import com.eduplanner.ed_lib_common.entity.User;
+import com.eduplanner.ed_lib_common.enums.RolEnum;
 import com.eduplanner.ed_ms_administracion.repository.GuardianRepository;
 import com.eduplanner.ed_ms_administracion.repository.RoleRepository;
 import com.eduplanner.ed_ms_administracion.repository.UserRepository;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+
+import java.util.Map;
+import java.util.Set;
+
 import org.springframework.stereotype.Service;
 
 @Service
@@ -38,6 +43,10 @@ public class UserEditService {
             guardian.setGuardianPhone(dto.getGuardian().getGuardianPhone());
             guardianRepository.save(guardian);
         }
+
+        if (userRepository.existsByPhoneNumberAndIdUserNot(dto.getPhoneNumber(), idUser)) {
+            throw new IllegalArgumentException("El número de celular ya está registrado por otro usuario");
+        }
     }
 
     //Actualizar Staff (administrador, directivo)
@@ -50,15 +59,56 @@ public class UserEditService {
                 dto.getStratum(), dto.getPopulationType(), dto.getHealthRegime(), dto.getEps());
         user.setPosition(dto.getPosition());
         userRepository.save(user);
+
+        if (userRepository.existsByPhoneNumberAndIdUserNot(dto.getPhoneNumber(), idUser)) {
+            throw new IllegalArgumentException("El número de celular ya está registrado por otro usuario");
+        }
     }
 
+    
+
     //Actualizar rol
+
+    /**
+     * Restricicones de cambio de rol
+     */
+    private static final Map<Integer, Set<Integer>> ALLOWED_ROLE_TRANSITIONS = Map.of(
+        RolEnum.ESTUDIANTE.getId(), Set.of(),
+        RolEnum.DOCENTE.getId(), Set.of(RolEnum.ADMINISTRADOR.getId(), RolEnum.DIRECTIVO.getId()),
+        RolEnum.ADMINISTRADOR.getId(), Set.of(RolEnum.DIRECTIVO.getId()),
+        RolEnum.DIRECTIVO.getId(), Set.of(RolEnum.ADMINISTRADOR.getId())
+    );
+
     @Transactional
     public void updateRole(Integer idUser, UpdateRoleDTO dto) {
         User user = getUserOrThrow(idUser);
-        Role role = roleRepository.findById(dto.getIdRole())
-                .orElseThrow(() -> new IllegalArgumentException("Rol no válido: " + dto.getIdRole()));
-        user.setRole(role);
+        Integer currentRoleId = user.getRole().getIdRole();
+        Integer targetRoleId = dto.getIdRole();
+
+        if (currentRoleId.equals(targetRoleId)) {
+            throw new IllegalArgumentException("El usuario ya tiene ese rol");
+        }
+
+        Set<Integer> allowedTargets = ALLOWED_ROLE_TRANSITIONS.getOrDefault(currentRoleId, Set.of());
+        if (!allowedTargets.contains(targetRoleId)) {
+            throw new IllegalArgumentException( "No se permite cambiar del rol actual al rol solicitado");
+        }
+
+        boolean targetIsStaff = targetRoleId.equals(RolEnum.ADMINISTRADOR.getId())
+                || targetRoleId.equals(RolEnum.DIRECTIVO.getId());
+
+        if (targetIsStaff && (dto.getPosition() == null || dto.getPosition().isBlank())) {
+            throw new IllegalArgumentException( "Debe indicar el nuevo cargo (posición) al cambiar a Administrador o Directivo" );
+        }
+
+        Role newRole = roleRepository.findById(targetRoleId)
+                .orElseThrow(() -> new IllegalArgumentException( "Rol no válido: " + targetRoleId ));
+
+        user.setRole(newRole);
+        if (targetIsStaff) {
+            user.setPosition(dto.getPosition());
+        }
+
         userRepository.save(user);
     }
 

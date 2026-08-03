@@ -1,8 +1,11 @@
 package com.eduplanner.ed_ms_administracion.repository;
 
+import com.eduplanner.ed_lib_common.entity.User;
+
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+
 import org.springframework.stereotype.Repository;
 
 import com.eduplanner.ed_lib_common.entity.User;
@@ -17,6 +20,7 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
 
 
+
     List<User> findByRoleIdRoleAndStatusTrue(Integer idRole);  
     List<User> findByRoleIdRoleAndStatusTrueAndNameContainingIgnoreCase(Integer idRole, String name);
 
@@ -28,7 +32,8 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     // RF 5.4 - buscar por títulos profesionales
     List<User> findByRoleIdRoleAndStatusTrueAndProfessionalDegreesContainingIgnoreCase(Integer idRole, String degrees);
+
+
+    boolean existsByPhoneNumber(String phoneNumber);
+    boolean existsByPhoneNumberAndIdUserNot(String phoneNumber, Integer idUser);
 }
-
-
-
