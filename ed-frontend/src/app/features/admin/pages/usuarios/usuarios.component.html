@@ -1,6 +1,6 @@
-<div class="usuarios-page">
+<div class="usuarios-container">
 
-  <div class="page-header">
+  <div class="header-top">
 
     <div class="tabs">
       <button
@@ -18,18 +18,30 @@
 
       <div class="role-box">
 
-        <button type="button" class="role-toggle" (click)="mostrarFiltroRol = !mostrarFiltroRol">
-          <span>{{ rolSeleccionado === 'Estudiante' && gradoSeleccionado !== 'Todos los grados' ? gradoSeleccionado : rolSeleccionado }}</span>
-          <span class="chevron" [class.open]="mostrarFiltroRol">⌄</span>
+        <button
+          type="button"
+          class="role-toggle"
+          (click)="mostrarFiltroRol = !mostrarFiltroRol"
+        >
+          <span>
+            {{
+              rolSeleccionado === 'Estudiante' &&
+              gradoSeleccionado !== 'Todos los grados'
+                ? gradoSeleccionado
+                : rolSeleccionado
+            }}
+          </span>
+
+          <span
+            class="chevron"
+            [class.open]="mostrarFiltroRol"
+          >
+          ▼
+          </span>
         </button>
 
-        <ul class="role-stats">
-          <li>{{ totalRol }} en total</li>
-          <li>{{ activosRol }} activo{{ activosRol === 1 ? '' : 's' }}</li>
-          <li>{{ inactivosRol }} inactivo{{ inactivosRol === 1 ? '' : 's' }}</li>
-        </ul>
-
         <ul class="role-menu" *ngIf="mostrarFiltroRol">
+
           <li
             class="rol-item"
             [class.active]="rolSeleccionado === 'Docente'"
@@ -54,17 +66,25 @@
           >
             {{ grado }}
           </li>
+
         </ul>
 
       </div>
 
       <div class="registrar-box">
 
-        <button type="button" class="btn-registrar" (click)="mostrarMenuRegistrar = !mostrarMenuRegistrar">
+        <button
+          type="button"
+          class="btn-registrar"
+          (click)="mostrarMenuRegistrar = !mostrarMenuRegistrar"
+        >
           + Registrar
         </button>
 
-        <ul class="registrar-menu" *ngIf="mostrarMenuRegistrar">
+        <ul
+          class="registrar-menu"
+          *ngIf="mostrarMenuRegistrar"
+        >
           <li (click)="abrirRegistro('Docente')">Docente</li>
           <li (click)="abrirRegistro('Estudiante')">Estudiante</li>
         </ul>
@@ -78,7 +98,7 @@
   <ng-container *ngIf="activeTab === 'listado'; else importacion">
 
     <div class="search-bar">
-      <span class="search-icon">⚲</span>
+        <img class="search-icon" src="assets/img/magnifying_glass.png" alt="">
       <input
         type="text"
         placeholder="Buscar por nombre..."
@@ -100,12 +120,14 @@
             <th>Acciones</th>
           </tr>
         </thead>
-
         <tbody>
           <tr *ngFor="let usuario of usuariosFiltrados">
             <td>
               <div class="avatar-cell">
-                <img [src]="usuario.foto ?? 'assets/img/profile.png'" alt="Foto de {{ usuario.nombre }}">
+                <img
+                  [src]="usuario.foto ?? 'assets/img/profile.png'"
+                  alt="Foto"
+                >
               </div>
             </td>
             <td>{{ usuario.nombre }}</td>
@@ -136,7 +158,9 @@
           </tr>
 
           <tr *ngIf="usuariosFiltrados.length === 0">
-            <td colspan="8" class="empty">No se encontraron usuarios con los filtros actuales.</td>
+            <td colspan="8" class="empty">
+              No se encontraron usuarios con los filtros actuales.
+            </td>
           </tr>
         </tbody>
       </table>
@@ -145,16 +169,18 @@
   </ng-container>
 
   <ng-template #importacion>
-    <div class="importacion-panel">
-      <p>Próximamente: importación masiva de usuarios desde un archivo Excel/CSV.</p>
+
+    <div class="importacion">
+
+
     </div>
   </ng-template>
 
-</div>
+  <app-registro-usuario-modal
+    *ngIf="tipoRegistro"
+    [tipo]="tipoRegistro"
+    (cerrar)="cerrarModal()"
+    (guardar)="guardarUsuario($event)">
+  </app-registro-usuario-modal>
 
-<app-registro-usuario-modal
-  *ngIf="tipoRegistro"
-  [tipo]="tipoRegistro"
-  (cerrar)="cerrarModal()"
-  (guardar)="guardarUsuario($event)"
-></app-registro-usuario-modal>
+</div>
