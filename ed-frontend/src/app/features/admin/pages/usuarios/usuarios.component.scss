@@ -65,7 +65,7 @@
 
 .tab.active {
   background: #2f2f2f;
-  color: #53BB1B;
+  color: #53bb1b98;
   font-weight: 600;
 }
 
@@ -84,7 +84,7 @@
   height: 40px;
   border: none;
   border-radius: 8px;
-  background: #53bb1be5;
+  background: #53bb1b98;
   color: white;
   display: flex;
   justify-content: space-between;
@@ -131,7 +131,7 @@
 }
 
 .btn-registrar {
-  background: #53bb1be5;
+  background: #53bb1b98;
   color: white;
   border: none;
   border-radius: 999px;
@@ -197,6 +197,18 @@
   color: #777;
 }
 
+.table-header{
+    display:grid;
+    grid-template-columns:90px 1.4fr .8fr 1.5fr 1fr .8fr 1fr 1fr;
+    background:#3a3a3a;
+    color:#53BB1B;
+    padding:15px 0;
+    border-radius:16px;
+    margin-bottom:14px;
+    text-align:center;
+    font-weight:700;
+}
+
 .table-wrapper {
   width: 100%;
   overflow-x: auto;
@@ -205,16 +217,32 @@
 .usuarios-table {
   width: 100%;
   border-collapse: separate;
-  border-spacing: 0 14px;
+  border-spacing: 0;
 }
 
-.usuarios-table thead th{
+.usuarios-table thead th {
   background: #3a3a3a;
   color: #53BB1B;
-  font-size: 13px;
-  font-weight: 700;
   padding: 14px;
   text-align: center;
+}
+
+.usuarios-table tbody::before {
+  content: "";
+  display: block;
+  height: 14px;
+}
+
+.usuarios-table tbody tr + tr td {
+  border-top: 14px solid transparent;
+}
+
+.usuarios-table thead th:first-child {
+  border-radius: 12px 0 0 12px;
+}
+
+.usuarios-table thead th:last-child {
+  border-radius: 0 12px 12px 0;
 }
 
 .usuarios-table tbody tr {

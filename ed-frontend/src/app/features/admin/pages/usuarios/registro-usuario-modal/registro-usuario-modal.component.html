@@ -3,6 +3,7 @@
 
     <div class="modal-header">
       <h2>{{ tipo === 'Docente' ? 'Docentes' : 'Estudiante' }}</h2>
+
       <div class="foto-wrapper">
         <img [src]="fotoPreview ?? 'assets/img/profile.png'" alt="Foto del usuario">
       </div>
@@ -100,6 +101,11 @@
         </div>
 
         <div class="field">
+          <label>Documento</label>
+          <input type="text" formControlName="documento" placeholder="Ej: 1098765432">
+        </div>
+
+        <div class="field">
           <label>Fecha de nacimiento</label>
           <input type="date" formControlName="fechaNacimiento">
         </div>
@@ -122,11 +128,6 @@
           <input type="text" formControlName="telefono" placeholder="Ej: 123456787">
         </div>
 
-      </div>
-
-      <div class="field full">
-        <label>Contraseña</label>
-        <input type="password" formControlName="contrasena" placeholder="xxxxxxxxxx">
       </div>
 
       <div class="modal-footer">
