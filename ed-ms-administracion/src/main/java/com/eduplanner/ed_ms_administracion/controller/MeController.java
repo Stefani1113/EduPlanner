@@ -43,4 +43,11 @@ public class MeController {
         }
         
     }
+
+
+
+    private Integer extractIdUser(HttpServletRequest request) {
+        Integer idUserInt = (Integer) request.getAttribute("idUser");
+        return idUserInt.intValue();
+    }
 }
