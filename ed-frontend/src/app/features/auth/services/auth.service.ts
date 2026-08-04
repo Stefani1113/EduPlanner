@@ -9,7 +9,7 @@ import { LoginResponse } from '../models/login-response';
 })
 export class AuthService {
 
-  private api = 'http://localhost:8081/eduplanner/auth';
+  private api = 'http://localhost:8082/eduplanner/auth';
 
   constructor(private http: HttpClient) {}
 

@@ -2,13 +2,25 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 
-export interface UsuarioRegistrado {
-  nombre: string;
+export interface RegistroDocentePayload {
+  tipo: 'Docente';
+  nombreCompleto: string;
+  cedula: string;
   correo: string;
-  rol: 'Docente' | 'Estudiante';
-  grado: string | null;
-  foto: string | null;
+  telefono: string;
 }
+
+export interface RegistroEstudiantePayload {
+  tipo: 'Estudiante';
+  nombres: string;
+  apellidos: string;
+  documento: string;
+  fechaNacimiento: string;
+  correo: string;
+  telefono: string;
+}
+
+export type UsuarioRegistrado = RegistroDocentePayload | RegistroEstudiantePayload;
 
 @Component({
   selector: 'app-registro-usuario-modal',
@@ -51,11 +63,11 @@ export class RegistroUsuarioModalComponent implements OnInit {
     this.formEstudiante = this.fb.group({
       nombres: ['', Validators.required],
       apellidos: ['', Validators.required],
+      documento: ['', Validators.required],
       fechaNacimiento: ['', Validators.required],
       gradoGrupo: ['', Validators.required],
       correo: ['', [Validators.required, Validators.email]],
-      telefono: [''],
-      contrasena: ['', [Validators.required, Validators.minLength(6)]]
+      telefono: ['']
     });
   }
 
@@ -107,20 +119,22 @@ export class RegistroUsuarioModalComponent implements OnInit {
     if (this.tipo === 'Docente') {
       const v = this.formDocente.value;
       this.guardar.emit({
-        nombre: v.nombreCompleto,
+        tipo: 'Docente',
+        nombreCompleto: v.nombreCompleto,
+        cedula: v.cedula,
         correo: v.correo,
-        rol: 'Docente',
-        grado: null,
-        foto: this.fotoPreview
+        telefono: v.telefono
       });
     } else {
       const v = this.formEstudiante.value;
       this.guardar.emit({
-        nombre: `${v.nombres} ${v.apellidos}`,
+        tipo: 'Estudiante',
+        nombres: v.nombres,
+        apellidos: v.apellidos,
+        documento: v.documento,
+        fechaNacimiento: v.fechaNacimiento,
         correo: v.correo,
-        rol: 'Estudiante',
-        grado: v.gradoGrupo,
-        foto: this.fotoPreview
+        telefono: v.telefono
       });
     }
   }

@@ -2,16 +2,26 @@ import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BreadcrumbService } from '../../services/breadcrumb.service';
-import { RegistroUsuarioModalComponent, UsuarioRegistrado } from './registro-usuario-modal/registro-usuario-modal.component';
+import {
+  RegistroUsuarioModalComponent,
+  UsuarioRegistrado
+} from './registro-usuario-modal/registro-usuario-modal.component';
+import {
+  UsuariosService,
+  UserResponseDTO,
+  ID_ROL_DOCENTE,
+  ID_ROL_ESTUDIANTE
+} from '../../services/usuarios.service';
 
 type Rol = 'Docente' | 'Estudiante';
 type Estado = 'Activo' | 'Inactivo';
 
 interface Usuario {
-  id: string;
+  id: number;
   foto: string | null;
   nombre: string;
   correo: string;
+  telefono: string;
   rol: Rol;
   grado: string | null;
   estado: Estado;
@@ -44,37 +54,61 @@ export class UsuariosComponent implements OnInit, OnDestroy {
 
   busqueda = '';
 
-  usuarios: Usuario[] = [
-    { id: '123', foto: null, nombre: 'Estefania Gómez', correo: 'este@gmail.com', rol: 'Docente', grado: null, estado: 'Activo' },
-    { id: '124', foto: null, nombre: 'María José Rojas', correo: 'mojo@gmail.com', rol: 'Docente', grado: null, estado: 'Activo' },
-    { id: '125', foto: null, nombre: 'Estefania Gómez', correo: 'este@gmail.com', rol: 'Docente', grado: null, estado: 'Activo' },
-    { id: '126', foto: null, nombre: 'Estefania Gómez', correo: 'este@gmail.com', rol: 'Docente', grado: null, estado: 'Inactivo' },
-    { id: '201', foto: null, nombre: 'Ana María Pérez', correo: 'ana.perez@institucion.edu', rol: 'Estudiante', grado: '1° A Bachillerato', estado: 'Activo' },
-    { id: '202', foto: null, nombre: 'Juan David Ruiz', correo: 'juan.ruiz@institucion.edu', rol: 'Estudiante', grado: '2° A Bachillerato', estado: 'Activo' },
-    { id: '203', foto: null, nombre: 'Laura Camila Gil', correo: 'laura.gil@institucion.edu', rol: 'Estudiante', grado: '3° A Bachillerato', estado: 'Inactivo' }
-  ];
+  usuarios: Usuario[] = [];
+  cargando = false;
+  errorCarga = '';
 
-  constructor(private breadcrumbService: BreadcrumbService) {}
+  constructor(
+    private breadcrumbService: BreadcrumbService,
+    private usuariosService: UsuariosService
+  ) {}
 
   ngOnInit(): void {
     this.actualizarBreadcrumb();
+    this.cargarUsuarios();
   }
 
   ngOnDestroy(): void {
     this.breadcrumbService.setExtra(null);
   }
 
+
+  private cargarUsuarios(): void {
+    this.cargando = true;
+    this.errorCarga = '';
+
+    const idRole = this.rolSeleccionado === 'Docente' ? ID_ROL_DOCENTE : ID_ROL_ESTUDIANTE;
+
+    this.usuariosService.listar(idRole).subscribe({
+      next: (res) => {
+        this.usuarios = res.data.map(u => this.mapearUsuario(u));
+        this.cargando = false;
+      },
+      error: (err) => {
+        console.error(err);
+        this.errorCarga = 'No se pudo cargar el listado de usuarios. Verifica tu conexión con el servidor.';
+        this.cargando = false;
+      }
+    });
+  }
+
+  private mapearUsuario(dto: UserResponseDTO): Usuario {
+    return {
+      id: dto.idUser,
+      foto: dto.photoUrl,
+      nombre: `${dto.name} ${dto.surnames}`.trim(),
+      correo: dto.email,
+      telefono: dto.phoneNumber,
+      rol: dto.idRole === ID_ROL_DOCENTE ? 'Docente' : 'Estudiante',
+      grado: null, 
+      estado: dto.status ? 'Activo' : 'Inactivo'
+    };
+  }
+
+
   get usuariosFiltrados(): Usuario[] {
     const term = this.busqueda.trim().toLowerCase();
-
-    return this.usuarios
-      .filter(u => u.rol === this.rolSeleccionado)
-      .filter(u =>
-        this.rolSeleccionado !== 'Estudiante' ||
-        this.gradoSeleccionado === 'Todos los grados' ||
-        u.grado === this.gradoSeleccionado
-      )
-      .filter(u => !term || u.nombre.toLowerCase().includes(term));
+    return this.usuarios.filter(u => !term || u.nombre.toLowerCase().includes(term));
   }
 
   get totalRol(): number {
@@ -94,6 +128,7 @@ export class UsuariosComponent implements OnInit, OnDestroy {
     this.gradoSeleccionado = 'Todos los grados';
     this.mostrarFiltroRol = false;
     this.actualizarBreadcrumb();
+    this.cargarUsuarios();
   }
 
   seleccionarGrado(grado: string): void {
@@ -101,16 +136,30 @@ export class UsuariosComponent implements OnInit, OnDestroy {
     this.gradoSeleccionado = grado;
     this.mostrarFiltroRol = false;
     this.actualizarBreadcrumb();
+    this.cargarUsuarios();
   }
+
 
   cambiarTab(tab: 'listado' | 'importacion'): void {
     this.activeTab = tab;
     this.actualizarBreadcrumb();
   }
 
+
   toggleEstado(usuario: Usuario): void {
-    usuario.estado = usuario.estado === 'Activo' ? 'Inactivo' : 'Activo';
+    const nuevoEstado = usuario.estado === 'Activo' ? false : true;
+
+    this.usuariosService.actualizarEstado(usuario.id, nuevoEstado).subscribe({
+      next: () => {
+        usuario.estado = nuevoEstado ? 'Activo' : 'Inactivo';
+      },
+      error: (err) => {
+        console.error(err);
+        alert('No se pudo actualizar el estado del usuario. Intenta de nuevo.');
+      }
+    });
   }
+
 
   abrirRegistro(tipo: Rol): void {
     this.tipoRegistro = tipo;
@@ -122,22 +171,46 @@ export class UsuariosComponent implements OnInit, OnDestroy {
   }
 
   guardarUsuario(nuevo: UsuarioRegistrado): void {
-    const usuario: Usuario = {
-      id: this.generarId(),
-      foto: nuevo.foto,
-      nombre: nuevo.nombre,
-      correo: nuevo.correo,
-      rol: nuevo.rol,
-      grado: nuevo.grado,
-      estado: 'Activo'
-    };
-
-    this.usuarios = [usuario, ...this.usuarios];
-    this.tipoRegistro = null;
-  }
-
-  private generarId(): string {
-    return Math.floor(100 + Math.random() * 900).toString();
+    if (nuevo.tipo === 'Docente') {
+      this.usuariosService.registrarDocente({
+        name: nuevo.nombreCompleto.split(' ')[0] ?? nuevo.nombreCompleto,
+        surnames: nuevo.nombreCompleto.split(' ').slice(1).join(' ') || '-',
+        email: nuevo.correo,
+        phoneNumber: nuevo.telefono,
+        document: nuevo.cedula,
+        documentType: 'CC',
+        position: 'Docente',
+        idRole: ID_ROL_DOCENTE
+      }).subscribe({
+        next: () => {
+          this.tipoRegistro = null;
+          this.cargarUsuarios();
+        },
+        error: (err) => {
+          console.error(err);
+          alert(err.error?.message ?? 'No se pudo registrar el docente.');
+        }
+      });
+    } else {
+      this.usuariosService.registrarEstudiante({
+        name: nuevo.nombres,
+        surnames: nuevo.apellidos,
+        email: nuevo.correo,
+        phoneNumber: nuevo.telefono,
+        document: nuevo.documento,
+        documentType: 'TI',
+        birthdate: nuevo.fechaNacimiento || null
+      }).subscribe({
+        next: () => {
+          this.tipoRegistro = null;
+          this.cargarUsuarios();
+        },
+        error: (err) => {
+          console.error(err);
+          alert(err.error?.message ?? 'No se pudo registrar el estudiante.');
+        }
+      });
+    }
   }
 
   private actualizarBreadcrumb(): void {
