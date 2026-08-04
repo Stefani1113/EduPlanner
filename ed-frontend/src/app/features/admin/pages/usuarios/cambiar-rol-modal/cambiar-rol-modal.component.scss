@@ -1,0 +1,71 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: #181818;
+  border-radius: 16px;
+  padding: 28px;
+  width: 360px;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  h3 { margin: 0; }
+  .subtitulo { margin: -8px 0 0; color: #9b9b9b; font-size: 13px; }
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  label { font-size: 13px; color: #9b9b9b; }
+}
+
+.input {
+  background: #202020;
+  border: 1px solid #333;
+  border-radius: 10px;
+  padding: 10px 14px;
+  color: #fff;
+  font-size: 14px;
+
+  &:focus { outline: none; border-color: #4caf50; }
+}
+
+.error { color: #e57373; font-size: 13px; }
+.sin-opciones { color: #9b9b9b; font-size: 14px; }
+
+.acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.btn-cancelar {
+  background: transparent;
+  border: 1px solid #333;
+  color: #fff;
+  border-radius: 20px;
+  padding: 10px 20px;
+  cursor: pointer;
+}
+
+.btn-confirmar {
+  background: #4caf50;
+  color: #0e0e0e;
+  border: none;
+  border-radius: 20px;
+  padding: 10px 20px;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:disabled { opacity: .6; cursor: not-allowed; }
+}

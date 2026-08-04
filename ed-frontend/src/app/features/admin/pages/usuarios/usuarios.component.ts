@@ -6,18 +6,37 @@ import {
   RegistroUsuarioModalComponent,
   UsuarioRegistrado
 } from './registro-usuario-modal/registro-usuario-modal.component';
+import { RegistroUsuarioFormComponent } from './registro-usuario-form/registro-usuario-form.component';
+import { CambiarRolModalComponent } from './cambiar-rol-modal/cambiar-rol-modal.component';
 import {
   UsuariosService,
   UserResponseDTO,
+  ID_ROL_ADMINISTRADOR,
   ID_ROL_DOCENTE,
-  ID_ROL_ESTUDIANTE
+  ID_ROL_ESTUDIANTE,
+  ID_ROL_DIRECTIVO
 } from '../../services/usuarios.service';
 
-type Rol = 'Docente' | 'Estudiante';
+type Rol = 'Administrador' | 'Docente' | 'Estudiante' | 'Directivo';
 type Estado = 'Activo' | 'Inactivo';
+
+const ROL_A_ID: Record<Rol, number> = {
+  Administrador: ID_ROL_ADMINISTRADOR,
+  Docente: ID_ROL_DOCENTE,
+  Estudiante: ID_ROL_ESTUDIANTE,
+  Directivo: ID_ROL_DIRECTIVO
+};
+
+const ID_A_ROL: Record<number, Rol> = {
+  [ID_ROL_ADMINISTRADOR]: 'Administrador',
+  [ID_ROL_DOCENTE]: 'Docente',
+  [ID_ROL_ESTUDIANTE]: 'Estudiante',
+  [ID_ROL_DIRECTIVO]: 'Directivo'
+};
 
 interface Usuario {
   id: number;
+  idRole: number;
   foto: string | null;
   nombre: string;
   correo: string;
@@ -30,19 +49,26 @@ interface Usuario {
 @Component({
   selector: 'app-usuarios',
   standalone: true,
-  imports: [CommonModule, FormsModule, RegistroUsuarioModalComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RegistroUsuarioModalComponent,
+    RegistroUsuarioFormComponent,
+    CambiarRolModalComponent
+  ],
   templateUrl: './usuarios.component.html',
   styleUrl: './usuarios.component.scss'
 })
 export class UsuariosComponent implements OnInit, OnDestroy {
 
-  tabs: { key: 'listado' | 'importacion'; label: string }[] = [
+  tabs: { key: 'listado' | 'registro' | 'importacion'; label: string }[] = [
     { key: 'listado', label: 'Listado' },
+    { key: 'registro', label: 'Registro' },
     { key: 'importacion', label: 'Importación' }
   ];
-  activeTab: 'listado' | 'importacion' = 'listado';
+  activeTab: 'listado' | 'registro' | 'importacion' = 'listado';
 
-  roles: Rol[] = ['Docente', 'Estudiante'];
+  roles: Rol[] = ['Administrador', 'Docente', 'Estudiante', 'Directivo'];
   grados: string[] = ['Todos los grados', '1° A Bachillerato', '2° A Bachillerato', '3° A Bachillerato'];
 
   rolSeleccionado: Rol = 'Docente';
@@ -50,7 +76,10 @@ export class UsuariosComponent implements OnInit, OnDestroy {
   mostrarFiltroRol = false;
 
   mostrarMenuRegistrar = false;
-  tipoRegistro: Rol | null = null;
+  tipoRegistro: 'Docente' | 'Estudiante' | null = null;
+
+  // Modal de cambio de rol
+  usuarioCambioRol: Usuario | null = null;
 
   busqueda = '';
 
@@ -77,7 +106,7 @@ export class UsuariosComponent implements OnInit, OnDestroy {
     this.cargando = true;
     this.errorCarga = '';
 
-    const idRole = this.rolSeleccionado === 'Docente' ? ID_ROL_DOCENTE : ID_ROL_ESTUDIANTE;
+    const idRole = ROL_A_ID[this.rolSeleccionado];
 
     this.usuariosService.listar(idRole).subscribe({
       next: (res) => {
@@ -95,12 +124,13 @@ export class UsuariosComponent implements OnInit, OnDestroy {
   private mapearUsuario(dto: UserResponseDTO): Usuario {
     return {
       id: dto.idUser,
+      idRole: dto.idRole,
       foto: dto.photoUrl,
       nombre: `${dto.name} ${dto.surnames}`.trim(),
       correo: dto.email,
       telefono: dto.phoneNumber,
-      rol: dto.idRole === ID_ROL_DOCENTE ? 'Docente' : 'Estudiante',
-      grado: null, 
+      rol: ID_A_ROL[dto.idRole] ?? 'Docente',
+      grado: null,
       estado: dto.status ? 'Activo' : 'Inactivo'
     };
   }
@@ -140,7 +170,7 @@ export class UsuariosComponent implements OnInit, OnDestroy {
   }
 
 
-  cambiarTab(tab: 'listado' | 'importacion'): void {
+  cambiarTab(tab: 'listado' | 'registro' | 'importacion'): void {
     this.activeTab = tab;
     this.actualizarBreadcrumb();
   }
@@ -161,7 +191,7 @@ export class UsuariosComponent implements OnInit, OnDestroy {
   }
 
 
-  abrirRegistro(tipo: Rol): void {
+  abrirRegistro(tipo: 'Docente' | 'Estudiante'): void {
     this.tipoRegistro = tipo;
     this.mostrarMenuRegistrar = false;
   }
@@ -199,7 +229,8 @@ export class UsuariosComponent implements OnInit, OnDestroy {
         phoneNumber: nuevo.telefono,
         document: nuevo.documento,
         documentType: 'TI',
-        birthdate: nuevo.fechaNacimiento || null
+        birthdate: nuevo.fechaNacimiento || null,
+        guardian: { guardianName: '', guardianPhone: '' }
       }).subscribe({
         next: () => {
           this.tipoRegistro = null;
@@ -211,6 +242,26 @@ export class UsuariosComponent implements OnInit, OnDestroy {
         }
       });
     }
+  }
+
+  // Se llama cuando el formulario de la pestaña "Registro" registra un usuario con éxito
+  onUsuarioRegistradoDesdeFormulario(): void {
+    if (this.activeTab === 'listado') {
+      this.cargarUsuarios();
+    }
+  }
+
+  abrirCambioRol(usuario: Usuario): void {
+    this.usuarioCambioRol = usuario;
+  }
+
+  cerrarCambioRol(): void {
+    this.usuarioCambioRol = null;
+  }
+
+  onRolActualizado(): void {
+    this.usuarioCambioRol = null;
+    this.cargarUsuarios();
   }
 
   private actualizarBreadcrumb(): void {
