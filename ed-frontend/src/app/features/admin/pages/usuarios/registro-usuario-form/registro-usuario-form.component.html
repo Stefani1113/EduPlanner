@@ -1,0 +1,86 @@
+<div class="registro-form-container">
+
+  <form [formGroup]="form" (ngSubmit)="registrar()" class="registro-form">
+
+    <div class="form-group">
+      <label>Rol *</label>
+      <select formControlName="idRole" class="input">
+        <option *ngFor="let rol of roles" [value]="rol.idRole">{{ rol.label }}</option>
+      </select>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Nombres *</label>
+        <input class="input" formControlName="name" type="text" placeholder="Nombres">
+      </div>
+      <div class="form-group">
+        <label>Apellidos *</label>
+        <input class="input" formControlName="surnames" type="text" placeholder="Apellidos">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Correo *</label>
+        <input class="input" formControlName="email" type="email" placeholder="correo@ejemplo.com">
+      </div>
+      <div class="form-group">
+        <label>Teléfono *</label>
+        <input class="input" formControlName="phoneNumber" type="text" placeholder="Teléfono">
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label>Tipo de documento *</label>
+        <select formControlName="documentType" class="input">
+          <option value="CC">Cédula de ciudadanía</option>
+          <option value="TI">Tarjeta de identidad</option>
+          <option value="CE">Cédula de extranjería</option>
+          <option value="PA">Pasaporte</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Número de documento *</label>
+        <input class="input" formControlName="document" type="text" placeholder="Número de documento">
+      </div>
+    </div>
+
+    <ng-container *ngIf="!esEstudiante">
+      <div class="form-group">
+        <label>Cargo / Posición *</label>
+        <input class="input" formControlName="position" type="text"
+               placeholder="Ej: Rector, Coordinador, Docente de Matemáticas...">
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="esEstudiante">
+      <div class="form-group">
+        <label>Fecha de nacimiento *</label>
+        <input class="input" formControlName="birthdate" type="date">
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nombre del acudiente *</label>
+          <input class="input" formControlName="guardianName" type="text" placeholder="Nombre del acudiente">
+        </div>
+        <div class="form-group">
+          <label>Teléfono del acudiente *</label>
+          <input class="input" formControlName="guardianPhone" type="text" placeholder="Teléfono del acudiente">
+        </div>
+      </div>
+    </ng-container>
+
+    <div class="mensaje-exito" *ngIf="mensajeExito">{{ mensajeExito }}</div>
+
+    <div class="acciones">
+      <button type="submit" class="btn-registrar" [disabled]="enviando">
+        {{ enviando ? 'Registrando...' : '+ Registrar ' + tituloRolSeleccionado }}
+      </button>
+    </div>
+
+  </form>
+
+</div>

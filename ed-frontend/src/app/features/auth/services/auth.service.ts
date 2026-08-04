@@ -7,15 +7,7 @@ import { Observable } from 'rxjs';
 })
 export class AuthService {
 
-  logout(): void {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-  }
-
-  // Debe ir por el gateway (8080) + ruta /autenticacion/** (StripPrefix=1)
-  // → se reenvía a ed-ms-autenticacion (8081), cuyo context-path es /eduplanner
-  // Coincide con los public-paths del gateway: /autenticacion/eduplanner/auth/*
-  private api = 'http://localhost:8080/autenticacion/eduplanner/auth';
+  private api = 'http://localhost:8081/eduplanner/auth';
 
   constructor(private http: HttpClient) {}
 
@@ -24,6 +16,11 @@ export class AuthService {
       email,
       password
     });
+  }
+
+  logout(): void {
+    localStorage.removeItem('token');
+    localStorage.removeItem('usuario');
   }
 
   forgotPassword(email: string): Observable<any> {
@@ -38,5 +35,4 @@ export class AuthService {
       newPassword
     });
   }
-
 }

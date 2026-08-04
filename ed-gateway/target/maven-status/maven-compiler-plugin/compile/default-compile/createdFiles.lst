@@ -1,6 +1,5 @@
+com\eduplanner\gateway\EdGatewayApplication.class
 com\eduplanner\gateway\config\GatewayConfig.class
 com\eduplanner\gateway\filter\JwtAuthFilter.class
-com\eduplanner\gateway\filter\LoggingFilter.class
-com\eduplanner\gateway\EdGatewayApplication.class
-com\eduplanner\gateway\config\CorsConfig.class
 com\eduplanner\gateway\config\JwtUtil.class
+com\eduplanner\gateway\filter\LoggingFilter.class
