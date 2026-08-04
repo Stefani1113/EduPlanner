@@ -48,7 +48,10 @@ export const ID_ROL_ESTUDIANTE = 3;
 })
 export class UsuariosService {
 
-    private api = 'http://localhost:8080/administracion';
+  // /administracion → gateway (StripPrefix=1) → ed-ms-administracion (8082)
+  // /eduplanner → context-path del microservicio (server.servlet.context-path)
+  private api = 'http://localhost:8080/administracion/eduplanner';
+
   constructor(private http: HttpClient) {}
 
   listar(idRole?: number): Observable<HttpGlobalResponse<UserResponseDTO[]>> {
