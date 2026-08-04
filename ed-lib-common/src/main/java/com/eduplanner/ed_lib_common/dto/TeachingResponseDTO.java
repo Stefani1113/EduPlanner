@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
  * RF 5.2 - Información del perfil del docente visible para todos los roles.
  */
 @Data
-public class DocenteResponseDTO {
+public class TeachingResponseDTO {
     private Integer idUser;
     private String name;
     private String surnames;
