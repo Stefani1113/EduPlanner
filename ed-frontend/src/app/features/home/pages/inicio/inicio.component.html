@@ -1,233 +1,260 @@
-<section class="navbar">
-  <div class="logo">
-    <img src="assets/img/Logo-nav.png" alt="Edu Planner">
-  </div>
+<div class="home-page">
 
-  <button class="menu-toggle" (click)="toggleMenu()" aria-label="Menú">
-    <span></span>
-    <span></span>
-    <span></span>
-  </button>
-  <nav class="menu" [class.active]="menuOpen">
-    <a href="#identidad" (click)="closeMenu()">Identidad</a>
-    <a href="#beneficios" (click)="closeMenu()">Beneficios</a>
-    <a href="#faq" (click)="closeMenu()">FAQ</a>
-    <a href="#contacto" (click)="closeMenu()">Contacto</a>
-    <a href="#soporte" (click)="closeMenu()">Soporte técnico</a>
-  </nav>
+  <nav class="navbar">
+    <div class="logo">
+      <img src="assets/img/Logo-nav.png" alt="EduPlanner">
+    </div>
+
+    <div class="menu" [class.active]="menuOpen">
+      <a href="#identidad" (click)="closeMenu()">Identidad</a>
+      <a href="#beneficios" (click)="closeMenu()">Beneficios</a>
+      <a href="#faq" (click)="closeMenu()">FAQ</a>
+      <a href="#contacto" (click)="closeMenu()">Contacto</a>
+      <a href="#soporte" (click)="closeMenu()">Soporte técnico</a>
+    </div>
 
   <a routerLink="/auth" class="btn-login">
     Iniciar Sesión
     <img src="assets/img/profile.png" alt="/ed-frontend/src/app/features/auth/pages/login-page/login-page.component.html" class="icon-small">
   </a>
-</section>
 
-<section class="hero">
-  <div class="hero-text">
-      <a href="#" class="in">
-        <img class="icon-menu" src="Logo-nav.png" alt="home">
-            SISTEMA INTITUCIONAL    </a>
-    <h1>
-      Comprometidos con
-      la <span class="verde">Excelencia</span>
-      Institucional
-    </h1>
-    <p>
-      Impulsando el desarrollo profesional y social a través de la
-      innovación tecnológica y valores institucionales sólidos.
+    <button class="menu-toggle" (click)="toggleMenu()" aria-label="Abrir menú">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-text">
+      <a class="in" href="#identidad">
+        <img class="icon-menu" src="assets/img/calendar_month.png" alt="">
+        SISTEMA INSTITUCIONAL
+      </a>
+
+      <h1>
+        Comprometidos con la <span class="verde">Excelencia</span> Institucional
+      </h1>
+
+      <p>
+        Impulsando el desarrollo educativo y social a través de la innovación
+        tecnológica y valores institucionales sólidos.
+      </p>
+    </div>
+
+    <div class="hero-image">
+      <img src="assets/img/Logo-nav.png" alt="EduPlanner">
+    </div>
+  </section>
+
+  <section class="identidad" id="identidad">
+    <h2>Nuestra <span class="verde">Identidad</span></h2>
+    <p class="subtitulo">
+      Los pilares fundamentales de nuestro sistema institucional, permitiendo
+      mejorar la organización y la gestión de los procesos dentro de la institución.
     </p>
-  </div>
 
-  <div class="hero-image">
-    <img src="assets/img/Logo-nav.png" alt="Edu Planner">
-  </div>
-</section>
+    <div class="cards-identidad">
 
-<section class="identidad" id="identidad">
-  <h2>Nuestras <span class="verde">Identidad</span></h2>
-  <p class="subtitulo">
-    Los pilares fundamentales de nuestro sistema institucional, permitiendo
-    mejorar la organización y la gestión de los procesos dentro de la institución.
-  </p>
-
-  <div class="cards-identidad">
-    <div class="card-identidad">
-      <div class="icon-circle">
-        <img src="assets/img/eye.png" alt="Visión">
+      <div class="card-identidad">
+        <div class="icon-circle">
+          <img src="assets/img/eye_w.png" alt="" style="width: 250px; height: 55px;">
+        </div>
+        <h3>Visión</h3>
+        <p>
+          EduPlanner busca consolidarse como una plataforma multifuncional
+          utilizada por la comunidad estudiantil para facilitar y optimizar los
+          procesos de gestión académica. A través de la implementación de
+          inteligencia artificial, se espera contribuir a una planificación de
+          horarios más eficiente y optimizada a las instituciones educativas
+          en la gestión de sus actividades académicas.
+        </p>
       </div>
-      <h3>Visión</h3>
+
+      <div class="card-identidad">
+        <div class="icon-circle">
+          <img src="assets/img/mission.png" alt="">
+        </div>
+        <h3>Misión</h3>
+        <p>
+          EduPlanner tiene como misión facilitar la gestión académica mediante
+          una plataforma que centralice y ofrezca procesos, como la gestión
+          de asistencia, horarios y notas, además, busca incorporar
+          herramientas de inteligencia artificial que permitan mejorar la
+          planificación y organización de las tareas académicas, ofreciendo
+          una solución eficiente y accesible para la comunidad educativa.
+        </p>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="beneficios" id="beneficios">
+    <div class="beneficios-header">
+      <div>
+        <h2>Beneficios</h2>
+        <p>
+          Estos principios permiten fortalecer la organización, optimizar los
+          procesos y ofrecer una herramienta eficiente que apoye el
+          cumplimiento de los objetivos institucionales.
+        </p>
+      </div>
+    </div>
+
+    <div class="cards-beneficios">
+
+      <div class="card-beneficio">
+        <div class="icon-circle">
+          <img src="assets/img/calendar_clock.png" alt="">
+        </div>
+        <h3>Optimización</h3>
+        <p>
+          EduPlanner facilita la organización y generación de horarios
+          académicos, utilizando inteligencia artificial para encontrar
+          combinaciones eficientes y reducir conflictos.
+        </p>
+      </div>
+
+      <div class="card-beneficio">
+        <div class="icon-circle">
+          <img src="assets/img/celebrate.png" alt="">
+        </div>
+        <h3>Automatización</h3>
+        <p>
+          Permite automatizar procesos que normalmente requieren trabajo
+          manual, como la generación de información académica.
+        </p>
+      </div>
+
+      <div class="card-beneficio">
+        <div class="icon-circle">
+          <img src="assets/img/planet.png" alt="">
+        </div>
+        <h3>Centralización</h3>
+        <p>
+          EduPlanner permite centralizar diferentes procesos e información
+          académica en una misma plataforma, facilitando el acceso,
+          organización y consulta de datos.
+        </p>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="faq" id="faq">
+    <h2>Preguntas <span class="verde">Frecuentes</span></h2>
+    <p class="subtitulo">
+      Resolvemos las dudas más comunes sobre el funcionamiento de EduPlanner.
+    </p>
+
+    <div class="faq-list">
+
+      <div class="faq-item" *ngFor="let item of preguntasFrecuentes; let i = index">
+        <div class="faq-question" (click)="toggleFaq(i)">
+          <span>{{ item.texto }}</span>
+          <span class="faq-icon" [class.open]="item.abierta">⌄</span>
+        </div>
+
+        <div class="faq-answer" *ngIf="item.abierta">
+          <p>{{ item.respuesta }}</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <section class="contacto-soporte" id="contacto">
+
+    <div class="contacto">
+      <h2>Contáctanos</h2>
       <p>
-        Los pilares fundamentales de nuestro sistema institución, permitiendo
-        mejorar la organización y la gestión de los procesos dentro de la institución.
+        Escríbenos aquí para escucharte, utiliza cualquiera de nuestros
+        canales oficiales de comunicación.
       </p>
-    </div>
 
-    <div class="card-identidad">
-      <div class="icon-circle">
-        <img src="assets/img/mission.png" alt="Misión">
+      <div class="contacto-item">
+        <div class="icon-circle">
+          <img src="assets/img/mail.png" alt="">
+        </div>
+        <div class="contacto-text">
+          <span class="label">Correo</span>
+          <span class="value">contacto&#64;institucional.org</span>
+        </div>
       </div>
-      <h3>Misión</h3>
-      <p>
-        Los pilares fundamentales de nuestro sistema institución, permitiendo
-        mejorar la organización y la gestión de los procesos dentro de la institución.
-      </p>
-    </div>
-  </div>
-</section>
 
-<section class="beneficios" id="beneficios">
-  <div class="beneficios-header">
-    <div class="beneficios-titulo">
-      <h2>Beneficios <span class="verde">Exclusivos</span></h2>
-      <p>
-        Lo del software. Estos principios permiten fortalecer la organización,
-        optimizar los procesos y ofrecer una herramienta eficiente que se
-        adapte al cumplimiento de los objetivos institucionales tal versión a poco más simple.
-      </p>
-    </div>
-
-    <div class="carousel-controls">
-      <button class="btn-arrow" aria-label="Anterior">
-        <img src="assets/img/arrow-right.png" alt="" class="flip">
-      </button>
-      <button class="btn-arrow" aria-label="Siguiente">
-        <img src="assets/img/arrow-right.png" alt="">
-      </button>
-    </div>
-  </div>
-
-  <div class="cards-beneficios">
-    <div class="card-beneficio">
-      <div class="icon-circle">
-        <img src="assets/img/increase.png" alt="Crecimientos">
+      <div class="contacto-item">
+        <div class="icon-circle">
+          <img src="assets/img/phone.png" alt="">
+        </div>
+        <div class="contacto-text">
+          <span class="label">Teléfono Directo</span>
+          <span class="value">xxxxxxxxxx</span>
+        </div>
       </div>
-      <h3>Crecimientos</h3>
-      <p>
-        Acceso a programas de capacitación certificados de vanguardia y mentoría personalizada.
-      </p>
-    </div>
 
-    <div class="card-beneficio">
-      <div class="icon-circle">
-        <img src="assets/img/celebrate.png" alt="Crecimientos">
-      </div>
-      <h3>Crecimientos</h3>
-      <p>
-        Acceso a programas de capacitación certificados de vanguardia y mentoría personalizada.
-      </p>
-    </div>
-
-    <div class="card-beneficio">
-      <div class="icon-circle">
-        <img src="assets/img/planet.png" alt="Crecimientos">
-      </div>
-      <h3>Crecimientos</h3>
-      <p>
-        Acceso a programas de capacitación certificados de vanguardia y mentoría personalizada.
-      </p>
-    </div>
-  </div>
-</section>
-
-<section class="faq" id="faq">
-  <h2>Preguntas <span class="verde">Frecuentes</span></h2>
-  <p class="subtitulo">
-    Los pilares fundamentales de nuestro sistema institucional, permitiendo
-    mejorar la organización y la gestión de los procesos dentro de la institución.
-  </p>
-
-  <div class="faq-list">
-    <div class="faq-item" *ngFor="let pregunta of preguntasFrecuentes; let i = index">
-      <div class="faq-question" (click)="toggleFaq(i)">
-        <span>{{ pregunta.texto }}</span>
-        <span class="faq-icon" [class.open]="pregunta.abierta">⌄</span>
-      </div>
-      <div class="faq-answer" *ngIf="pregunta.abierta">
-        <p>{{ pregunta.respuesta }}</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-
-
-
-
-<section class="contacto-soporte">
-  <div class="contacto" id="contacto">
-    <h2>Contáctanos</h2>
-    <p>
-        Estamos aquí para escucharte. Utiliza cualquiera de nuestros canales oficiales de comunicación.    </p>
-
-    <div class="contacto-item">
-      <div class="icon-circle">
-        <img src="assets/img/mail.png" alt="Correo">
-      </div>
-      <div class="contacto-text">
-        <span class="label">Correo</span>
-        <span class="value">contactoinstitucional.org</span>
+      <div class="contacto-item">
+        <div class="icon-circle">
+          <img src="assets/img/whatsapp.png" alt="">
+        </div>
+        <div class="contacto-text">
+          <span class="label">WhatsApp</span>
+          <span class="value">xxxxxxxxxx</span>
+        </div>
       </div>
     </div>
 
-    <div class="contacto-item">
-      <div class="icon-circle">
-        <img src="assets/img/phone.png" alt="Teléfono">
-      </div>
-      <div class="contacto-text">
-        <span class="label">Teléfono Directo</span>
-        <span class="value">xxxxxxxxxx</span>
-      </div>
+    <div class="soporte" id="soporte">
+      <h2><span class="verde">Soporte Técnico</span></h2>
+
+      <form class="form-soporte">
+        <div class="input-group">
+
+          <label for="nombreRemitente">Nombre remitente</label>
+          <input
+            id="nombreRemitente"
+            type="text"
+            name="nombreRemitente"
+            placeholder="Escribe tu nombre">
+
+          <label for="emailSoporte">Email</label>
+          <input
+            id="emailSoporte"
+            type="email"
+            name="emailSoporte"
+            placeholder="ejemplo&#64;correo.com">
+
+          <label for="asuntoSoporte">Asunto</label>
+          <select
+            id="asuntoSoporte"
+            name="asuntoSoporte">
+            <option value="" disabled selected>Selecciona un asunto</option>
+            <option value="soporte">Soporte técnico</option>
+            <option value="cuenta">Problemas con mi cuenta</option>
+            <option value="sugerencia">Sugerencia</option>
+            <option value="otro">Otro</option>
+          </select>
+
+          <label for="mensajeSoporte">Mensaje</label>
+          <textarea
+            id="mensajeSoporte"
+            rows="4"
+            name="mensajeSoporte"
+            placeholder="¿En qué podemos ayudarte?"></textarea>
+
+        </div>
+
+        <button type="submit" class="btn-enviar">Enviar</button>
+      </form>
     </div>
 
-    <div class="contacto-item">
-      <div class="icon-circle">
-        <img src="assets/img/whatsapp.png" alt="WhatsApp">
-      </div>
-      <div class="contacto-text">
-        <span class="label">WhatsApp</span>
-        <span class="value">xxxxxxxxxx</span>
-      </div>
+  </section>
+
+  <footer>
+    <div class="logo-footer">
+      <img src="assets/img/logo-footer.png" alt="EduPlanner">
     </div>
-  </div>
+    <p class="footer-copy">© 2026 EduPlanner. Todos los derechos reservados.</p>
+    <span class="footer-version">EduPlanner v1.0</span>
+  </footer>
 
-  <div class="soporte" id="soporte">
-    <h2><span class="verde">Soporte Técnico</span></h2>
-
-    <form class="form-soporte">
-      <div class="input-group">
-        <label for="nombre">Nombre Remitente</label>
-        <input type="text" id="nombre" name="nombre" placeholder="Tu nombre">
-      </div>
-
-      <div class="input-group">
-        <label for="email">Email</label>
-        <input type="email" id="email" name="email" placeholder="tu@email.com">
-      </div>
-
-      <div class="input-group">
-        <label for="asunto">Asunto</label>
-        <select id="asunto" name="asunto">
-          <option value="">Selecciona un asunto</option>
-          <option value="tecnico">Soporte técnico</option>
-          <option value="general">Consulta general</option>
-        </select>
-      </div>
-
-      <div class="input-group">
-        <label for="mensaje">Mensaje</label>
-        <textarea id="mensaje" name="mensaje" placeholder="¿En qué podemos ayudarte?" rows="3"></textarea>
-      </div>
-
-      <button type="submit" class="btn-enviar">Enviar</button>
-    </form>
-  </div>
-</section>
-
-<footer>
-  <div class="logo-footer">
-    <img src="assets/img/Logo-nav.png" alt="Logo">
-  </div>
-  <p class="footer-copy">© 2024 Portal Institucional. Todos los derechos reservados.</p>
-  <span class="footer-version">EduPlanner v1.0</span>
-</footer>
+</div>

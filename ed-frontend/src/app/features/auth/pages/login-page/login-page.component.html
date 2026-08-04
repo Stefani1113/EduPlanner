@@ -6,7 +6,7 @@
 
 <div class="back-login">
   <a routerLink="/inicio">
-    <img src="assets/img/right-arrow.png" alt="">
+    <img src="assets/img/right-arrow.png" alt="/ed-frontend/src/app/features/home/pages/inicio">
     Volver al Inicio
   </a>
 </div> 
@@ -26,17 +26,19 @@
       </p>
 
       <div class="field-login" [class.error]="emailTouched && !email">
-        <label>Correo Institucional</label>
+        <label>Correo </label>
 
-        <input
-          type="email"
-          [(ngModel)]="email"
-          placeholder="EduPlanner@gmail.com"
-          (blur)="emailTouched = true">
+      <input
+        type="email"
+        [(ngModel)]="email"
+        name="loginEmail"
+        placeholder="EduPlanner@gmail.com"
+        autocomplete="off"
+        (blur)="emailTouched = true">
 
         <div class="error-message" *ngIf="emailTouched && !email">
           <img src="assets/img/error.png" alt="">
-          <span>El correo institucional es obligatorio.</span>
+          <span>• El correo es obligatorio.</span>
         </div>
 
       </div>
@@ -49,7 +51,9 @@
           <input
             [type]="showPassword ? 'text' : 'password'"
             [(ngModel)]="password"
+            name="loginPassword"
             placeholder="••••••••••"
+            autocomplete="new-password"
             (blur)="passwordTouched = true">
           <img
             [src]="showPassword ? 'assets/img/eye-off.png' : 'assets/img/eye.png'"
@@ -59,7 +63,7 @@
 
         <div class="error-message" *ngIf="passwordTouched && !password">
           <img src="assets/img/error.png" alt="">
-          <span>La contraseña es obligatoria.</span>
+          <span> • La contraseña es obligatoria.</span>
         </div>
       </div>
       <div class="error-message server-error" *ngIf="serverError">
