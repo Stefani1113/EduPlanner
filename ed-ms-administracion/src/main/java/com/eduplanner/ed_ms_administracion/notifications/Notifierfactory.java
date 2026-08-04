@@ -9,7 +9,7 @@ import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
-public class Notifierfactory {
+public class NotifierFactory {
     
     private final EmailNotifier emailNotifier;
 
