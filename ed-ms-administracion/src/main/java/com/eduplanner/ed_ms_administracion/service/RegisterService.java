@@ -8,8 +8,8 @@ import com.eduplanner.ed_lib_common.entity.User;
 import com.eduplanner.ed_lib_common.enums.RolEnum;
 import com.eduplanner.ed_lib_common.notifications.NotificationType;
 import com.eduplanner.ed_ms_administracion.client.AuthServiceClient;
-
-import com.eduplanner.ed_ms_administracion.notifications.Notifierfactory;
+import com.eduplanner.ed_ms_administracion.notifications.EmailTemplateService;
+import com.eduplanner.ed_ms_administracion.notifications.NotifierFactory;
 import com.eduplanner.ed_ms_administracion.repository.GuardianRepository;
 import com.eduplanner.ed_ms_administracion.repository.ImportRepository;
 import com.eduplanner.ed_ms_administracion.repository.RoleRepository;
@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
 import java.util.UUID;
 
 @Service
@@ -31,8 +32,9 @@ public class RegisterService {
     private final GuardianRepository guardianRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthServiceClient authServiceClient;
-    private final Notifierfactory notifierFactory;
+    private final NotifierFactory notifierFactory;
     private final ImportRepository importRepository;
+    private final EmailTemplateService emailTemplateService;
 
     @Value("${institution.id}")
     private Integer institutionId;
@@ -48,7 +50,7 @@ public class RegisterService {
 
     @Transactional
     public void registerStudentInternal(RegisterStudentDTO dto, Integer idImport) {
-        validateNotDuplicated(dto.getEmail(), dto.getDocument());
+        validateNotDuplicated(dto.getEmail(), dto.getDocument(), dto.getPhoneNumber());
 
         Role role = getRoleOrThrow(RolEnum.ESTUDIANTE.getId());
 
@@ -83,7 +85,7 @@ public class RegisterService {
     // REGISTRO DE ADMINISTRADOR / DIRECTIVO
     @Transactional
     public void registerStaff(RegisterStaffDTO dto) {
-        validateNotDuplicated(dto.getEmail(), dto.getDocument());
+        validateNotDuplicated(dto.getEmail(), dto.getDocument(), dto.getPhoneNumber());
 
         // idRole viene del DTO porque este endpoint cubre 2 roles distintos
         if (!dto.getIdRole().equals(RolEnum.ADMINISTRADOR.getId())
@@ -108,12 +110,15 @@ public class RegisterService {
     }
 
 
-    private void validateNotDuplicated(String email, String document) {
+    private void validateNotDuplicated(String email, String document, String phoneNumber) {
         if (userRepository.existsByEmail(email)) {
             throw new IllegalArgumentException("El correo ya está registrado");
         }
         if (userRepository.existsByDocument(document)) {
             throw new IllegalArgumentException("El documento ya está registrado");
+        }
+        if (userRepository.existsByPhoneNumber(phoneNumber)) {
+            throw new IllegalArgumentException("El número de celular ya está registrado por otro usuario");
         }
     }
 
@@ -167,12 +172,13 @@ public class RegisterService {
         String activationToken = authServiceClient.requestActivationToken(user.getEmail());
         String activationLink = activationUrlBase + "?token=" + activationToken;
 
-        String message = "Hola " + user.getName() + ",\n\n"
-                + "Tu cuenta en EduPlanner fue creada. Haz clic en el siguiente enlace para activarla "
-                + "y definir tu contraseña:\n\n" + activationLink
-                + "\n\nEste enlace expira en 24 horas.";
+        Map<String, Object> variables = Map.of(
+                "name", user.getName(),
+                "activationLink", activationLink
+        );
 
+        String htmlContent = emailTemplateService.render("email/activation-account", variables);
         notifierFactory.create(NotificationType.EMAIL)
-                .send(user.getEmail(), "Activa tu cuenta en EduPlanner", message);
+                .send(user.getEmail(), "Activa tu cuenta en EduPlanner", htmlContent);
     }
 }
