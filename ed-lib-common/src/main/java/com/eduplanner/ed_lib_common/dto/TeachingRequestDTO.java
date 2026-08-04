@@ -9,7 +9,7 @@ import java.time.LocalDate;
  * RF 5 / RF 5.1 - Datos para crear o editar un perfil de docente.
  */
 @Data
-public class DocenteRequestDTO {
+public class TeachingRequestDTO {
 
     @NotBlank(message = "El nombre es obligatorio")
     @Size(max = 100)
