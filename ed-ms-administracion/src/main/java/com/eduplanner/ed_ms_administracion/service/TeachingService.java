@@ -20,7 +20,7 @@ import java.util.stream.Stream;
 @Log4j2
 public class TeachingService {
 
-  
+
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;

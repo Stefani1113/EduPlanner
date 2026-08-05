@@ -45,8 +45,8 @@ public class JwtValidatorService {
         return resolver.apply(claims);
     }
 
-    public Long extractIdUser(String token) {
-        return extractClaim(token, c -> Long.valueOf(c.getSubject()));
+    public Integer extractIdUser(String token) {
+        return extractClaim(token, c -> Integer.valueOf(c.getSubject()));
     }
 
     public String extractIdRole(String token) {
