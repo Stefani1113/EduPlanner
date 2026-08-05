@@ -38,7 +38,7 @@ public class MeController {
     public ResponseEntity<HttpGlobalResponse<UserResponseDTO>> getMyProfile(HttpServletRequest request) {
         HttpGlobalResponse<UserResponseDTO> response = new HttpGlobalResponse<>();
 
-z
+
         try {
             UserResponseDTO user = userQueryService.findById(idUser);
             response.setData(user);
