@@ -57,7 +57,6 @@ export class TopbarComponent implements OnInit {
         this.rolUsuario = this.formatearRol(usuario.role);
       }
     } catch {
-      // localStorage con datos corruptos: se mantienen los valores por defecto
     }
   }
 

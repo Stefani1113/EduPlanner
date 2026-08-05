@@ -61,15 +61,21 @@ export const ID_ROL_DIRECTIVO = 4;
 })
 export class UsuariosService {
 
-  private api = 'http://localhost:8080/administracion';
+  private api = 'http://localhost:8080/administracion/eduplanner';
+
   constructor(private http: HttpClient) {}
 
   listar(idRole?: number): Observable<HttpGlobalResponse<UserResponseDTO[]>> {
     const params: Record<string, string> = {};
+
     if (idRole !== undefined) {
       params['idRole'] = idRole.toString();
     }
-    return this.http.get<HttpGlobalResponse<UserResponseDTO[]>>(`${this.api}/users`, { params });
+
+    return this.http.get<HttpGlobalResponse<UserResponseDTO[]>>(
+      `${this.api}/users`,
+      { params }
+    );
   }
 
   buscarPorNombre(name: string): Observable<HttpGlobalResponse<UserResponseDTO[]>> {
@@ -83,8 +89,12 @@ export class UsuariosService {
   }
 
   registrarPersonal(dto: RegisterStaffDTO): Observable<HttpGlobalResponse<void>> {
-    return this.http.post<HttpGlobalResponse<void>>(`${this.api}/users/register/staff`, dto);
-  }
+  console.log('DTO enviado:', dto);
+  return this.http.post<HttpGlobalResponse<void>>(
+    `${this.api}/users/register/staff`,
+    dto
+  );
+}
 
   registrarDocente(dto: {
     name: string; surnames: string; email: string; phoneNumber: string;
