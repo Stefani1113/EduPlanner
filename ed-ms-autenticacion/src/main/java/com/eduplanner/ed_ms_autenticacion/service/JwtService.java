@@ -24,7 +24,7 @@ public class JwtService {
 
     /** RF 1.6 - Expiración de 10 minutos */
     @Value("${security.jwt.token-expiration}")
-    private Long tokenExpiration;
+    private Integer tokenExpiration;
 
     private SecretKey getSignKey() {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
@@ -60,8 +60,8 @@ public class JwtService {
         return resolver.apply(claims);
     }
 
-    public Long extractIdUser(String token) {
-        return extractClaim(token, c -> Long.valueOf(c.getSubject()));
+    public Integer extractIdUser(String token) {
+        return extractClaim(token, c -> Integer.valueOf(c.getSubject()));
     }
 
     public String extractIdRole(String token) {
