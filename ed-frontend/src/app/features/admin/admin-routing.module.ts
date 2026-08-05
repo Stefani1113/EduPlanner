@@ -42,7 +42,15 @@ const routes: Routes = [
         path: 'notas',
         loadComponent: () => import('./pages/notas/notas.component').then(m => m.NotasComponent),
         data: { breadcrumb: ['Notas'] }
-      }
+      },
+      {
+        path: 'importacion',
+        loadComponent: () =>
+          import('./pages/importacion/importacion.component')
+            .then(m => m.ImportacionComponent),
+        data: { breadcrumb: ['Importación'] }
+      },
+      
     ]
   }
 ];

@@ -1,0 +1,100 @@
+.importacion-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding-top: 40px;
+}
+
+.importacion-card {
+  width: 480px;
+  background: #2f2f2f;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(0,0,0,.35);
+}
+
+.card-header {
+  background: #444;
+  color: #66cc33;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 14px 18px;
+  font-size: 15px;
+}
+
+.card-body {
+  padding: 20px;
+}
+
+.descripcion {
+  background: #335f2d;
+  color: #fff;
+  padding: 15px;
+  border-radius: 5px;
+  font-size: 13px;
+  margin-bottom: 20px;
+}
+
+.drop-zone {
+  background: #2e4f21;
+  border: 2px dashed #6fd83d;
+  border-radius: 6px;
+  height: 160px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  cursor: pointer;
+  transition: .3s;
+}
+
+.drop-zone:hover {
+  background: #355a26;
+}
+
+.drop-zone img {
+  width: 55px;
+  margin-bottom: 10px;
+}
+
+.drop-zone p {
+  color: #d8d8d8;
+  font-size: 13px;
+  text-align: center;
+}
+
+.drop-zone span {
+  color: #ffffff;
+  font-weight: bold;
+}
+
+input[type="file"] {
+  display: none;
+}
+
+.archivo {
+  margin-top: 15px;
+  text-align: center;
+  color: #7CFF45;
+  font-size: 13px;
+}
+
+.btn-importar {
+  width: 100%;
+  margin-top: 20px;
+  border: none;
+  background: #58d11b;
+  color: white;
+  font-size: 15px;
+  font-weight: bold;
+  padding: 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: .3s;
+}
+
+.btn-importar:hover {
+  background: #49b317;
+}

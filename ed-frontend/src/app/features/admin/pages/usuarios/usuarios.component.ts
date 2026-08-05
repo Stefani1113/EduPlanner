@@ -8,6 +8,7 @@ import {
 } from './registro-usuario-modal/registro-usuario-modal.component';
 import { RegistroUsuarioFormComponent } from './registro-usuario-form/registro-usuario-form.component';
 import { CambiarRolModalComponent } from './cambiar-rol-modal/cambiar-rol-modal.component';
+import { ImportacionComponent } from '../importacion/importacion.component';
 import {
   UsuariosService,
   UserResponseDTO,
@@ -54,13 +55,14 @@ interface Usuario {
     FormsModule,
     RegistroUsuarioModalComponent,
     RegistroUsuarioFormComponent,
-    CambiarRolModalComponent
+    CambiarRolModalComponent,
+    ImportacionComponent
   ],
   templateUrl: './usuarios.component.html',
   styleUrl: './usuarios.component.scss'
 })
 export class UsuariosComponent implements OnInit, OnDestroy {
-
+ 
   tabs: { key: 'listado' | 'registro' | 'importacion'; label: string }[] = [
     { key: 'listado', label: 'Listado' },
     { key: 'registro', label: 'Registro' },
