@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
+import { ImportacionService } from '../../services/importacion.service';
 
 @Component({
   selector: 'app-importacion',
@@ -13,33 +13,47 @@ export class ImportacionComponent {
 
   archivo!: File;
 
-  constructor(private http: HttpClient) {}
+  cargando = false;
 
-  seleccionarArchivo(event: any): void {
-    if (event.target.files.length > 0) {
-      this.archivo = event.target.files[0];
+  constructor(private service: ImportacionService) {}
+
+  seleccionarArchivo(event: Event): void {
+
+    const input = event.target as HTMLInputElement;
+
+    if (input.files && input.files.length > 0) {
+      this.archivo = input.files[0];
     }
+
   }
 
   importar(): void {
+
     if (!this.archivo) {
-      alert('Seleccione un archivo');
+      alert('Seleccione un archivo Excel');
       return;
     }
 
-    const formData = new FormData();
-    formData.append('archivo', this.archivo);
+    this.cargando = true;
 
-    this.http.post('http://localhost:8080/api/usuarios/importar', formData)
-      .subscribe({
-        next: (response) => {
-          console.log(response);
-          alert('Importación exitosa');
-        },
-        error: (error) => {
-          console.error(error);
-          alert('Error al importar');
-        }
-      });
+    this.service.importarExcel(this.archivo).subscribe({
+
+      next: (resp: any) => {
+
+        this.cargando = false;
+        alert(resp.message || 'Importación realizada correctamente');
+
+      },
+
+      error: (err) => {
+
+        this.cargando = false;
+        alert(err?.error?.message || 'Ocurrió un error al importar el archivo');
+
+      }
+
+    });
+
   }
+
 }

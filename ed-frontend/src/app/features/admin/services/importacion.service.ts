@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpEvent } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 @Injectable({
@@ -7,12 +7,21 @@ import { Observable } from 'rxjs';
 })
 export class ImportacionService {
 
-  private api = 'http://localhost:8080/api/usuarios';
+  private api = 'http://localhost:8080/users';
 
   constructor(private http: HttpClient) {}
 
-  importarArchivo(formData: FormData): Observable<any> {
-    return this.http.post(`${this.api}/importar`, formData);
+  importarExcel(file: File): Observable<any> {
+
+    const formData = new FormData();
+
+    formData.append('file', file);
+
+    return this.http.post(
+      `${this.api}/import`,
+      formData
+    );
+
   }
 
 }
