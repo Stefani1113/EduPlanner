@@ -1,0 +1,56 @@
+<div class="importacion-container">
+
+  <div class="importacion-card">
+
+    <div class="card-header">
+      IMPORTACIÓN MASIVA
+    </div>
+
+    <div class="card-body">
+
+      <div class="descripcion">
+        Importa la lista de estudiantes que quieras ingresar al sistema.
+      </div>
+
+      <label class="drop-zone">
+
+        <img src="assets/img/archive.png" alt="Subir archivo">
+
+        <div class="upload-text">
+          <p>
+            Arrastra tu archivo aquí
+          </p>
+
+          <span>
+            o haz clic para seleccionarlo
+          </span>
+        </div>
+
+        <input
+          type="file"
+          accept=".xlsx,.xls,.csv"
+          (change)="seleccionarArchivo($event)"
+        >
+
+      </label>
+
+
+      <div class="archivo" *ngIf="archivo">
+        <i class="fa-solid fa-file"></i>
+        {{archivo.name}}
+      </div>
+
+
+      <button class="btn-importar"
+        (click)="importar()">
+
+        IMPORTAR ARCHIVO
+
+      </button>
+
+
+    </div>
+
+  </div>
+
+</div>
