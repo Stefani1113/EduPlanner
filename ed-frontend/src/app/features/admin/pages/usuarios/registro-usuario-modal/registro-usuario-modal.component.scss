@@ -1,101 +1,317 @@
-.modal-overlay{
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,.65) center/700px no-repeat;
-    backdrop-filter:blur(2px);
-    display:flex;
-    justify-content:center;
-    align-items:center;
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+  box-sizing: border-box;
+  animation: fadeIn 0.3s ease;
 }
 
-.modal{
-    width:100%;
-    max-width:700px;
-    max-height:90vh;
-    background:#232323;
-    border-radius:22px;
-    overflow:hidden;
-    box-shadow:0 15px 40px rgba(0,0,0,.45);
-    display:flex;
-    flex-direction:column;
+
+.modal {
+  width: 100%;
+  max-width: 720px;
+  max-height: 92vh;
+  background: #1a1a1a;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.3s ease;
 }
+
 
 .modal-header {
-  background:
-  linear-gradient(rgba(37, 37, 37, 0.769), rgba(37, 37, 37, 0.769)),
-  url("/assets/img/pattern-trasparent.png");
+  background: 
+    linear-gradient(rgba(26, 26, 26, 0.85), rgba(26, 26, 26, 0.92)),
+    url("/assets/img/pattern-trasparent.png");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 14px 20px 18px;
+  padding: 20px 25px 18px;
+  position: relative;
+}
+
+.modal-header::after {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #53bb1b, transparent);
+  opacity: 0.5;
 }
 
 .modal-header h2 {
-  margin: 0 0 10px;
-  color: white;
-  font-size: 18px;
-  font-weight: 800;
+  margin: 0 0 6px;
+  color: #fff;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
-.foto-wrapper{
-    width:110px;
-    height:110px;
-    margin-top:10px;
-    margin-bottom:16px;
+.foto-wrapper {
+  width: 100px;
+  height: 100px;
+  margin: 8px 0 12px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #1a1a1a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
 
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
+.foto-wrapper:hover {
+  border-color: rgba(83, 187, 27, 0.7);
+  transform: scale(1.03);
+  box-shadow: 0 4px 30px rgba(83, 187, 27, 0.15);
+}
+
+.foto-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .btn-foto {
   width: 120px;
-  height: 32px;
+  height: 34px;
   border: none;
-  border-radius: 3px;
-  background: #4caf1b7d;
-  color: white;
+  border-radius: 20px;
+  background: rgba(83, 187, 27, 0.2);
+  color: #6fd62c;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
-  transition: .25s;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  backdrop-filter: blur(4px);
 }
 
+
 .btn-foto:hover {
-  background: #58d61e;
+  background: rgba(83, 187, 27, 0.35);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(83, 187, 27, 0.15);
 }
 
 .modal-form {
-  padding: 20px;
+  padding: 20px 24px;
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 16px;
   overflow-y: auto;
   flex: 1 1 auto;
   min-height: 0;
+  background: #151515;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(83, 187, 27, 0.3) transparent;
 }
 
-.modal-header,
-.modal-footer {
-  flex: 0 0 auto;
+.modal-form::-webkit-scrollbar {
+  width: 6px;
 }
 
+.modal-form::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.modal-form::-webkit-scrollbar-thumb {
+  background-color: rgba(83, 187, 27, 0.3);
+  border-radius: 10px;
+}
+
+.modal-form::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(83, 187, 27, 0.5);
+}
+
+/* ===== SECTION TITLE ===== */
 .section-title {
-  margin: 4px 0 -4px;
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: .04em;
+  margin: 8px 0 0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #53BB1B;
-  border-bottom: 1px solid #3a3a3a;
+  color: #6fd62c;
+  border-bottom: 1px solid rgba(83, 187, 27, 0.1);
   padding-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
+.section-title::before {
+  content: '▸';
+  font-size: 14px;
+  color: #53bb1b;
+}
+
+/* ===== GRID ===== */
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 18px;
+}
+
+/* ===== FIELDS ===== */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.field.full {
+  grid-column: 1 / -1;
+}
+
+.field label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  background: #1e1e1e;
+  border: 1px solid #2d2d2d;
+  color: #eee;
+  font-size: 13px;
+  border-radius: 8px;
+  outline: none;
+  transition: all 0.25s ease;
+  font-family: inherit;
+}
+
+.field input:hover,
+.field select:hover,
+.field textarea:hover {
+  border-color: #3d3d3d;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  border-color: rgba(83, 187, 27, 0.5);
+  box-shadow: 0 0 0 3px rgba(83, 187, 27, 0.05);
+  background: #222;
+}
+
+.field input,
+.field select {
+  height: 40px;
+  padding: 0 14px;
+}
+
+.field textarea {
+  height: 80px;
+  padding: 10px 14px;
+  resize: vertical;
+  min-height: 60px;
+  max-height: 150px;
+}
+
+.field input::placeholder,
+.field textarea::placeholder {
+  color: #555;
+  font-size: 12px;
+}
+
+.field select option {
+  background: #1e1e1e;
+  color: #eee;
+}
+
+/* ===== TÍTULOS PROFESIONALES ===== */
+.titulo-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.titulo-row input {
+  flex: 1;
+}
+
+.btn-agregar {
+  height: 40px;
+  padding: 0 20px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(83, 187, 27, 0.12);
+  color: #6fd62c;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+  transition: all 0.25s ease;
+  white-space: nowrap;
+}
+
+.btn-agregar:hover {
+  background: rgba(83, 187, 27, 0.25);
+  transform: translateY(-1px);
+}
+
+.titulos-lista {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.titulo-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(83, 187, 27, 0.08);
+  color: #6fd62c;
+  border: 1px solid rgba(83, 187, 27, 0.15);
+  padding: 4px 10px 4px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  transition: all 0.2s ease;
+}
+
+.titulo-chip:hover {
+  background: rgba(83, 187, 27, 0.15);
+}
+
+.titulo-chip button {
+  border: none;
+  background: transparent;
+  color: #666;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  padding: 0 2px;
+  transition: color 0.2s ease;
+}
+
+.titulo-chip button:hover {
+  color: #e05656;
+}
+
+/* ===== ROLE TABS ===== */
 .role-tabs {
   display: flex;
   gap: 10px;
@@ -104,195 +320,307 @@
 .role-tab {
   flex: 1;
   height: 40px;
-  border: 1px solid #4d4d4d;
+  border: 2px solid #2d2d2d;
   border-radius: 8px;
-  background: #2d2d2d;
-  color: #bdbdbd;
-  font-weight: 700;
+  background: transparent;
+  color: #888;
+  font-weight: 600;
   font-size: 13px;
   cursor: pointer;
-  transition: .2s;
+  transition: all 0.25s ease;
 }
 
 .role-tab:hover {
-  border-color: #53BB1B;
-  color: white;
+  border-color: #4d4d4d;
+  color: #ccc;
 }
 
 .role-tab.active {
-  background: #53bb1b98;
-  border-color: #53BB1B;
-  color: white;
+  background: rgba(83, 187, 27, 0.12);
+  border-color: #53bb1b;
+  color: #6fd62c;
 }
 
-.grid-2 {
-  display: grid;
-  grid-template-columns: repeat(2,1fr);
-  gap: 14px 16px;
-}
-
-.field {
-  display: flex;
-  flex-direction: column;
-}
-
-.field.full {
-  grid-column: 1/-1;
-}
-
-.field label {
-  margin-bottom: 6px;
-  font-size: 11px;
-  font-weight: 800;
-  color: #a5a5a5;
-  text-transform: uppercase;
-}
-
-.field input,
-.field select,
-.field textarea {
-  width: 100%;
-  background: #2d2d2d;
-  border: 1px solid #4d4d4d;
-  color: white;
-  font-size: 13px;
-  border-radius: 3px;
-  outline: none;
-  transition: .2s;
-}
-
-.field input,
-.field select {
-  height: 38px;
-  padding: 0 12px;
-}
-
-.field textarea {
-  height: 85px;
-  padding: 10px 12px;
-  resize: none;
-}
-
-.field input:focus,
-.field select:focus,
-.field textarea:focus {
-  border-color: #53BB1B;
-}
-
-.field input::placeholder,
-.field textarea::placeholder {
-  color: #8d8d8d
-}
-
-.field select option {
-  background: #252525;
-}
-
-.titulo-row {
-  display: flex;
-  gap: 10px;
-}
-
-.titulo-row input {
-  flex: 1;
-}
-
-.btn-agregar {
-  width: 95px;
-  height: 38px;
-  border: none;
-  border-radius: 3px;
-  background: #4caf1b8e;
-  color: white;
-  cursor: pointer;
-  font-weight: 700;
-}
-
-.btn-agregar:hover {
-  background: #58d61eb9;
-}
-
-.titulos-lista {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 10px;
-}
-
-.titulo-chip {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: rgba(83, 187, 27, .15);
-  color: #53BB1B;
-  border: 1px solid rgba(83, 187, 27, 0.687);
-  padding: 5px 10px;
-  border-radius: 20px;
-  font-size: 12px;
-
-  button {
-    border: none;
-    background: transparent;
-    color: inherit;
-    cursor: pointer;
-    font-size: 14px;
-  }
-}
-
+/* ===== FOOTER ===== */
 .modal-footer {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
-  padding: 18px 20px;
-  border-top: 1px solid #53bb1b6f;
+  padding: 16px 24px;
+  background: #151515;
+  border-top: 1px solid rgba(83, 187, 27, 0.08);
 }
 
 .btn-cancelar,
 .btn-guardar {
   border: none;
-  border-radius: 3px;
-  height: 38px;
-  padding: 0 24px;
+  border-radius: 8px;
+  height: 40px;
+  padding: 0 28px;
   cursor: pointer;
-  font-size: 12px;
-  font-weight: 700;
-  transition: .25s;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.25s ease;
 }
 
 .btn-cancelar {
-  background: #bdbdbd;
-  color: #444;
+  background: #2a2a2a;
+  color: #999;
 }
 
 .btn-cancelar:hover {
-  background: #d0d0d0;
+  background: #333;
+  color: #fff;
+  transform: translateY(-1px);
 }
 
 .btn-guardar {
-  background: #58d61e8f;
-  color: white;
+  background: #53bb1b;
+  color: #fff;
 }
 
 .btn-guardar:hover {
-  background: #62cf21;
+  background: #6fd62c;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(83, 187, 27, 0.3);
 }
 
-@media (max-width: 600px) {
+.btn-guardar:active {
+  transform: translateY(0);
+}
+
+/* ============================================ */
+/* ============ MEDIA QUERIES ================ */
+/* ============================================ */
+
+/* --- 1. Mobile S (≤ 352px) --- */
+@media (max-width: 352px) {
+  .modal-overlay {
+    padding: 8px;
+  }
 
   .modal {
-    max-width: 95%;
+    max-height: 96vh;
+    border-radius: 14px;
+  }
+
+  .modal-header {
+    padding: 14px 16px 12px;
+  }
+
+  .modal-header h2 {
+    font-size: 16px;
+  }
+
+  .foto-wrapper {
+    width: 75px;
+    height: 75px;
+    margin: 4px 0 8px;
+    border-width: 2px;
+  }
+
+  .btn-foto {
+    width: 100px;
+    height: 30px;
+    font-size: 12px;
+  }
+
+  .modal-form {
+    padding: 12px 14px;
+    gap: 12px;
+  }
+
+  .section-title {
+    font-size: 10px;
+    padding-bottom: 6px;
+    margin: 4px 0 0;
   }
 
   .grid-2 {
     grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .field input,
+  .field select {
+    height: 36px;
+    font-size: 12px;
+    padding: 0 12px;
+  }
+
+  .field textarea {
+    height: 60px;
+    font-size: 12px;
+    padding: 8px 12px;
+  }
+
+  .field label {
+    font-size: 9px;
+  }
+
+  .role-tabs {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .role-tab {
+    height: 36px;
+    font-size: 12px;
   }
 
   .titulo-row {
     flex-direction: column;
+    gap: 6px;
   }
 
   .btn-agregar {
     width: 100%;
+    height: 36px;
+    font-size: 12px;
+  }
+
+  .titulo-chip {
+    font-size: 11px;
+    padding: 3px 8px 3px 12px;
+  }
+
+  .modal-footer {
+    padding: 12px 14px;
+    flex-direction: column-reverse;
+    gap: 8px;
+  }
+
+  .btn-cancelar,
+  .btn-guardar {
+    height: 36px;
+    padding: 0 16px;
+    font-size: 12px;
+    width: 100%;
+  }
+}
+
+/* --- 2. Mobile M (353px - 480px) --- */
+@media (min-width: 353px) and (max-width: 480px) {
+  .modal-overlay {
+    padding: 12px;
+  }
+
+  .modal {
+    max-height: 94vh;
+    border-radius: 16px;
+  }
+
+  .modal-header {
+    padding: 16px 18px 14px;
+  }
+
+  .modal-header h2 {
+    font-size: 17px;
+  }
+
+  .foto-wrapper {
+    width: 85px;
+    height: 85px;
+  }
+
+  .btn-foto {
+    width: 110px;
+    height: 32px;
+    font-size: 12px;
+  }
+
+  .modal-form {
+    padding: 14px 16px;
+    gap: 13px;
+  }
+
+  .section-title {
+    font-size: 10px;
+  }
+
+  .grid-2 {
+    grid-template-columns: 1fr;
+    gap: 11px;
+  }
+
+  .field input,
+  .field select {
+    height: 38px;
+  }
+
+  .role-tabs {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .role-tab {
+    height: 38px;
+  }
+
+  .titulo-row {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .btn-agregar {
+    width: 100%;
+    height: 38px;
+  }
+
+  .modal-footer {
+    padding: 14px 16px;
+    flex-direction: column-reverse;
+    gap: 8px;
+  }
+
+  .btn-cancelar,
+  .btn-guardar {
+    height: 38px;
+    width: 100%;
+  }
+}
+
+/* --- 3. Mobile L / Tablets pequeñas (481px - 600px) --- */
+@media (min-width: 481px) and (max-width: 600px) {
+  .modal-overlay {
+    padding: 16px;
+  }
+
+  .modal {
+    max-height: 92vh;
+    border-radius: 18px;
+  }
+
+  .modal-header h2 {
+    font-size: 18px;
+  }
+
+  .foto-wrapper {
+    width: 90px;
+    height: 90px;
+  }
+
+  .modal-form {
+    padding: 16px 20px;
+  }
+
+  .grid-2 {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 14px;
+  }
+
+  .field input,
+  .field select {
+    height: 38px;
+  }
+
+  .role-tabs {
+    flex-wrap: wrap;
+  }
+
+  .role-tab {
+    flex: 1 1 calc(50% - 5px);
+    min-width: 80px;
   }
 
   .modal-footer {
@@ -302,5 +630,297 @@
   .btn-cancelar,
   .btn-guardar {
     flex: 1;
+  }
+}
+
+/* --- 4. Tablets (601px - 768px) --- */
+@media (min-width: 601px) and (max-width: 768px) {
+  .modal {
+    max-width: 96%;
+    max-height: 90vh;
+  }
+
+  .modal-form {
+    padding: 18px 22px;
+  }
+
+  .grid-2 {
+    grid-template-columns: 1fr 1fr;
+    gap: 14px 16px;
+  }
+
+  .role-tabs {
+    flex-wrap: wrap;
+  }
+
+  .role-tab {
+    flex: 1 1 calc(50% - 5px);
+    min-width: 90px;
+  }
+
+  .modal-footer {
+    justify-content: flex-end;
+  }
+
+  .btn-cancelar,
+  .btn-guardar {
+    padding: 0 24px;
+  }
+}
+
+/* --- 5. Tablets grandes / Laptops pequeñas (769px - 920px) --- */
+@media (min-width: 769px) and (max-width: 920px) {
+  .modal {
+    max-width: 680px;
+  }
+
+  .modal-form {
+    padding: 20px 24px;
+  }
+
+  .grid-2 {
+    gap: 14px 18px;
+  }
+
+  .role-tab {
+    height: 38px;
+  }
+}
+
+/* --- 6. Laptops (921px - 1100px) --- */
+@media (min-width: 921px) and (max-width: 1100px) {
+  .modal {
+    max-width: 700px;
+  }
+
+  .modal-form {
+    padding: 22px 26px;
+  }
+}
+
+/* --- 7. Escritorios grandes (≥ 1101px) --- */
+@media (min-width: 1101px) {
+  .modal {
+    max-width: 740px;
+  }
+
+  .modal-form {
+    padding: 24px 28px;
+    gap: 18px;
+  }
+
+  .grid-2 {
+    gap: 16px 22px;
+  }
+
+  .field input,
+  .field select {
+    height: 42px;
+  }
+
+  .field textarea {
+    height: 90px;
+  }
+}
+
+/* --- 8. Altura pequeña (≤ 700px) --- */
+@media (max-height: 700px) {
+  .modal {
+    max-height: 94vh;
+  }
+
+  .modal-header {
+    padding: 12px 20px 10px;
+  }
+
+  .modal-header h2 {
+    font-size: 16px;
+    margin: 0 0 4px;
+  }
+
+  .foto-wrapper {
+    width: 65px;
+    height: 65px;
+    margin: 4px 0 6px;
+  }
+
+  .btn-foto {
+    width: 90px;
+    height: 28px;
+    font-size: 11px;
+  }
+
+  .modal-form {
+    padding: 10px 16px;
+    gap: 8px;
+  }
+
+  .section-title {
+    font-size: 9px;
+    padding-bottom: 4px;
+    margin: 2px 0 0;
+  }
+
+  .grid-2 {
+    gap: 6px 12px;
+  }
+
+  .field label {
+    font-size: 9px;
+  }
+
+  .field input,
+  .field select {
+    height: 30px;
+    font-size: 12px;
+    padding: 0 10px;
+  }
+
+  .field textarea {
+    height: 45px;
+    font-size: 12px;
+    padding: 6px 10px;
+    min-height: 40px;
+  }
+
+  .role-tab {
+    height: 30px;
+    font-size: 11px;
+  }
+
+  .btn-agregar {
+    height: 30px;
+    font-size: 11px;
+    padding: 0 14px;
+  }
+
+  .modal-footer {
+    padding: 10px 16px;
+  }
+
+  .btn-cancelar,
+  .btn-guardar {
+    height: 32px;
+    font-size: 12px;
+    padding: 0 16px;
+  }
+
+  .titulo-chip {
+    font-size: 10px;
+    padding: 2px 8px 2px 10px;
+  }
+
+  .titulo-chip button {
+    font-size: 13px;
+  }
+}
+
+/* --- 9. Altura muy pequeña (≤ 600px) --- */
+@media (max-height: 600px) {
+  .modal {
+    max-height: 97vh;
+  }
+
+  .modal-header {
+    padding: 8px 16px 6px;
+  }
+
+  .modal-header h2 {
+    font-size: 14px;
+    margin: 0;
+  }
+
+  .foto-wrapper {
+    width: 50px;
+    height: 50px;
+    margin: 2px 0 4px;
+    border-width: 2px;
+  }
+
+  .btn-foto {
+    width: 80px;
+    height: 24px;
+    font-size: 10px;
+  }
+
+  .modal-form {
+    padding: 6px 12px;
+    gap: 4px;
+  }
+
+  .section-title {
+    font-size: 8px;
+    padding-bottom: 2px;
+    margin: 0;
+  }
+
+  .grid-2 {
+    gap: 4px 8px;
+  }
+
+  .field label {
+    font-size: 8px;
+    letter-spacing: 0.03em;
+  }
+
+  .field input,
+  .field select {
+    height: 24px;
+    font-size: 11px;
+    padding: 0 8px;
+    border-radius: 6px;
+  }
+
+  .field textarea {
+    height: 32px;
+    font-size: 11px;
+    padding: 4px 8px;
+    min-height: 30px;
+    border-radius: 6px;
+  }
+
+  .role-tabs {
+    gap: 4px;
+  }
+
+  .role-tab {
+    height: 24px;
+    font-size: 10px;
+    border-radius: 6px;
+    border-width: 1px;
+  }
+
+  .titulo-row {
+    gap: 4px;
+  }
+
+  .btn-agregar {
+    height: 24px;
+    font-size: 10px;
+    padding: 0 10px;
+    border-radius: 6px;
+  }
+
+  .titulo-chip {
+    font-size: 9px;
+    padding: 2px 6px 2px 8px;
+    border-radius: 14px;
+  }
+
+  .titulo-chip button {
+    font-size: 11px;
+  }
+
+  .modal-footer {
+    padding: 6px 12px;
+    gap: 6px;
+  }
+
+  .btn-cancelar,
+  .btn-guardar {
+    height: 28px;
+    font-size: 11px;
+    padding: 0 12px;
+    border-radius: 6px;
   }
 }

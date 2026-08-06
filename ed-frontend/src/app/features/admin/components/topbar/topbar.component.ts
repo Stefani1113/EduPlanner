@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { BreadcrumbService } from '../../services/breadcrumb.service';
+import { SidebarService } from '../../services/sidebar.service';
 
 interface UsuarioSesion {
   name?: string;
@@ -28,8 +29,13 @@ export class TopbarComponent implements OnInit {
   constructor(
     private router: Router,
     private activatedRoute: ActivatedRoute,
-    private breadcrumbService: BreadcrumbService
+    private breadcrumbService: BreadcrumbService,
+    private sidebarService: SidebarService
   ) {}
+
+  toggleSidebar(): void {
+    this.sidebarService.toggle();
+  }
 
   ngOnInit(): void {
     this.updateBreadcrumb();

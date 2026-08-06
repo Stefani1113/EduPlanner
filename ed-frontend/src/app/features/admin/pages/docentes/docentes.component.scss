@@ -43,7 +43,9 @@
   cursor: pointer;
   transition: .25s;
 
-  &:hover { background: #3a3a3a; }
+  &:hover {
+    background: #3a3a3a;
+  }
 }
 
 .btn-agregar {
@@ -56,7 +58,9 @@
   cursor: pointer;
   transition: .25s;
 
-  &:hover { background: #53bb1b; }
+  &:hover {
+    background: #53bb1b;
+  }
 }
 
 .tabla-wrapper {
@@ -71,14 +75,17 @@
   text-align: center;
   color: #9b9b9b;
 
-  &.error { color: #e05656; }
+  &.error {
+    color: #e05656;
+  }
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
 
-  th, td {
+  th,
+  td {
     text-align: left;
     padding: 14px 16px;
     font-size: 14px;
@@ -93,7 +100,9 @@ table {
   tbody tr {
     border-bottom: 1px solid #2a2a2a;
 
-    &:hover { background: #262626; }
+    &:hover {
+      background: #262626;
+    }
   }
 }
 
@@ -158,7 +167,9 @@ table {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 100;
+  z-index: 1000;
+  padding: 20px;
+  box-sizing: border-box;
 }
 
 .modal {
@@ -192,7 +203,9 @@ table {
   font-size: 16px;
   cursor: pointer;
 
-  &:hover { color: #fff; }
+  &:hover {
+    color: #fff;
+  }
 }
 
 .modal-body {
@@ -200,6 +213,27 @@ table {
   overflow-y: auto;
   flex: 1 1 auto;
   min-height: 0;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: #53bb1b98 transparent;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: #53bb1b98;
+    border-radius: 8px;
+    border: 2px solid #202020;
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background-color: #53bb1b;
+  }
 }
 
 .grid-2 {
@@ -227,7 +261,9 @@ table {
     color: #9b9b9b;
   }
 
-  input, select, textarea {
+  input,
+  select,
+  textarea {
     background: #1b1b1b;
     border: 1px solid #333;
     border-radius: 8px;
@@ -253,7 +289,8 @@ table {
   }
 }
 
-.grid-2 .campo, .grid-3 .campo {
+.grid-2 .campo,
+.grid-3 .campo {
   margin-bottom: 0;
 }
 
@@ -290,7 +327,9 @@ table {
   padding: 10px 20px;
   cursor: pointer;
 
-  &:hover { color: #fff; }
+  &:hover {
+    color: #fff;
+  }
 }
 
 .btn-guardar {
@@ -303,10 +342,182 @@ table {
   cursor: pointer;
   transition: .25s;
 
-  &:hover { background: #53bb1b; }
+  &:hover {
+    background: #53bb1b;
+  }
 
   &:disabled {
     opacity: .6;
     cursor: not-allowed;
+  }
+}
+
+@media (max-width: 352px) {
+  .modal {
+    max-width: 96vw;
+    max-height: 92vh;
+  }
+
+  .modal-header {
+    padding: 12px 16px;
+    h2 {
+      font-size: 16px;
+    }
+  }
+
+  .modal-body {
+    padding: 12px 16px;
+  }
+
+  .modal-footer {
+    padding: 12px 16px;
+    flex-direction: column-reverse;
+    gap: 8px;
+
+    .btn-cancelar,
+    .btn-guardar {
+      width: 100%;
+      padding: 10px 0;
+      text-align: center;
+    }
+  }
+
+  .acciones {
+    flex-direction: column;
+    gap: 4px;
+    align-items: stretch;
+
+    .btn-editar,
+    .btn-eliminar {
+      text-align: center;
+    }
+  }
+
+  table th,
+  table td {
+    padding: 10px 8px;
+    font-size: 12px;
+  }
+}
+
+@media (min-width: 353px) and (max-width: 480px) {
+  .top-section {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-box {
+    max-width: 100%;
+  }
+
+  .btn-agregar {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .grid-2,
+  .grid-3 {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-header {
+    padding: 16px;
+  }
+
+  .modal-body {
+    padding: 16px;
+  }
+
+  .modal-footer {
+    flex-direction: column-reverse;
+    padding: 12px 16px;
+
+    .btn-cancelar,
+    .btn-guardar {
+      width: 100%;
+    }
+  }
+
+  table {
+    th:nth-child(3),
+    td:nth-child(3),
+    th:nth-child(4),
+    td:nth-child(4) {
+      display: none;
+    }
+  }
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
+  .top-section {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .search-box {
+    max-width: 100%;
+  }
+
+  .btn-agregar {
+    width: 100%;
+  }
+
+  .grid-2 {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .grid-3 {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .modal {
+    width: 90vw;
+    max-width: 90vw;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 920px) {
+  .top-section {
+    flex-wrap: wrap;
+  }
+
+  .search-box {
+    max-width: 340px;
+  }
+
+  .modal {
+    width: 80vw;
+    max-width: 80vw;
+  }
+
+  .grid-3 {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (min-width: 921px) and (max-width: 1279px) {
+  .search-box {
+    max-width: 400px;
+  }
+
+  .modal {
+    width: 600px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .docentes-container {
+    max-width: 1360px;
+    margin: 0 auto;
+  }
+
+  .modal {
+    width: 700px;
+  }
+}
+
+@media (min-height: 900px) {
+  .modal {
+    max-height: 80vh;
   }
 }

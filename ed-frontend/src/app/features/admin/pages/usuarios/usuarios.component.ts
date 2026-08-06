@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BreadcrumbService } from '../../services/breadcrumb.service';
@@ -90,6 +90,21 @@ export class UsuariosComponent implements OnInit, OnDestroy {
     private breadcrumbService: BreadcrumbService,
     private usuariosService: UsuariosService
   ) {}
+
+  // Cierra los menús desplegables (filtro de rol / registrar) al hacer clic
+  // fuera de ellos, o al abrir el modal de registro, para que no se queden
+  // "pegados" flotando por encima del modal.
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (!this.mostrarFiltroRol && !this.mostrarMenuRegistrar) return;
+
+    const target = event.target as HTMLElement;
+    const clickDentroDeRoleBox = target.closest('.role-box');
+    const clickDentroDeRegistrarBox = target.closest('.registrar-box');
+
+    if (!clickDentroDeRoleBox) this.mostrarFiltroRol = false;
+    if (!clickDentroDeRegistrarBox) this.mostrarMenuRegistrar = false;
+  }
 
   ngOnInit(): void {
     this.actualizarBreadcrumb();
@@ -194,6 +209,7 @@ export class UsuariosComponent implements OnInit, OnDestroy {
   abrirRegistro(tipo: TipoRegistro): void {
     this.tipoRegistro = tipo;
     this.mostrarMenuRegistrar = false;
+    this.mostrarFiltroRol = false; // evita que el filtro quede flotando sobre el modal
   }
 
   cerrarModal(): void {
