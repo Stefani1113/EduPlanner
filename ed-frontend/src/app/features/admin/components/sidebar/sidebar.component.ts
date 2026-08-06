@@ -17,7 +17,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
 
   abierto = false;
   private subs = new Subscription();
- 
+
   constructor(
     private authService: AuthService,
     private router: Router,
@@ -29,6 +29,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
       this.sidebarService.open$.subscribe(valor => this.abierto = valor)
     );
 
+    // Cierra el menú móvil automáticamente al navegar a otra sección.
     this.subs.add(
       this.router.events
         .pipe(filter(event => event instanceof NavigationEnd))
