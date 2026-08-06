@@ -4,10 +4,9 @@ import { FormsModule } from '@angular/forms';
 import { BreadcrumbService } from '../../services/breadcrumb.service';
 import {
   RegistroUsuarioModalComponent,
-  UsuarioRegistrado
+  UsuarioRegistrado,
+  TipoRegistro
 } from './registro-usuario-modal/registro-usuario-modal.component';
-import { RegistroUsuarioFormComponent } from './registro-usuario-form/registro-usuario-form.component';
-import { CambiarRolModalComponent } from './cambiar-rol-modal/cambiar-rol-modal.component';
 import { ImportacionComponent } from '../importacion/importacion.component';
 import {
   UsuariosService,
@@ -20,6 +19,7 @@ import {
 
 type Rol = 'Administrador' | 'Docente' | 'Estudiante' | 'Directivo';
 type Estado = 'Activo' | 'Inactivo';
+type Tab = 'listado' | 'importacion';
 
 const ROL_A_ID: Record<Rol, number> = {
   Administrador: ID_ROL_ADMINISTRADOR,
@@ -54,21 +54,20 @@ interface Usuario {
     CommonModule,
     FormsModule,
     RegistroUsuarioModalComponent,
-    RegistroUsuarioFormComponent,
-    CambiarRolModalComponent,
     ImportacionComponent
   ],
   templateUrl: './usuarios.component.html',
   styleUrl: './usuarios.component.scss'
 })
 export class UsuariosComponent implements OnInit, OnDestroy {
- 
-  tabs: { key: 'listado' | 'registro' | 'importacion'; label: string }[] = [
+
+  // Solo Listado e Importación; la pestaña "Registro" se eliminó:
+  // el registro de usuarios ahora se hace únicamente desde "+ Registrar".
+  tabs: { key: Tab; label: string }[] = [
     { key: 'listado', label: 'Listado' },
-    { key: 'registro', label: 'Registro' },
     { key: 'importacion', label: 'Importación' }
   ];
-  activeTab: 'listado' | 'registro' | 'importacion' = 'listado';
+  activeTab: Tab = 'listado';
 
   roles: Rol[] = ['Administrador', 'Docente', 'Estudiante', 'Directivo'];
   grados: string[] = ['Todos los grados', '1° A Bachillerato', '2° A Bachillerato', '3° A Bachillerato'];
@@ -78,10 +77,8 @@ export class UsuariosComponent implements OnInit, OnDestroy {
   mostrarFiltroRol = false;
 
   mostrarMenuRegistrar = false;
-  tipoRegistro: 'Docente' | 'Estudiante' | null = null;
-
-  // Modal de cambio de rol
-  usuarioCambioRol: Usuario | null = null;
+  tipoRegistro: TipoRegistro | null = null;
+  guardandoUsuario = false;
 
   busqueda = '';
 
@@ -172,12 +169,13 @@ export class UsuariosComponent implements OnInit, OnDestroy {
   }
 
 
-  cambiarTab(tab: 'listado' | 'registro' | 'importacion'): void {
+  cambiarTab(tab: Tab): void {
     this.activeTab = tab;
     this.actualizarBreadcrumb();
   }
 
 
+  // Único punto de acción sobre un usuario en el listado: activar / inactivar.
   toggleEstado(usuario: Usuario): void {
     const nuevoEstado = usuario.estado === 'Activo' ? false : true;
 
@@ -193,77 +191,54 @@ export class UsuariosComponent implements OnInit, OnDestroy {
   }
 
 
-  abrirRegistro(tipo: 'Docente' | 'Estudiante'): void {
+  abrirRegistro(tipo: TipoRegistro): void {
     this.tipoRegistro = tipo;
     this.mostrarMenuRegistrar = false;
   }
 
   cerrarModal(): void {
+    if (this.guardandoUsuario) return; // evita cerrar mientras hay una petición en curso
     this.tipoRegistro = null;
   }
 
-  guardarUsuario(nuevo: UsuarioRegistrado): void {
-    if (nuevo.tipo === 'Docente') {
-      this.usuariosService.registrarDocente({
-        name: nuevo.nombreCompleto.split(' ')[0] ?? nuevo.nombreCompleto,
-        surnames: nuevo.nombreCompleto.split(' ').slice(1).join(' ') || '-',
-        email: nuevo.correo,
-        phoneNumber: nuevo.telefono,
-        document: nuevo.cedula,
-        documentType: 'CC',
-        position: 'Docente',
-        idRole: ID_ROL_DOCENTE
-      }).subscribe({
-        next: () => {
-          this.tipoRegistro = null;
-          this.cargarUsuarios();
-        },
-        error: (err) => {
-          console.error(err);
-          alert(err.error?.message ?? 'No se pudo registrar el docente.');
-        }
-      });
-    } else {
-      this.usuariosService.registrarEstudiante({
-        name: nuevo.nombres,
-        surnames: nuevo.apellidos,
-        email: nuevo.correo,
-        phoneNumber: nuevo.telefono,
-        document: nuevo.documento,
-        documentType: 'TI',
-        birthdate: nuevo.fechaNacimiento || null,
-        guardian: { guardianName: '', guardianPhone: '' }
-      }).subscribe({
-        next: () => {
-          this.tipoRegistro = null;
-          this.cargarUsuarios();
-        },
-        error: (err) => {
-          console.error(err);
-          alert(err.error?.message ?? 'No se pudo registrar el estudiante.');
-        }
-      });
+  guardarUsuario(evento: UsuarioRegistrado): void {
+    this.guardandoUsuario = true;
+
+    switch (evento.tipo) {
+      case 'Docente':
+        this.usuariosService.registrarDocente(evento.payload).subscribe({
+          next: (res) => this.onRegistroExitoso(res.message ?? 'Docente registrado correctamente.'),
+          error: (err) => this.onRegistroFallido(err, 'No se pudo registrar el docente.')
+        });
+        break;
+
+      case 'Estudiante':
+        this.usuariosService.registrarEstudiante(evento.payload).subscribe({
+          next: (res) => this.onRegistroExitoso(res.message ?? 'Estudiante registrado correctamente.'),
+          error: (err) => this.onRegistroFallido(err, 'No se pudo registrar el estudiante.')
+        });
+        break;
+
+      case 'Staff':
+        this.usuariosService.registrarPersonal(evento.payload).subscribe({
+          next: (res) => this.onRegistroExitoso(res.message ?? 'Usuario registrado correctamente.'),
+          error: (err) => this.onRegistroFallido(err, 'No se pudo registrar el usuario.')
+        });
+        break;
     }
   }
 
-  // Se llama cuando el formulario de la pestaña "Registro" registra un usuario con éxito
-  onUsuarioRegistradoDesdeFormulario(): void {
-    if (this.activeTab === 'listado') {
-      this.cargarUsuarios();
-    }
-  }
-
-  abrirCambioRol(usuario: Usuario): void {
-    this.usuarioCambioRol = usuario;
-  }
-
-  cerrarCambioRol(): void {
-    this.usuarioCambioRol = null;
-  }
-
-  onRolActualizado(): void {
-    this.usuarioCambioRol = null;
+  private onRegistroExitoso(mensaje: string): void {
+    this.guardandoUsuario = false;
+    this.tipoRegistro = null;
     this.cargarUsuarios();
+    alert(mensaje);
+  }
+
+  private onRegistroFallido(err: any, mensajePorDefecto: string): void {
+    this.guardandoUsuario = false;
+    console.error(err);
+    alert(err.error?.message ?? mensajePorDefecto);
   }
 
   private actualizarBreadcrumb(): void {

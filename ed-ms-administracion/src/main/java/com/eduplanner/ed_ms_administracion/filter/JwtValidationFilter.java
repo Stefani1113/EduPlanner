@@ -23,6 +23,7 @@ public class JwtValidationFilter extends OncePerRequestFilter {
 
     private final JwtValidatorService jwtValidatorService;
 
+
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
@@ -36,6 +37,10 @@ public class JwtValidationFilter extends OncePerRequestFilter {
         }
 
         String token = authHeader.substring(7);
+        Integer roleId = jwtValidatorService.extractIdRole(token);
+        System.out.println("RoleId = " + roleId);
+
+        request.setAttribute("idRole", roleId);
 
         try {
             if (jwtValidatorService.isTokenValid(token)) {

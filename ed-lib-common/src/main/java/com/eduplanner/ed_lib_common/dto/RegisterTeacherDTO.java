@@ -20,34 +20,19 @@ public class RegisterTeacherDTO {
     @NotBlank(message = "El correo es obligatorio")
     @Email(message = "El correo no tiene un formato válido")
     private String email;
-
     private String phoneNumber;
-
     private String document;
-
     private String documentType;
-
     private String documentIssuePlace;
-
     private String gender;
-
     private LocalDate birthdate;
-
     private String address;
-
     private String bloodType;
-
     private String disabilities;
-
     private Integer stratum;
-
     private String populationType;
-
     private String healthRegime;
-
     private String eps;
-
     private String professionalDegrees;
-
     private String qualificationsDesc;
 }

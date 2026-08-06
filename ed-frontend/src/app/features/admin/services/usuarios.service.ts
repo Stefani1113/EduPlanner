@@ -23,9 +23,19 @@ export interface RegisterStaffDTO {
   name: string;
   surnames: string;
   email: string;
-  phoneNumber: string;
+  phoneNumber?: string;
   document: string;
   documentType: string;
+  documentIssuePlace?: string;
+  gender?: string;
+  birthdate?: string | null;
+  address?: string;
+  bloodType?: string;
+  disabilities?: string;
+  stratum?: number;
+  populationType?: string;
+  healthRegime?: string;
+  eps?: string;
   position: string;
   idRole: number;
 }
@@ -39,11 +49,58 @@ export interface RegisterStudentDTO {
   name: string;
   surnames: string;
   email: string;
-  phoneNumber: string;
+  phoneNumber?: string;
   document: string;
   documentType: string;
+  documentIssuePlace?: string;
+  gender?: string;
   birthdate: string | null;
+  address?: string;
+  bloodType?: string;
+  disabilities?: string;
+  stratum?: number;
+  populationType?: string;
+  healthRegime?: string;
+  eps?: string;
   guardian: GuardianDTO;
+}
+
+export interface TeachingRequestDTO {
+  name: string;
+  surnames: string;
+  email: string;
+  password?: string;
+  documentType: string;
+  document: string;
+  documentIssuePlace?: string;
+  birthdate?: string | null;
+  phoneNumber: string;
+  photoUrl?: string;
+  professionalDegrees?: string;
+  qualificationsDesc?: string;
+  gender?: string;
+  address?: string;
+  bloodType?: string;
+  disabilities?: string;
+  stratum?: number;
+  populationType?: string;
+  healthRegime?: string;
+  eps?: string;
+  position: string;
+  idInstitution?: number;
+}
+
+export interface TeachingResponseDTO {
+  idUser: number;
+  name: string;
+  surnames: string;
+  email: string;
+  documentType: string;
+  document: string;
+  phoneNumber: string;
+  position: string;
+  status: boolean;
+  rol: string;
 }
 
 export interface UpdateRoleDTO {
@@ -96,12 +153,12 @@ export class UsuariosService {
   );
 }
 
-  registrarDocente(dto: {
-    name: string; surnames: string; email: string; phoneNumber: string;
-    document: string; documentType: string; position: string; idRole: number;
-  }): Observable<HttpGlobalResponse<void>> {
-    return this.registrarPersonal(dto);
-  }
+  registrarDocente(dto: TeachingRequestDTO): Observable<HttpGlobalResponse<TeachingResponseDTO>> {
+  return this.http.post<HttpGlobalResponse<TeachingResponseDTO>>(
+    `${this.api}/teacher`,
+    dto
+  );
+}
 
   registrarEstudiante(dto: RegisterStudentDTO): Observable<HttpGlobalResponse<void>> {
     return this.http.post<HttpGlobalResponse<void>>(`${this.api}/users/register/student`, dto);
