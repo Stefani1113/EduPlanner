@@ -2,7 +2,9 @@
   <div class="modal">
 
     <div class="modal-header">
-      <h2>{{ tipo === 'Docente' ? 'Docentes' : 'Estudiante' }}</h2>
+      <h2>
+        {{ tipo === 'Docente' ? 'Docentes' : (tipo === 'Estudiante' ? 'Estudiante' : 'Administrador / Directivo') }}
+      </h2>
 
       <div class="foto-wrapper">
         <img [src]="fotoPreview ?? 'assets/img/profile.png'" alt="Foto del usuario">
@@ -13,50 +15,125 @@
     </div>
 
     <form *ngIf="tipo === 'Docente'" [formGroup]="formDocente" class="modal-form" (ngSubmit)="guardarUsuario()">
-
+      <h3 class="section-title">Datos personales</h3>
       <div class="grid-2">
 
         <div class="field">
-          <label>Nombres completo</label>
-          <input type="text" formControlName="nombreCompleto" placeholder="Ej: Ana María Pérez">
+          <label>Nombres</label>
+          <input type="text" formControlName="name" placeholder="Ej: Ana María">
         </div>
 
         <div class="field">
-          <label>ID/Cédula</label>
-          <input type="text" formControlName="cedula" placeholder="Ej: 123456709">
+          <label>Apellidos</label>
+          <input type="text" formControlName="surnames" placeholder="Ej: Pérez Gómez">
         </div>
 
         <div class="field">
-          <label>Área académica</label>
-          <select formControlName="areaAcademica">
-            <option value="" disabled>Seleccionar área</option>
-            <option *ngFor="let area of areasAcademicas" [value]="area">{{ area }}</option>
+          <label>Tipo de documento</label>
+          <select formControlName="documentType">
+            <option *ngFor="let t of tiposDocumento" [value]="t">{{ t }}</option>
           </select>
         </div>
 
         <div class="field">
-          <label>Estado</label>
-          <select formControlName="estado">
-            <option value="Activo">Activo</option>
-            <option value="Inactivo">Inactivo</option>
+          <label>Número de documento</label>
+          <input type="text" formControlName="document" placeholder="Ej: 123456709">
+        </div>
+
+        <div class="field">
+          <label>Lugar de expedición</label>
+          <input type="text" formControlName="documentIssuePlace" placeholder="Ej: Armenia">
+        </div>
+
+        <div class="field">
+          <label>Fecha de nacimiento</label>
+          <input type="date" formControlName="birthdate">
+        </div>
+
+        <div class="field">
+          <label>Género</label>
+          <select formControlName="gender">
+            <option value="" disabled>Seleccionar género</option>
+            <option *ngFor="let g of generos" [value]="g">{{ g }}</option>
           </select>
         </div>
 
         <div class="field">
           <label>Correo electrónico</label>
-          <input type="email" formControlName="correo" placeholder="correo@institucion.edu">
+          <input type="email" formControlName="email" placeholder="correo@institucion.edu">
         </div>
 
         <div class="field">
           <label>Teléfono</label>
-          <input type="text" formControlName="telefono" placeholder="Ej: 123456787">
+          <input type="text" formControlName="phoneNumber" placeholder="Ej: 123456787">
+        </div>
+
+        <div class="field">
+          <label>Contraseña temporal</label>
+          <input type="password" formControlName="password" placeholder="Contraseña de acceso">
         </div>
 
       </div>
 
-      <div class="field full">
-        <label>Asignaturas (separadas por comas)</label>
-        <input type="text" formControlName="asignaturas" placeholder="Ej: Biología, química, ciencias naturales">
+      <h3 class="section-title">Datos de salud y socioeconómicos</h3>
+      <div class="grid-2">
+
+        <div class="field">
+          <label>Dirección</label>
+          <input type="text" formControlName="address" placeholder="Ej: Calle 10 # 5-20">
+        </div>
+
+        <div class="field">
+          <label>Tipo de sangre</label>
+          <select formControlName="bloodType">
+            <option value="" disabled>Seleccionar</option>
+            <option *ngFor="let b of tiposSangre" [value]="b">{{ b }}</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Estrato</label>
+          <select formControlName="stratum">
+            <option value="" disabled>Seleccionar</option>
+            <option *ngFor="let e of estratos" [value]="e">{{ e }}</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Discapacidades</label>
+          <input type="text" formControlName="disabilities" placeholder="Ninguna">
+        </div>
+
+        <div class="field">
+          <label>Tipo de población</label>
+          <input type="text" formControlName="populationType" placeholder="Ej: Ninguna, Indígena, ROM...">
+        </div>
+
+        <div class="field">
+          <label>Régimen de salud</label>
+          <input type="text" formControlName="healthRegime" placeholder="Ej: Contributivo">
+        </div>
+
+        <div class="field">
+          <label>EPS</label>
+          <input type="text" formControlName="eps" placeholder="Ej: Sura">
+        </div>
+
+      </div>
+
+      <h3 class="section-title">Datos académicos</h3>
+      <div class="grid-2">
+
+        <div class="field full">
+          <label>Cargo</label>
+          <input type="text" formControlName="position" placeholder="Ej: Docente de Matemáticas">
+        </div>
+
+        <div class="field full">
+          <label>Asignaturas (separadas por comas)</label>
+          <input type="text" formControlName="asignaturas" placeholder="Ej: Biología, química, ciencias naturales">
+        </div>
+
       </div>
 
       <div class="field full">
@@ -76,7 +153,7 @@
 
       <div class="field full">
         <label>Observación</label>
-        <textarea formControlName="observacion" placeholder="Nota adicional..."></textarea>
+        <textarea formControlName="qualificationsDesc" placeholder="Nota adicional..."></textarea>
       </div>
 
       <div class="modal-footer">
@@ -87,45 +164,118 @@
     </form>
 
     <form *ngIf="tipo === 'Estudiante'" [formGroup]="formEstudiante" class="modal-form" (ngSubmit)="guardarUsuario()">
-
+      <h3 class="section-title">Datos personales</h3>
       <div class="grid-2">
 
         <div class="field">
           <label>Nombres</label>
-          <input type="text" formControlName="nombres" placeholder="Ej: Ana María">
+          <input type="text" formControlName="name" placeholder="Ej: Ana María">
         </div>
 
         <div class="field">
           <label>Apellidos</label>
-          <input type="text" formControlName="apellidos" placeholder="Ej: Pérez Gómez">
+          <input type="text" formControlName="surnames" placeholder="Ej: Pérez Gómez">
+        </div>
+
+        <div class="field">
+          <label>Tipo de documento</label>
+          <select formControlName="documentType">
+            <option *ngFor="let t of tiposDocumento" [value]="t">{{ t }}</option>
+          </select>
         </div>
 
         <div class="field">
           <label>Documento</label>
-          <input type="text" formControlName="documento" placeholder="Ej: 1098765432">
+          <input type="text" formControlName="document" placeholder="Ej: 1098765432">
+        </div>
+
+        <div class="field">
+          <label>Lugar de expedición</label>
+          <input type="text" formControlName="documentIssuePlace" placeholder="Ej: Armenia">
         </div>
 
         <div class="field">
           <label>Fecha de nacimiento</label>
-          <input type="date" formControlName="fechaNacimiento">
+          <input type="date" formControlName="birthdate">
         </div>
 
         <div class="field">
-          <label>Grado/Grupo</label>
-          <select formControlName="gradoGrupo">
-            <option value="" disabled>Seleccionar grado</option>
-            <option *ngFor="let grado of gradosGrupo" [value]="grado">{{ grado }}</option>
+          <label>Género</label>
+          <select formControlName="gender">
+            <option value="" disabled>Seleccionar género</option>
+            <option *ngFor="let g of generos" [value]="g">{{ g }}</option>
           </select>
         </div>
 
         <div class="field">
           <label>Correo electrónico</label>
-          <input type="email" formControlName="correo" placeholder="correo@institucion.edu">
+          <input type="email" formControlName="email" placeholder="correo@institucion.edu">
         </div>
 
         <div class="field">
           <label>Teléfono</label>
-          <input type="text" formControlName="telefono" placeholder="Ej: 123456787">
+          <input type="text" formControlName="phoneNumber" placeholder="Ej: 123456787">
+        </div>
+
+      </div>
+
+      <h3 class="section-title">Datos de salud y socioeconómicos</h3>
+      <div class="grid-2">
+
+        <div class="field">
+          <label>Dirección</label>
+          <input type="text" formControlName="address" placeholder="Ej: Calle 10 # 5-20">
+        </div>
+
+        <div class="field">
+          <label>Tipo de sangre</label>
+          <select formControlName="bloodType">
+            <option value="" disabled>Seleccionar</option>
+            <option *ngFor="let b of tiposSangre" [value]="b">{{ b }}</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Estrato</label>
+          <select formControlName="stratum">
+            <option value="" disabled>Seleccionar</option>
+            <option *ngFor="let e of estratos" [value]="e">{{ e }}</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Discapacidades</label>
+          <input type="text" formControlName="disabilities" placeholder="Ninguna">
+        </div>
+
+        <div class="field">
+          <label>Tipo de población</label>
+          <input type="text" formControlName="populationType" placeholder="Ej: Ninguna, Indígena, ROM...">
+        </div>
+
+        <div class="field">
+          <label>Régimen de salud</label>
+          <input type="text" formControlName="healthRegime" placeholder="Ej: Contributivo">
+        </div>
+
+        <div class="field">
+          <label>EPS</label>
+          <input type="text" formControlName="eps" placeholder="Ej: Sura">
+        </div>
+
+      </div>
+
+      <h3 class="section-title">Acudiente</h3>
+      <div class="grid-2">
+
+        <div class="field">
+          <label>Nombre del acudiente</label>
+          <input type="text" formControlName="guardianName" placeholder="Ej: Carlos Pérez">
+        </div>
+
+        <div class="field">
+          <label>Teléfono del acudiente</label>
+          <input type="text" formControlName="guardianPhone" placeholder="Ej: 3001234567">
         </div>
 
       </div>
@@ -133,6 +283,138 @@
       <div class="modal-footer">
         <button type="button" class="btn-cancelar" (click)="cancelar()">Cancelar</button>
         <button type="submit" class="btn-guardar">Guardar estudiante</button>
+      </div>
+
+    </form>
+
+    <form *ngIf="tipo === 'Staff'" [formGroup]="formStaff" class="modal-form" (ngSubmit)="guardarUsuario()">
+
+      <h3 class="section-title">Datos personales</h3>
+      <div class="grid-2">
+
+        <div class="field">
+          <label>Nombres</label>
+          <input type="text" formControlName="name" placeholder="Ej: Ana María">
+        </div>
+
+        <div class="field">
+          <label>Apellidos</label>
+          <input type="text" formControlName="surnames" placeholder="Ej: Pérez Gómez">
+        </div>
+
+        <div class="field">
+          <label>Tipo de documento</label>
+          <select formControlName="documentType">
+            <option *ngFor="let t of tiposDocumento" [value]="t">{{ t }}</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Número de documento</label>
+          <input type="text" formControlName="document" placeholder="Ej: 123456709">
+        </div>
+
+        <div class="field">
+          <label>Lugar de expedición</label>
+          <input type="text" formControlName="documentIssuePlace" placeholder="Ej: Armenia">
+        </div>
+
+        <div class="field">
+          <label>Fecha de nacimiento</label>
+          <input type="date" formControlName="birthdate">
+        </div>
+
+        <div class="field">
+          <label>Género</label>
+          <select formControlName="gender">
+            <option value="" disabled>Seleccionar género</option>
+            <option *ngFor="let g of generos" [value]="g">{{ g }}</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Correo electrónico</label>
+          <input type="email" formControlName="email" placeholder="correo@institucion.edu">
+        </div>
+
+        <div class="field">
+          <label>Teléfono</label>
+          <input type="text" formControlName="phoneNumber" placeholder="Ej: 123456787">
+        </div>
+
+      </div>
+
+      <h3 class="section-title">Datos de salud y socioeconómicos</h3>
+      <div class="grid-2">
+
+        <div class="field">
+          <label>Dirección</label>
+          <input type="text" formControlName="address" placeholder="Ej: Calle 10 # 5-20">
+        </div>
+
+        <div class="field">
+          <label>Tipo de sangre</label>
+          <select formControlName="bloodType">
+            <option value="" disabled>Seleccionar</option>
+            <option *ngFor="let b of tiposSangre" [value]="b">{{ b }}</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Estrato</label>
+          <select formControlName="stratum">
+            <option value="" disabled>Seleccionar</option>
+            <option *ngFor="let e of estratos" [value]="e">{{ e }}</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Discapacidades</label>
+          <input type="text" formControlName="disabilities" placeholder="Ninguna">
+        </div>
+
+        <div class="field">
+          <label>Tipo de población</label>
+          <input type="text" formControlName="populationType" placeholder="Ej: Ninguna, Indígena, ROM...">
+        </div>
+
+        <div class="field">
+          <label>Régimen de salud</label>
+          <input type="text" formControlName="healthRegime" placeholder="Ej: Contributivo">
+        </div>
+
+        <div class="field">
+          <label>EPS</label>
+          <input type="text" formControlName="eps" placeholder="Ej: Sura">
+        </div>
+
+      </div>
+
+      <h3 class="section-title">Cargo y rol</h3>
+
+      <div class="field full">
+        <label>Cargo</label>
+        <input type="text" formControlName="position" placeholder="Ej: Coordinador académico, Rector...">
+      </div>
+
+      <div class="field full">
+        <label>Rol</label>
+        <div class="role-tabs">
+          <button
+            type="button"
+            *ngFor="let r of rolesStaff"
+            class="role-tab"
+            [class.active]="formStaff.value.idRole === r.idRole"
+            (click)="seleccionarRolStaff(r.idRole)"
+          >
+            {{ r.label }}
+          </button>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-cancelar" (click)="cancelar()">Cancelar</button>
+        <button type="submit" class="btn-guardar">Guardar usuario</button>
       </div>
 
     </form>

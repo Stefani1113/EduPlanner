@@ -103,6 +103,7 @@
         >
           <li (click)="abrirRegistro('Docente')">Docente</li>
           <li (click)="abrirRegistro('Estudiante')">Estudiante</li>
+          <li (click)="abrirRegistro('Staff')">Administrador / Directivo</li>
         </ul>
 
       </div>
@@ -175,14 +176,6 @@
                     >
                       {{ usuario.estado === 'Activo' ? 'Inactivar' : 'Activar' }}
                     </button>
-
-                    <button
-                      type="button"
-                      class="accion cambiar-rol"
-                      (click)="abrirCambioRol(usuario)"
-                    >
-                      Cambiar rol
-                    </button>
                   </td>
                 </tr>
 
@@ -197,12 +190,6 @@
 
     </ng-container>
 
-    <ng-container *ngSwitchCase="'registro'">
-      <app-registro-usuario-form
-        (registrado)="onUsuarioRegistradoDesdeFormulario()"
-      ></app-registro-usuario-form>
-    </ng-container>
-
     <ng-container *ngSwitchCase="'importacion'">
       <app-importacion></app-importacion>
     </ng-container>
@@ -212,17 +199,9 @@
   <app-registro-usuario-modal
     *ngIf="tipoRegistro"
     [tipo]="tipoRegistro"
+    [guardando]="guardandoUsuario"
     (cerrar)="cerrarModal()"
     (guardar)="guardarUsuario($event)">
   </app-registro-usuario-modal>
-
-  <app-cambiar-rol-modal
-    *ngIf="usuarioCambioRol as u"
-    [idUser]="u.id"
-    [nombreUsuario]="u.nombre"
-    [idRoleActual]="u.idRole"
-    (cerrar)="cerrarCambioRol()"
-    (actualizado)="onRolActualizado()">
-  </app-cambiar-rol-modal>
 
 </div>
