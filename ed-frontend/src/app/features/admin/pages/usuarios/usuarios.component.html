@@ -21,7 +21,7 @@
         <button
           type="button"
           class="role-toggle"
-          (click)="mostrarFiltroRol = !mostrarFiltroRol"
+          (click)="mostrarFiltroRol = !mostrarFiltroRol; mostrarMenuRegistrar = false"
         >
           <span>
             {{
@@ -92,7 +92,7 @@
         <button
           type="button"
           class="btn-registrar"
-          (click)="mostrarMenuRegistrar = !mostrarMenuRegistrar"
+          (click)="mostrarMenuRegistrar = !mostrarMenuRegistrar; mostrarFiltroRol = false"
         >
           + Registrar
         </button>

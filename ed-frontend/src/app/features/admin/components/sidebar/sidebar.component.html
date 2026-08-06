@@ -1,4 +1,6 @@
-<div class="sidebar">
+<div class="sidebar-backdrop" *ngIf="abierto" (click)="cerrarMenu()"></div>
+
+<div class="sidebar" [class.abierto]="abierto">
 
   <div class="sidebar-content">
 
