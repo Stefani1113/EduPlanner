@@ -16,7 +16,6 @@ header.navar {
   display: flex;
   width: 100%;
   overflow: hidden;
-
   background: #161616;
   background-image: radial-gradient(rgba(255, 255, 255, .08) 1px, transparent 1px);
   background-size: 18px 18px;
@@ -24,7 +23,7 @@ header.navar {
 
 .sidebar-slot {
   flex-shrink: 0;
-  height: 100%;
+  height: 95%;
 }
 
 main.admin-body {
@@ -39,4 +38,27 @@ main.admin-body {
   flex: 1;
   overflow: auto;
   padding: 25px 35px;
+}
+
+footer {
+  background: #1d1e1d;
+  display: flex;
+  justify-content: space-between;  
+  align-items: center;
+  padding: 10px 60px;
+  
+
+.logo-footer img {
+  background: #1d1e1d;
+  height: 50px;
+  display: block;
+}
+
+
+.footer-version {
+  background-color: transparent;
+  color: #454745;
+  font-size: 13px;
+}
+
 }
