@@ -118,9 +118,7 @@
     object-fit: cover;
   }
 }
-// A partir de 920px (techo de la franja "769-920: laptops, tablets grandes
-// en horizontal y desktops pequeños") el sidebar pasa a ser un panel
-// deslizante, así que la hamburguesa debe aparecer desde aquí hacia abajo.
+
 @media (max-width: 920px) {
 
   .btn-hamburguesa {
