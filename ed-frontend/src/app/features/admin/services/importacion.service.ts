@@ -10,9 +10,8 @@ export class ImportacionService {
 
   private api = 'http://localhost:8080/administracion/eduplanner/users/import';
 
-  // Si el backend no responde en este tiempo, se corta la espera
-  // en vez de dejar la pantalla "cargando" para siempre.
-  private readonly TIMEOUT_MS = 60000; // 60s (el import puede tardar por los correos)
+  
+  private readonly TIMEOUT_MS = 60000; 
 
   constructor(private http: HttpClient) {}
 
