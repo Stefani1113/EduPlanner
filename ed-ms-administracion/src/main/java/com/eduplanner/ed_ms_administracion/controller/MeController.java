@@ -36,40 +36,38 @@ public class MeController {
      */
     @GetMapping
     public ResponseEntity<HttpGlobalResponse<UserResponseDTO>> getMyProfile(HttpServletRequest request) {
-        HttpGlobalResponse<UserResponseDTO> response = new HttpGlobalResponse<>();
+    HttpGlobalResponse<UserResponseDTO> response = new HttpGlobalResponse<>();
 
+    try {
+        Integer idUser = extractIdUser(request);
+        UserResponseDTO user = userQueryService.findById(idUser);
+        response.setData(user);
+        response.setMessage("Perfil consultado correctamente");
 
-        try {
-            UserResponseDTO user = userQueryService.findById(idUser);
-            response.setData(user);
-            response.setMessage("Perfil consultado correctamente");
-            return ResponseEntity.ok(response);
+        return ResponseEntity.ok(response);
+
         } catch (IllegalArgumentException e) {
             response.setMessage(e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
-        
     }
 
     @PostMapping("/photo")
-    public ResponseEntity<HttpGlobalResponse<String>> uploadPhoto(
-            @RequestParam("file") MultipartFile file,
-            HttpServletRequest request) {
+    public ResponseEntity<HttpGlobalResponse<String>> uploadPhoto(@RequestParam("file") MultipartFile file,
+    HttpServletRequest request) {
+    HttpGlobalResponse<String> response = new HttpGlobalResponse<>();
+    Integer idUser = extractIdUser(request);
 
-        HttpGlobalResponse<String> response = new HttpGlobalResponse<>();
-
-        Integer idUserInteger = (Integer) request.getAttribute("idUser");
-        Integer idUser = idUserInteger.intValue();
-
-        try {
-            String url = photoService.uploadProfilePhoto(idUser, file);
-            response.setData(url);
-            response.setMessage("Foto de perfil actualizada correctamente");
-            return ResponseEntity.ok(response);
+    try {
+        String url = photoService.uploadProfilePhoto(idUser, file);
+        response.setData(url);
+        response.setMessage("Foto de perfil actualizada correctamente");
+        return ResponseEntity.ok(response);
 
         } catch (IllegalArgumentException e) {
             response.setMessage(e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+
         } catch (IOException e) {
             response.setMessage("Error al subir la imagen: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
@@ -77,7 +75,12 @@ public class MeController {
     }
 
     private Integer extractIdUser(HttpServletRequest request) {
-        Integer idUserInt = (Integer) request.getAttribute("idUser");
-        return idUserInt.intValue();
+    Integer idUser = (Integer) request.getAttribute("idUser");
+
+    if (idUser == null) {
+        throw new IllegalArgumentException("Usuario no autenticado");
+    }
+
+        return idUser;
     }
 }
