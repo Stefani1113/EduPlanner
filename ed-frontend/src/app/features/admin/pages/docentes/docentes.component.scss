@@ -21,7 +21,7 @@
 
 .subtitulo-seccion {
   color: #8f8f8f;
-  font-size: 13px;
+  font-size: 15px;
 }
 
 .top-actions {
@@ -48,10 +48,29 @@
   border-color: #53bb1b;
 }
 
+.search-box {
+  display: flex;
+  align-items: center;
+  position: relative;
+  
+  .search-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    img {
+      width: 50px;    
+      height: 50px;  
+      object-fit: contain;
+    }
+  }
+}
+
 .search-icon {
   color: #53bb1b;
-  font-size: 21px;
   padding-left: 12px;
+  width: 30px;
+  height: auto;
 }
 
 .search-box input {
@@ -63,7 +82,7 @@
   background: transparent;
   color: #fff;
   padding: 0 10px;
-  font-size: 13px;
+  font-size: 15px;
 }
 
 .search-box input::placeholder {
@@ -72,6 +91,7 @@
 
 .btn-search {
   height: 38px;
+  width: 120px;
   border: 0;
   border-radius: 8px;
   cursor: pointer;
@@ -651,7 +671,7 @@
   background: #1a1a1a;
   border: 1px solid #293d1d;
   color: #8cd45a;
-  font-size: 10px;
+  font-size: 15px;
 }
 
 .perfil-body {
@@ -780,10 +800,23 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid #53bb1b;
   border-radius: 50%;
   color: #6bd332;
   font-size: 26px;
+}
+
+.eliminar-modal {
+  .eliminar-icono {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    .garbage {
+      width: 50px;    
+      height: 50px;  
+      object-fit: contain;
+    }
+  }
 }
 
 .eliminar-modal h2 {
@@ -824,21 +857,21 @@
 }
 
 .btn-confirmar-cancelar {
-  background: #3c7f22;
+  background: #2c5c19;
   color: #fff;
 }
 
 .btn-confirmar-cancelar:hover {
-  background: #4b9a2a;
+  background: #5bbb32;
 }
 
 .btn-confirmar-eliminar {
-  background: #d77b73;
+  background: #8f524c;
   color: #fff;
 }
 
 .btn-confirmar-eliminar:hover {
-  background: #e18c84;
+  background: #eb685a;
 }
 
 .btn-confirmar-eliminar:disabled {
