@@ -20,12 +20,12 @@ import java.util.stream.Stream;
 @Log4j2
 public class TeachingService {
 
-  
+
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;
 
-    private static final int TEACHER_ROLE = 3;
+    private static final int TEACHER_ROLE = 2;
 
     /** RF 5 - Create teacher profile */
     public TeachingResponseDTO createTeacher(TeachingRequestDTO dto) {

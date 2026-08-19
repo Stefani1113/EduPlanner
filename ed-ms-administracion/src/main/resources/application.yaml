@@ -49,3 +49,8 @@ frontend:
 
 institution: 
   id: 1  #Id fijo de la institución
+
+cloudinary:
+  cloud-name: f0qiiq22
+  api-key: 588271412933438
+  api-secret: _pVZj_anQw5kn-Hkj2RLwSt0C8k

@@ -50,23 +50,30 @@ export class LoginPageComponent {
       next: (response: any) => {
 
         this.loading = false;
+
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('usuario', JSON.stringify(response.data));
-        this.router.navigate(['/dashboard']);
+
+        this.router.navigate(['/admin/dashboard']);
 
       },
 
       error: (error) => {
 
         this.loading = false;
-        console.error(error);
 
-        if (error.status === 401 || error.status === 403) {
+        console.log('STATUS:', error.status);
+        console.log('ERROR COMPLETO:', error);
+        console.log('BODY:', error.error);
+
+        if (error.error?.message) {
+          this.serverError = error.error.message;
+        } else if (error.status === 401 || error.status === 403) {
           this.serverError = '• Correo o contraseña incorrectos.';
         } else if (error.status === 0) {
-          this.serverError = '• No se pudo conectar con el servidor. Verifica tu conexión.';
+          this.serverError = '• No se pudo conectar con el servidor.';
         } else {
-          this.serverError = '• Ocurrió un error. Intenta de nuevo más tarde.';
+          this.serverError = '• Ocurrió un error.';
         }
 
       }
