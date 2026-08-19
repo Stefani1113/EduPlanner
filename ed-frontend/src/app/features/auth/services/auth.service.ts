@@ -2,8 +2,6 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-import { LoginRequest } from '../models/login-request';
-
 @Injectable({
   providedIn: 'root'
 })
@@ -13,18 +11,16 @@ export class AuthService {
 
   constructor(private http: HttpClient) {}
 
-  models(data: LoginRequest): Observable<any> {
-    return this.http.post(
-      'http://localhost:8081/eduplanner/auth/login',
-      data
-    );
-  }
-
   login(email: string, password: string): Observable<any> {
     return this.http.post(`${this.api}/login`, {
       email,
       password
     });
+  }
+
+  logout(): void {
+    localStorage.removeItem('token');
+    localStorage.removeItem('usuario');
   }
 
   forgotPassword(email: string): Observable<any> {
@@ -39,5 +35,4 @@ export class AuthService {
       newPassword
     });
   }
-
 }

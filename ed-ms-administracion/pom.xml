@@ -52,6 +52,10 @@
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-crypto</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-thymeleaf</artifactId>
+		</dependency>
 
 
 		<!-- MySQL -->
@@ -124,6 +128,13 @@
 			<groupId>com.eduplanner</groupId>
 			<artifactId>ed-lib-common</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+
+		<!-- Cloudinary -->
+		<dependency>
+			<groupId>com.cloudinary</groupId>
+			<artifactId>cloudinary-http5</artifactId>
+			<version>2.4.0</version>
 		</dependency>
 	</dependencies>
 

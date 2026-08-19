@@ -8,6 +8,8 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.eduplanner.ed_lib_common.enums.RolEnum;
+
 import javax.crypto.SecretKey;
 import java.util.function.Function;
 
@@ -45,11 +47,12 @@ public class JwtValidatorService {
         return resolver.apply(claims);
     }
 
-    public Long extractIdUser(String token) {
-        return extractClaim(token, c -> Long.valueOf(c.getSubject()));
+    public Integer extractIdUser(String token) {
+        return extractClaim(token, c -> Integer.valueOf(c.getSubject()));
     }
 
-    public String extractIdRole(String token) {
-        return extractClaim(token, c -> c.get("role", String.class));
+    public Integer extractIdRole(String token) {
+        String roleName = extractClaim(token, c -> c.get("role", String.class));
+        return RolEnum.valueOf(roleName).getId();
     }
 }
