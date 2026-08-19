@@ -1,1 +1,135 @@
-<p>dashboard works!</p>
+<div class="institution-page" *ngIf="info$ | async as info">
+
+  <section class="institution-hero">
+    <div class="hero-photo" [style.backgroundImage]="'url(' + carouselUrl(info, 0, 'assets/img/institucion-edificio.png') + ')'" aria-hidden="true"></div>
+    <div class="hero-wash" aria-hidden="true"></div>
+
+    <div class="hero-content">
+      <span class="eyebrow">EXCELENCIA ACADÉMICA</span>
+
+      <h1>
+        Institución Educativa<br>
+        <strong>{{ info.nombreCorto }}</strong>
+      </h1>
+
+      <p>
+        {{ info.descripcion }}
+      </p>
+
+      <div class="hero-actions">
+        <button type="button" class="primary-action">Conocer institución <span>→</span></button>
+        <span class="hero-location">{{ info.contactoDireccion }}</span>
+      </div>
+    </div>
+
+    <div class="hero-dots" aria-hidden="true">
+      <span *ngFor="let img of info.carousel; let i = index" [class.active]="i === 0"></span>
+    </div>
+  </section>
+
+  <section class="institution-intro">
+    <div class="intro-copy">
+      <span class="section-kicker">NUESTRA INSTITUCIÓN</span>
+      <h2>Un lugar para <strong>aprender, crecer y transformar.</strong></h2>
+      <p>
+        {{ info.nombreCorto }} es una institución orientada a formar estudiantes
+        con pensamiento crítico, valores y herramientas para afrontar los
+        retos del futuro.
+      </p>
+    </div>
+
+    <div class="quick-data">
+      <div>
+        <strong>486</strong>
+        <span>Estudiantes</span>
+      </div>
+      <div>
+        <strong>32</strong>
+        <span>Docentes</span>
+      </div>
+      <div>
+        <strong>18</strong>
+        <span>Cursos</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="institution-cards">
+
+    <article class="mission-card white-card">
+      <div class="card-icon">⌁</div>
+      <span class="section-kicker">MISIÓN</span>
+      <h3>Formar personas íntegras</h3>
+      <p>
+        {{ info.mision }}
+      </p>
+    </article>
+
+    <article class="students-card image-card">
+      <img [src]="carouselUrl(info, 1, 'assets/img/estudiantes-institucion.png')" alt="Estudiantes de la institución">
+      <div class="image-caption">
+        <span>COMUNIDAD EDUCATIVA</span>
+        <strong>Aprendemos juntos</strong>
+      </div>
+    </article>
+
+    <article class="vision-card teal-card">
+      <div class="card-icon light">◈</div>
+      <span class="section-kicker">VISIÓN</span>
+      <h3>Innovar para transformar</h3>
+      <p>
+        {{ info.vision }}
+      </p>
+    </article>
+
+    <article class="campus-card image-card">
+      <img [src]="carouselUrl(info, 2, carouselUrl(info, 0, 'assets/img/estudiantes-institucion.png'))" alt="Edificio de la institución educativa">
+      <div class="image-caption">
+        <span>ESPACIOS EDUCATIVOS</span>
+        <strong>Un entorno para crecer</strong>
+      </div>
+    </article>
+
+  </section>
+
+  <section class="pillars-section">
+    <div class="section-heading">
+      <span class="section-kicker">NUESTROS PILARES</span>
+      <h2>Lo que nos representa</h2>
+    </div>
+
+    <div class="pillar-grid">
+      <article class="pillar-card">
+        <span class="pillar-number">01</span>
+        <h3>Integralidad</h3>
+        <p>Desarrollamos competencias académicas, sociales y personales.</p>
+      </article>
+
+      <article class="pillar-card featured">
+        <span class="pillar-number">02</span>
+        <h3>Innovación</h3>
+        <p>Integramos tecnología y nuevas metodologías al aprendizaje.</p>
+      </article>
+
+      <article class="pillar-card dark-featured">
+        <span class="pillar-number">03</span>
+        <h3>Comunidad</h3>
+        <p>Construimos una comunidad educativa basada en respeto y colaboración.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="contact-strip">
+    <div>
+      <span class="section-kicker">CONTACTO INSTITUCIONAL</span>
+      <h2>Estamos para acompañarte</h2>
+    </div>
+
+    <div class="contact-data">
+      <span>{{ info.contactoDireccion }}</span>
+      <span>+57 600 123 4567</span>
+      <span>contacto&#64;nuevohorizonte.edu.co</span>
+    </div>
+  </section>
+
+</div>

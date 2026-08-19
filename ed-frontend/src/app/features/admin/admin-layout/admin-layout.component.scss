@@ -55,6 +55,34 @@ footer {
 }
 
 
+.footer-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.footer-settings-btn {
+  display: grid;
+  place-items: center;
+  width: 66px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+
+.footer-version:hover {
+  color: #3dbc17a4;
+  transform: translateY(-1px);
+}
+
+.footer-settings-icon {
+  font-size: 12px;
+  line-height: 1;
+}
+
 .footer-version {
   background-color: transparent;
   color: #454745;

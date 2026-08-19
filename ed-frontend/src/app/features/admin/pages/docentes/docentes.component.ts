@@ -13,7 +13,7 @@ const API_BASE_URL = 'http://localhost:8080';
 
 function emptyForm(): TeachingRequestDTO {
   return {
-    name: '',
+    name: '',  
     surnames: '',
     email: '',
     password: '',
@@ -186,24 +186,14 @@ export class DocentesComponent implements OnInit {
     return this.normalizarFoto(docente.photoUrl);
   }
 
-  /**
-   * Maneja el evento (error) de las imágenes de avatar.
-   * Si la URL/base64 de la foto falla al cargar, se reemplaza
-   * automáticamente por la imagen de perfil por defecto,
-   * evitando que el navegador muestre el texto alt.
-   */
+
   manejarErrorImagen(event: Event): void {
     const img = event.target as HTMLImageElement;
     img.onerror = null;
     img.src = '/assets/img/profile.png';
   }
 
-  /**
-   * Maneja la selección de un archivo de imagen desde el computador
-   * para la foto del docente en el formulario. Redimensiona y comprime
-   * la imagen antes de convertirla a base64 (data URL), para no exceder
-   * el tamaño permitido al guardarla en el backend.
-   */
+
   onFotoSeleccionada(event: Event): void {
     const input = event.target as HTMLInputElement;
     const archivo = input.files && input.files[0];
@@ -230,12 +220,6 @@ export class DocentesComponent implements OnInit {
     input.value = '';
   }
 
-  /**
-   * Redimensiona una imagen a un ancho/alto máximo y la comprime
-   * como JPEG usando un canvas, devolviendo el resultado en base64.
-   * Esto reduce considerablemente el tamaño del texto que se envía
-   * y se guarda en la base de datos.
-   */
   private redimensionarImagen(
     archivo: File,
     maxAncho: number,
@@ -282,12 +266,7 @@ export class DocentesComponent implements OnInit {
     });
   }
 
-  /**
-   * Divide la descripción de cualificaciones en líneas/frases
-   * para mostrarlas como viñetas en el modal de "Ver perfil".
-   * Soporta tanto texto escrito en varias líneas (con saltos de línea)
-   * como texto escrito en un solo párrafo separado por puntos.
-   */
+ 
   obtenerDescripcionLineas(desc: string | null | undefined): string[] {
     if (!desc) {
       return [];

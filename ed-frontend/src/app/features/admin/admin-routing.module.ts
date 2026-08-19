@@ -10,13 +10,21 @@ const routes: Routes = [
     path: '',
     component: AdminLayoutComponent,
     canActivate: [authGuard],
+
     children: [
-      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+
+      {
+        path: '',
+        redirectTo: 'dashboard',
+        pathMatch: 'full'
+      },
 
       {
         path: 'dashboard',
         component: DashboardComponent,
-        data: { breadcrumb: ['Panel Control'] }
+        data: {
+          breadcrumb: ['Mi institución']
+        }
       },
 
       {
@@ -24,7 +32,9 @@ const routes: Routes = [
         loadComponent: () =>
           import('./pages/usuarios/usuarios.component')
             .then(m => m.UsuariosComponent),
-        data: { breadcrumb: ['Usuarios'] }
+        data: {
+          breadcrumb: ['Usuarios']
+        }
       },
 
       {
@@ -32,7 +42,9 @@ const routes: Routes = [
         loadComponent: () =>
           import('./pages/horarios/horarios.component')
             .then(m => m.HorariosComponent),
-        data: { breadcrumb: ['Horarios'] }
+        data: {
+          breadcrumb: ['Horarios']
+        }
       },
 
       {
@@ -40,7 +52,9 @@ const routes: Routes = [
         loadComponent: () =>
           import('./pages/emergencia/emergencia.component')
             .then(m => m.EmergenciaComponent),
-        data: { breadcrumb: ['Emergencia'] }
+        data: {
+          breadcrumb: ['Emergencia']
+        }
       },
 
       {
@@ -48,7 +62,9 @@ const routes: Routes = [
         loadComponent: () =>
           import('./pages/docentes/docentes.component')
             .then(m => m.DocentesComponent),
-        data: { breadcrumb: ['Docentes'] }
+        data: {
+          breadcrumb: ['Docentes']
+        }
       },
 
       {
@@ -56,7 +72,9 @@ const routes: Routes = [
         loadComponent: () =>
           import('./pages/asistencia/asistencia.component')
             .then(m => m.AsistenciaComponent),
-        data: { breadcrumb: ['Asistencia'] }
+        data: {
+          breadcrumb: ['Asistencia']
+        }
       },
 
       {
@@ -64,7 +82,9 @@ const routes: Routes = [
         loadComponent: () =>
           import('./pages/notas/notas.component')
             .then(m => m.NotasComponent),
-        data: { breadcrumb: ['Notas'] }
+        data: {
+          breadcrumb: ['Notas']
+        }
       },
 
       {
@@ -72,14 +92,31 @@ const routes: Routes = [
         loadComponent: () =>
           import('./pages/importacion/importacion.component')
             .then(m => m.ImportacionComponent),
-        data: { breadcrumb: ['Importación'] }
+        data: {
+          breadcrumb: ['Importación']
+        }
+      },
+
+      {
+        path: 'sistema',
+        loadComponent: () =>
+          import('./pages/sistema/sistema.component')
+              .then(m => m.PanelControlComponent),
+        data: {
+          breadcrumb: ['sistema']
+        }
       }
+
     ]
   }
 ];
 
 @NgModule({
-  imports: [RouterModule.forChild(routes)],
-  exports: [RouterModule]
+  imports: [
+    RouterModule.forChild(routes)
+  ],
+  exports: [
+    RouterModule
+  ]
 })
 export class AdminRoutingModule {}
