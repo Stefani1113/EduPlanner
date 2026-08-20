@@ -10,10 +10,30 @@ html, body {
   background-color: #1B1C1C;
 }
 
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1B1C1C;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #3a3a3a;
+  border-radius: 10px;
+  border: 2px solid #1B1C1C;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #4a4a4a;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #3a3a3a #1B1C1C;
+}
+
 .body-login {
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  gap: 120px;
-  font-family: 'Poppins', sans-serif;
 }
