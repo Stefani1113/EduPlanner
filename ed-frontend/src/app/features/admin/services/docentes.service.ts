@@ -15,7 +15,7 @@ export interface TeachingRequestDTO {
   documentType: string;
   document: string;
   documentIssuePlace?: string;
-  birthdate: string; 
+  birthdate: string;
   phoneNumber?: string;
   photoUrl?: string;
   professionalDegrees: string;
@@ -66,8 +66,6 @@ export interface TeachingResponseDTO {
 })
 export class DocentesService {
 
-  // El gateway (8080) enruta /administracion/** -> ed-ms-administracion (8082),
-  // cuyo context-path es /eduplanner, y expone /teacher (RF 5.x).
   private api = 'http://localhost:8080/administracion/eduplanner/teacher';
 
   constructor(private http: HttpClient) {}
@@ -76,25 +74,49 @@ export class DocentesService {
     return this.http.get<HttpGlobalResponse<TeachingResponseDTO[]>>(this.api);
   }
 
-  obtenerPorId(id: number): Observable<HttpGlobalResponse<TeachingResponseDTO>> {
-    return this.http.get<HttpGlobalResponse<TeachingResponseDTO>>(`${this.api}/${id}`);
+  obtenerPorId(
+    id: number
+  ): Observable<HttpGlobalResponse<TeachingResponseDTO>> {
+    return this.http.get<HttpGlobalResponse<TeachingResponseDTO>>(
+      `${this.api}/${id}`
+    );
   }
 
-  crear(dto: TeachingRequestDTO): Observable<HttpGlobalResponse<TeachingResponseDTO>> {
-    return this.http.post<HttpGlobalResponse<TeachingResponseDTO>>(this.api, dto);
+  crear(
+    dto: TeachingRequestDTO
+  ): Observable<HttpGlobalResponse<TeachingResponseDTO>> {
+    return this.http.post<HttpGlobalResponse<TeachingResponseDTO>>(
+      this.api,
+      dto
+    );
   }
 
-  actualizar(id: number, dto: TeachingRequestDTO): Observable<HttpGlobalResponse<TeachingResponseDTO>> {
-    return this.http.put<HttpGlobalResponse<TeachingResponseDTO>>(`${this.api}/${id}`, dto);
+  actualizar(
+    id: number,
+    dto: TeachingRequestDTO
+  ): Observable<HttpGlobalResponse<TeachingResponseDTO>> {
+    return this.http.put<HttpGlobalResponse<TeachingResponseDTO>>(
+      `${this.api}/${id}`,
+      dto
+    );
   }
 
-  eliminar(id: number): Observable<HttpGlobalResponse<void>> {
-    return this.http.delete<HttpGlobalResponse<void>>(`${this.api}/${id}`);
+  eliminar(
+    id: number
+  ): Observable<HttpGlobalResponse<void>> {
+    return this.http.delete<HttpGlobalResponse<void>>(
+      `${this.api}/${id}`
+    );
   }
 
-  buscar(q: string): Observable<HttpGlobalResponse<TeachingResponseDTO[]>> {
-    return this.http.get<HttpGlobalResponse<TeachingResponseDTO[]>>(`${this.api}/search`, {
-      params: { q }
-    });
+  buscar(
+    q: string
+  ): Observable<HttpGlobalResponse<TeachingResponseDTO[]>> {
+    return this.http.get<HttpGlobalResponse<TeachingResponseDTO[]>>(
+      `${this.api}/search`,
+      {
+        params: { q }
+      }
+    );
   }
 }
