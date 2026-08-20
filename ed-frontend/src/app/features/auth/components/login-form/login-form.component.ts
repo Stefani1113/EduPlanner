@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { AuthService } from '../services/auth.service'; 
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-login-form',
@@ -26,8 +26,9 @@ export class LoginFormComponent {
 
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('usuario', JSON.stringify(response.data));
+        this.authService.iniciarRenovacionAutomatica();
 
-        this.router.navigate(['/dashboard']); // Cambia la ruta si es otra
+        this.router.navigate(['/dashboard']); 
 
       },
 
