@@ -87,18 +87,33 @@ public class ImportService {
             // La primera fila son encabezados, se salta
             for (int i = 1; i < allRows.size(); i++) {
                 String[] row = allRows.get(i);
-                totalRows++;
                 int rowNumber = i + 1;
+
+                //Ignora filas completamente vacias
+                if(isRowEmpty(row)) {
+                    continue;
+                }
+
+                totalRows++;
 
                 try {
                     validateRowLength(row);
                     RegisterStudentDTO dto = mapRowToDTO(row);
-                    registerService.registerStudentInternal(dto, importRecord.getIdImport());
-                    successRows++;
+                    registerService.registerStudentInternal(dto, 
+                        importRecord.getIdImport());
+
+                        successRows++;
 
                 } catch (Exception e) {
                     failedRows++;
-                    saveImportError(importRecord.getIdImport(), rowNumber, row, e.getMessage());
+                    
+                    String friendlyMessage = getFriendlyErrorMessage(e, row);
+
+                    saveImportError(
+                        importRecord.getIdImport(), 
+                        rowNumber,
+                        row,
+                        friendlyMessage);
                 }
             }
         }
@@ -164,6 +179,52 @@ public class ImportService {
         importErrorRepository.save(error);
     }
 
+    /**
+     * Metodo para detectar filas vacias
+     * @param row
+     * @return
+     */
+    private boolean isRowEmpty(String[] row) {
+        for(String value : row) {
+            if(value != null && !value.trim().isEmpty()) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Metodo para traducir errores
+     * @param e
+     * @param row
+     * @return
+     */
+    private String getFriendlyErrorMessage(Exception e, String[] row) {
+        if (e instanceof java.time.format.DateTimeParseException) {
+            String dateValue = row[COL_FECHA_NACIMIENTO].trim();
+
+            if(dateValue.isEmpty()) {
+                return "La fecha de nacimiento es obligatoria.";
+            }
+
+            return "La fecha de nacimiento tiene un formato inválido."
+            + "Utilice el formato AAAA-MM-DD";
+        }
+
+        if(e instanceof NumberFormatException) {
+            String stratumValue = row[COL_ESTRATO].trim();
+
+            if(stratumValue.isEmpty()) {
+                return "El estrato es obligatorio";
+            }
+
+            return "EL estrato debe ser un número válido";
+        }
+
+        return e.getMessage() != null 
+                    ? e.getMessage() : "Ocurrió un error desconocido al procesar la fila";
+    }
 
     /**
      * Metodo para armar reporte
