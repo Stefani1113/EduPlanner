@@ -221,11 +221,38 @@ public class ImportService {
 
             return "EL estrato debe ser un número válido";
         }
+        
+        if(containsMailException(e)) {
+            return "No fue posible enviar el correo de activación. "
+            + "Verifique que la dirección de correo eléctronico sea válida. ";
+        }
 
         return e.getMessage() != null 
                     ? e.getMessage() : "Ocurrió un error desconocido al procesar la fila";
     }
 
+    /**
+     * Exepciones de Correo eléctronico
+     * @param e
+     * @return
+     */
+
+    private boolean containsMailException(Exception e){
+        Throwable cause = e;
+
+        while (cause != null){
+            String className = cause.getClass().getName();
+
+            if(className.contains("MailException")
+                || className.contains("SendFailedExeption")
+                || className.contains("SMTPAddressFailedException")) {
+                        return true;
+                }
+
+                cause = cause.getCause();
+        }
+        return false;
+    }
     /**
      * Metodo para armar reporte
      */
