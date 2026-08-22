@@ -48,7 +48,7 @@ frontend:
   activation-url: http://localhost:4200/activate
 
 institution: 
-  id: Nuevo Horizonte  #Id fijo de la institución
+  id: 1  #Id fijo de la institución
 
 cloudinary:
   cloud-name: f0qiiq22
