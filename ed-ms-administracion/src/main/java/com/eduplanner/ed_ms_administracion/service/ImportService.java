@@ -58,7 +58,7 @@ public class ImportService {
     private static final int EXPECTED_COLUMNS = 18;
 
     //Formato de fecha
-    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     /**
      * Procesa el CSV completo: crea el registro Import, recorre fila por fila
@@ -150,7 +150,7 @@ public class ImportService {
         dto.setDocumentType(row[COL_TIPO_DOCUMENTO].trim());
         dto.setDocumentIssuePlace(row[COL_LUGAR_EXPEDICION].trim());
         dto.setGender(row[COL_GENERO].trim());
-        dto.setBirthdate(LocalDate.parse(row[COL_FECHA_NACIMIENTO].trim()), DATE_FORMATTER); // DD/MM/AAAA
+        dto.setBirthdate(LocalDate.parse(row[COL_FECHA_NACIMIENTO].trim(), DATE_FORMATTER)); // DD/MM/AAAA
         dto.setAddress(row[COL_DIRECCION].trim());
         dto.setBloodType(row[COL_TIPO_SANGRE].trim());
         dto.setDisabilities(row[COL_DISCAPACIDADES].trim());
