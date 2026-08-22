@@ -15,6 +15,11 @@ export class ImportacionService {
 
   constructor(private http: HttpClient) {}
 
+
+  obtenerReporte(idImport: number): Observable<any> {
+    return this.http.get(`${this.api}/${idImport}/report`);
+  }
+
   importarExcel(file: File): Observable<any> {
 
     const formData = new FormData();
