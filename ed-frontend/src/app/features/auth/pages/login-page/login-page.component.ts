@@ -1,7 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
@@ -11,7 +11,7 @@ import { AuthService } from '../../services/auth.service';
   templateUrl: './login-page.component.html',
   styleUrls: ['./login-page.component.scss']
 })
-export class LoginPageComponent {
+export class LoginPageComponent implements OnInit {
 
   email: string = '';
   password: string = '';
@@ -26,8 +26,15 @@ export class LoginPageComponent {
 
   constructor(
     private router: Router,
+    private route: ActivatedRoute,
     private authService: AuthService
   ) {}
+
+  ngOnInit(): void {
+    if (this.route.snapshot.queryParamMap.get('sesionExpirada') === 'true') {
+      this.serverError = '• Tu sesión expiró por inactividad. Inicia sesión de nuevo.';
+    }
+  }
 
   togglePassword(): void {
     this.showPassword = !this.showPassword;
@@ -53,6 +60,7 @@ export class LoginPageComponent {
 
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('usuario', JSON.stringify(response.data));
+        this.authService.iniciarRenovacionAutomatica();
 
         this.router.navigate(['/admin/dashboard']);
 
