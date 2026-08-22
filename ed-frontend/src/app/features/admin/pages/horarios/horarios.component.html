@@ -1,1 +1,604 @@
-<p>horarios works!</p>
+
+<button
+  type="button"
+  class="btn-datos"
+  (click)="abrirDatos()">
+
+  <span class="icono-datos">
+    <img 
+      *ngIf="imagenBoton" 
+      [src]="imagenBoton" 
+      alt="Icono"
+      class="icono-imagen"
+      (error)="imagenBoton = ''">
+    <span *ngIf="!imagenBoton"><img src="assets/img/IA.png" alt=""></span>
+  </span>
+</button>
+<div
+  class="datos-overlay"
+  *ngIf="mostrarDatos"
+  (click)="cerrarDatos()">
+</div>
+
+<aside
+  class="panel-datos"
+  [class.panel-abierto]="mostrarDatos"
+  (click)="$event.stopPropagation()">
+
+  <div class="panel-datos-header">
+
+    <div>
+
+      <span class="panel-subtitulo">
+        ADMINISTRACIÓN
+      </span>
+
+      <h2>
+        Datos
+      </h2>
+
+    </div>
+
+    <button
+      type="button"
+      class="btn-cerrar-panel"
+      (click)="cerrarDatos()">
+
+      ×
+
+    </button>
+
+  </div>
+
+  <section class="datos-card">
+
+    <div class="datos-card-header">
+
+      <h3>
+        Datos de Docentes
+      </h3>
+
+      <button
+        type="button"
+        class="btn-agregar"
+        (click)="abrirAgregarDocente()">
+
+        + Agregar
+
+      </button>
+
+    </div>
+
+
+    <!-- TABLA DOCENTES -->
+
+    <div class="tabla-scroll">
+
+      <table class="tabla-datos">
+
+        <thead>
+
+          <tr>
+
+            <th>DOCENTE</th>
+
+            <th>ÁREA</th>
+
+            <th>DISPONIBILIDAD</th>
+
+            <th>H/SEMANA</th>
+
+          </tr>
+
+        </thead>
+
+
+        <tbody>
+
+          <tr 
+            *ngFor="let docente of docentes"
+            (click)="seleccionarDocente(docente)"
+            [class.fila-seleccionada]="docenteSeleccionado?.id === docente.id">
+
+            <td>
+
+              <div class="docente-nombre">
+
+                <div class="docente-avatar" [style.background-image]="docente.imagen ? 'url(' + docente.imagen + ')' : ''">
+                  <span *ngIf="!docente.imagen">
+                    {{ docente.nombre.charAt(0) }}
+                  </span>
+                </div>
+
+                <span>
+                  {{ docente.nombre }} {{ docente.apellidos }}
+                </span>
+
+              </div>
+
+            </td>
+
+            <td>
+              {{ docente.area }}
+            </td>
+
+            <td>
+              {{ docente.disponibilidad }}
+            </td>
+
+            <td>
+              {{ docente.horasSemana }}
+            </td>
+
+          </tr>
+
+
+          <tr *ngIf="docentes.length === 0">
+
+            <td
+              colspan="4"
+              class="sin-registros">
+
+              No hay docentes registrados.
+
+            </td>
+
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+
+    <!-- BOTONES DOCENTES -->
+
+    <div class="acciones-datos">
+
+      <button
+        type="button"
+        class="btn-editar"
+        [disabled]="!docenteSeleccionado"
+        (click)="abrirEditarDocente()">
+
+        ✎ Editar
+
+      </button>
+
+
+      <button
+        type="button"
+        class="btn-eliminar"
+        [disabled]="!docenteSeleccionado"
+        (click)="eliminarDocente()">
+
+        × Eliminar
+
+      </button>
+
+    </div>
+
+  </section>
+
+
+  <!-- ===================================================
+       DATOS ASIGNATURAS
+  ==================================================== -->
+
+  <section class="datos-card">
+
+    <div class="datos-card-header">
+
+      <h3>
+        Datos de Asignaturas
+      </h3>
+
+      <button
+        type="button"
+        class="btn-agregar"
+        (click)="abrirAgregarAsignatura()">
+
+        + Agregar
+
+      </button>
+
+    </div>
+
+
+    <!-- TABLA ASIGNATURAS -->
+
+    <div class="tabla-scroll">
+
+      <table class="tabla-datos">
+
+        <thead>
+
+          <tr>
+
+            <th>NOMBRE</th>
+
+            <th>HORA/SEMANA</th>
+
+          </tr>
+
+        </thead>
+
+
+        <tbody>
+
+          <tr
+            *ngFor="let asignatura of asignaturas"
+            (click)="seleccionarAsignatura(asignatura)"
+            [class.fila-seleccionada]="
+              asignaturaSeleccionada?.id === asignatura.id
+            ">
+
+            <td>
+
+              {{ asignatura.nombre }}
+
+            </td>
+
+            <td>
+
+              {{ asignatura.horasSemana }} H
+
+            </td>
+
+          </tr>
+
+
+          <tr *ngIf="asignaturas.length === 0">
+
+            <td
+              colspan="2"
+              class="sin-registros">
+
+              No hay asignaturas registradas.
+
+            </td>
+
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+
+    <!-- BOTONES ASIGNATURAS -->
+
+    <div class="acciones-datos">
+
+      <button
+        type="button"
+        class="btn-editar"
+        [disabled]="!asignaturaSeleccionada"
+        (click)="abrirEditarAsignatura()">
+
+        ✎ Editar
+
+      </button>
+
+
+      <button
+        type="button"
+        class="btn-eliminar"
+        [disabled]="!asignaturaSeleccionada"
+        (click)="eliminarAsignatura()">
+
+        × Eliminar
+
+      </button>
+
+    </div>
+
+  </section>
+
+</aside>
+
+
+<!-- =====================================================
+     MODAL DOCENTE
+===================================================== -->
+
+<div
+  class="modal-overlay"
+  *ngIf="mostrarFormularioDocente"
+  (click)="cerrarFormularioDocente()">
+
+
+  <div
+    class="modal-datos"
+    (click)="$event.stopPropagation()">
+
+
+    <div class="modal-header">
+
+      <div>
+
+        <span>
+          {{ editandoDocente ? 'EDITAR DOCENTE' : 'NUEVO DOCENTE' }}
+        </span>
+
+        <h2>
+
+          {{
+            editandoDocente
+              ? 'Editar información'
+              : 'Registrar docente'
+          }}
+
+        </h2>
+
+      </div>
+
+
+      <button
+        type="button"
+        class="btn-cerrar-panel"
+        (click)="cerrarFormularioDocente()">
+
+        ×
+
+      </button>
+
+    </div>
+
+
+    <!-- FOTO -->
+
+    <div class="foto-docente">
+
+      <div class="foto-preview" [style.background-image]="formularioDocente.imagen ? 'url(' + formularioDocente.imagen + ')' : ''">
+        <span *ngIf="!formularioDocente.imagen">
+          {{ formularioDocente.nombre ? formularioDocente.nombre.charAt(0) : '?' }}
+        </span>
+      </div>
+
+
+      <div class="campo campo-imagen">
+
+        <label>
+          URL de la imagen
+        </label>
+
+        <input
+          type="text"
+          [(ngModel)]="formularioDocente.imagen"
+          placeholder="https://ejemplo.com/foto.jpg">
+
+        <button
+          type="button"
+          class="btn-preview-imagen"
+          (click)="formularioDocente.imagen = 'https://ui-avatars.com/api/?name=' + formularioDocente.nombre + '+' + formularioDocente.apellidos + '&background=347d1c&color=fff&size=128'">
+          Generar avatar
+        </button>
+
+      </div>
+
+    </div>
+
+
+    <!-- FORMULARIO -->
+
+    <div class="form-grid">
+
+      <div class="campo">
+
+        <label>
+          Nombre
+        </label>
+
+        <input
+          type="text"
+          [(ngModel)]="formularioDocente.nombre"
+          placeholder="Nombre del docente">
+
+      </div>
+
+
+      <div class="campo">
+
+        <label>
+          Apellidos
+        </label>
+
+        <input
+          type="text"
+          [(ngModel)]="formularioDocente.apellidos"
+          placeholder="Apellidos">
+
+      </div>
+
+
+      <div class="campo">
+
+        <label>
+          Área
+        </label>
+
+        <input
+          type="text"
+          [(ngModel)]="formularioDocente.area"
+          placeholder="Ej. Biología">
+
+      </div>
+
+
+      <div class="campo">
+
+        <label>
+          Horas / semana
+        </label>
+
+        <input
+          type="number"
+          [(ngModel)]="formularioDocente.horasSemana"
+          placeholder="28">
+
+      </div>
+
+
+      <div class="campo campo-completo">
+
+        <label>
+          Disponibilidad
+        </label>
+
+        <input
+          type="text"
+          [(ngModel)]="formularioDocente.disponibilidad"
+          placeholder="L - V / 7 - 11 H">
+
+      </div>
+
+    </div>
+
+
+    <div class="modal-acciones">
+
+      <button
+        type="button"
+        class="btn-cancelar"
+        (click)="cerrarFormularioDocente()">
+
+        Cancelar
+
+      </button>
+
+
+      <button
+        type="button"
+        class="btn-guardar"
+        (click)="guardarDocente()">
+
+        {{
+          editandoDocente
+            ? 'Actualizar'
+            : 'Guardar'
+        }}
+
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- =====================================================
+     MODAL ASIGNATURA
+===================================================== -->
+
+<div
+  class="modal-overlay"
+  *ngIf="mostrarFormularioAsignatura"
+  (click)="cerrarFormularioAsignatura()">
+
+
+  <div
+    class="modal-datos modal-asignatura"
+    (click)="$event.stopPropagation()">
+
+
+    <div class="modal-header">
+
+      <div>
+
+        <span>
+          {{ editandoAsignatura
+            ? 'EDITAR ASIGNATURA'
+            : 'NUEVA ASIGNATURA' }}
+        </span>
+
+        <h2>
+
+          {{
+            editandoAsignatura
+              ? 'Editar información'
+              : 'Registrar asignatura'
+          }}
+
+        </h2>
+
+      </div>
+
+
+      <button
+        type="button"
+        class="btn-cerrar-panel"
+        (click)="cerrarFormularioAsignatura()">
+
+        ×
+
+      </button>
+
+    </div>
+
+
+    <div class="form-grid">
+
+      <div class="campo campo-completo">
+
+        <label>
+          Nombre de la asignatura
+        </label>
+
+        <input
+          type="text"
+          [(ngModel)]="formularioAsignatura.nombre"
+          placeholder="Ej. Matemáticas">
+
+      </div>
+
+
+      <div class="campo campo-completo">
+
+        <label>
+          Horas / semana
+        </label>
+
+        <input
+          type="number"
+          [(ngModel)]="formularioAsignatura.horasSemana"
+          placeholder="80">
+
+      </div>
+
+    </div>
+
+
+    <div class="modal-acciones">
+
+      <button
+        type="button"
+        class="btn-cancelar"
+        (click)="cerrarFormularioAsignatura()">
+
+        Cancelar
+
+      </button>
+
+
+      <button
+        type="button"
+        class="btn-guardar"
+        (click)="guardarAsignatura()">
+
+        {{
+          editandoAsignatura
+            ? 'Actualizar'
+            : 'Guardar'
+        }}
+
+      </button>
+
+    </div>
+
+  </div>
+
+</div>

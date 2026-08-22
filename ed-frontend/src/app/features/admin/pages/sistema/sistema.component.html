@@ -1,0 +1,147 @@
+<div class="panel-control" *ngIf="palette && info">
+
+  <div class="panel-grid">
+
+    <div class="panel-col panel-col-main">
+
+      <section class="panel-card">
+        <h3 class="card-title"><span class="dot"></span> Logo institucional</h3>
+
+        <div class="logo-row">
+          <div class="logo-preview">
+            <img *ngIf="info.logoUrl" [src]="info.logoUrl" alt="Logo institucional">
+            <span *ngIf="!info.logoUrl" class="logo-placeholder">Sin logo</span>
+          </div>
+
+          <div class="logo-actions">
+            <p>Recomendamos usar el logo en fondo transparente (.png). Se usará en la barra de navegación pública.</p>
+            <input #logoInput type="file" accept="image/*" hidden (change)="onLogoSelected($event)">
+            <button type="button" class="btn-outline" (click)="logoInput.click()">Cambiar logo</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel-card">
+        <h3 class="card-title"><span class="dot"></span> Información</h3>
+
+        <div class="field-grid">
+          <div class="field">
+            <label>Nombre corto</label>
+            <input type="text" [(ngModel)]="info.nombreCorto" placeholder="Ej: Nuevo Horizonte">
+          </div>
+
+          <div class="field">
+            <label>Nombre largo</label>
+            <input type="text" [(ngModel)]="info.nombreLargo" placeholder="Ej: Institución Educativa Nuevo Horizonte">
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Descripción</label>
+          <textarea rows="3" [(ngModel)]="info.descripcion" placeholder="Frase que aparece en la portada"></textarea>
+        </div>
+      </section>
+
+      <section class="panel-card">
+        <h3 class="card-title"><span class="dot"></span> Imágenes del carrusel</h3>
+
+        <div class="carousel-grid">
+          <div class="carousel-item" *ngFor="let img of info.carousel; let i = index">
+            <div class="carousel-thumb">
+              <img *ngIf="img.url" [src]="img.url" alt="Imagen del carrusel {{ i + 1 }}">
+              <span *ngIf="!img.url" class="logo-placeholder">Sin imagen</span>
+            </div>
+            <input type="text" [(ngModel)]="img.url" placeholder="URL de la imagen">
+            <div class="carousel-item-actions">
+              <input #carouselInput type="file" accept="image/*" hidden (change)="onCarouselFileSelected($event, i)">
+              <button type="button" class="btn-link" (click)="carouselInput.click()">Subir</button>
+              <button type="button" class="btn-link danger" (click)="removeCarouselImage(i)">Quitar</button>
+            </div>
+          </div>
+        </div>
+
+        <button type="button" class="btn-outline small" (click)="addCarouselImage()" [disabled]="info.carousel.length >= 4">
+          + Agregar imagen
+        </button>
+      </section>
+
+      <div class="two-col">
+        <section class="panel-card">
+          <h3 class="card-title"><span class="dot"></span> Misión</h3>
+          <div class="field">
+            <label>Descripción</label>
+            <textarea rows="4" [(ngModel)]="info.mision"></textarea>
+          </div>
+        </section>
+
+        <section class="panel-card">
+          <h3 class="card-title"><span class="dot"></span> Visión</h3>
+          <div class="field">
+            <label>Descripción</label>
+            <textarea rows="4" [(ngModel)]="info.vision"></textarea>
+          </div>
+        </section>
+      </div>
+
+      <div class="three-col">
+        <section class="panel-card">
+          <h3 class="card-title small-title">Dirección / contacto</h3>
+          <div class="field">
+            <label>Descripción</label>
+            <textarea rows="2" [(ngModel)]="info.contactoDireccion"></textarea>
+          </div>
+        </section>
+
+        <section class="panel-card">
+          <h3 class="card-title small-title">Reglamento estudiantil</h3>
+          <div class="field">
+            <label>Enlace o descripción</label>
+            <textarea rows="2" [(ngModel)]="info.reglamentoUrl" placeholder="URL del documento"></textarea>
+          </div>
+        </section>
+
+        <section class="panel-card">
+          <h3 class="card-title small-title">Construcción / legales</h3>
+          <div class="field">
+            <label>Enlace o descripción</label>
+            <textarea rows="2" [(ngModel)]="info.construccionLegalUrl" placeholder="URL del documento"></textarea>
+          </div>
+        </section>
+      </div>
+
+    </div>
+
+    
+    <div class="panel-col panel-col-side">
+      <section class="panel-card palette-card">
+        <h3 class="card-title"><span class="dot"></span> Paleta de colores</h3>
+
+        <div class="swatch-row" *ngFor="let sw of swatches">
+          <div class="swatch-preview" [style.background]="palette[sw.key]"></div>
+
+          <div class="swatch-info">
+            <strong>{{ sw.label }}</strong>
+            <span>{{ sw.hint }}</span>
+          </div>
+
+          <label class="swatch-edit">
+            <input type="color" [(ngModel)]="palette[sw.key]" (ngModelChange)="onColorChange()">
+            <span class="pencil">✎</span>
+          </label>
+        </div>
+
+        <p class="palette-note">
+          Los colores se aplican de inmediato en la vista previa de "Mi institución".
+        </p>
+      </section>
+    </div>
+
+  </div>
+
+  <div class="panel-footer-actions">
+    <span class="saved-message" *ngIf="savedMessage">{{ savedMessage }}</span>
+    <button type="button" class="btn-outline" (click)="restablecer()">Restablecer</button>
+    <button type="button" class="btn-primary" (click)="guardar()">Guardar cambios</button>
+  </div>
+
+</div>
