@@ -1,22 +1,37 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { forkJoin } from 'rxjs';
 
-interface Docente {
-  id: number;
+import { DocentesService, TeachingResponseDTO } from '../../services/docentes.service';
+import {
+  HorariosService,
+  SubjectResponseDTO,
+  AcademicTeacherResponseDTO,
+  AcademicLoadResponseDTO,
+  CourseResponseDTO
+} from '../../services/horarios.service';
+
+interface DocenteFila {
+  idAcademicLoad: number;
+  idAcademicTeacher: number;
+  idUser: number;
+  idCourse: number;
+  idSubject: number;
   nombre: string;
   apellidos: string;
   area: string;
-  disponibilidad: string;
-  horasSemana: number;
-  imagen: string;
-  fotoPerfil?: string;
+  curso: string;
+  maxDailyHours: number;
+  maxWeeklyHours: number;
+  horasSemanaArea: number;
 }
 
-interface Asignatura {
-  id: number;
+interface AsignaturaFila {
+  idSubject: number;
   nombre: string;
-  horasSemana: number;
+  descripcion: string;
+  color: string;
 }
 
 @Component({
@@ -27,95 +42,147 @@ interface Asignatura {
   styleUrl: './horarios.component.scss'
 })
 export class HorariosComponent implements OnInit {
+
   mostrarDatos = false;
   mostrarFormularioDocente = false;
   editandoDocente = false;
   mostrarFormularioAsignatura = false;
   editandoAsignatura = false;
 
-  docentes: Docente[] = [];
-  asignaturas: Asignatura[] = [];
-  docenteSeleccionado: Docente | null = null;
-  asignaturaSeleccionada: Asignatura | null = null;
+  cargandoDatos = false;
+  errorCarga = '';
 
-  // URL de la imagen para el botón
+  guardandoDocente = false;
+  errorFormularioDocente = '';
+
+  guardandoAsignatura = false;
+  errorFormularioAsignatura = '';
+
+  docentes: DocenteFila[] = [];
+  asignaturas: AsignaturaFila[] = [];
+  docenteSeleccionado: DocenteFila | null = null;
+  asignaturaSeleccionada: AsignaturaFila | null = null;
+
+  docentesDisponibles: TeachingResponseDTO[] = [];
+  cursosDisponibles: CourseResponseDTO[] = [];
+  asignaturasCatalogo: SubjectResponseDTO[] = [];
+
+  private academicTeachersPorUsuario = new Map<number, AcademicTeacherResponseDTO>();
+
   imagenBoton: string = '';
 
-  formularioDocente: Docente = {
-    id: 0,
-    nombre: '',
-    apellidos: '',
-    area: '',
-    disponibilidad: '',
-    horasSemana: 0,
-    imagen: '',
-    fotoPerfil: ''
+  formularioDocente = {
+    idAcademicLoad: 0,
+    idUser: 0,
+    idCourse: 0,
+    idSubject: 0,
+    maxDailyHours: 6,
+    maxWeeklyHours: 30,
+    horasSemanaArea: 0
   };
 
-  formularioAsignatura: Asignatura = {
-    id: 0,
+  formularioAsignatura = {
+    idSubject: 0,
     nombre: '',
-    horasSemana: 0
+    descripcion: '',
+    color: '#347d1c'
   };
 
-  constructor() {}
+  constructor(
+    private horariosService: HorariosService,
+    private docentesService: DocentesService
+  ) {}
 
   ngOnInit(): void {
     this.cargarDatos();
     this.cargarImagenBoton();
   }
 
-  // =========================================
-  // GESTIÓN DE DATOS CON LOCALSTORAGE
-  // =========================================
 
   cargarDatos(): void {
-    // Cargar docentes
-    const docentesGuardados = localStorage.getItem('docentes');
-    if (docentesGuardados) {
-      this.docentes = JSON.parse(docentesGuardados);
-    } else {
-      // Datos por defecto
-      this.docentes = [
-        {
-          id: 1,
-          nombre: 'Luz Elena',
-          apellidos: 'García',
-          area: 'Biología',
-          disponibilidad: 'L - V / 7 - 11 H',
-          horasSemana: 28,
-          imagen: '',
-          fotoPerfil: ''
-        }
-      ];
-      this.guardarDocentes();
-    }
+    this.cargandoDatos = true;
+    this.errorCarga = '';
 
-    // Cargar asignaturas
-    const asignaturasGuardadas = localStorage.getItem('asignaturas');
-    if (asignaturasGuardadas) {
-      this.asignaturas = JSON.parse(asignaturasGuardadas);
-    } else {
-      this.asignaturas = [
-        { id: 1, nombre: 'Matemáticas', horasSemana: 80 },
-        { id: 2, nombre: 'Biología', horasSemana: 90 },
-        { id: 3, nombre: 'Física', horasSemana: 40 }
-      ];
-      this.guardarAsignaturas();
-    }
+    forkJoin({
+      docentes: this.docentesService.listar(),
+      cursos: this.horariosService.listarCursos(),
+      asignaturas: this.horariosService.listarAsignaturas(),
+      academicTeachers: this.horariosService.listarDocentesAcademicos(),
+      cargas: this.horariosService.listarCargasAcademicas()
+    }).subscribe({
+      next: ({ docentes, cursos, asignaturas, academicTeachers, cargas }) => {
+
+        this.docentesDisponibles = docentes.data ?? [];
+        this.cursosDisponibles = cursos.data ?? [];
+        this.asignaturasCatalogo = asignaturas.data ?? [];
+
+        const docentesPorId = new Map<number, TeachingResponseDTO>(
+          this.docentesDisponibles.map(d => [d.idUser, d])
+        );
+
+        const cursosPorId = new Map<number, CourseResponseDTO>(
+          this.cursosDisponibles.map(c => [c.idCourse, c])
+        );
+
+        const asignaturasPorId = new Map<number, SubjectResponseDTO>(
+          this.asignaturasCatalogo.map(a => [a.idSubject, a])
+        );
+
+        this.academicTeachersPorUsuario = new Map(
+          (academicTeachers.data ?? []).map(at => [at.idUser, at])
+        );
+
+        const academicTeacherPorId = new Map<number, AcademicTeacherResponseDTO>(
+          (academicTeachers.data ?? []).map(at => [at.idAcademicTeacher, at])
+        );
+
+        this.asignaturas = this.asignaturasCatalogo.map(a => ({
+          idSubject: a.idSubject,
+          nombre: a.name,
+          descripcion: a.description ?? '',
+          color: a.color ?? '#347d1c'
+        }));
+
+        this.docentes = (cargas.data ?? [])
+          .map(load => {
+            const at = academicTeacherPorId.get(load.idTeacher);
+            if (!at) return null;
+
+            const docente = docentesPorId.get(at.idUser);
+            if (!docente) return null;
+
+            const curso = cursosPorId.get(load.idCourse);
+            const asignatura = asignaturasPorId.get(load.idSubject);
+
+            const fila: DocenteFila = {
+              idAcademicLoad: load.idAcademicLoad,
+              idAcademicTeacher: at.idAcademicTeacher,
+              idUser: at.idUser,
+              idCourse: load.idCourse,
+              idSubject: load.idSubject,
+              nombre: docente.name,
+              apellidos: docente.surnames,
+              area: asignatura ? asignatura.name : 'Asignatura no encontrada',
+              curso: curso ? curso.name : `Curso #${load.idCourse}`,
+              maxDailyHours: at.maxDailyHours,
+              maxWeeklyHours: at.maxWeeklyHours,
+              horasSemanaArea: load.weeklyHours
+            };
+
+            return fila;
+          })
+          .filter((f): f is DocenteFila => f !== null);
+
+        this.cargandoDatos = false;
+      },
+      error: (err) => {
+        this.cargandoDatos = false;
+        this.errorCarga = err?.error?.message
+          || 'No se pudo cargar la información desde el servidor. Verifica tu conexión.';
+      }
+    });
   }
 
-  guardarDocentes(): void {
-    localStorage.setItem('docentes', JSON.stringify(this.docentes));
-  }
-
-  guardarAsignaturas(): void {
-    localStorage.setItem('asignaturas', JSON.stringify(this.asignaturas));
-  }
-
-  // =========================================
-  // IMAGEN DEL BOTÓN
-  // =========================================
 
   cargarImagenBoton(): void {
     const imagen = localStorage.getItem('imagenBoton');
@@ -129,37 +196,32 @@ export class HorariosComponent implements OnInit {
     localStorage.setItem('imagenBoton', url);
   }
 
-  // =========================================
-  // ABRIR/CERRAR PANEL
-  // =========================================
 
   abrirDatos(): void {
     this.mostrarDatos = true;
+    this.cargarDatos();
   }
 
   cerrarDatos(): void {
     this.mostrarDatos = false;
   }
 
-  // =========================================
-  // DOCENTES - CRUD
-  // =========================================
 
-  seleccionarDocente(docente: Docente): void {
+  seleccionarDocente(docente: DocenteFila): void {
     this.docenteSeleccionado = docente;
   }
 
   abrirAgregarDocente(): void {
     this.editandoDocente = false;
+    this.errorFormularioDocente = '';
     this.formularioDocente = {
-      id: 0,
-      nombre: '',
-      apellidos: '',
-      area: '',
-      disponibilidad: '',
-      horasSemana: 0,
-      imagen: '',
-      fotoPerfil: ''
+      idAcademicLoad: 0,
+      idUser: 0,
+      idCourse: 0,
+      idSubject: 0,
+      maxDailyHours: 6,
+      maxWeeklyHours: 30,
+      horasSemanaArea: 0
     };
     this.mostrarFormularioDocente = true;
   }
@@ -167,63 +229,127 @@ export class HorariosComponent implements OnInit {
   abrirEditarDocente(): void {
     if (!this.docenteSeleccionado) return;
     this.editandoDocente = true;
-    this.formularioDocente = { ...this.docenteSeleccionado };
+    this.errorFormularioDocente = '';
+
+    const d = this.docenteSeleccionado;
+    this.formularioDocente = {
+      idAcademicLoad: d.idAcademicLoad,
+      idUser: d.idUser,
+      idCourse: d.idCourse,
+      idSubject: d.idSubject,
+      maxDailyHours: d.maxDailyHours,
+      maxWeeklyHours: d.maxWeeklyHours,
+      horasSemanaArea: d.horasSemanaArea
+    };
     this.mostrarFormularioDocente = true;
   }
 
   cerrarFormularioDocente(): void {
+    if (this.guardandoDocente) return;
     this.mostrarFormularioDocente = false;
   }
 
+  nombreDocenteSeleccionadoEnFormulario(): string {
+    const d = this.docentesDisponibles.find(x => x.idUser === this.formularioDocente.idUser);
+    return d ? `${d.name} ${d.surnames}` : '';
+  }
+
   guardarDocente(): void {
-    if (!this.formularioDocente.nombre || !this.formularioDocente.area) {
-      alert('Completa los datos obligatorios.');
+    this.errorFormularioDocente = '';
+
+    const f = this.formularioDocente;
+
+    if (!f.idUser || !f.idCourse || !f.idSubject || !f.horasSemanaArea
+      || !f.maxDailyHours || !f.maxWeeklyHours) {
+      this.errorFormularioDocente = 'Completa todos los campos obligatorios.';
       return;
     }
 
-    if (this.editandoDocente) {
-      const indice = this.docentes.findIndex(d => d.id === this.formularioDocente.id);
-      if (indice !== -1) {
-        this.docentes[indice] = { ...this.formularioDocente };
-      }
-    } else {
-      const nuevoId = this.docentes.length > 0 
-        ? Math.max(...this.docentes.map(d => d.id)) + 1 
-        : 1;
-      this.docentes.push({
-        ...this.formularioDocente,
-        id: nuevoId
-      });
-    }
+    this.guardandoDocente = true;
 
-    this.guardarDocentes();
-    this.cerrarFormularioDocente();
+    const academicTeacherExistente = this.academicTeachersPorUsuario.get(f.idUser);
+
+    const guardarDisponibilidad$ = academicTeacherExistente
+      ? this.horariosService.actualizarDocenteAcademico(academicTeacherExistente.idAcademicTeacher, {
+          idUser: f.idUser,
+          maxDailyHours: f.maxDailyHours,
+          maxWeeklyHours: f.maxWeeklyHours
+        })
+      : this.horariosService.crearDocenteAcademico({
+          idUser: f.idUser,
+          maxDailyHours: f.maxDailyHours,
+          maxWeeklyHours: f.maxWeeklyHours
+        });
+
+    guardarDisponibilidad$.subscribe({
+      next: (respDisponibilidad) => {
+        const idAcademicTeacher = respDisponibilidad.data.idAcademicTeacher;
+
+        const cargaDTO = {
+          idTeacher: idAcademicTeacher,
+          idCourse: f.idCourse,
+          idSubject: f.idSubject,
+          weeklyHours: f.horasSemanaArea
+        };
+
+        const guardarCarga$ = this.editandoDocente
+          ? this.horariosService.actualizarCargaAcademica(f.idAcademicLoad, cargaDTO)
+          : this.horariosService.crearCargaAcademica(cargaDTO);
+
+        guardarCarga$.subscribe({
+          next: () => {
+            this.guardandoDocente = false;
+            this.mostrarFormularioDocente = false;
+            this.docenteSeleccionado = null;
+            this.cargarDatos();
+          },
+          error: (err) => {
+            this.guardandoDocente = false;
+            this.errorFormularioDocente = err?.error?.message
+              || 'No se pudo guardar la asignación de área para el docente.';
+          }
+        });
+      },
+      error: (err) => {
+        this.guardandoDocente = false;
+        this.errorFormularioDocente = err?.error?.message
+          || 'No se pudo guardar la disponibilidad del docente.';
+      }
+    });
   }
 
   eliminarDocente(): void {
     if (!this.docenteSeleccionado) return;
-    const confirmar = confirm(`¿Deseas eliminar a ${this.docenteSeleccionado.nombre}?`);
+
+    const d = this.docenteSeleccionado;
+    const confirmar = confirm(
+      `¿Deseas quitar la asignación de "${d.area}" a ${d.nombre} ${d.apellidos}?`
+    );
     if (!confirmar) return;
 
-    this.docentes = this.docentes.filter(d => d.id !== this.docenteSeleccionado!.id);
-    this.guardarDocentes();
-    this.docenteSeleccionado = null;
+    this.horariosService.eliminarCargaAcademica(d.idAcademicLoad).subscribe({
+      next: () => {
+        this.docentes = this.docentes.filter(x => x.idAcademicLoad !== d.idAcademicLoad);
+        this.docenteSeleccionado = null;
+      },
+      error: (err) => {
+        alert(err?.error?.message || 'No se pudo eliminar la asignación.');
+      }
+    });
   }
 
-  // =========================================
-  // ASIGNATURAS - CRUD
-  // =========================================
-
-  seleccionarAsignatura(asignatura: Asignatura): void {
+  seleccionarAsignatura(asignatura: AsignaturaFila): void {
     this.asignaturaSeleccionada = asignatura;
   }
 
   abrirAgregarAsignatura(): void {
     this.editandoAsignatura = false;
+    this.errorFormularioAsignatura = '';
     this.formularioAsignatura = {
-      id: 0,
+      idSubject: 0,
       nombre: '',
-      horasSemana: 0
+      descripcion: '',
+      color: '#347d1c'
     };
     this.mostrarFormularioAsignatura = true;
   }
@@ -231,37 +357,51 @@ export class HorariosComponent implements OnInit {
   abrirEditarAsignatura(): void {
     if (!this.asignaturaSeleccionada) return;
     this.editandoAsignatura = true;
+    this.errorFormularioAsignatura = '';
     this.formularioAsignatura = { ...this.asignaturaSeleccionada };
     this.mostrarFormularioAsignatura = true;
   }
 
   cerrarFormularioAsignatura(): void {
+    if (this.guardandoAsignatura) return;
     this.mostrarFormularioAsignatura = false;
   }
 
   guardarAsignatura(): void {
-    if (!this.formularioAsignatura.nombre || !this.formularioAsignatura.horasSemana) {
-      alert('Completa los datos obligatorios.');
+    this.errorFormularioAsignatura = '';
+
+    if (!this.formularioAsignatura.nombre.trim()) {
+      this.errorFormularioAsignatura = 'El nombre de la asignatura es obligatorio.';
       return;
     }
 
-    if (this.editandoAsignatura) {
-      const indice = this.asignaturas.findIndex(a => a.id === this.formularioAsignatura.id);
-      if (indice !== -1) {
-        this.asignaturas[indice] = { ...this.formularioAsignatura };
-      }
-    } else {
-      const nuevoId = this.asignaturas.length > 0 
-        ? Math.max(...this.asignaturas.map(a => a.id)) + 1 
-        : 1;
-      this.asignaturas.push({
-        ...this.formularioAsignatura,
-        id: nuevoId
-      });
-    }
+    this.guardandoAsignatura = true;
 
-    this.guardarAsignaturas();
-    this.cerrarFormularioAsignatura();
+    const dto = {
+      name: this.formularioAsignatura.nombre.trim(),
+      description: this.formularioAsignatura.descripcion?.trim() || undefined,
+      color: this.formularioAsignatura.color || undefined
+    };
+
+    const peticion = this.editandoAsignatura
+      ? this.horariosService.actualizarAsignatura(this.formularioAsignatura.idSubject, dto)
+      : this.horariosService.crearAsignatura(dto);
+
+    peticion.subscribe({
+      next: () => {
+        this.guardandoAsignatura = false;
+        this.mostrarFormularioAsignatura = false;
+        this.asignaturaSeleccionada = null;
+        this.cargarDatos();
+      },
+      error: (err) => {
+        this.guardandoAsignatura = false;
+        this.errorFormularioAsignatura = err?.error?.message
+          || (this.editandoAsignatura
+            ? 'No se pudo actualizar la asignatura.'
+            : 'No se pudo registrar la asignatura.');
+      }
+    });
   }
 
   eliminarAsignatura(): void {
@@ -269,8 +409,16 @@ export class HorariosComponent implements OnInit {
     const confirmar = confirm(`¿Deseas eliminar ${this.asignaturaSeleccionada.nombre}?`);
     if (!confirmar) return;
 
-    this.asignaturas = this.asignaturas.filter(a => a.id !== this.asignaturaSeleccionada!.id);
-    this.guardarAsignaturas();
-    this.asignaturaSeleccionada = null;
+    const a = this.asignaturaSeleccionada;
+
+    this.horariosService.eliminarAsignatura(a.idSubject).subscribe({
+      next: () => {
+        this.asignaturas = this.asignaturas.filter(x => x.idSubject !== a.idSubject);
+        this.asignaturaSeleccionada = null;
+      },
+      error: (err) => {
+        alert(err?.error?.message || 'No se pudo eliminar la asignatura.');
+      }
+    });
   }
 }
