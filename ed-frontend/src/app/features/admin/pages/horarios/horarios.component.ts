@@ -12,6 +12,7 @@ import {
   CourseResponseDTO
 } from '../../services/horarios.service';
 
+/** Una fila de la tabla "Datos de Docentes" = una asignación de área (AcademicLoad) */
 interface DocenteFila {
   idAcademicLoad: number;
   idAcademicTeacher: number;
@@ -63,12 +64,15 @@ export class HorariosComponent implements OnInit {
   docenteSeleccionado: DocenteFila | null = null;
   asignaturaSeleccionada: AsignaturaFila | null = null;
 
+  // Catálogos usados por los formularios (vienen del backend)
   docentesDisponibles: TeachingResponseDTO[] = [];
   cursosDisponibles: CourseResponseDTO[] = [];
   asignaturasCatalogo: SubjectResponseDTO[] = [];
 
+  // Se guardan para no perder los datos ya cargados al combinar/editar
   private academicTeachersPorUsuario = new Map<number, AcademicTeacherResponseDTO>();
 
+  // URL de la imagen para el botón
   imagenBoton: string = '';
 
   formularioDocente = {
@@ -98,6 +102,9 @@ export class HorariosComponent implements OnInit {
     this.cargarImagenBoton();
   }
 
+  // =========================================
+  // CARGA DE DATOS DESDE EL BACKEND
+  // =========================================
 
   cargarDatos(): void {
     this.cargandoDatos = true;
@@ -183,6 +190,9 @@ export class HorariosComponent implements OnInit {
     });
   }
 
+  // =========================================
+  // IMAGEN DEL BOTÓN (se mantiene local, es solo un ícono de UI)
+  // =========================================
 
   cargarImagenBoton(): void {
     const imagen = localStorage.getItem('imagenBoton');
@@ -196,6 +206,9 @@ export class HorariosComponent implements OnInit {
     localStorage.setItem('imagenBoton', url);
   }
 
+  // =========================================
+  // ABRIR/CERRAR PANEL
+  // =========================================
 
   abrirDatos(): void {
     this.mostrarDatos = true;
@@ -206,6 +219,9 @@ export class HorariosComponent implements OnInit {
     this.mostrarDatos = false;
   }
 
+  // =========================================
+  // DOCENTES (asignación de área) - CRUD
+  // =========================================
 
   seleccionarDocente(docente: DocenteFila): void {
     this.docenteSeleccionado = docente;
@@ -249,6 +265,7 @@ export class HorariosComponent implements OnInit {
     this.mostrarFormularioDocente = false;
   }
 
+  /** Nombre completo, usado en la vista previa del formulario */
   nombreDocenteSeleccionadoEnFormulario(): string {
     const d = this.docentesDisponibles.find(x => x.idUser === this.formularioDocente.idUser);
     return d ? `${d.name} ${d.surnames}` : '';
@@ -267,6 +284,7 @@ export class HorariosComponent implements OnInit {
 
     this.guardandoDocente = true;
 
+    // 1) Asegura la disponibilidad/horas máximas del docente (AcademicTeacher)
     const academicTeacherExistente = this.academicTeachersPorUsuario.get(f.idUser);
 
     const guardarDisponibilidad$ = academicTeacherExistente
@@ -285,6 +303,7 @@ export class HorariosComponent implements OnInit {
       next: (respDisponibilidad) => {
         const idAcademicTeacher = respDisponibilidad.data.idAcademicTeacher;
 
+        // 2) Crea/actualiza la asignación de área (AcademicLoad)
         const cargaDTO = {
           idTeacher: idAcademicTeacher,
           idCourse: f.idCourse,
@@ -337,6 +356,10 @@ export class HorariosComponent implements OnInit {
       }
     });
   }
+
+  // =========================================
+  // ASIGNATURAS - CRUD
+  // =========================================
 
   seleccionarAsignatura(asignatura: AsignaturaFila): void {
     this.asignaturaSeleccionada = asignatura;
