@@ -212,6 +212,40 @@
   padding: 20px;
 }
 
+.mensaje-carga {
+  color: #9c9c9c;
+  font-size: 13px;
+  padding: 10px 4px;
+}
+
+.mensaje-error {
+  background: #5a2323;
+  color: #ffb4b4;
+  padding: 10px 12px;
+  border-radius: 5px;
+  font-size: 13px;
+  margin: 0 0 12px 0;
+}
+
+.mensaje-aviso {
+  background: #4a3d17;
+  color: #ffd980;
+  padding: 10px 12px;
+  border-radius: 5px;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.punto-color {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+
 
 .acciones-datos {
   display: flex;

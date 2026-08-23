@@ -39,9 +39,9 @@
   inset: 0;
   background: linear-gradient(
     90deg,
-    rgba(123, 126, 126, 0.605) 0%,
-    rgba(103, 106, 106, 0.639) 35%,
-    rgba(185, 223, 224, 0.45) 61%,
+    rgba(79, 114, 71, 0.605) 0%,
+    rgba(92, 117, 85, 0.639) 35%,
+    rgba(139, 188, 130, 0.45) 61%,
     rgba(185, 223, 224, 0.12) 100%
   );
 }
@@ -121,7 +121,7 @@
 }
 
 .hero-location {
-  color: #617277;
+  color: #61727729;
   font-size: 10px;
 }
 
@@ -213,7 +213,7 @@
 .quick-data span {
   display: block;
   margin-top: 6px;
-  color: #617277;
+  color: #667761;
   font-size: 9px;
   text-transform: uppercase;
   letter-spacing: 0.7px;
@@ -261,7 +261,7 @@
 .white-card p {
   max-width: 520px;
   margin: 0;
-  color: #617277;
+  color: #617763;
   font-size: 10px;
   line-height: 1.7;
 }
@@ -276,7 +276,7 @@
   border-radius: 7px;
   background: var(--inst-accent);
   color: var(--inst-primary);
-  font-size: 15px;
+  font-size: 20px;
 }
 
 
@@ -285,7 +285,7 @@
   padding: 25px;
   background: var(--inst-secondary);
   color: var(--inst-light);
-  box-shadow: 0 6px 15px rgba(27, 120, 11, 0.22);
+  box-shadow: 0 6px 15px rgba(27, 120, 11, 0.272);
 }
 
 .teal-card .section-kicker {
@@ -310,7 +310,7 @@
 .card-icon.light {
   background: rgba(185, 223, 224, 0.22);
   color: var(--inst-light);
-  border: 1px solid rgba(185, 223, 224, 0.35);
+  border: 1px solid rgba(192, 224, 185, 0.35);
 }
 
 
@@ -342,7 +342,7 @@
   color: var(--inst-light);
   background: linear-gradient(
     transparent,
-    rgba(11, 111, 120, 0.9)
+    rgba(29, 120, 11, 0.9)
   );
 }
 
@@ -413,7 +413,7 @@
 
 
 .pillar-card.featured {
-  background: #70ba8a;
+  background: #70ba8af6;
   border-color: #70ba70;
 }
 
