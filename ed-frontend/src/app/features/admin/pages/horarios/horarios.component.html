@@ -1,19 +1,23 @@
-
 <button
   type="button"
   class="btn-datos"
   (click)="abrirDatos()">
 
   <span class="icono-datos">
-    <img 
-      *ngIf="imagenBoton" 
-      [src]="imagenBoton" 
+    <img
+      *ngIf="imagenBoton"
+      [src]="imagenBoton"
       alt="Icono"
       class="icono-imagen"
       (error)="imagenBoton = ''">
-    <span *ngIf="!imagenBoton"><img src="assets/img/IA.png" alt=""></span>
+
+    <img
+      *ngIf="!imagenBoton"
+      src="assets/img/IA.png"
+      alt="Datos">
   </span>
 </button>
+
 <div
   class="datos-overlay"
   *ngIf="mostrarDatos"
@@ -22,13 +26,11 @@
 
 <aside
   class="panel-datos"
-  [class.panel-abierto]="mostrarDatos"
-  (click)="$event.stopPropagation()">
+  [class.panel-abierto]="mostrarDatos">
 
   <div class="panel-datos-header">
 
     <div>
-
       <span class="panel-subtitulo">
         ADMINISTRACIÓN
       </span>
@@ -36,7 +38,6 @@
       <h2>
         Datos
       </h2>
-
     </div>
 
     <button
@@ -50,13 +51,23 @@
 
   </div>
 
-  <div class="mensaje-carga" *ngIf="cargandoDatos">
-    Cargando información desde el servidor...
+  <div
+    *ngIf="errorCarga"
+    class="mensaje-error">
+
+    {{ errorCarga }}
+
   </div>
 
-  <div class="mensaje-error" *ngIf="errorCarga">
-    {{ errorCarga }}
+  <div
+    *ngIf="cargandoDatos"
+    class="mensaje-carga">
+
+    Cargando información...
+
   </div>
+
+  <!-- ================= DOCENTES ================= -->
 
   <section class="datos-card">
 
@@ -77,45 +88,33 @@
 
     </div>
 
-
-    <!-- TABLA DOCENTES -->
-
     <div class="tabla-scroll">
 
       <table class="tabla-datos">
 
         <thead>
-
           <tr>
-
             <th>DOCENTE</th>
-
             <th>ÁREA</th>
-
-            <th>DISPONIBILIDAD</th>
-
+            <th>CURSO</th>
             <th>H/SEMANA</th>
-
           </tr>
-
         </thead>
-
 
         <tbody>
 
-          <tr 
+          <tr
             *ngFor="let docente of docentes"
             (click)="seleccionarDocente(docente)"
-            [class.fila-seleccionada]="docenteSeleccionado?.idAcademicLoad === docente.idAcademicLoad">
+            [class.fila-seleccionada]="
+              docenteSeleccionado?.idAcademicLoad === docente.idAcademicLoad
+            ">
 
             <td>
-
               <div class="docente-nombre">
 
                 <div class="docente-avatar">
-                  <span>
-                    {{ docente.nombre.charAt(0) }}
-                  </span>
+                  {{ docente.nombre.charAt(0) }}
                 </div>
 
                 <span>
@@ -123,7 +122,6 @@
                 </span>
 
               </div>
-
             </td>
 
             <td>
@@ -131,26 +129,19 @@
             </td>
 
             <td>
-              {{ docente.maxDailyHours }} h/día · {{ docente.maxWeeklyHours }} h/sem
+              {{ docente.curso }}
             </td>
 
             <td>
-              {{ docente.horasSemanaArea }}
+              {{ docente.horasSemanaArea }} H
             </td>
 
           </tr>
 
-
           <tr *ngIf="!cargandoDatos && docentes.length === 0">
-
-            <td
-              colspan="4"
-              class="sin-registros">
-
-              No hay áreas asignadas a docentes todavía.
-
+            <td colspan="4" class="sin-registros">
+              No hay docentes registrados.
             </td>
-
           </tr>
 
         </tbody>
@@ -158,9 +149,6 @@
       </table>
 
     </div>
-
-
-    <!-- BOTONES DOCENTES -->
 
     <div class="acciones-datos">
 
@@ -173,7 +161,6 @@
         ✎ Editar
 
       </button>
-
 
       <button
         type="button"
@@ -189,10 +176,7 @@
 
   </section>
 
-
-  <!-- ===================================================
-       DATOS ASIGNATURAS
-  ==================================================== -->
+  <!-- ================= ASIGNATURAS ================= -->
 
   <section class="datos-card">
 
@@ -213,25 +197,16 @@
 
     </div>
 
-
-    <!-- TABLA ASIGNATURAS -->
-
     <div class="tabla-scroll">
 
       <table class="tabla-datos">
 
         <thead>
-
           <tr>
-
             <th>NOMBRE</th>
-
             <th>DESCRIPCIÓN</th>
-
           </tr>
-
         </thead>
-
 
         <tbody>
 
@@ -245,30 +220,22 @@
             <td>
               <span
                 class="punto-color"
-                [style.background-color]="asignatura.color">
+                [style.background]="asignatura.color">
               </span>
+
               {{ asignatura.nombre }}
             </td>
 
             <td>
-
-              {{ asignatura.descripcion || '—' }}
-
+              {{ asignatura.descripcion || 'Sin descripción' }}
             </td>
 
           </tr>
 
-
           <tr *ngIf="!cargandoDatos && asignaturas.length === 0">
-
-            <td
-              colspan="2"
-              class="sin-registros">
-
+            <td colspan="2" class="sin-registros">
               No hay asignaturas registradas.
-
             </td>
-
           </tr>
 
         </tbody>
@@ -276,9 +243,6 @@
       </table>
 
     </div>
-
-
-    <!-- BOTONES ASIGNATURAS -->
 
     <div class="acciones-datos">
 
@@ -291,7 +255,6 @@
         ✎ Editar
 
       </button>
-
 
       <button
         type="button"
@@ -307,44 +270,126 @@
 
   </section>
 
+  <!-- ================= CURSOS ================= -->
+
+  <section class="datos-card">
+
+    <div class="datos-card-header">
+
+      <h3>
+        Datos de Cursos
+      </h3>
+
+      <button
+        type="button"
+        class="btn-agregar"
+        (click)="abrirAgregarCurso()">
+
+        + Agregar
+
+      </button>
+
+    </div>
+
+    <div class="tabla-scroll">
+
+      <table class="tabla-datos">
+
+        <thead>
+          <tr>
+            <th>CURSO</th>
+            <th>DOCENTE TITULAR</th>
+            <th>ESTUDIANTES</th>
+          </tr>
+        </thead>
+
+        <tbody>
+
+          <tr
+            *ngFor="let curso of cursos"
+            (click)="seleccionarCurso(curso)"
+            [class.fila-seleccionada]="
+              cursoSeleccionado?.idCourse === curso.idCourse
+            ">
+
+            <td>
+              {{ curso.nombre }}
+            </td>
+
+            <td>
+              {{ curso.docenteTitular }}
+            </td>
+
+            <td>
+              {{ curso.estudiantes }}
+            </td>
+
+          </tr>
+
+          <tr *ngIf="!cargandoDatos && cursos.length === 0">
+            <td colspan="3" class="sin-registros">
+              No hay cursos registrados todavía.
+            </td>
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+    <div class="acciones-datos">
+
+      <button
+        type="button"
+        class="btn-editar"
+        [disabled]="!cursoSeleccionado"
+        (click)="abrirEditarCurso()">
+
+        ✎ Editar
+
+      </button>
+
+      <button
+        type="button"
+        class="btn-eliminar"
+        [disabled]="!cursoSeleccionado"
+        (click)="eliminarCurso()">
+
+        × Eliminar
+
+      </button>
+
+    </div>
+
+  </section>
+
 </aside>
 
-
-<!-- =====================================================
-     MODAL DOCENTE (asignar área + disponibilidad)
-===================================================== -->
+<!-- ================= MODAL DOCENTE ================= -->
 
 <div
   class="modal-overlay"
   *ngIf="mostrarFormularioDocente"
   (click)="cerrarFormularioDocente()">
 
-
   <div
     class="modal-datos"
     (click)="$event.stopPropagation()">
-
 
     <div class="modal-header">
 
       <div>
 
         <span>
-          {{ editandoDocente ? 'EDITAR ASIGNACIÓN' : 'NUEVA ASIGNACIÓN' }}
+          {{ editandoDocente ? 'EDITAR DOCENTE' : 'NUEVA ASIGNACIÓN' }}
         </span>
 
         <h2>
-
-          {{
-            editandoDocente
-              ? 'Editar área asignada'
-              : 'Asignar área a un docente'
-          }}
-
+          {{ editandoDocente ? 'Editar información' : 'Agregar información del docente' }}
         </h2>
 
       </div>
-
 
       <button
         type="button"
@@ -357,134 +402,116 @@
 
     </div>
 
-    <div class="mensaje-error" *ngIf="errorFormularioDocente">
+    <div
+      *ngIf="errorFormularioDocente"
+      class="mensaje-error">
+
       {{ errorFormularioDocente }}
+
     </div>
-
-    <div class="mensaje-aviso" *ngIf="docentesDisponibles.length === 0">
-      No hay docentes registrados todavía. Primero registra un docente desde el módulo de Docentes.
-    </div>
-
-    <div class="mensaje-aviso" *ngIf="cursosDisponibles.length === 0">
-      No hay cursos registrados todavía. Primero crea un curso para poder asignarle un área a un docente.
-    </div>
-
-
-    <!-- FORMULARIO -->
 
     <div class="form-grid">
 
       <div class="campo campo-completo">
 
-        <label>
-          Docente
-        </label>
+        <label>Docente</label>
 
-        <select
-          [(ngModel)]="formularioDocente.idUser"
-          [disabled]="editandoDocente">
+        <select [(ngModel)]="formularioDocente.idUser">
 
-          <option [ngValue]="0">Selecciona un docente</option>
+          <option [ngValue]="null">
+            Selecciona un docente
+          </option>
 
           <option
-            *ngFor="let d of docentesDisponibles"
-            [ngValue]="d.idUser">
-            {{ d.name }} {{ d.surnames }} — {{ d.position }}
+            *ngFor="let docente of docentesDisponibles"
+            [ngValue]="docente.idUser">
+
+            {{ docente.name }} {{ docente.surnames }}
+
           </option>
 
         </select>
 
       </div>
 
+      <div class="campo">
 
-      <div class="campo campo-completo">
-
-        <label>
-          Curso
-        </label>
+        <label>Curso</label>
 
         <select [(ngModel)]="formularioDocente.idCourse">
 
-          <option [ngValue]="0">Selecciona un curso</option>
+          <option [ngValue]="0">
+            Selecciona
+          </option>
 
           <option
-            *ngFor="let c of cursosDisponibles"
-            [ngValue]="c.idCourse">
-            {{ c.name }}
+            *ngFor="let curso of cursosDisponibles"
+            [ngValue]="curso.idCourse">
+
+            {{ curso.name }}
+
           </option>
 
         </select>
 
       </div>
 
+      <div class="campo">
 
-      <div class="campo campo-completo">
-
-        <label>
-          Área / Asignatura
-        </label>
+        <label>Asignatura</label>
 
         <select [(ngModel)]="formularioDocente.idSubject">
 
-          <option [ngValue]="0">Selecciona un área</option>
+          <option [ngValue]="0">
+            Selecciona
+          </option>
 
           <option
-            *ngFor="let a of asignaturasCatalogo"
-            [ngValue]="a.idSubject">
-            {{ a.name }}
+            *ngFor="let asignatura of asignaturasCatalogo"
+            [ngValue]="asignatura.idSubject">
+
+            {{ asignatura.name }}
+
           </option>
 
         </select>
 
       </div>
 
-
       <div class="campo">
 
-        <label>
-          Horas/semana para esta área
-        </label>
+        <label>Máximo horas diarias</label>
 
         <input
           type="number"
           min="1"
-          [(ngModel)]="formularioDocente.horasSemanaArea"
-          placeholder="6">
+          [(ngModel)]="formularioDocente.maxDailyHours">
 
       </div>
 
-
       <div class="campo">
 
-        <label>
-          Horas máx. / día (disponibilidad)
-        </label>
+        <label>Máximo horas semanales</label>
 
         <input
           type="number"
           min="1"
-          [(ngModel)]="formularioDocente.maxDailyHours"
-          placeholder="6">
+          [(ngModel)]="formularioDocente.maxWeeklyHours">
 
       </div>
 
+      <div class="campo campo-completo">
 
-      <div class="campo">
-
-        <label>
-          Horas máx. / semana (disponibilidad)
-        </label>
+        <label>Horas semanales de la asignatura</label>
 
         <input
           type="number"
           min="1"
-          [(ngModel)]="formularioDocente.maxWeeklyHours"
-          placeholder="30">
+          [(ngModel)]="formularioDocente.horasSemanaArea">
 
       </div>
 
     </div>
-
 
     <div class="modal-acciones">
 
@@ -497,7 +524,6 @@
         Cancelar
 
       </button>
-
 
       <button
         type="button"
@@ -508,7 +534,9 @@
         {{
           guardandoDocente
             ? 'Guardando...'
-            : (editandoDocente ? 'Actualizar' : 'Guardar')
+            : editandoDocente
+              ? 'Actualizar'
+              : 'Guardar'
         }}
 
       </button>
@@ -519,44 +547,30 @@
 
 </div>
 
-
-<!-- =====================================================
-     MODAL ASIGNATURA
-===================================================== -->
+<!-- ================= MODAL ASIGNATURA ================= -->
 
 <div
   class="modal-overlay"
   *ngIf="mostrarFormularioAsignatura"
   (click)="cerrarFormularioAsignatura()">
 
-
   <div
-    class="modal-datos modal-asignatura"
+    class="modal-datos"
     (click)="$event.stopPropagation()">
-
 
     <div class="modal-header">
 
       <div>
 
         <span>
-          {{ editandoAsignatura
-            ? 'EDITAR ASIGNATURA'
-            : 'NUEVA ASIGNATURA' }}
+          {{ editandoAsignatura ? 'EDITAR ASIGNATURA' : 'NUEVA ASIGNATURA' }}
         </span>
 
         <h2>
-
-          {{
-            editandoAsignatura
-              ? 'Editar información'
-              : 'Registrar asignatura'
-          }}
-
+          {{ editandoAsignatura ? 'Editar información' : 'Registrar asignatura' }}
         </h2>
 
       </div>
-
 
       <button
         type="button"
@@ -569,18 +583,19 @@
 
     </div>
 
-    <div class="mensaje-error" *ngIf="errorFormularioAsignatura">
-      {{ errorFormularioAsignatura }}
-    </div>
+    <div
+      *ngIf="errorFormularioAsignatura"
+      class="mensaje-error">
 
+      {{ errorFormularioAsignatura }}
+
+    </div>
 
     <div class="form-grid">
 
       <div class="campo campo-completo">
 
-        <label>
-          Nombre de la asignatura
-        </label>
+        <label>Nombre de la asignatura</label>
 
         <input
           type="text"
@@ -589,26 +604,20 @@
 
       </div>
 
-
       <div class="campo campo-completo">
 
-        <label>
-          Descripción
-        </label>
+        <label>Descripción</label>
 
         <input
           type="text"
           [(ngModel)]="formularioAsignatura.descripcion"
-          placeholder="Descripción breve (opcional)">
+          placeholder="Descripción de la asignatura">
 
       </div>
 
+      <div class="campo campo-completo">
 
-      <div class="campo">
-
-        <label>
-          Color
-        </label>
+        <label>Color</label>
 
         <input
           type="color"
@@ -617,7 +626,6 @@
       </div>
 
     </div>
-
 
     <div class="modal-acciones">
 
@@ -631,7 +639,6 @@
 
       </button>
 
-
       <button
         type="button"
         class="btn-guardar"
@@ -641,7 +648,171 @@
         {{
           guardandoAsignatura
             ? 'Guardando...'
-            : (editandoAsignatura ? 'Actualizar' : 'Guardar')
+            : editandoAsignatura
+              ? 'Actualizar'
+              : 'Guardar'
+        }}
+
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ================= MODAL CURSO ================= -->
+
+<div
+  class="modal-overlay"
+  *ngIf="mostrarFormularioCurso"
+  (click)="cerrarFormularioCurso()">
+
+  <div
+    class="modal-datos"
+    (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+
+      <div>
+
+        <span>
+          {{ editandoCurso ? 'EDITAR CURSO' : 'NUEVO CURSO' }}
+        </span>
+
+        <h2>
+          {{ editandoCurso ? 'Editar información' : 'Registrar curso' }}
+        </h2>
+
+      </div>
+
+      <button
+        type="button"
+        class="btn-cerrar-panel"
+        (click)="cerrarFormularioCurso()">
+
+        ×
+
+      </button>
+
+    </div>
+
+    <div
+      *ngIf="errorFormularioCurso"
+      class="mensaje-error">
+
+      {{ errorFormularioCurso }}
+
+    </div>
+
+    <div class="form-grid">
+
+      <div class="campo campo-completo">
+
+        <label>Nombre del curso</label>
+
+        <input
+          type="text"
+          maxlength="20"
+          [(ngModel)]="formularioCurso.nombre"
+          placeholder="Ej. 10° A">
+
+      </div>
+
+      <div class="campo">
+
+        <label>Periodo académico</label>
+
+        <input
+          type="number"
+          min="1"
+          [(ngModel)]="formularioCurso.idPeriod">
+
+      </div>
+
+      <div class="campo">
+
+        <label>Nivel</label>
+
+        <select [(ngModel)]="formularioCurso.idLevel">
+          <option [ngValue]="1">Primaria</option>
+          <option [ngValue]="2">Secundaria</option>
+          <option [ngValue]="3">Media</option>
+        </select>
+
+      </div>
+
+      <div class="campo">
+
+        <label>Jornada</label>
+
+        <select [(ngModel)]="formularioCurso.idShift">
+          <option [ngValue]="1">Diurna</option>
+          <option [ngValue]="2">Nocturna</option>
+        </select>
+
+      </div>
+
+      <div class="campo">
+
+        <label>Cantidad de estudiantes</label>
+
+        <input
+          type="number"
+          min="0"
+          max="32767"
+          [(ngModel)]="formularioCurso.estudiantes">
+
+      </div>
+
+      <div class="campo campo-completo">
+
+        <label>Docente titular</label>
+
+        <select [(ngModel)]="formularioCurso.homeroomTeacher">
+
+          <option [ngValue]="0">
+            Sin asignar
+          </option>
+
+          <option
+            *ngFor="let docente of docentesDisponibles"
+            [ngValue]="docente.idUser">
+
+            {{ docente.name }} {{ docente.surnames }}
+
+          </option>
+
+        </select>
+
+      </div>
+
+    </div>
+
+    <div class="modal-acciones">
+
+      <button
+        type="button"
+        class="btn-cancelar"
+        [disabled]="guardandoCurso"
+        (click)="cerrarFormularioCurso()">
+
+        Cancelar
+
+      </button>
+
+      <button
+        type="button"
+        class="btn-guardar"
+        [disabled]="guardandoCurso"
+        (click)="guardarCurso()">
+
+        {{
+          guardandoCurso
+            ? 'Guardando...'
+            : editandoCurso
+              ? 'Actualizar'
+              : 'Guardar'
         }}
 
       </button>
