@@ -16,16 +16,30 @@ public class AcademicPeriodService {
 
     private final AcademicPeriodRepository repository;
 
+    /**
+     * Listar todas los periodos
+     * @return
+     */
     public List<AcademicPeriodResponseDTO> findAll() {
         return repository.findAll().stream()
                 .map(AcademicPeriodResponseDTO::fromEntity)
                 .toList();
     }
 
+    /**
+     * Buscar por Id
+     * @param id
+     * @return
+     */
     public AcademicPeriodResponseDTO findById(Integer id) {
         return AcademicPeriodResponseDTO.fromEntity(getOrThrow(id));
     }
 
+    /**
+     * Crear periodo
+     * @param dto
+     * @return
+     */
     @Transactional
     public AcademicPeriodResponseDTO create(AcademicPeriodRequestDTO dto) {
         validateDates(dto.getStartDate(), dto.getEndDate());
@@ -42,6 +56,12 @@ public class AcademicPeriodService {
         return AcademicPeriodResponseDTO.fromEntity(repository.save(period));
     }
 
+    /**
+     * Editar periodo
+     * @param id
+     * @param dto
+     * @return
+     */
     @Transactional
     public AcademicPeriodResponseDTO update(Integer id, AcademicPeriodRequestDTO dto) {
         validateDates(dto.getStartDate(), dto.getEndDate());
@@ -54,6 +74,11 @@ public class AcademicPeriodService {
         return AcademicPeriodResponseDTO.fromEntity(repository.save(period));
     }
 
+
+    /**
+     * Desactivar periodo
+     * @param id
+     */
     @Transactional
     public void deactivate(Integer id) {
         AcademicPeriod period = getOrThrow(id);
