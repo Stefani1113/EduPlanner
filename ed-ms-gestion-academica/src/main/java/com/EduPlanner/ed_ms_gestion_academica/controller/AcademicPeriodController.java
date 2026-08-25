@@ -1,7 +1,7 @@
-// controller/AcademicPeriodController.java
 package com.EduPlanner.ed_ms_gestion_academica.controller;
 
 import com.EduPlanner.ed_ms_gestion_academica.service.AcademicPeriodService;
+import com.EduPlanner.ed_ms_gestion_academica.security.RequireRole;
 import com.eduplanner.ed_lib_common.dto.AcademicPeriodRequestDTO;
 import com.eduplanner.ed_lib_common.dto.AcademicPeriodResponseDTO;
 import com.eduplanner.ed_lib_common.dto.HttpGlobalResponse;
@@ -18,11 +18,15 @@ import java.util.List;
 @RestController
 @RequestMapping("/academic-periods")
 @RequiredArgsConstructor
-@RequireRole(RolEnum.ADMINISTRADOR)
 public class AcademicPeriodController {
 
     private final AcademicPeriodService service;
 
+    /**
+     * Listar todos
+     * @return
+     */
+    @RequireRole(RolEnum.ADMINISTRADOR)
     @GetMapping
     public ResponseEntity<HttpGlobalResponse<List<AcademicPeriodResponseDTO>>> getAll() {
         HttpGlobalResponse<List<AcademicPeriodResponseDTO>> response = new HttpGlobalResponse<>();
@@ -31,6 +35,12 @@ public class AcademicPeriodController {
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * Buscar por Id
+     * @param id
+     * @return
+     */
+    @RequireRole(RolEnum.ADMINISTRADOR)
     @GetMapping("/{id}")
     public ResponseEntity<HttpGlobalResponse<AcademicPeriodResponseDTO>> getById(@PathVariable Integer id) {
         HttpGlobalResponse<AcademicPeriodResponseDTO> response = new HttpGlobalResponse<>();
@@ -44,6 +54,12 @@ public class AcademicPeriodController {
         }
     }
 
+    /**
+     * Crear periodo
+     * @param dto
+     * @return
+     */
+    @RequireRole(RolEnum.ADMINISTRADOR)
     @PostMapping
     public ResponseEntity<HttpGlobalResponse<AcademicPeriodResponseDTO>> create(@Valid @RequestBody AcademicPeriodRequestDTO dto) {
         HttpGlobalResponse<AcademicPeriodResponseDTO> response = new HttpGlobalResponse<>();
@@ -57,6 +73,13 @@ public class AcademicPeriodController {
         }
     }
 
+    /**
+     * Actualizar periodo
+     * @param id
+     * @param dto
+     * @return
+     */
+    @RequireRole(RolEnum.ADMINISTRADOR)
     @PutMapping("/{id}")
     public ResponseEntity<HttpGlobalResponse<AcademicPeriodResponseDTO>> update(
             @PathVariable Integer id, @Valid @RequestBody AcademicPeriodRequestDTO dto) {
@@ -71,6 +94,12 @@ public class AcademicPeriodController {
         }
     }
 
+    /**
+     * Desactivar / Eliminar periodo
+     * @param id
+     * @return
+     */
+    @RequireRole(RolEnum.ADMINISTRADOR)
     @DeleteMapping("/{id}")
     public ResponseEntity<HttpGlobalResponse<Void>> deactivate(@PathVariable Integer id) {
         HttpGlobalResponse<Void> response = new HttpGlobalResponse<>();
