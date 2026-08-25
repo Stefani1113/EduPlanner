@@ -1,4 +1,3 @@
-// service/AcademicLevelService.java
 package com.EduPlanner.ed_ms_gestion_academica.service;
 
 import com.eduplanner.ed_lib_common.dto.AcademicLevelRequestDTO;
