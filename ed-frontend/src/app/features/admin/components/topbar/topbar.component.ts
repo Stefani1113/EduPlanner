@@ -4,6 +4,7 @@ import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { BreadcrumbService } from '../../services/breadcrumb.service';
 import { SidebarService } from '../../services/sidebar.service';
+import { ProfileMenuComponent } from '../profile-menu/profile-menu.component';
 
 interface UsuarioSesion {
   name?: string;
@@ -14,7 +15,7 @@ interface UsuarioSesion {
 @Component({
   selector: 'app-topbar',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ProfileMenuComponent],
   templateUrl: './topbar.component.html',
   styleUrls: ['./topbar.component.scss']
 })

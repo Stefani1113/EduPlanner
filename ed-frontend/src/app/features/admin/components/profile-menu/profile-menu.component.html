@@ -1,0 +1,164 @@
+<div class="profile-menu">
+
+  <button
+    type="button"
+    class="avatar-trigger"
+    aria-haspopup="true"
+    [attr.aria-expanded]="abierto"
+    aria-label="Abrir mi perfil"
+    (click)="toggle()"
+  >
+    <img [src]="fotoUrl" alt="Foto de perfil">
+  </button>
+
+  <div class="profile-card" *ngIf="abierto">
+
+    <ng-container *ngIf="cargando">
+      <div class="estado-carga">
+        <span class="spinner"></span>
+        Cargando tu perfil...
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="error && !cargando">
+      <div class="estado-error">
+        {{ error }}
+        <button type="button" class="btn-reintentar" (click)="cargarPerfil()">Reintentar</button>
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="perfil && !cargando && !error">
+
+      <div class="profile-banner" [style.background-image]="'url(/assets/img/pattern-trasparent.png)'">
+        <div class="banner-overlay"></div>
+        <span class="role-tag-banner">{{ rolLabel }}</span>
+      </div>
+
+      <div class="avatar-grande-wrap">
+        <div class="avatar-grande">
+          <img [src]="fotoUrl" alt="Foto de {{ nombreCompleto }}">
+        </div>
+
+        <input
+          #inputFoto
+          type="file"
+          accept="image/*"
+          class="input-oculto"
+          (change)="onFotoSeleccionada($event)"
+        >
+
+        <button
+          type="button"
+          class="btn-cambiar-foto"
+          [class.subiendo]="subiendoFoto"
+          [disabled]="subiendoFoto"
+          aria-label="Cambiar foto de perfil"
+          (click)="seleccionarFoto(inputFoto)"
+        >
+          <span class="spinner spinner-sm" *ngIf="subiendoFoto"></span>
+          <svg *ngIf="!subiendoFoto" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 20h9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+
+        <span class="error-foto" *ngIf="errorFoto">{{ errorFoto }}</span>
+      </div>
+
+      <h3 class="nombre-usuario">{{ nombreCompleto }}</h3>
+      <span class="nombre-underline"></span>
+
+      <div class="info-container">
+        <div class="info-header">
+          <svg class="info-icono" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.6"/>
+            <path d="m3 7 9 6 9-6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="info-label">EMAIL</span>
+        </div>
+        <div class="info-value">{{ perfil.email }}</div>
+      </div>
+
+      <div class="info-container">
+        <div class="info-header">
+          <svg class="info-icono" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 21V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v16" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+            <path d="M14 9h4a2 2 0 0 1 2 2v10" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+            <path d="M8 8h.01M8 12h.01M8 16h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+          <span class="info-label">INSTITUCIÓN EDUCATIVA</span>
+        </div>
+        <div class="info-value">{{ institucionNombre }}</div>
+      </div>
+
+      <div class="info-container seccion-sobre">
+        <div class="info-header">
+          <svg class="info-icono" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.6"/>
+            <path d="M4 21c0-4 3.6-6.5 8-6.5S20 17 20 21" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+          <span class="info-label">Sobre</span>
+        </div>
+        
+        <div class="sobre-item">
+          <div class="sobre-left">
+            <svg class="sobre-icono" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="3" y="4" width="18" height="17" rx="2" stroke="currentColor" stroke-width="1.6"/>
+              <path d="M8 2v4M16 2v4M3 9h18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+            <span class="sobre-label">EDAD</span>
+          </div>
+          <span class="sobre-value">{{ edad }}</span>
+        </div>
+
+        <div class="sobre-item">
+          <div class="sobre-left">
+            <svg class="sobre-icono" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.362 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.338 1.85.573 2.81.7A2 2 0 0 1 22 16.92Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+            </svg>
+            <span class="sobre-label">TELÉFONO</span>
+          </div>
+          <span class="sobre-value">{{ perfil.phoneNumber || 'No registrado' }}</span>
+        </div>
+
+        <div class="sobre-item">
+          <div class="sobre-left">
+            <svg class="sobre-icono" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.6"/>
+              <path d="M4 21c0-4 3.6-6.5 8-6.5S20 17 20 21" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+            </svg>
+            <span class="sobre-label">ACUDIENTE</span>
+          </div>
+          <span class="sobre-value">{{ acudiente }}</span>
+        </div>
+      </div>
+
+      <div class="info-container seccion-asistencias">
+        <div class="info-header">
+          <svg class="info-icono" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 7h16M4 12h10M4 17h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+          </svg>
+          <span class="info-label">Asistencias</span>
+        </div>
+        
+        <div class="asistencias-lista">
+          <div class="asistencia-item">
+            <span class="asistencia-indicador verde"></span>
+            <span class="asistencia-valor">100%</span>
+          </div>
+          <div class="asistencia-item">
+            <span class="asistencia-indicador blanco"></span>
+            <span class="asistencia-valor">100%</span>
+          </div>
+          <div class="asistencia-item">
+            <span class="asistencia-indicador negro"></span>
+            <span class="asistencia-valor">100%</span>
+          </div>
+        </div>
+      </div>
+
+    </ng-container>
+
+  </div>
+
+</div>
