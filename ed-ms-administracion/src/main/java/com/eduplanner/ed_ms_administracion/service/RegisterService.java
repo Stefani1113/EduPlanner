@@ -2,6 +2,7 @@ package com.eduplanner.ed_ms_administracion.service;
 
 import com.eduplanner.ed_lib_common.dto.RegisterStaffDTO;
 import com.eduplanner.ed_lib_common.dto.RegisterStudentDTO;
+import com.eduplanner.ed_lib_common.dto.RegisterTeacherDTO;
 import com.eduplanner.ed_lib_common.entity.Guardian;
 import com.eduplanner.ed_lib_common.entity.Role;
 import com.eduplanner.ed_lib_common.entity.User;
@@ -78,6 +79,30 @@ public class RegisterService {
         guardian.setGuardianPhone(dto.getGuardian().getGuardianPhone());
         guardian.setIdUser(user);
         guardianRepository.save(guardian);
+
+        sendActivationEmail(user);
+    }
+
+    // REGISTRO DE DOCENTE
+    @Transactional
+    public void registerTeacher(RegisterTeacherDTO dto) {
+        validateNotDuplicated(dto.getEmail(), dto.getDocument(), dto.getPhoneNumber());
+
+        Role role = getRoleOrThrow(RolEnum.DOCENTE.getId());
+
+        User user = buildBaseUser(
+                dto.getEmail(), dto.getName(), dto.getSurnames(),
+                dto.getDocumentType(), dto.getDocument(), dto.getDocumentIssuePlace(),
+                dto.getBirthdate(), dto.getPhoneNumber(), dto.getGender(),
+                dto.getAddress(), dto.getBloodType(), dto.getDisabilities(),
+                dto.getStratum(), dto.getPopulationType(), dto.getHealthRegime(), dto.getEps()
+        );
+        user.setPosition(dto.getPosition());
+        user.setProfessionalDegrees(dto.getProfessionalDegrees());
+        user.setQualificationsDesc(dto.getQualificationsDesc());
+        user.setRole(role);
+
+        userRepository.save(user);
 
         sendActivationEmail(user);
     }
