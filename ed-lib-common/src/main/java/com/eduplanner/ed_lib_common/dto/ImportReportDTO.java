@@ -20,5 +20,5 @@ public class ImportReportDTO {
 
     private Integer failedRows;
 
-    private List<ImportErrorDetailDTO> errors;
+    private List<ImportErrorDetailDTO> errors; 
 }
