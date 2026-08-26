@@ -33,6 +33,12 @@ public class RegisterTeacherDTO {
     private String populationType;
     private String healthRegime;
     private String eps;
+
+    @NotBlank(message = "El cargo es obligatorio")
+    private String position;
+
+    @NotBlank(message = "Los títulos profesionales son obligatorios")
     private String professionalDegrees;
+
     private String qualificationsDesc;
 }
