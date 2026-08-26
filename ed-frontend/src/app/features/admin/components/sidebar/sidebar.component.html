@@ -1,4 +1,6 @@
-<div class="sidebar">
+<div class="sidebar-backdrop" *ngIf="abierto" (click)="cerrarMenu()"></div>
+
+<div class="sidebar" [class.abierto]="abierto">
 
   <div class="sidebar-content">
 
@@ -15,14 +17,6 @@
           class="menu-item"
         >
           <span>Mi institución</span>
-        </a>
-
-        <a
-          routerLink="/admin/dashboard"
-          routerLinkActive="active"
-          class="menu-item"
-        >
-          <span>Panel Control</span>
         </a>
 
       </div>
@@ -100,16 +94,14 @@
 
   <div class="logout">
 
-    <a
-      href="#"
+    <button
+      type="button"
       class="logout-link"
+      (click)="cerrarSesion()"
     >
       <span class="logout-icon">↪</span>
-
-      <span>
-        CERRAR SESIÓN
-      </span>
-    </a>
+      <span>CERRAR SESIÓN</span>
+    </button>
 
   </div>
 

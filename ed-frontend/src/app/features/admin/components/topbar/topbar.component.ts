@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { BreadcrumbService } from '../../services/breadcrumb.service';
+import { SidebarService } from '../../services/sidebar.service';
 
 interface UsuarioSesion {
   name?: string;
@@ -19,7 +20,9 @@ interface UsuarioSesion {
 })
 export class TopbarComponent implements OnInit {
 
-  breadcrumb: string[] = ['Panel Control'];
+
+  breadcrumb: string[] = ['Mi institución'];
+
   extra: string | null = null;
 
   nombreUsuario = '';
@@ -28,10 +31,16 @@ export class TopbarComponent implements OnInit {
   constructor(
     private router: Router,
     private activatedRoute: ActivatedRoute,
-    private breadcrumbService: BreadcrumbService
+    private breadcrumbService: BreadcrumbService,
+    private sidebarService: SidebarService
   ) {}
 
+  toggleSidebar(): void {
+    this.sidebarService.toggle();
+  }
+
   ngOnInit(): void {
+
     this.updateBreadcrumb();
     this.cargarUsuario();
 
@@ -39,44 +48,68 @@ export class TopbarComponent implements OnInit {
       .pipe(filter(event => event instanceof NavigationEnd))
       .subscribe(() => this.updateBreadcrumb());
 
-    this.breadcrumbService.extra$.subscribe(value => this.extra = value);
+    this.breadcrumbService.extra$
+      .subscribe(value => this.extra = value);
   }
 
   private cargarUsuario(): void {
+
     const raw = localStorage.getItem('usuario');
+
     if (!raw) return;
 
     try {
+
       const usuario: UsuarioSesion = JSON.parse(raw);
-      const nombreCompleto = [usuario.name, usuario.lastName].filter(Boolean).join(' ');
+
+      const nombreCompleto = [
+        usuario.name,
+        usuario.lastName
+      ]
+        .filter(Boolean)
+        .join(' ');
 
       if (nombreCompleto) {
         this.nombreUsuario = nombreCompleto;
       }
+
       if (usuario.role) {
         this.rolUsuario = this.formatearRol(usuario.role);
       }
+
     } catch {
-      // localStorage con datos corruptos: se mantienen los valores por defecto
+
     }
   }
 
   private formatearRol(rol: string): string {
-    const limpio = rol.toLowerCase().trim();
+
+    const limpio = rol
+      .toLowerCase()
+      .trim();
+
     return limpio.charAt(0).toUpperCase() + limpio.slice(1);
   }
 
   private updateBreadcrumb(): void {
+
     let route: ActivatedRoute | null = this.activatedRoute.root;
-    let crumbs: string[] = ['Panel Control'];
+
+
+    let crumbs: string[] = ['Mi institución'];
 
     while (route) {
-      if (route.snapshot.data && route.snapshot.data['breadcrumb']) {
+
+      if (
+        route.snapshot.data &&
+        route.snapshot.data['breadcrumb']
+      ) {
         crumbs = route.snapshot.data['breadcrumb'];
       }
+
       route = route.firstChild;
     }
 
     this.breadcrumb = crumbs;
   }
-} 
+}

@@ -1,1 +1,207 @@
-<p>usuarios works!</p>
+<div class="usuarios-container">
+
+  <div class="header-top">
+
+    <div class="tabs">
+      <button
+        *ngFor="let tab of tabs"
+        type="button"
+        class="tab"
+        [class.active]="activeTab === tab.key"
+        (click)="cambiarTab(tab.key)"
+      >
+        {{ tab.label }}
+      </button>
+    </div>
+
+    <div class="header-actions" *ngIf="activeTab === 'listado'">
+
+      <div class="role-box">
+
+        <button
+          type="button"
+          class="role-toggle"
+          (click)="mostrarFiltroRol = !mostrarFiltroRol; mostrarMenuRegistrar = false"
+        >
+          <span>
+            {{
+              rolSeleccionado === 'Estudiante' &&
+              gradoSeleccionado !== 'Todos los grados'
+                ? gradoSeleccionado
+                : rolSeleccionado
+            }}
+          </span>
+
+          <span
+            class="chevron"
+            [class.open]="mostrarFiltroRol"
+          >
+          ▼
+          </span>
+        </button>
+
+        <ul class="role-menu" *ngIf="mostrarFiltroRol">
+
+          <li
+            class="rol-item"
+            [class.active]="rolSeleccionado === 'Administrador'"
+            (click)="seleccionarRol('Administrador')"
+          >
+            Administrador
+          </li>
+
+          <li
+            class="rol-item"
+            [class.active]="rolSeleccionado === 'Docente'"
+            (click)="seleccionarRol('Docente')"
+          >
+            Docente
+          </li>
+
+          <li
+            class="rol-item"
+            [class.active]="rolSeleccionado === 'Directivo'"
+            (click)="seleccionarRol('Directivo')"
+          >
+            Directivo
+          </li>
+
+          <li
+            class="rol-item"
+            [class.active]="rolSeleccionado === 'Estudiante' && gradoSeleccionado === 'Todos los grados'"
+            (click)="seleccionarRol('Estudiante')"
+          >
+            Estudiante
+          </li>
+
+          <li
+            *ngFor="let grado of grados"
+            class="grado-item"
+            [class.active]="rolSeleccionado === 'Estudiante' && gradoSeleccionado === grado"
+            (click)="seleccionarGrado(grado)"
+          >
+            {{ grado }}
+          </li>
+
+        </ul>
+
+      </div>
+
+      <div class="registrar-box">
+
+        <button
+          type="button"
+          class="btn-registrar"
+          (click)="mostrarMenuRegistrar = !mostrarMenuRegistrar; mostrarFiltroRol = false"
+        >
+          + Registrar
+        </button>
+
+        <ul
+          class="registrar-menu"
+          *ngIf="mostrarMenuRegistrar"
+        >
+          <li (click)="abrirRegistro('Docente')">Docente</li>
+          <li (click)="abrirRegistro('Estudiante')">Estudiante</li>
+          <li (click)="abrirRegistro('Staff')">Administrador / Directivo</li>
+        </ul>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <ng-container [ngSwitch]="activeTab">
+
+    <ng-container *ngSwitchCase="'listado'">
+
+      <div class="search-bar">
+          <img class="search-icon" src="assets/img/magnifying_glass.png" alt="">
+        <input
+          type="text"
+          placeholder="Buscar por nombre..."
+          [(ngModel)]="busqueda"
+        >
+      </div>
+
+      <div class="table-wrapper">
+
+        <div class="loading" *ngIf="cargando">Cargando usuarios...</div>
+        <div class="error" *ngIf="errorCarga && !cargando">{{ errorCarga }}</div>
+        <table class="usuarios-table" *ngIf="!cargando && !errorCarga">
+              <thead>
+                <tr>
+                  <th>Foto</th>
+                  <th>Nombre</th>
+                  <th>ID</th>
+                  <th>Correo</th>
+                  <th>Rol</th>
+                  <th>Grado</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let usuario of usuariosFiltrados">
+                  <td>
+                    <div class="avatar-cell">
+                      <img
+                        [src]="usuario.foto ?? 'assets/img/profile.png'"
+                        alt="Foto"
+                      >
+                    </div>
+                  </td>
+                  <td>{{ usuario.nombre }}</td>
+                  <td>{{ usuario.id }}</td>
+                  <td>{{ usuario.correo }}</td>
+                  <td>{{ usuario.rol }}</td>
+                  <td>{{ usuario.grado ?? '--' }}</td>
+                  <td>
+                    <span
+                      class="estado"
+                      [class.activo]="usuario.estado === 'Activo'"
+                      [class.inactivo]="usuario.estado === 'Inactivo'"
+                    >
+                      {{ usuario.estado }}
+                    </span>
+                  </td>
+                  <td class="acciones-cell">
+                    <button
+                      type="button"
+                      class="accion"
+                      [class.inactivar]="usuario.estado === 'Activo'"
+                      [class.activar]="usuario.estado === 'Inactivo'"
+                      (click)="toggleEstado(usuario)"
+                    >
+                      {{ usuario.estado === 'Activo' ? 'Inactivar' : 'Activar' }}
+                    </button>
+                  </td>
+                </tr>
+
+                <tr *ngIf="usuariosFiltrados.length === 0">
+                  <td colspan="8" class="empty">
+                    No se encontraron usuarios con los filtros actuales.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+    </ng-container>
+
+    <ng-container *ngSwitchCase="'importacion'">
+      <app-importacion></app-importacion>
+    </ng-container>
+
+  </ng-container>
+
+  <app-registro-usuario-modal
+    *ngIf="tipoRegistro"
+    [tipo]="tipoRegistro"
+    [guardando]="guardandoUsuario"
+    (cerrar)="cerrarModal()"
+    (guardar)="guardarUsuario($event)">
+  </app-registro-usuario-modal>
+
+</div>

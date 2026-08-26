@@ -23,9 +23,6 @@ public class TeachingRequestDTO {
     @Email(message = "Formato de correo inválido")
     private String email;
 
-    @NotBlank(message = "La contraseña es obligatoria")
-    private String password;
-
     @NotBlank(message = "El tipo de documento es obligatorio")
     private String documentType;
 
@@ -38,8 +35,6 @@ public class TeachingRequestDTO {
     private LocalDate birthdate;
 
     private String phoneNumber;
-
-    private String photoUrl;
 
     @NotBlank(message = "Los títulos profesionales son obligatorios")
     private String professionalDegrees;
@@ -66,7 +61,4 @@ public class TeachingRequestDTO {
 
     @NotBlank(message = "El cargo es obligatorio")
     private String position;
-
-    @NotNull(message = "La institución es obligatoria")
-    private Integer idInstitution;
 }

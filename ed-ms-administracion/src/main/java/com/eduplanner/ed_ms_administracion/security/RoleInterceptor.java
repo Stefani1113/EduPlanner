@@ -1,4 +1,3 @@
-// ed-ms-administracion/src/main/java/com/eduplanner/ed_ms_administracion/security/RoleInterceptor.java
 package com.eduplanner.ed_ms_administracion.security;
 
 import java.util.Arrays;

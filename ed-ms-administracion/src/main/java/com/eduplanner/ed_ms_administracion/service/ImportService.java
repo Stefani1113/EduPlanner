@@ -22,6 +22,7 @@ import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
@@ -56,6 +57,9 @@ public class ImportService {
 
     private static final int EXPECTED_COLUMNS = 18;
 
+    //Formato de fecha
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
     /**
      * Procesa el CSV completo: crea el registro Import, recorre fila por fila
      */
@@ -87,18 +91,33 @@ public class ImportService {
             // La primera fila son encabezados, se salta
             for (int i = 1; i < allRows.size(); i++) {
                 String[] row = allRows.get(i);
-                totalRows++;
                 int rowNumber = i + 1;
+
+                //Ignora filas completamente vacias
+                if(isRowEmpty(row)) {
+                    continue;
+                }
+
+                totalRows++;
 
                 try {
                     validateRowLength(row);
                     RegisterStudentDTO dto = mapRowToDTO(row);
-                    registerService.registerStudentInternal(dto, importRecord.getIdImport());
-                    successRows++;
+                    registerService.registerStudentInternal(dto, 
+                        importRecord.getIdImport());
+
+                        successRows++;
 
                 } catch (Exception e) {
                     failedRows++;
-                    saveImportError(importRecord.getIdImport(), rowNumber, row, e.getMessage());
+                    
+                    String friendlyMessage = getFriendlyErrorMessage(e, row);
+
+                    saveImportError(
+                        importRecord.getIdImport(), 
+                        rowNumber,
+                        row,
+                        friendlyMessage);
                 }
             }
         }
@@ -131,7 +150,7 @@ public class ImportService {
         dto.setDocumentType(row[COL_TIPO_DOCUMENTO].trim());
         dto.setDocumentIssuePlace(row[COL_LUGAR_EXPEDICION].trim());
         dto.setGender(row[COL_GENERO].trim());
-        dto.setBirthdate(LocalDate.parse(row[COL_FECHA_NACIMIENTO].trim())); // AAAA-MM-DD
+        dto.setBirthdate(LocalDate.parse(row[COL_FECHA_NACIMIENTO].trim(), DATE_FORMATTER)); // DD/MM/AAAA
         dto.setAddress(row[COL_DIRECCION].trim());
         dto.setBloodType(row[COL_TIPO_SANGRE].trim());
         dto.setDisabilities(row[COL_DISCAPACIDADES].trim());
@@ -164,7 +183,80 @@ public class ImportService {
         importErrorRepository.save(error);
     }
 
+    /**
+     * Metodo para detectar filas vacias
+     * @param row
+     * @return
+     */
+    private boolean isRowEmpty(String[] row) {
+        for(String value : row) {
+            if(value != null && !value.trim().isEmpty()) {
+                return false;
+            }
+        }
 
+        return true;
+    }
+
+    /**
+     * Metodo para traducir errores
+     * @param e
+     * @param row
+     * @return
+     */
+    private String getFriendlyErrorMessage(Exception e, String[] row) {
+        if (e instanceof java.time.format.DateTimeParseException) {
+            String dateValue = row[COL_FECHA_NACIMIENTO].trim();
+
+            if(dateValue.isEmpty()) {
+                return "La fecha de nacimiento es obligatoria.";
+            }
+
+            return "La fecha de nacimiento tiene un formato inválido."
+            + "Utilice el formato DD-MM-AAAA";
+        }
+
+        if(e instanceof NumberFormatException) {
+            String stratumValue = row[COL_ESTRATO].trim();
+
+            if(stratumValue.isEmpty()) {
+                return "El estrato es obligatorio";
+            }
+
+            return "EL estrato debe ser un número válido";
+        }
+        
+        if(containsMailException(e)) {
+            return "No fue posible enviar el correo de activación. "
+            + "Verifique que la dirección de correo eléctronico sea válida. ";
+        }
+
+        return e.getMessage() != null 
+                    ? e.getMessage() : "Ocurrió un error desconocido al procesar la fila";
+    }
+
+    /**
+     * Exepciones de Correo eléctronico
+     * @param e
+     * @return
+     */
+
+    private boolean containsMailException(Exception e){
+        Throwable cause = e;
+
+        while (cause != null){
+            String className = cause.getClass().getName();
+
+            if(className.contains("MailException")
+                || className.contains("SendFailedExeption")
+                || className.contains("SMTPAddressFailedException")) {
+                        return true;
+                }
+
+                cause = cause.getCause();
+        }
+        return false;
+    }
     /**
      * Metodo para armar reporte
      */

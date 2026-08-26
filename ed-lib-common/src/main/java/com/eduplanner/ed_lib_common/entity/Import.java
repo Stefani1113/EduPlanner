@@ -40,7 +40,6 @@ public class Import {
     @Column(name = "failed_rows", nullable = false)
     private Integer failedRows;
 
-
     /**
      * Asignación del dia de la impotación automática
      */

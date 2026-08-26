@@ -40,9 +40,8 @@ public class JwtValidationFilter extends OncePerRequestFilter {
                 return;
             }
 
-            req.setAttribute("email", jwtValidatorService.extractEmail(token));
             req.setAttribute("idUser", jwtValidatorService.extractIdUser(token));
-            req.setAttribute("idRole", jwtValidatorService.extractIdRole(token));
+            req.setAttribute("role", jwtValidatorService.extractRole(token));
 
             chain.doFilter(req, res);
 
