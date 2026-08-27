@@ -20,27 +20,26 @@ public class RoleInterceptor implements HandlerInterceptor {
         }
 
         RequireRole annotation = method.getMethodAnnotation(RequireRole.class);
-
         if (annotation == null) {
             annotation = method.getBeanType().getAnnotation(RequireRole.class);
         }
-
         if (annotation == null) {
             return true;
         }
 
-        Object rol = request.getAttribute("idRole");
+        Object roleAttr = request.getAttribute("role");
 
-        if (!(rol instanceof Integer roleId)) {
+        if (!(roleAttr instanceof String roleName)) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
             response.getWriter().write("{\"error\": \"Usuario no autenticado con rol\"}");
             return false;
         }
 
-        boolean hastRole = Arrays.stream(annotation.value()).anyMatch(role -> role.getId() == roleId);
+        boolean hasRole = Arrays.stream(annotation.value())
+                .anyMatch(role -> role.name().equals(roleName));
 
-        if (!hastRole) {
+        if (!hasRole) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             response.setContentType("application/json");
             response.getWriter().write("{\"error\": \"No tienes permisos para realizar esta acción\"}");
