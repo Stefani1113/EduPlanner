@@ -1,6 +1,7 @@
-package com.EduPlanner.ed_ms_gestion_academica.service;
+    package com.EduPlanner.ed_ms_gestion_academica.service;
 import com.eduplanner.ed_lib_common.dto.SubjectRequestDTO;
 import com.eduplanner.ed_lib_common.dto.SubjectResponseDTO;
+import com.eduplanner.ed_lib_common.entity.Course;
 import com.eduplanner.ed_lib_common.entity.Subject;
 import com.EduPlanner.ed_ms_gestion_academica.repository.SubjectRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,10 +25,18 @@ public class SubjectService {
         map(req, s); return toResponse(repository.save(s));
     }
     public List<SubjectResponseDTO> listSubjects() { return repository.findByStatusTrue().stream().map(this::toResponse).toList(); }
-    public SubjectResponseDTO getSubjectById(Integer id) { return toResponse(getOrThrow(id)); }
-    public List<SubjectResponseDTO> searchSubjects(String name) { return repository.findByNameContainingIgnoreCaseAndStatusTrue(name).stream().map(this::toResponse).toList(); }
-    public void deleteSubject(Integer id) { Subject s = getOrThrow(id); s.setStatus(false); repository.save(s); }
-    private Subject getOrThrow(Integer id) { return repository.findById(id).orElseThrow(() -> new RuntimeException("Asunto no encontrado: " + id)); }
+    public SubjectResponseDTO getSubjectById(Integer id) { return toResponse(getOrThrow(id));
+    }
+
+    public List<SubjectResponseDTO> searchSubjects(String name) { return repository.findByNameContainingIgnoreCaseAndStatusTrue(name).stream().map(this::toResponse).toList();
+    }
+
+    public void deleteSubject(Integer id) { Subject s = getOrThrow(id); repository.delete(s);
+    }
+
+    private Subject getOrThrow(Integer id) { return repository.findById(id).orElseThrow(() -> new RuntimeException("Asunto no encontrado: " + id)); 
+    }
+
     private void map(SubjectRequestDTO r, Subject s) { s.setName(r.getName()); s.setDescription(r.getDescription()); s.setColor(r.getColor()); }
     private SubjectResponseDTO toResponse(Subject s) {
         SubjectResponseDTO r = new SubjectResponseDTO();
