@@ -19,14 +19,14 @@ public class SubjectController {
     @PostMapping
     public ResponseEntity<HttpGlobalResponse<SubjectResponseDTO>> registerSubject(@Valid @RequestBody SubjectRequestDTO req) {
         HttpGlobalResponse<SubjectResponseDTO> r = new HttpGlobalResponse<>();
-        try { r.setData(service.registerSubject(req)); r.setMessage("Asignatura registrada con éxito"); return ResponseEntity.status(HttpStatus.CREATED).body(r); }
+        try { r.setData(service.registerSubject(req)); r.setMessage("Asignatura registrada correctamente"); return ResponseEntity.status(HttpStatus.CREATED).body(r); }
         catch (IllegalArgumentException e) { r.setMessage(e.getMessage()); return ResponseEntity.status(HttpStatus.CONFLICT).body(r); }
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<HttpGlobalResponse<SubjectResponseDTO>> updateSubject(@PathVariable Integer id, @Valid @RequestBody SubjectRequestDTO req) {
         HttpGlobalResponse<SubjectResponseDTO> r = new HttpGlobalResponse<>();
-        try { r.setData(service.updateSubject(id, req)); r.setMessage("Asignatura actualizada con éxito"); return ResponseEntity.ok(r); }
+        try { r.setData(service.updateSubject(id, req)); r.setMessage("Asignatura actualizada correctamente"); return ResponseEntity.ok(r); }
         catch (IllegalArgumentException e) { r.setMessage(e.getMessage()); return ResponseEntity.status(HttpStatus.CONFLICT).body(r); }
         catch (RuntimeException e) { r.setMessage(e.getMessage()); return ResponseEntity.status(HttpStatus.NOT_FOUND).body(r); }
     }
@@ -34,7 +34,7 @@ public class SubjectController {
     @GetMapping
     public ResponseEntity<HttpGlobalResponse<List<SubjectResponseDTO>>> listSubjects() {
         HttpGlobalResponse<List<SubjectResponseDTO>> r = new HttpGlobalResponse<>();
-        r.setData(service.listSubjects()); r.setMessage("Asignaturas recuperadas con éxito"); return ResponseEntity.ok(r);
+        r.setData(service.listSubjects()); r.setMessage("Asignaturas recuperadas correctamente"); return ResponseEntity.ok(r);
     }
 
     @GetMapping("/{id}")
@@ -55,7 +55,7 @@ public class SubjectController {
     @DeleteMapping("/{id}")
     public ResponseEntity<HttpGlobalResponse<Void>> deleteSubject(@PathVariable Integer id) {
         HttpGlobalResponse<Void> r = new HttpGlobalResponse<>();
-        try { service.deleteSubject(id); r.setMessage("Asignatura eliminada con éxito"); return ResponseEntity.ok(r); }
+        try { service.deleteSubject(id); r.setMessage("Asignatura eliminada correctamente"); return ResponseEntity.ok(r); }
         catch (RuntimeException e) { r.setMessage(e.getMessage()); return ResponseEntity.status(HttpStatus.NOT_FOUND).body(r); }
     }
 }

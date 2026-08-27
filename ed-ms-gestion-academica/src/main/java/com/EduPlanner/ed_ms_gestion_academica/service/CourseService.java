@@ -34,7 +34,7 @@ public class CourseService {
     public List<CourseResponseDTO> getCoursesByLevel(Integer id) { return repository.findByIdLevelAndStatusTrue(id).stream().map(this::toResponse).toList(); }
     public List<CourseResponseDTO> getCoursesByShift(Integer id) { return repository.findByIdShiftAndStatusTrue(id).stream().map(this::toResponse).toList(); }
 
-    public void deleteCourse(Integer id) { Course c = getOrThrow(id); c.setStatus(false); repository.save(c); }
+    public void deleteCourse(Integer id) { Course c = getOrThrow(id); repository.delete(c);}
 
     private Course getOrThrow(Integer id) { return repository.findById(id).orElseThrow(() -> new RuntimeException("Curso no encontrado: " + id)); }
     private void map(CourseRequestDTO r, Course c) {
