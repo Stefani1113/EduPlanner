@@ -33,26 +33,11 @@ public class TeachingController {
 
     /**
      * RF 5 - Crear perfil de docente.
-     * POST /eduplanner/teacher
+     * Se hace vía POST /users/register/teacher (RegisterController),
+     * que sigue el mismo flujo de activación por correo que estudiante/staff:
+     * contraseña aleatoria, cuenta pendiente de activación, idInstitution fijo
+     * por configuración y rol tomado de RolEnum.DOCENTE.getId().
      */
-    @RequireRole(RolEnum.ADMINISTRADOR)
-    @PostMapping
-    public ResponseEntity<HttpGlobalResponse<TeachingResponseDTO>> createTeacher(
-            @Valid @RequestBody TeachingRequestDTO request) {
-        HttpGlobalResponse<TeachingResponseDTO> response = new HttpGlobalResponse<>();
-        try {
-            TeachingResponseDTO data = teachingService.createTeacher(request);
-            response.setData(data);
-            response.setMessage("Docente creado correctamente");
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } catch (IllegalArgumentException e) {
-            response.setMessage(e.getMessage());
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
-        } catch (Exception e) {
-            response.setMessage("Error al crear el docente");
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-        }
-    }
 
     /**
      * RF 5.1 - Editar perfil de docente.
@@ -118,7 +103,7 @@ public class TeachingController {
     }
 
      /**
-     * RF 5.3 - Eliminar (baja lógica) perfil de docente.
+     * RF 5.3 - Eliminar (borrado físico) perfil de docente.
      * DELETE /eduplanner/teacher/{id}
      */
     @RequireRole(RolEnum.ADMINISTRADOR)
