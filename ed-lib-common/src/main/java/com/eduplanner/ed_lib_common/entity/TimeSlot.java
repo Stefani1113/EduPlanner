@@ -1,25 +1,13 @@
 package com.eduplanner.ed_lib_common.entity;
 
+import jakarta.persistence.*;
+import lombok.Data;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.ForeignKey;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
-import jakarta.persistence.Table;
-import lombok.Data;
-
-@Data
 @Entity
-@Table(name= "time_slot")
+@Data
+@Table(name = "time_slot")
 public class TimeSlot {
 
     @Id
@@ -27,14 +15,11 @@ public class TimeSlot {
     @Column(name = "id_time_slot")
     private Integer idTimeSlot;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_shift", nullable = false, foreignKey =
-            @ForeignKey(name = "fk_time_slot_shift")
-    )
-    private SchoolShift schoolShift;
+    @Column(name = "id_shift", nullable = false)
+    private Integer idShift;
 
     @Column(name = "slot_order", nullable = false)
-    private Byte slotOrder;
+    private Short slotOrder;
 
     @Column(name = "start_time", nullable = false)
     private LocalTime startTime;
@@ -43,9 +28,9 @@ public class TimeSlot {
     private LocalTime endTime;
 
     @Column(name = "break", nullable = false)
-    private Boolean breakTime = false;
+    private Boolean isBreak = false;
 
-    @Column(name = "status", nullable = false)
+    @Column(nullable = false)
     private Boolean status = true;
 
     @Column(name = "created_at", updatable = false)
@@ -55,13 +40,12 @@ public class TimeSlot {
     private LocalDateTime updatedAt;
 
     @PrePersist
-    protected void prePersist() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
+    public void prePersist() { 
+        createdAt = updatedAt = LocalDateTime.now();
     }
 
     @PreUpdate
-    protected void PreUpdate() {
-        updatedAt = LocalDateTime.now();
+    public void preUpdate() {
+        updatedAt = LocalDateTime.now(); 
     }
 }
