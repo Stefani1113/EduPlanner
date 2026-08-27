@@ -1,16 +1,18 @@
 package com.eduplanner.ed_ms_administracion.service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.springframework.stereotype.Service;
+
 import com.eduplanner.ed_lib_common.dto.TeachingRequestDTO;
 import com.eduplanner.ed_lib_common.dto.TeachingResponseDTO;
 import com.eduplanner.ed_lib_common.entity.User;
 import com.eduplanner.ed_ms_administracion.repository.UserRepository;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -33,16 +35,16 @@ public class TeachingService {
         User user = getTeacherOrThrow(id);
 
         if (!user.getEmail().equalsIgnoreCase(dto.getEmail()) && userRepository.existsByEmail(dto.getEmail())) {
-            throw new IllegalArgumentException("Email already in use by another user");
+            throw new IllegalArgumentException("El correo electrónico ya está siendo utilizado por otro usuario.");
         }
         if (!user.getDocument().equals(dto.getDocument()) && userRepository.existsByDocument(dto.getDocument())) {
-            throw new IllegalArgumentException("Document already in use by another user");
+            throw new IllegalArgumentException("El documento ya está siendo utilizado por otro usuario.");
         }
 
         mapDtoToEntity(dto, user);
 
         User saved = userRepository.save(user);
-        log.info("Teacher updated: id={}", id);
+        log.info("Profesora actualizada: id={}", id);
         return toDTO(saved);
     }
 
@@ -63,7 +65,7 @@ public class TeachingService {
     public void deleteTeacher(Integer id) {
         User user = getTeacherOrThrow(id);
         userRepository.delete(user);
-        log.info("Teacher deleted from database: id={}", id);
+        log.info("Profesora eliminada de la base de datos: id={}", id);
     }
 
     /** RF 5.4 - Search teachers by name, surnames, position or professional degrees */
@@ -93,9 +95,9 @@ public class TeachingService {
 
     private User getTeacherOrThrow(Integer id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Teacher not found with id: " + id));
+                .orElseThrow(() -> new RuntimeException("Profesor no encontrada con id: " + id));
         if (user.getRole() == null || user.getRole().getIdRole() != TEACHER_ROLE) {
-            throw new RuntimeException("User with id " + id + " is not a teacher");
+            throw new RuntimeException("Usuario con ID " + id + " No es profesor");
         }
         return user;
     }
