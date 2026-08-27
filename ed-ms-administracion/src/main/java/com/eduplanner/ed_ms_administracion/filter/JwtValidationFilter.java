@@ -1,4 +1,3 @@
-// ed-ms-administracion/src/main/java/com/eduplanner/ed_ms_administracion/filter/JwtValidationFilter.java
 package com.eduplanner.ed_ms_administracion.filter;
 
 import jakarta.servlet.FilterChain;
@@ -23,7 +22,6 @@ public class JwtValidationFilter extends OncePerRequestFilter {
 
     private final JwtValidatorService jwtValidatorService;
 
-
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
@@ -37,15 +35,11 @@ public class JwtValidationFilter extends OncePerRequestFilter {
         }
 
         String token = authHeader.substring(7);
-        Integer roleId = jwtValidatorService.extractIdRole(token);
-        System.out.println("RoleId = " + roleId);
-
-        request.setAttribute("idRole", roleId);
 
         try {
             if (jwtValidatorService.isTokenValid(token)) {
                 request.setAttribute("idUser", jwtValidatorService.extractIdUser(token));
-                request.setAttribute("idRole", jwtValidatorService.extractIdRole(token));
+                request.setAttribute("role", jwtValidatorService.extractRole(token));
                 filterChain.doFilter(request, response);
             } else {
                 sendError(response, HttpServletResponse.SC_UNAUTHORIZED,
@@ -60,7 +54,9 @@ public class JwtValidationFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return false;
+        String path = request.getRequestURI();
+        // Rutas internas: llamadas entre microservicios, sin token de usuario
+        return path.startsWith("/eduplanner/internal/");
     }
 
     private void sendError(HttpServletResponse response, int status, String message) throws IOException {
