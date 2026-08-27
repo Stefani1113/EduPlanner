@@ -53,7 +53,7 @@ public class SchoolShiftController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
     }
-    
+
     /**
      * Crear Jornada
      * @param dto
