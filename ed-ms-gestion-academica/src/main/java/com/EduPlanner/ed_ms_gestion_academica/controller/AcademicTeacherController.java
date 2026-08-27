@@ -19,7 +19,7 @@ public class AcademicTeacherController {
     @PostMapping
     public ResponseEntity<HttpGlobalResponse<AcademicTeacherResponseDTO>> registerTeacher(@Valid @RequestBody AcademicTeacherRequestDTO req) {
         HttpGlobalResponse<AcademicTeacherResponseDTO> r = new HttpGlobalResponse<>();
-        try { r.setData(service.registerTeacher(req)); r.setMessage("Profesor académico registrado con éxito"); return ResponseEntity.status(HttpStatus.CREATED).body(r); }
+        try { r.setData(service.registerTeacher(req)); r.setMessage("Profesor académico registrado correctamente"); return ResponseEntity.status(HttpStatus.CREATED).body(r); }
         catch (IllegalArgumentException e) { r.setMessage(e.getMessage()); return ResponseEntity.status(HttpStatus.CONFLICT).body(r); }
         catch (Exception e) { r.setMessage("Error registrando profesor académico"); return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(r); }
     }
@@ -27,7 +27,7 @@ public class AcademicTeacherController {
     @PutMapping("/{id}")
     public ResponseEntity<HttpGlobalResponse<AcademicTeacherResponseDTO>> updateTeacher(@PathVariable Integer id, @Valid @RequestBody AcademicTeacherRequestDTO req) {
         HttpGlobalResponse<AcademicTeacherResponseDTO> r = new HttpGlobalResponse<>();
-        try { r.setData(service.updateTeacher(id, req)); r.setMessage("Profesor académico actualizado con éxito"); return ResponseEntity.ok(r); }
+        try { r.setData(service.updateTeacher(id, req)); r.setMessage("Profesor académico actualizado correctamente"); return ResponseEntity.ok(r); }
         catch (IllegalArgumentException e) { r.setMessage(e.getMessage()); return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(r); }
         catch (RuntimeException e) { r.setMessage(e.getMessage()); return ResponseEntity.status(HttpStatus.NOT_FOUND).body(r); }
     }
@@ -35,7 +35,7 @@ public class AcademicTeacherController {
     @GetMapping
     public ResponseEntity<HttpGlobalResponse<List<AcademicTeacherResponseDTO>>> listTeachers() {
         HttpGlobalResponse<List<AcademicTeacherResponseDTO>> r = new HttpGlobalResponse<>();
-        r.setData(service.listTeachers()); r.setMessage("Profesores académicos recuperados con éxito"); return ResponseEntity.ok(r);
+        r.setData(service.listTeachers()); r.setMessage("Profesores académicos consultados correctamente"); return ResponseEntity.ok(r);
     }
 
     @GetMapping("/{id}")
@@ -48,7 +48,7 @@ public class AcademicTeacherController {
     @DeleteMapping("/{id}")
     public ResponseEntity<HttpGlobalResponse<Void>> deleteTeacher(@PathVariable Integer id) {
         HttpGlobalResponse<Void> r = new HttpGlobalResponse<>();
-        try { service.deleteTeacher(id); r.setMessage("Profesor académico eliminado con éxito"); return ResponseEntity.ok(r); }
+        try { service.deleteTeacher(id); r.setMessage("Profesor académico eliminado correctamente"); return ResponseEntity.ok(r); }
         catch (RuntimeException e) { r.setMessage(e.getMessage()); return ResponseEntity.status(HttpStatus.NOT_FOUND).body(r); }
     }
 }
