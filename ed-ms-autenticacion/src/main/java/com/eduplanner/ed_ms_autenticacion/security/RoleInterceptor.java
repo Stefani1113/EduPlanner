@@ -30,8 +30,6 @@ public class RoleInterceptor implements HandlerInterceptor{
             annotation = method.getBeanType().getAnnotation(RequireRole.class);
         }
 
-
-        System.out.println("ROLE = " + request.getAttribute("role"));
         
         if (annotation == null) {
             return true;
