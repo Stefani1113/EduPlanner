@@ -64,7 +64,7 @@ public class JwtService {
         return extractClaim(token, c -> Integer.valueOf(c.getSubject()));
     }
 
-    public String extractIdRole(String token) {
+    public String extractRole(String token) {
         return extractClaim(token, c -> c.get("role", String.class));
     }
 
