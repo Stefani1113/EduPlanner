@@ -25,6 +25,9 @@ public class Attendance {
     @Column(name = "id_student", nullable = false)
     private Integer idStudent;
 
+    @Column(name = "id_course", nullable = false)
+    private Integer idCourse;
+
     @Column(name = "attendance_date", nullable = false)
     private LocalDate attendanceDate;
 
