@@ -96,4 +96,12 @@ public class AcademicPeriodService {
         return repository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Periodo académico no encontrado con id: " + id));
     }
+
+    /**
+     * Buscar por activos
+     * @return
+     */
+    public List<AcademicPeriodResponseDTO> findAllActive() {
+        return repository.findByStatusTrue().stream().map(AcademicPeriodResponseDTO::fromEntity).toList();
+    }
 }
