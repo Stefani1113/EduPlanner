@@ -8,6 +8,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.util.List;
+
 /** HU 4.2 - Registrar tardanzas y salidas anticipadas (y asistencia en general) */
 @Service
 @RequiredArgsConstructor
@@ -37,6 +40,29 @@ public class AttendanceService {
         return toResponse(getOrThrow(id));
     }
 
+    /** HU 4.3 - Consultar historial de asistencia de un estudiante en un periodo */
+    public List<AttendanceResponseDTO> getHistoryByStudent(Integer idStudent, LocalDate startDate, LocalDate endDate) {
+        validateRange(startDate, endDate);
+        return repository.findByIdStudentAndAttendanceDateBetweenOrderByAttendanceDateAsc(idStudent, startDate, endDate)
+                .stream().map(this::toResponse).toList();
+    }
+
+    /** HU 4.3 - Consultar historial de asistencia de un curso/grupo en un periodo */
+    public List<AttendanceResponseDTO> getHistoryByCourse(Integer idCourse, LocalDate startDate, LocalDate endDate) {
+        validateRange(startDate, endDate);
+        return repository.findByIdCourseAndAttendanceDateBetweenOrderByAttendanceDateAsc(idCourse, startDate, endDate)
+                .stream().map(this::toResponse).toList();
+    }
+
+    private void validateRange(LocalDate startDate, LocalDate endDate) {
+        if (startDate == null || endDate == null) {
+            throw new IllegalArgumentException("Debes indicar fecha inicial y fecha final");
+        }
+        if (startDate.isAfter(endDate)) {
+            throw new IllegalArgumentException("La fecha inicial no puede ser posterior a la fecha final");
+        }
+    }
+
     private Attendance getOrThrow(Integer id) {
         return repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Registro de asistencia no encontrado: " + id));
@@ -45,6 +71,7 @@ public class AttendanceService {
     private void map(AttendanceRequestDTO r, Attendance a) {
         a.setIdSchedule(r.getIdSchedule());
         a.setIdStudent(r.getIdStudent());
+        a.setIdCourse(r.getIdCourse());
         a.setAttendanceDate(r.getAttendanceDate());
         a.setAttendanceStatus(r.getAttendanceStatus());
         a.setObservation(r.getObservation());
@@ -55,6 +82,7 @@ public class AttendanceService {
         r.setIdAttendance(a.getIdAttendance());
         r.setIdSchedule(a.getIdSchedule());
         r.setIdStudent(a.getIdStudent());
+        r.setIdCourse(a.getIdCourse());
         r.setAttendanceDate(a.getAttendanceDate());
         r.setAttendanceStatus(a.getAttendanceStatus());
         r.setObservation(a.getObservation());
