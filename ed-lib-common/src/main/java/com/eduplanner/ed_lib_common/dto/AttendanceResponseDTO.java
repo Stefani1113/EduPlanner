@@ -12,6 +12,7 @@ public class AttendanceResponseDTO {
     private Integer idAttendance;
     private Integer idSchedule;
     private Integer idStudent;
+    private Integer idCourse;
     private LocalDate attendanceDate;
     private AttendanceStatus attendanceStatus;
     private String observation;
