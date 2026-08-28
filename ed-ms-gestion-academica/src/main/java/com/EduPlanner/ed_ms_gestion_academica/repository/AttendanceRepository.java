@@ -13,11 +13,11 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Integer>
 
     Optional<Attendance> findByIdScheduleAndIdStudentAndAttendanceDate(Integer idSchedule, Integer idStudent, LocalDate attendanceDate);
 
-    /** Historial de un estudiante en un periodo */
+    /** HU 4.3 - Historial de un estudiante en un periodo */
     List<Attendance> findByIdStudentAndAttendanceDateBetweenOrderByAttendanceDateAsc(
             Integer idStudent, LocalDate startDate, LocalDate endDate);
 
-    /** Historial de un curso/grupo en un periodo */
+    /** HU 4.3 - Historial de un curso/grupo en un periodo */
     List<Attendance> findByIdCourseAndAttendanceDateBetweenOrderByAttendanceDateAsc(
             Integer idCourse, LocalDate startDate, LocalDate endDate);
 }
