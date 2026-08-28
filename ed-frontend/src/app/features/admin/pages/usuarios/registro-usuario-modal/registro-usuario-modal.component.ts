@@ -2,7 +2,7 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import {
-  TeachingRequestDTO,
+  RegisterTeacherDTO,
   RegisterStudentDTO,
   RegisterStaffDTO,
   ID_ROL_ADMINISTRADOR,
@@ -11,12 +11,11 @@ import {
 
 export type TipoRegistro = 'Docente' | 'Estudiante' | 'Staff';
 
-// Id fijo de la institución (coincide con `institution.id` en application.yaml del backend)
 const ID_INSTITUCION = 1;
 
 export interface RegistroDocenteEvento {
   tipo: 'Docente';
-  payload: TeachingRequestDTO;
+  payload: RegisterTeacherDTO;
 }
 
 export interface RegistroEstudianteEvento {
@@ -48,7 +47,6 @@ export class RegistroUsuarioModalComponent implements OnInit {
   fotoPreview: string | null = null;
   mostrarErroresValidacion = false;
 
-  // Catálogos compartidos por los 3 formularios
   tiposDocumento = ['CC', 'TI', 'CE', 'PA', 'RC'];
   generos = ['Masculino', 'Femenino', 'Otro'];
   tiposSangre = ['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'];
@@ -69,7 +67,6 @@ export class RegistroUsuarioModalComponent implements OnInit {
   constructor(private fb: FormBuilder) {}
 
   ngOnInit(): void {
-    // Docente -> se guarda vía POST /teacher (TeachingRequestDTO)
     this.formDocente = this.fb.group({
       name: ['', Validators.required],
       surnames: ['', Validators.required],
@@ -80,7 +77,6 @@ export class RegistroUsuarioModalComponent implements OnInit {
       gender: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       phoneNumber: [''],
-      password: ['', Validators.required],
       address: [''],
       bloodType: ['', Validators.required],
       stratum: ['', Validators.required],
@@ -93,7 +89,6 @@ export class RegistroUsuarioModalComponent implements OnInit {
       qualificationsDesc: ['']
     });
 
-    // Estudiante -> se guarda vía POST /users/register/student (RegisterStudentDTO)
     this.formEstudiante = this.fb.group({
       name: ['', Validators.required],
       surnames: ['', Validators.required],
@@ -115,7 +110,6 @@ export class RegistroUsuarioModalComponent implements OnInit {
       guardianPhone: ['', Validators.required]
     });
 
-    // Administrador / Directivo -> se guarda vía POST /users/register/staff (RegisterStaffDTO)
     this.formStaff = this.fb.group({
       name: ['', Validators.required],
       surnames: ['', Validators.required],
@@ -212,17 +206,15 @@ export class RegistroUsuarioModalComponent implements OnInit {
     if (v.asignaturas) notas.push(`Asignaturas: ${v.asignaturas}`);
     if (v.qualificationsDesc) notas.push(v.qualificationsDesc);
 
-    const payload: TeachingRequestDTO = {
+    const payload: RegisterTeacherDTO = {
       name: v.name,
       surnames: v.surnames,
       email: v.email,
-      password: v.password,
       documentType: v.documentType,
       document: v.document,
       documentIssuePlace: v.documentIssuePlace || undefined,
       birthdate: v.birthdate,
       phoneNumber: v.phoneNumber || undefined,
-      photoUrl: undefined,
       professionalDegrees: this.titulosProfesionales.join(', ') || v.position,
       qualificationsDesc: notas.join(' | ') || undefined,
       gender: v.gender,
@@ -233,8 +225,7 @@ export class RegistroUsuarioModalComponent implements OnInit {
       populationType: v.populationType || undefined,
       healthRegime: v.healthRegime || undefined,
       eps: v.eps || undefined,
-      position: v.position,
-      idInstitution: ID_INSTITUCION
+      position: v.position
     };
 
     this.guardar.emit({ tipo: 'Docente', payload });
