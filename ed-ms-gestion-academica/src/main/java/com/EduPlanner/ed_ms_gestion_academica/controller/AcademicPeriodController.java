@@ -23,14 +23,18 @@ public class AcademicPeriodController {
     private final AcademicPeriodService service;
 
     /**
-     * Listar todos
+     * Listar todos o activos 
+     * academic-periods - Todos
+     * academic-periods?activate=true - Solo activos
      * @return
      */
     @RequireRole(RolEnum.ADMINISTRADOR)
     @GetMapping
-    public ResponseEntity<HttpGlobalResponse<List<AcademicPeriodResponseDTO>>> getAll() {
+    public ResponseEntity<HttpGlobalResponse<List<AcademicPeriodResponseDTO>>> getAll(
+        @RequestParam(required = false) Boolean active) {
         HttpGlobalResponse<List<AcademicPeriodResponseDTO>> response = new HttpGlobalResponse<>();
-        response.setData(service.findAll());
+        List<AcademicPeriodResponseDTO> result = (Boolean.TRUE.equals(active)) ? service.findAllActive() : service.findAll();
+        response.setData(result);
         response.setMessage("Periodos académicos consultados correctamente");
         return ResponseEntity.ok(response);
     }
