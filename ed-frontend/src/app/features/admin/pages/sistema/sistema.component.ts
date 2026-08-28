@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
@@ -32,20 +32,25 @@ const SWATCHES: ColorSwatch[] = [
 export class PanelControlComponent implements OnInit, OnDestroy {
 
   swatches = SWATCHES;
-
   palette!: InstitutionPalette;
   info!: InstitutionInfo;
-
   savedMessage = '';
   private savedTimeout?: ReturnType<typeof setTimeout>;
   private sub?: Subscription;
 
-  constructor(private settingsService: InstitutionSettingsService) {}
+  constructor(
+    private settingsService: InstitutionSettingsService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
     this.sub = this.settingsService.settings$.subscribe(settings => {
       this.palette = { ...settings.palette };
-      this.info = { ...settings.info, carousel: settings.info.carousel.map(c => ({ ...c })) };
+      this.info = {
+        ...settings.info,
+        carousel: settings.info.carousel.map(c => ({ ...c }))
+      };
+      this.cdr.detectChanges();
     });
   }
 
@@ -63,33 +68,33 @@ export class PanelControlComponent implements OnInit, OnDestroy {
   onLogoSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
-    if (!file) {
-      return;
-    }
+    if (!file) return;
+
     const reader = new FileReader();
     reader.onload = () => {
       this.info.logoUrl = reader.result as string;
+      this.cdr.detectChanges();
     };
     reader.readAsDataURL(file);
+    input.value = '';
   }
 
   onCarouselFileSelected(event: Event, index: number): void {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
-    if (!file) {
-      return;
-    }
+    if (!file) return;
+
     const reader = new FileReader();
     reader.onload = () => {
       this.info.carousel[index] = { url: reader.result as string };
+      this.cdr.detectChanges();
     };
     reader.readAsDataURL(file);
+    input.value = '';
   }
 
   addCarouselImage(): void {
-    if (this.info.carousel.length >= 4) {
-      return;
-    }
+    if (this.info.carousel.length >= 4) return;
     this.info.carousel.push({ url: '' });
   }
 
@@ -113,6 +118,9 @@ export class PanelControlComponent implements OnInit, OnDestroy {
     if (this.savedTimeout) {
       clearTimeout(this.savedTimeout);
     }
-    this.savedTimeout = setTimeout(() => (this.savedMessage = ''), 2500);
+    this.savedTimeout = setTimeout(() => {
+      this.savedMessage = '';
+      this.cdr.detectChanges();
+    }, 2500);
   }
 }
