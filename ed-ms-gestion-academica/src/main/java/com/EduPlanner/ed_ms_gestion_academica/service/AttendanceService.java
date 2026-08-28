@@ -2,13 +2,18 @@ package com.EduPlanner.ed_ms_gestion_academica.service;
 
 import com.eduplanner.ed_lib_common.dto.AttendanceRequestDTO;
 import com.eduplanner.ed_lib_common.dto.AttendanceResponseDTO;
+import com.eduplanner.ed_lib_common.dto.JustificationRequestDTO;
+import com.eduplanner.ed_lib_common.dto.JustificationReviewDTO;
 import com.eduplanner.ed_lib_common.entity.Attendance;
+import com.eduplanner.ed_lib_common.enums.AttendanceStatus;
+import com.eduplanner.ed_lib_common.enums.JustificationStatus;
 import com.EduPlanner.ed_ms_gestion_academica.repository.AttendanceRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /** HU 4.2 - Registrar tardanzas y salidas anticipadas (y asistencia en general) */
@@ -61,6 +66,49 @@ public class AttendanceService {
         if (startDate.isAfter(endDate)) {
             throw new IllegalArgumentException("La fecha inicial no puede ser posterior a la fecha final");
         }
+    }
+
+    /** HU 4.4 - Paso 1: ingresar la justificación de una falta ya registrada */
+    public AttendanceResponseDTO submitJustification(Integer id, JustificationRequestDTO req) {
+        Attendance a = getOrThrow(id);
+
+        if (a.getAttendanceStatus() != AttendanceStatus.ABSENT) {
+            throw new IllegalArgumentException(
+                    "Solo se puede justificar un registro con estado ABSENT (falta)");
+        }
+        if (a.getJustificationStatus() == JustificationStatus.PENDING
+                || a.getJustificationStatus() == JustificationStatus.APPROVED) {
+            throw new IllegalArgumentException(
+                    "Esta falta ya tiene una justificación " +
+                            (a.getJustificationStatus() == JustificationStatus.PENDING ? "pendiente de revisión" : "aprobada"));
+        }
+
+        a.setJustificationText(req.getJustificationText());
+        a.setJustificationStatus(JustificationStatus.PENDING);
+        a.setReviewedBy(null);
+        a.setReviewedAt(null);
+
+        return toResponse(repository.save(a));
+    }
+
+    /** HU 4.4 - Paso 2: un directivo/docente aprueba o rechaza la justificación */
+    public AttendanceResponseDTO reviewJustification(Integer id, JustificationReviewDTO req) {
+        Attendance a = getOrThrow(id);
+
+        if (a.getJustificationStatus() != JustificationStatus.PENDING) {
+            throw new IllegalArgumentException(
+                    "Solo se pueden revisar justificaciones en estado PENDING");
+        }
+
+        a.setJustificationStatus(req.getApproved() ? JustificationStatus.APPROVED : JustificationStatus.REJECTED);
+        a.setReviewedBy(req.getReviewedBy());
+        a.setReviewedAt(LocalDateTime.now());
+
+        if (req.getApproved()) {
+            a.setAttendanceStatus(AttendanceStatus.JUSTIFIED);
+        }
+
+        return toResponse(repository.save(a));
     }
 
     private Attendance getOrThrow(Integer id) {
