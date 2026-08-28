@@ -1,5 +1,6 @@
 package com.EduPlanner.ed_ms_gestion_academica.service;
 
+import com.eduplanner.ed_lib_common.dto.AcademicPeriodResponseDTO;
 import com.eduplanner.ed_lib_common.dto.SchoolShiftRequestDTO;
 import com.eduplanner.ed_lib_common.dto.SchoolShiftResponseDTO;
 import com.eduplanner.ed_lib_common.entity.SchoolShift;
@@ -89,5 +90,13 @@ public class SchoolShiftService {
     private SchoolShift getOrThrow(Integer id) {
         return repository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Jornada no encontrada con id: " + id));
+    }
+
+    /**
+     * Listar por activos
+     * @return
+     */
+    public List<SchoolShiftResponseDTO> findAllActive() {
+        return repository.findByStatusTrue().stream().map(SchoolShiftResponseDTO::fromEntity).toList();
     }
 }
