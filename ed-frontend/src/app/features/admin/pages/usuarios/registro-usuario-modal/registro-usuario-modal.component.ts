@@ -1,6 +1,13 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators
+} from '@angular/forms';
+
 import {
   RegisterTeacherDTO,
   RegisterStudentDTO,
@@ -10,8 +17,6 @@ import {
 } from '../../../services/usuarios.service';
 
 export type TipoRegistro = 'Docente' | 'Estudiante' | 'Staff';
-
-const ID_INSTITUCION = 1;
 
 export interface RegistroDocenteEvento {
   tipo: 'Docente';
@@ -28,12 +33,19 @@ export interface RegistroStaffEvento {
   payload: RegisterStaffDTO;
 }
 
-export type UsuarioRegistrado = RegistroDocenteEvento | RegistroEstudianteEvento | RegistroStaffEvento;
+export type UsuarioRegistrado =
+  | RegistroDocenteEvento
+  | RegistroEstudianteEvento
+  | RegistroStaffEvento;
 
 @Component({
   selector: 'app-registro-usuario-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ReactiveFormsModule
+  ],
   templateUrl: './registro-usuario-modal.component.html',
   styleUrl: './registro-usuario-modal.component.scss'
 })
@@ -41,20 +53,46 @@ export class RegistroUsuarioModalComponent implements OnInit {
 
   @Input() tipo: TipoRegistro = 'Docente';
   @Input() guardando = false;
+
   @Output() cerrar = new EventEmitter<void>();
   @Output() guardar = new EventEmitter<UsuarioRegistrado>();
 
-  fotoPreview: string | null = null;
+  mensajeGlobal: string | null = null;
+  mensajeExito = false;
+  mensajeTemporal: ReturnType<typeof setTimeout> | null = null;
+
   mostrarErroresValidacion = false;
 
   tiposDocumento = ['CC', 'TI', 'CE', 'PA', 'RC'];
-  generos = ['Masculino', 'Femenino', 'Otro'];
-  tiposSangre = ['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'];
+
+  generos = [
+    'Masculino',
+    'Femenino',
+    'Otro'
+  ];
+
+  tiposSangre = [
+    'O+',
+    'O-',
+    'A+',
+    'A-',
+    'B+',
+    'B-',
+    'AB+',
+    'AB-'
+  ];
+
   estratos = [1, 2, 3, 4, 5, 6];
 
   rolesStaff: { label: string; idRole: number }[] = [
-    { label: 'Administrador', idRole: ID_ROL_ADMINISTRADOR },
-    { label: 'Directivo', idRole: ID_ROL_DIRECTIVO }
+    {
+      label: 'Administrador',
+      idRole: ID_ROL_ADMINISTRADOR
+    },
+    {
+      label: 'Directivo',
+      idRole: ID_ROL_DIRECTIVO
+    }
   ];
 
   titulosProfesionales: string[] = [];
@@ -72,12 +110,12 @@ export class RegistroUsuarioModalComponent implements OnInit {
       surnames: ['', Validators.required],
       documentType: ['CC', Validators.required],
       document: ['', Validators.required],
-      documentIssuePlace: [''],
+      documentIssuePlace: ['', Validators.required],
       birthdate: ['', Validators.required],
       gender: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
-      phoneNumber: [''],
-      address: [''],
+      phoneNumber: ['', Validators.required],
+      address: ['', Validators.required],
       bloodType: ['', Validators.required],
       stratum: ['', Validators.required],
       disabilities: [''],
@@ -94,14 +132,14 @@ export class RegistroUsuarioModalComponent implements OnInit {
       surnames: ['', Validators.required],
       documentType: ['TI', Validators.required],
       document: ['', Validators.required],
-      documentIssuePlace: [''],
-      birthdate: [''],
-      gender: [''],
+      documentIssuePlace: ['', Validators.required],
+      birthdate: ['', Validators.required],
+      gender: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
-      phoneNumber: [''],
-      address: [''],
-      bloodType: [''],
-      stratum: [''],
+      phoneNumber: ['', Validators.required],
+      address: ['', Validators.required],
+      bloodType: ['', Validators.required],
+      stratum: ['', Validators.required],
       disabilities: [''],
       populationType: [''],
       healthRegime: [''],
@@ -115,14 +153,14 @@ export class RegistroUsuarioModalComponent implements OnInit {
       surnames: ['', Validators.required],
       documentType: ['CC', Validators.required],
       document: ['', Validators.required],
-      documentIssuePlace: [''],
-      birthdate: [''],
-      gender: [''],
+      documentIssuePlace: ['', Validators.required],
+      birthdate: ['', Validators.required],
+      gender: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
-      phoneNumber: [''],
-      address: [''],
-      bloodType: [''],
-      stratum: [''],
+      phoneNumber: ['', Validators.required],
+      address: ['', Validators.required],
+      bloodType: ['', Validators.required],
+      stratum: ['', Validators.required],
       disabilities: [''],
       populationType: [''],
       healthRegime: [''],
@@ -133,69 +171,182 @@ export class RegistroUsuarioModalComponent implements OnInit {
   }
 
   get formActual(): FormGroup {
-    if (this.tipo === 'Docente') return this.formDocente;
-    if (this.tipo === 'Estudiante') return this.formEstudiante;
+    if (this.tipo === 'Docente') {
+      return this.formDocente;
+    }
+
+    if (this.tipo === 'Estudiante') {
+      return this.formEstudiante;
+    }
+
     return this.formStaff;
+  }
+
+  campoInvalido(campo: string): boolean {
+    const control = this.formDocente.get(campo);
+
+    return !!(
+      control &&
+      control.invalid &&
+      (control.touched || this.mostrarErroresValidacion)
+    );
+  }
+
+  campoInvalidoEstudiante(campo: string): boolean {
+    const control = this.formEstudiante.get(campo);
+
+    return !!(
+      control &&
+      control.invalid &&
+      (control.touched || this.mostrarErroresValidacion)
+    );
+  }
+
+  campoInvalidoStaff(campo: string): boolean {
+    const control = this.formStaff.get(campo);
+
+    return !!(
+      control &&
+      control.invalid &&
+      (control.touched || this.mostrarErroresValidacion)
+    );
   }
 
   seleccionarRolStaff(idRole: number): void {
     this.formStaff.get('idRole')?.setValue(idRole);
-  }
-
-  seleccionarFoto(input: HTMLInputElement): void {
-    input.click();
-  }
-
-  onFotoSeleccionada(event: Event): void {
-    const archivo = (event.target as HTMLInputElement).files?.[0];
-    if (!archivo) return;
-
-    const lector = new FileReader();
-    lector.onload = () => (this.fotoPreview = lector.result as string);
-    lector.readAsDataURL(archivo);
+    this.formStaff.get('idRole')?.markAsTouched();
   }
 
   agregarTitulo(): void {
     const valor = this.tituloNuevo.trim();
-    if (!valor) return;
 
-    this.titulosProfesionales = [...this.titulosProfesionales, valor];
+    if (!valor) {
+      return;
+    }
+
+    this.titulosProfesionales = [
+      ...this.titulosProfesionales,
+      valor
+    ];
+
     this.tituloNuevo = '';
   }
 
   quitarTitulo(titulo: string): void {
-    this.titulosProfesionales = this.titulosProfesionales.filter(t => t !== titulo);
+    this.titulosProfesionales =
+      this.titulosProfesionales.filter(t => t !== titulo);
   }
 
   cancelar(): void {
-    if (this.guardando) return;
+    if (this.guardando) {
+      return;
+    }
+
+    this.limpiarMensaje();
     this.cerrar.emit();
   }
 
   onOverlayClick(event: MouseEvent): void {
-    if (this.guardando) return;
+    if (this.guardando) {
+      return;
+    }
+
     if (event.target === event.currentTarget) {
+      this.limpiarMensaje();
       this.cerrar.emit();
     }
   }
 
-  guardarUsuario(): void {
-    if (this.guardando) return;
+  mostrarExito(
+    mensaje: string,
+    autoCerrar: boolean = true
+  ): void {
+    this.mensajeGlobal = mensaje;
+    this.mensajeExito = true;
+    this.mostrarErroresValidacion = false;
 
-    if (this.formActual.invalid) {
-      this.formActual.markAllAsTouched();
+    if (this.mensajeTemporal) {
+      clearTimeout(this.mensajeTemporal);
+      this.mensajeTemporal = null;
+    }
+
+    if (autoCerrar) {
+      this.mensajeTemporal = setTimeout(() => {
+        this.limpiarMensaje();
+        this.cerrar.emit();
+      }, 3500);
+    }
+  }
+
+  mostrarError(mensaje: string): void {
+    this.mensajeGlobal = mensaje;
+    this.mensajeExito = false;
+    this.mostrarErroresValidacion = false;
+
+    if (this.mensajeTemporal) {
+      clearTimeout(this.mensajeTemporal);
+      this.mensajeTemporal = null;
+    }
+  }
+
+  limpiarMensaje(): void {
+    this.mensajeGlobal = null;
+    this.mensajeExito = false;
+
+    if (this.mensajeTemporal) {
+      clearTimeout(this.mensajeTemporal);
+      this.mensajeTemporal = null;
+    }
+  }
+
+  guardarUsuario(): void {
+    if (this.guardando) {
+      return;
+    }
+
+    this.limpiarMensaje();
+
+    const formulario = this.formActual;
+
+    if (formulario.invalid) {
       this.mostrarErroresValidacion = true;
+      formulario.markAllAsTouched();
+
+      const primerInvalido = document.querySelector(
+        '.field.error input, .field.error select'
+      );
+
+      if (primerInvalido) {
+        primerInvalido.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center'
+        });
+
+        (primerInvalido as HTMLElement).focus();
+      }
+
       return;
     }
 
     this.mostrarErroresValidacion = false;
 
-    if (this.tipo === 'Docente') {
-      this.emitirDocente();
-    } else if (this.tipo === 'Estudiante') {
-      this.emitirEstudiante();
-    } else {
-      this.emitirStaff();
+    try {
+      if (this.tipo === 'Docente') {
+        this.emitirDocente();
+      } else if (this.tipo === 'Estudiante') {
+        this.emitirEstudiante();
+      } else {
+        this.emitirStaff();
+      }
+    } catch (error) {
+      console.error(
+        'Error al procesar el formulario:',
+        error
+      );
+
+      this.mostrarError(
+        'Ocurrió un error al procesar el formulario.'
+      );
     }
   }
 
@@ -203,8 +354,14 @@ export class RegistroUsuarioModalComponent implements OnInit {
     const v = this.formDocente.value;
 
     const notas: string[] = [];
-    if (v.asignaturas) notas.push(`Asignaturas: ${v.asignaturas}`);
-    if (v.qualificationsDesc) notas.push(v.qualificationsDesc);
+
+    if (v.asignaturas) {
+      notas.push(`Asignaturas: ${v.asignaturas}`);
+    }
+
+    if (v.qualificationsDesc) {
+      notas.push(v.qualificationsDesc);
+    }
 
     const payload: RegisterTeacherDTO = {
       name: v.name,
@@ -212,23 +369,39 @@ export class RegistroUsuarioModalComponent implements OnInit {
       email: v.email,
       documentType: v.documentType,
       document: v.document,
-      documentIssuePlace: v.documentIssuePlace || undefined,
+      documentIssuePlace:
+        v.documentIssuePlace || undefined,
       birthdate: v.birthdate,
-      phoneNumber: v.phoneNumber || undefined,
-      professionalDegrees: this.titulosProfesionales.join(', ') || v.position,
-      qualificationsDesc: notas.join(' | ') || undefined,
+      phoneNumber:
+        v.phoneNumber || undefined,
+      professionalDegrees:
+        this.titulosProfesionales.join(', ') ||
+        v.position,
+      qualificationsDesc:
+        notas.join(' | ') ||
+        undefined,
       gender: v.gender,
-      address: v.address || undefined,
+      address:
+        v.address || undefined,
       bloodType: v.bloodType,
-      disabilities: v.disabilities || undefined,
-      stratum: Number(v.stratum),
-      populationType: v.populationType || undefined,
-      healthRegime: v.healthRegime || undefined,
-      eps: v.eps || undefined,
-      position: v.position
+      disabilities:
+        v.disabilities || undefined,
+      stratum:
+        Number(v.stratum),
+      populationType:
+        v.populationType || undefined,
+      healthRegime:
+        v.healthRegime || undefined,
+      eps:
+        v.eps || undefined,
+      position:
+        v.position
     };
 
-    this.guardar.emit({ tipo: 'Docente', payload });
+    this.guardar.emit({
+      tipo: 'Docente',
+      payload
+    });
   }
 
   private emitirEstudiante(): void {
@@ -238,26 +411,46 @@ export class RegistroUsuarioModalComponent implements OnInit {
       name: v.name,
       surnames: v.surnames,
       email: v.email,
-      phoneNumber: v.phoneNumber || undefined,
-      document: v.document,
-      documentType: v.documentType,
-      documentIssuePlace: v.documentIssuePlace || undefined,
-      gender: v.gender || undefined,
-      birthdate: v.birthdate || null,
-      address: v.address || undefined,
-      bloodType: v.bloodType || undefined,
-      disabilities: v.disabilities || undefined,
-      stratum: v.stratum ? Number(v.stratum) : undefined,
-      populationType: v.populationType || undefined,
-      healthRegime: v.healthRegime || undefined,
-      eps: v.eps || undefined,
+      phoneNumber:
+        v.phoneNumber || undefined,
+      document:
+        v.document,
+      documentType:
+        v.documentType,
+      documentIssuePlace:
+        v.documentIssuePlace || undefined,
+      gender:
+        v.gender || undefined,
+      birthdate:
+        v.birthdate || null,
+      address:
+        v.address || undefined,
+      bloodType:
+        v.bloodType || undefined,
+      disabilities:
+        v.disabilities || undefined,
+      stratum:
+        v.stratum
+          ? Number(v.stratum)
+          : undefined,
+      populationType:
+        v.populationType || undefined,
+      healthRegime:
+        v.healthRegime || undefined,
+      eps:
+        v.eps || undefined,
       guardian: {
-        guardianName: v.guardianName,
-        guardianPhone: v.guardianPhone
+        guardianName:
+          v.guardianName,
+        guardianPhone:
+          v.guardianPhone
       }
     };
 
-    this.guardar.emit({ tipo: 'Estudiante', payload });
+    this.guardar.emit({
+      tipo: 'Estudiante',
+      payload
+    });
   }
 
   private emitirStaff(): void {
@@ -267,23 +460,80 @@ export class RegistroUsuarioModalComponent implements OnInit {
       name: v.name,
       surnames: v.surnames,
       email: v.email,
-      phoneNumber: v.phoneNumber || undefined,
-      document: v.document,
-      documentType: v.documentType,
-      documentIssuePlace: v.documentIssuePlace || undefined,
-      gender: v.gender || undefined,
-      birthdate: v.birthdate || undefined,
-      address: v.address || undefined,
-      bloodType: v.bloodType || undefined,
-      disabilities: v.disabilities || undefined,
-      stratum: v.stratum ? Number(v.stratum) : undefined,
-      populationType: v.populationType || undefined,
-      healthRegime: v.healthRegime || undefined,
-      eps: v.eps || undefined,
-      position: v.position,
-      idRole: Number(v.idRole)
+      phoneNumber:
+        v.phoneNumber || undefined,
+      document:
+        v.document,
+      documentType:
+        v.documentType,
+      documentIssuePlace:
+        v.documentIssuePlace || undefined,
+      gender:
+        v.gender || undefined,
+      birthdate:
+        v.birthdate || undefined,
+      address:
+        v.address || undefined,
+      bloodType:
+        v.bloodType || undefined,
+      disabilities:
+        v.disabilities || undefined,
+      stratum:
+        v.stratum
+          ? Number(v.stratum)
+          : undefined,
+      populationType:
+        v.populationType || undefined,
+      healthRegime:
+        v.healthRegime || undefined,
+      eps:
+        v.eps || undefined,
+      position:
+        v.position,
+      idRole:
+        Number(v.idRole)
     };
 
-    this.guardar.emit({ tipo: 'Staff', payload });
+    this.guardar.emit({
+      tipo: 'Staff',
+      payload
+    });
+  }
+
+  onGuardadoExitoso(mensaje?: string): void {
+    const texto =
+      mensaje ||
+      `${this.tipo} registrado correctamente.`;
+
+    this.mostrarExito(
+      texto,
+      true
+    );
+  }
+
+  onErrorGuardado(mensaje?: string): void {
+    this.mostrarError(
+      mensaje ||
+      `Error al registrar ${this.tipo.toLowerCase()}.`
+    );
+  }
+
+  onGuardadoExitosoYCerrar(mensaje?: string): void {
+    const texto =
+      mensaje ||
+      `${this.tipo} registrado correctamente.`;
+
+    this.mensajeGlobal = texto;
+    this.mensajeExito = true;
+
+    if (this.mensajeTemporal) {
+      clearTimeout(this.mensajeTemporal);
+    }
+
+    this.mensajeTemporal =
+      setTimeout(() => {
+        this.limpiarMensaje();
+        this.cerrar.emit();
+      }, 1500);
   }
 }

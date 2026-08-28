@@ -12,7 +12,6 @@
   animation: fadeIn 0.3s ease;
 }
 
-
 .modal {
   width: 100%;
   max-width: 720px;
@@ -26,22 +25,21 @@
   animation: slideUp 0.3s ease;
 }
 
-
 .modal-header {
-  background: 
+  background:
     linear-gradient(rgba(26, 26, 26, 0.85), rgba(26, 26, 26, 0.92)),
     url("/assets/img/pattern-trasparent.png");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  justify-content: center;
   padding: 20px 25px 18px;
   position: relative;
 }
 
 .modal-header::after {
+  content: "";
   position: absolute;
   bottom: 0;
   left: 0;
@@ -52,7 +50,7 @@
 }
 
 .modal-header h2 {
-  margin: 0 0 6px;
+  margin: 0;
   color: #fff;
   font-size: 20px;
   font-weight: 700;
@@ -60,55 +58,24 @@
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
-.foto-wrapper {
-  width: 100px;
-  height: 100px;
-  margin: 8px 0 12px;
-  border-radius: 50%;
-  overflow: hidden;
-  background: #1a1a1a;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-}
-
-.foto-wrapper:hover {
-  border-color: rgba(83, 187, 27, 0.7);
-  transform: scale(1.03);
-  box-shadow: 0 4px 30px rgba(83, 187, 27, 0.15);
-}
-
-.foto-wrapper img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.btn-foto {
-  width: 120px;
-  height: 34px;
-  border: none;
-  border-radius: 20px;
-  background: rgba(83, 187, 27, 0.2);
-  color: #6fd62c;
-  font-size: 13px;
+.mensaje-global {
+  padding: 12px 20px;
+  text-align: center;
+  font-size: 14px;
   font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  backdrop-filter: blur(4px);
+  animation: slideDown 0.3s ease;
 }
 
+.mensaje-global.success {
+  background: rgba(83, 187, 27, 0.15);
+  color: #6fd62c;
+  border-bottom: 1px solid rgba(83, 187, 27, 0.2);
+}
 
-.btn-foto:hover {
-  background: rgba(83, 187, 27, 0.35);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 20px rgba(83, 187, 27, 0.15);
+.mensaje-global.error {
+  background: rgba(229, 106, 106, 0.15);
+  color: #e56a6a;
+  border-bottom: 1px solid rgba(229, 106, 106, 0.2);
 }
 
 .modal-form {
@@ -142,7 +109,6 @@
   background-color: rgba(83, 187, 27, 0.5);
 }
 
-/* ===== SECTION TITLE ===== */
 .section-title {
   margin: 8px 0 0;
   font-size: 11px;
@@ -158,19 +124,17 @@
 }
 
 .section-title::before {
-  content: '▸';
+  content: "▸";
   font-size: 14px;
   color: #53bb1b;
 }
 
-/* ===== GRID ===== */
 .grid-2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 14px 18px;
 }
 
-/* ===== FIELDS ===== */
 .field {
   display: flex;
   flex-direction: column;
@@ -201,6 +165,7 @@
   outline: none;
   transition: all 0.25s ease;
   font-family: inherit;
+  box-sizing: border-box;
 }
 
 .field input:hover,
@@ -242,7 +207,25 @@
   color: #eee;
 }
 
-/* ===== TÍTULOS PROFESIONALES ===== */
+.field.error input,
+.field.error select,
+.field.error textarea {
+  border-color: #e56a6a;
+  box-shadow: 0 0 0 3px rgba(229, 106, 106, 0.1) !important;
+}
+
+.field.error label {
+  color: #e56a6a;
+}
+
+.error-msg {
+  color: #e56a6a;
+  font-size: 10px;
+  font-weight: 500;
+  margin-top: 2px;
+  animation: fadeIn 0.2s ease;
+}
+
 .titulo-row {
   display: flex;
   gap: 10px;
@@ -311,7 +294,6 @@
   color: #e05656;
 }
 
-/* ===== ROLE TABS ===== */
 .role-tabs {
   display: flex;
   gap: 10px;
@@ -341,7 +323,6 @@
   color: #6fd62c;
 }
 
-/* ===== FOOTER ===== */
 .modal-footer {
   display: flex;
   justify-content: flex-end;
@@ -379,21 +360,52 @@
   color: #fff;
 }
 
-.btn-guardar:hover {
+.btn-guardar:hover:not(:disabled) {
   background: #6fd62c;
   transform: translateY(-1px);
   box-shadow: 0 4px 20px rgba(83, 187, 27, 0.3);
 }
 
-.btn-guardar:active {
-  transform: translateY(0);
+.btn-guardar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }
 
-/* ============================================ */
-/* ============ MEDIA QUERIES ================ */
-/* ============================================ */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
 
-/* --- 1. Mobile S (≤ 352px) --- */
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @media (max-width: 352px) {
   .modal-overlay {
     padding: 8px;
@@ -410,19 +422,6 @@
 
   .modal-header h2 {
     font-size: 16px;
-  }
-
-  .foto-wrapper {
-    width: 75px;
-    height: 75px;
-    margin: 4px 0 8px;
-    border-width: 2px;
-  }
-
-  .btn-foto {
-    width: 100px;
-    height: 30px;
-    font-size: 12px;
   }
 
   .modal-form {
@@ -455,6 +454,10 @@
   }
 
   .field label {
+    font-size: 9px;
+  }
+
+  .error-msg {
     font-size: 9px;
   }
 
@@ -497,9 +500,13 @@
     font-size: 12px;
     width: 100%;
   }
+
+  .mensaje-global {
+    font-size: 12px;
+    padding: 10px 16px;
+  }
 }
 
-/* --- 2. Mobile M (353px - 480px) --- */
 @media (min-width: 353px) and (max-width: 480px) {
   .modal-overlay {
     padding: 12px;
@@ -516,17 +523,6 @@
 
   .modal-header h2 {
     font-size: 17px;
-  }
-
-  .foto-wrapper {
-    width: 85px;
-    height: 85px;
-  }
-
-  .btn-foto {
-    width: 110px;
-    height: 32px;
-    font-size: 12px;
   }
 
   .modal-form {
@@ -546,6 +542,10 @@
   .field input,
   .field select {
     height: 38px;
+  }
+
+  .error-msg {
+    font-size: 9px;
   }
 
   .role-tabs {
@@ -580,7 +580,6 @@
   }
 }
 
-/* --- 3. Mobile L / Tablets pequeñas (481px - 600px) --- */
 @media (min-width: 481px) and (max-width: 600px) {
   .modal-overlay {
     padding: 16px;
@@ -593,11 +592,6 @@
 
   .modal-header h2 {
     font-size: 18px;
-  }
-
-  .foto-wrapper {
-    width: 90px;
-    height: 90px;
   }
 
   .modal-form {
@@ -633,7 +627,6 @@
   }
 }
 
-/* --- 4. Tablets (601px - 768px) --- */
 @media (min-width: 601px) and (max-width: 768px) {
   .modal {
     max-width: 96%;
@@ -668,7 +661,6 @@
   }
 }
 
-/* --- 5. Tablets grandes / Laptops pequeñas (769px - 920px) --- */
 @media (min-width: 769px) and (max-width: 920px) {
   .modal {
     max-width: 680px;
@@ -687,7 +679,6 @@
   }
 }
 
-/* --- 6. Laptops (921px - 1100px) --- */
 @media (min-width: 921px) and (max-width: 1100px) {
   .modal {
     max-width: 700px;
@@ -698,7 +689,6 @@
   }
 }
 
-/* --- 7. Escritorios grandes (≥ 1101px) --- */
 @media (min-width: 1101px) {
   .modal {
     max-width: 740px;
@@ -723,7 +713,6 @@
   }
 }
 
-/* --- 8. Altura pequeña (≤ 700px) --- */
 @media (max-height: 700px) {
   .modal {
     max-height: 94vh;
@@ -735,19 +724,7 @@
 
   .modal-header h2 {
     font-size: 16px;
-    margin: 0 0 4px;
-  }
-
-  .foto-wrapper {
-    width: 65px;
-    height: 65px;
-    margin: 4px 0 6px;
-  }
-
-  .btn-foto {
-    width: 90px;
-    height: 28px;
-    font-size: 11px;
+    margin: 0;
   }
 
   .modal-form {
@@ -783,6 +760,10 @@
     min-height: 40px;
   }
 
+  .error-msg {
+    font-size: 8px;
+  }
+
   .role-tab {
     height: 30px;
     font-size: 11px;
@@ -813,9 +794,13 @@
   .titulo-chip button {
     font-size: 13px;
   }
+
+  .mensaje-global {
+    font-size: 12px;
+    padding: 8px 16px;
+  }
 }
 
-/* --- 9. Altura muy pequeña (≤ 600px) --- */
 @media (max-height: 600px) {
   .modal {
     max-height: 97vh;
@@ -828,19 +813,6 @@
   .modal-header h2 {
     font-size: 14px;
     margin: 0;
-  }
-
-  .foto-wrapper {
-    width: 50px;
-    height: 50px;
-    margin: 2px 0 4px;
-    border-width: 2px;
-  }
-
-  .btn-foto {
-    width: 80px;
-    height: 24px;
-    font-size: 10px;
   }
 
   .modal-form {
@@ -877,6 +849,10 @@
     padding: 4px 8px;
     min-height: 30px;
     border-radius: 6px;
+  }
+
+  .error-msg {
+    font-size: 7px;
   }
 
   .role-tabs {
@@ -923,4 +899,11 @@
     padding: 0 12px;
     border-radius: 6px;
   }
+
+  .mensaje-global {
+    font-size: 11px;
+    padding: 6px 12px;
+  }
 }
+
+

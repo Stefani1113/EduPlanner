@@ -1,418 +1,1396 @@
 <div class="modal-overlay" (click)="onOverlayClick($event)">
+
   <div class="modal">
 
-    <div class="modal-header">
-      <h2>
-        {{ tipo === 'Docente' ? 'Docentes' : (tipo === 'Estudiante' ? 'Estudiante' : 'Administrador / Directivo') }}
-      </h2>
+<div class="modal-header">
+  <h2>
+    {{
+      tipo === 'Docente'
+        ? 'Docentes'
+        : (tipo === 'Estudiante'
+            ? 'Estudiante'
+            : 'Administrador / Directivo')
+    }}
+  </h2>
+</div>
 
-      <div class="foto-wrapper">
-        <img [src]="fotoPreview ?? 'assets/img/profile.png'" alt="Foto del usuario">
-      </div>
+<div
+  *ngIf="mensajeGlobal"
+  class="mensaje-global"
+  [class.success]="mensajeExito"
+  [class.error]="!mensajeExito"
+>
+  <div class="mensaje-contenido">
+    <span class="mensaje-icono">
+      {{ mensajeExito ? '✓' : '✕' }}
+    </span>
 
-      <input #fotoInput type="file" accept="image/*" hidden (change)="onFotoSeleccionada($event)">
-      <button type="button" class="btn-foto" (click)="seleccionarFoto(fotoInput)">Fotos</button>
+    <span class="mensaje-texto">
+      {{ mensajeGlobal }}
+    </span>
+  </div>
+
+  <button
+    type="button"
+    class="mensaje-cerrar"
+    (click)="limpiarMensaje()"
+  >
+    ×
+  </button>
+</div>
+
+
+<form
+  *ngIf="tipo === 'Docente'"
+  [formGroup]="formDocente"
+  class="modal-form"
+  (ngSubmit)="guardarUsuario()"
+>
+
+  <h3 class="section-title">Datos personales</h3>
+
+  <div class="grid-2">
+
+    <div
+      class="field"
+      [class.error]="campoInvalido('name')"
+    >
+      <label>Nombres *</label>
+
+      <input
+        type="text"
+        formControlName="name"
+        placeholder="Ej: Ana María"
+      >
+
+      <small
+        class="error-msg"
+        *ngIf="campoInvalido('name')"
+      >
+        El nombre es obligatorio
+      </small>
     </div>
 
-    <form *ngIf="tipo === 'Docente'" [formGroup]="formDocente" class="modal-form" (ngSubmit)="guardarUsuario()">
-      <h3 class="section-title">Datos personales</h3>
-      <div class="grid-2">
-
-        <div class="field">
-          <label>Nombres</label>
-          <input type="text" formControlName="name" placeholder="Ej: Ana María">
-        </div>
-
-        <div class="field">
-          <label>Apellidos</label>
-          <input type="text" formControlName="surnames" placeholder="Ej: Pérez Gómez">
-        </div>
-
-        <div class="field">
-          <label>Tipo de documento</label>
-          <select formControlName="documentType">
-            <option *ngFor="let t of tiposDocumento" [value]="t">{{ t }}</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label>Número de documento</label>
-          <input type="text" formControlName="document" placeholder="Ej: 123456709">
-        </div>
-
-        <div class="field">
-          <label>Lugar de expedición</label>
-          <input type="text" formControlName="documentIssuePlace" placeholder="Ej: Armenia">
-        </div>
-
-        <div class="field">
-          <label>Fecha de nacimiento</label>
-          <input type="date" formControlName="birthdate">
-        </div>
-
-        <div class="field">
-          <label>Género</label>
-          <select formControlName="gender">
-            <option value="" disabled>Seleccionar género</option>
-            <option *ngFor="let g of generos" [value]="g">{{ g }}</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label>Correo electrónico</label>
-          <input type="email" formControlName="email" placeholder="correo@institucion.edu">
-        </div>
-
-        <div class="field">
-          <label>Teléfono</label>
-          <input type="text" formControlName="phoneNumber" placeholder="Ej: 123456787">
-        </div>
-
-      </div>
-
-      <h3 class="section-title">Datos de salud y socioeconómicos</h3>
-      <div class="grid-2">
-
-        <div class="field">
-          <label>Dirección</label>
-          <input type="text" formControlName="address" placeholder="Ej: Calle 10 # 5-20">
-        </div>
-
-        <div class="field">
-          <label>Tipo de sangre</label>
-          <select formControlName="bloodType">
-            <option value="" disabled>Seleccionar</option>
-            <option *ngFor="let b of tiposSangre" [value]="b">{{ b }}</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label>Estrato</label>
-          <select formControlName="stratum">
-            <option value="" disabled>Seleccionar</option>
-            <option *ngFor="let e of estratos" [value]="e">{{ e }}</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label>Discapacidades</label>
-          <input type="text" formControlName="disabilities" placeholder="Ninguna">
-        </div>
-
-        <div class="field">
-          <label>Tipo de población</label>
-          <input type="text" formControlName="populationType" placeholder="Ej: Ninguna, Indígena, ROM...">
-        </div>
-
-        <div class="field">
-          <label>Régimen de salud</label>
-          <input type="text" formControlName="healthRegime" placeholder="Ej: Contributivo">
-        </div>
-
-        <div class="field">
-          <label>EPS</label>
-          <input type="text" formControlName="eps" placeholder="Ej: Sura">
-        </div>
-
-      </div>
-
-      <h3 class="section-title">Datos académicos</h3>
-      <div class="grid-2">
-
-        <div class="field full">
-          <label>Cargo</label>
-          <input type="text" formControlName="position" placeholder="Ej: Docente de Matemáticas">
-        </div>
-
-        <div class="field full">
-          <label>Asignaturas (separadas por comas)</label>
-          <input type="text" formControlName="asignaturas" placeholder="Ej: Biología, química, ciencias naturales">
-        </div>
-
-      </div>
-
-      <div class="field full">
-        <label>Título profesional</label>
-        <div class="titulo-row">
-          <input type="text" [(ngModel)]="tituloNuevo" [ngModelOptions]="{standalone: true}" placeholder="Título profesional">
-          <button type="button" class="btn-agregar" (click)="agregarTitulo()">+ Agregar</button>
-        </div>
-
-        <div class="titulos-lista" *ngIf="titulosProfesionales.length">
-          <span class="titulo-chip" *ngFor="let titulo of titulosProfesionales">
-            {{ titulo }}
-            <button type="button" (click)="quitarTitulo(titulo)">×</button>
-          </span>
-        </div>
-      </div>
-
-      <div class="field full">
-        <label>Observación</label>
-        <textarea formControlName="qualificationsDesc" placeholder="Nota adicional..."></textarea>
-      </div>
-
-      <div class="modal-footer">
-        <button type="button" class="btn-cancelar" (click)="cancelar()">Cancelar</button>
-        <button type="submit" class="btn-guardar">Guardar docente</button>
-      </div>
-
-    </form>
-
-    <form *ngIf="tipo === 'Estudiante'" [formGroup]="formEstudiante" class="modal-form" (ngSubmit)="guardarUsuario()">
-      <h3 class="section-title">Datos personales</h3>
-      <div class="grid-2">
-
-        <div class="field">
-          <label>Nombres</label>
-          <input type="text" formControlName="name" placeholder="Ej: Ana María">
-        </div>
-
-        <div class="field">
-          <label>Apellidos</label>
-          <input type="text" formControlName="surnames" placeholder="Ej: Pérez Gómez">
-        </div>
-
-        <div class="field">
-          <label>Tipo de documento</label>
-          <select formControlName="documentType">
-            <option *ngFor="let t of tiposDocumento" [value]="t">{{ t }}</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label>Documento</label>
-          <input type="text" formControlName="document" placeholder="Ej: 1098765432">
-        </div>
-
-        <div class="field">
-          <label>Lugar de expedición</label>
-          <input type="text" formControlName="documentIssuePlace" placeholder="Ej: Armenia">
-        </div>
-
-        <div class="field">
-          <label>Fecha de nacimiento</label>
-          <input type="date" formControlName="birthdate">
-        </div>
-
-        <div class="field">
-          <label>Género</label>
-          <select formControlName="gender">
-            <option value="" disabled>Seleccionar género</option>
-            <option *ngFor="let g of generos" [value]="g">{{ g }}</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label>Correo electrónico</label>
-          <input type="email" formControlName="email" placeholder="correo@institucion.edu">
-        </div>
-
-        <div class="field">
-          <label>Teléfono</label>
-          <input type="text" formControlName="phoneNumber" placeholder="Ej: 123456787">
-        </div>
-
-      </div>
-
-      <h3 class="section-title">Datos de salud y socioeconómicos</h3>
-      <div class="grid-2">
-
-        <div class="field">
-          <label>Dirección</label>
-          <input type="text" formControlName="address" placeholder="Ej: Calle 10 # 5-20">
-        </div>
-
-        <div class="field">
-          <label>Tipo de sangre</label>
-          <select formControlName="bloodType">
-            <option value="" disabled>Seleccionar</option>
-            <option *ngFor="let b of tiposSangre" [value]="b">{{ b }}</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label>Estrato</label>
-          <select formControlName="stratum">
-            <option value="" disabled>Seleccionar</option>
-            <option *ngFor="let e of estratos" [value]="e">{{ e }}</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label>Discapacidades</label>
-          <input type="text" formControlName="disabilities" placeholder="Ninguna">
-        </div>
-
-        <div class="field">
-          <label>Tipo de población</label>
-          <input type="text" formControlName="populationType" placeholder="Ej: Ninguna, Indígena, ROM...">
-        </div>
-
-        <div class="field">
-          <label>Régimen de salud</label>
-          <input type="text" formControlName="healthRegime" placeholder="Ej: Contributivo">
-        </div>
-
-        <div class="field">
-          <label>EPS</label>
-          <input type="text" formControlName="eps" placeholder="Ej: Sura">
-        </div>
-
-      </div>
-
-      <h3 class="section-title">Acudiente</h3>
-      <div class="grid-2">
-
-        <div class="field">
-          <label>Nombre del acudiente</label>
-          <input type="text" formControlName="guardianName" placeholder="Ej: Carlos Pérez">
-        </div>
-
-        <div class="field">
-          <label>Teléfono del acudiente</label>
-          <input type="text" formControlName="guardianPhone" placeholder="Ej: 3001234567">
-        </div>
-
-      </div>
-
-      <div class="modal-footer">
-        <button type="button" class="btn-cancelar" (click)="cancelar()">Cancelar</button>
-        <button type="submit" class="btn-guardar">Guardar estudiante</button>
-      </div>
-
-    </form>
-
-    <form *ngIf="tipo === 'Staff'" [formGroup]="formStaff" class="modal-form" (ngSubmit)="guardarUsuario()">
-
-      <h3 class="section-title">Datos personales</h3>
-      <div class="grid-2">
-
-        <div class="field">
-          <label>Nombres</label>
-          <input type="text" formControlName="name" placeholder="Ej: Ana María">
-        </div>
-
-        <div class="field">
-          <label>Apellidos</label>
-          <input type="text" formControlName="surnames" placeholder="Ej: Pérez Gómez">
-        </div>
-
-        <div class="field">
-          <label>Tipo de documento</label>
-          <select formControlName="documentType">
-            <option *ngFor="let t of tiposDocumento" [value]="t">{{ t }}</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label>Número de documento</label>
-          <input type="text" formControlName="document" placeholder="Ej: 123456709">
-        </div>
-
-        <div class="field">
-          <label>Lugar de expedición</label>
-          <input type="text" formControlName="documentIssuePlace" placeholder="Ej: Armenia">
-        </div>
-
-        <div class="field">
-          <label>Fecha de nacimiento</label>
-          <input type="date" formControlName="birthdate">
-        </div>
-
-        <div class="field">
-          <label>Género</label>
-          <select formControlName="gender">
-            <option value="" disabled>Seleccionar género</option>
-            <option *ngFor="let g of generos" [value]="g">{{ g }}</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label>Correo electrónico</label>
-          <input type="email" formControlName="email" placeholder="correo@institucion.edu">
-        </div>
-
-        <div class="field">
-          <label>Teléfono</label>
-          <input type="text" formControlName="phoneNumber" placeholder="Ej: 123456787">
-        </div>
-
-      </div>
-
-      <h3 class="section-title">Datos de salud y socioeconómicos</h3>
-      <div class="grid-2">
-
-        <div class="field">
-          <label>Dirección</label>
-          <input type="text" formControlName="address" placeholder="Ej: Calle 10 # 5-20">
-        </div>
-
-        <div class="field">
-          <label>Tipo de sangre</label>
-          <select formControlName="bloodType">
-            <option value="" disabled>Seleccionar</option>
-            <option *ngFor="let b of tiposSangre" [value]="b">{{ b }}</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label>Estrato</label>
-          <select formControlName="stratum">
-            <option value="" disabled>Seleccionar</option>
-            <option *ngFor="let e of estratos" [value]="e">{{ e }}</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label>Discapacidades</label>
-          <input type="text" formControlName="disabilities" placeholder="Ninguna">
-        </div>
-
-        <div class="field">
-          <label>Tipo de población</label>
-          <input type="text" formControlName="populationType" placeholder="Ej: Ninguna, Indígena, ROM...">
-        </div>
-
-        <div class="field">
-          <label>Régimen de salud</label>
-          <input type="text" formControlName="healthRegime" placeholder="Ej: Contributivo">
-        </div>
-
-        <div class="field">
-          <label>EPS</label>
-          <input type="text" formControlName="eps" placeholder="Ej: Sura">
-        </div>
-
-      </div>
-
-      <h3 class="section-title">Cargo y rol</h3>
-
-      <div class="field full">
-        <label>Cargo</label>
-        <input type="text" formControlName="position" placeholder="Ej: Coordinador académico, Rector...">
-      </div>
-
-      <div class="field full">
-        <label>Rol</label>
-        <div class="role-tabs">
-          <button
-            type="button"
-            *ngFor="let r of rolesStaff"
-            class="role-tab"
-            [class.active]="formStaff.value.idRole === r.idRole"
-            (click)="seleccionarRolStaff(r.idRole)"
-          >
-            {{ r.label }}
-          </button>
-        </div>
-      </div>
-
-      <div class="modal-footer">
-        <button type="button" class="btn-cancelar" (click)="cancelar()">Cancelar</button>
-        <button type="submit" class="btn-guardar">Guardar usuario</button>
-      </div>
-
-    </form>
+
+    <div
+      class="field"
+      [class.error]="campoInvalido('surnames')"
+    >
+      <label>Apellidos *</label>
+
+      <input
+        type="text"
+        formControlName="surnames"
+        placeholder="Ej: Pérez Gómez"
+      >
+
+      <small
+        class="error-msg"
+        *ngIf="campoInvalido('surnames')"
+      >
+        Los apellidos son obligatorios
+      </small>
+    </div>
+
+
+    <div
+      class="field"
+      [class.error]="campoInvalido('documentType')"
+    >
+      <label>Tipo de documento *</label>
+
+      <select formControlName="documentType">
+        <option
+          *ngFor="let t of tiposDocumento"
+          [value]="t"
+        >
+          {{ t }}
+        </option>
+      </select>
+
+      <small
+        class="error-msg"
+        *ngIf="campoInvalido('documentType')"
+      >
+        Selecciona un tipo de documento
+      </small>
+    </div>
+
+
+    <div
+      class="field"
+      [class.error]="campoInvalido('document')"
+    >
+      <label>Número de documento *</label>
+
+      <input
+        type="text"
+        formControlName="document"
+        placeholder="Ej: 123456709"
+      >
+
+      <small
+        class="error-msg"
+        *ngIf="campoInvalido('document')"
+      >
+        El número de documento es obligatorio
+      </small>
+    </div>
+
+
+    <div
+      class="field"
+      [class.error]="campoInvalido('documentIssuePlace')"
+    >
+      <label>Lugar de expedición *</label>
+
+      <input
+        type="text"
+        formControlName="documentIssuePlace"
+        placeholder="Ej: Armenia"
+      >
+
+      <small
+        class="error-msg"
+        *ngIf="campoInvalido('documentIssuePlace')"
+      >
+        El lugar de expedición es obligatorio
+      </small>
+    </div>
+
+
+    <div
+      class="field"
+      [class.error]="campoInvalido('birthdate')"
+    >
+      <label>Fecha de nacimiento *</label>
+
+      <input
+        type="date"
+        formControlName="birthdate"
+      >
+
+      <small
+        class="error-msg"
+        *ngIf="campoInvalido('birthdate')"
+      >
+        La fecha de nacimiento es obligatoria
+      </small>
+    </div>
+
+
+    <div
+      class="field"
+      [class.error]="campoInvalido('gender')"
+    >
+      <label>Género *</label>
+
+      <select formControlName="gender">
+        <option
+          value=""
+          disabled
+        >
+          Seleccionar género
+        </option>
+
+        <option
+          *ngFor="let g of generos"
+          [value]="g"
+        >
+          {{ g }}
+        </option>
+      </select>
+
+      <small
+        class="error-msg"
+        *ngIf="campoInvalido('gender')"
+      >
+        Selecciona un género
+      </small>
+    </div>
+
+
+    <div
+      class="field"
+      [class.error]="campoInvalido('email')"
+    >
+      <label>Correo electrónico *</label>
+
+      <input
+        type="email"
+        formControlName="email"
+        placeholder="correo@institucion.edu"
+      >
+
+      <small
+        class="error-msg"
+        *ngIf="campoInvalido('email')"
+      >
+        El correo electrónico es obligatorio
+      </small>
+    </div>
+
+
+    <div
+      class="field"
+      [class.error]="campoInvalido('phoneNumber')"
+    >
+      <label>Teléfono *</label>
+
+      <input
+        type="text"
+        formControlName="phoneNumber"
+        placeholder="Ej: 3001234567"
+      >
+
+      <small
+        class="error-msg"
+        *ngIf="campoInvalido('phoneNumber')"
+      >
+        El teléfono es obligatorio
+      </small>
+    </div>
 
   </div>
+
+
+  <h3 class="section-title">
+    Datos de salud y socioeconómicos
+  </h3>
+
+  <div class="grid-2">
+
+    <div
+      class="field"
+      [class.error]="campoInvalido('address')"
+    >
+      <label>Dirección *</label>
+
+      <input
+        type="text"
+        formControlName="address"
+        placeholder="Ej: Calle 10 # 5-20"
+      >
+
+      <small
+        class="error-msg"
+        *ngIf="campoInvalido('address')"
+      >
+        La dirección es obligatoria
+      </small>
+    </div>
+
+
+    <div
+      class="field"
+      [class.error]="campoInvalido('bloodType')"
+    >
+      <label>Tipo de sangre *</label>
+
+      <select formControlName="bloodType">
+
+        <option
+          value=""
+          disabled
+        >
+          Seleccionar
+        </option>
+
+        <option
+          *ngFor="let b of tiposSangre"
+          [value]="b"
+        >
+          {{ b }}
+        </option>
+
+      </select>
+
+      <small
+        class="error-msg"
+        *ngIf="campoInvalido('bloodType')"
+      >
+        Selecciona un tipo de sangre
+      </small>
+    </div>
+
+
+    <div
+      class="field"
+      [class.error]="campoInvalido('stratum')"
+    >
+      <label>Estrato *</label>
+
+      <select formControlName="stratum">
+
+        <option
+          value=""
+          disabled
+        >
+          Seleccionar
+        </option>
+
+        <option
+          *ngFor="let e of estratos"
+          [value]="e"
+        >
+          {{ e }}
+        </option>
+
+      </select>
+
+      <small
+        class="error-msg"
+        *ngIf="campoInvalido('stratum')"
+      >
+        Selecciona un estrato
+      </small>
+    </div>
+
+
+    <div class="field">
+      <label>Discapacidades</label>
+
+      <input
+        type="text"
+        formControlName="disabilities"
+        placeholder="Ninguna"
+      >
+    </div>
+
+
+    <div class="field">
+      <label>Tipo de población</label>
+
+      <input
+        type="text"
+        formControlName="populationType"
+        placeholder="Ej: Ninguna, Indígena, ROM..."
+      >
+    </div>
+
+
+    <div class="field">
+      <label>Régimen de salud</label>
+
+      <input
+        type="text"
+        formControlName="healthRegime"
+        placeholder="Ej: Contributivo"
+      >
+    </div>
+
+
+    <div class="field">
+      <label>EPS</label>
+
+      <input
+        type="text"
+        formControlName="eps"
+        placeholder="Ej: Sura"
+      >
+    </div>
+
+  </div>
+
+
+  <h3 class="section-title">
+    Datos académicos
+  </h3>
+
+  <div class="grid-2">
+
+    <div
+      class="field full"
+      [class.error]="campoInvalido('position')"
+    >
+      <label>Cargo *</label>
+
+      <input
+        type="text"
+        formControlName="position"
+        placeholder="Ej: Docente de Matemáticas"
+      >
+
+      <small
+        class="error-msg"
+        *ngIf="campoInvalido('position')"
+      >
+        El cargo es obligatorio
+      </small>
+    </div>
+
+
+    <div class="field full">
+      <label>
+        Asignaturas (separadas por comas)
+      </label>
+
+      <input
+        type="text"
+        formControlName="asignaturas"
+        placeholder="Ej: Biología, química, ciencias naturales"
+      >
+    </div>
+
+  </div>
+
+
+  <div class="field full">
+
+    <label>Título profesional</label>
+
+    <div class="titulo-row">
+
+      <input
+        type="text"
+        [(ngModel)]="tituloNuevo"
+        [ngModelOptions]="{standalone: true}"
+        placeholder="Título profesional"
+      >
+
+      <button
+        type="button"
+        class="btn-agregar"
+        (click)="agregarTitulo()"
+      >
+        + Agregar
+      </button>
+
+    </div>
+
+
+    <div
+      class="titulos-lista"
+      *ngIf="titulosProfesionales.length"
+    >
+
+      <span
+        class="titulo-chip"
+        *ngFor="let titulo of titulosProfesionales"
+      >
+
+        {{ titulo }}
+
+        <button
+          type="button"
+          (click)="quitarTitulo(titulo)"
+        >
+          ×
+        </button>
+
+      </span>
+
+    </div>
+
+  </div>
+
+
+  <div class="field full">
+
+    <label>Observación</label>
+
+    <textarea
+      formControlName="qualificationsDesc"
+      placeholder="Nota adicional..."
+    ></textarea>
+
+  </div>
+
+
+  <div class="modal-footer">
+
+    <button
+      type="button"
+      class="btn-cancelar"
+      (click)="cancelar()"
+    >
+      Cancelar
+    </button>
+
+    <button
+      type="submit"
+      class="btn-guardar"
+      [disabled]="guardando"
+    >
+      {{ guardando ? 'Guardando...' : 'Guardar docente' }}
+    </button>
+
+  </div>
+
+</form>
+
+
+
+<form
+  *ngIf="tipo === 'Estudiante'"
+  [formGroup]="formEstudiante"
+  class="modal-form"
+  (ngSubmit)="guardarUsuario()"
+>
+
+  <h3 class="section-title">Datos personales</h3>
+
+  <div class="grid-2">
+
+    <div
+      class="field"
+      [class.error]="campoInvalidoEstudiante('name')"
+    >
+      <label>Nombres *</label>
+
+      <input
+        type="text"
+        formControlName="name"
+        placeholder="Ej: Ana María"
+      >
+
+      <small
+        class="error-msg"
+        *ngIf="campoInvalidoEstudiante('name')"
+      >
+        El nombre es obligatorio
+      </small>
+    </div>
+
+
+    <div
+      class="field"
+      [class.error]="campoInvalidoEstudiante('surnames')"
+    >
+      <label>Apellidos *</label>
+
+      <input
+        type="text"
+        formControlName="surnames"
+        placeholder="Ej: Pérez Gómez"
+      >
+
+      <small
+        class="error-msg"
+        *ngIf="campoInvalidoEstudiante('surnames')"
+      >
+        Los apellidos son obligatorios
+      </small>
+    </div>
+
+
+    <div
+      class="field"
+      [class.error]="campoInvalidoEstudiante('documentType')"
+    >
+      <label>Tipo de documento *</label>
+
+      <select formControlName="documentType">
+
+        <option
+          *ngFor="let t of tiposDocumento"
+          [value]="t"
+        >
+          {{ t }}
+        </option>
+
+      </select>
+
+      <small
+        class="error-msg"
+        *ngIf="campoInvalidoEstudiante('documentType')"
+      >
+        Selecciona un tipo de documento
+      </small>
+    </div>
+
+
+    <div
+      class="field"
+      [class.error]="campoInvalidoEstudiante('document')"
+    >
+      <label>Documento *</label>
+
+      <input
+        type="text"
+        formControlName="document"
+        placeholder="Ej: 1098765432"
+      >
+
+      <small
+        class="error-msg"
+        *ngIf="campoInvalidoEstudiante('document')"
+      >
+        El documento es obligatorio
+      </small>
+    </div>
+
+
+    <div
+      class="field"
+      [class.error]="campoInvalidoEstudiante('documentIssuePlace')"
+    >
+      <label>Lugar de expedición *</label>
+
+      <input
+        type="text"
+        formControlName="documentIssuePlace"
+        placeholder="Ej: Armenia"
+      >
+
+      <small
+        class="error-msg"
+        *ngIf="campoInvalidoEstudiante('documentIssuePlace')"
+      >
+        El lugar de expedición es obligatorio
+      </small>
+    </div>
+
+
+    <div
+      class="field"
+      [class.error]="campoInvalidoEstudiante('birthdate')"
+    >
+      <label>Fecha de nacimiento *</label>
+
+      <input
+        type="date"
+        formControlName="birthdate"
+      >
+
+      <small
+        class="error-msg"
+        *ngIf="campoInvalidoEstudiante('birthdate')"
+      >
+        La fecha de nacimiento es obligatoria
+      </small>
+    </div>
+
+
+    <div
+      class="field"
+      [class.error]="campoInvalidoEstudiante('gender')"
+    >
+      <label>Género *</label>
+
+      <select formControlName="gender">
+
+        <option
+          value=""
+          disabled
+        >
+          Seleccionar género
+        </option>
+
+        <option
+          *ngFor="let g of generos"
+          [value]="g"
+        >
+          {{ g }}
+        </option>
+
+      </select>
+
+      <small
+        class="error-msg"
+        *ngIf="campoInvalidoEstudiante('gender')"
+      >
+        Selecciona un género
+      </small>
+    </div>
+
+
+    <div
+      class="field"
+      [class.error]="campoInvalidoEstudiante('email')"
+    >
+      <label>Correo electrónico *</label>
+
+      <input
+        type="email"
+        formControlName="email"
+        placeholder="correo@institucion.edu"
+      >
+
+      <small
+        class="error-msg"
+        *ngIf="campoInvalidoEstudiante('email')"
+      >
+        El correo electrónico es obligatorio
+      </small>
+    </div>
+
+
+    <div
+      class="field"
+      [class.error]="campoInvalidoEstudiante('phoneNumber')"
+    >
+      <label>Teléfono *</label>
+
+      <input
+        type="text"
+        formControlName="phoneNumber"
+        placeholder="Ej: 3001234567"
+      >
+
+      <small
+        class="error-msg"
+        *ngIf="campoInvalidoEstudiante('phoneNumber')"
+      >
+        El teléfono es obligatorio
+      </small>
+    </div>
+
+  </div>
+
+
+  <h3 class="section-title">
+    Datos de salud y socioeconómicos
+  </h3>
+
+  <div class="grid-2">
+
+    <div
+      class="field"
+      [class.error]="campoInvalidoEstudiante('address')"
+    >
+      <label>Dirección *</label>
+
+      <input
+        type="text"
+        formControlName="address"
+        placeholder="Ej: Calle 10 # 5-20"
+      >
+
+      <small
+        class="error-msg"
+        *ngIf="campoInvalidoEstudiante('address')"
+      >
+        La dirección es obligatoria
+      </small>
+    </div>
+
+
+    <div
+      class="field"
+      [class.error]="campoInvalidoEstudiante('bloodType')"
+    >
+      <label>Tipo de sangre *</label>
+
+      <select formControlName="bloodType">
+
+        <option
+          value=""
+          disabled
+        >
+          Seleccionar
+        </option>
+
+        <option
+          *ngFor="let b of tiposSangre"
+          [value]="b"
+        >
+          {{ b }}
+        </option>
+
+      </select>
+
+      <small
+        class="error-msg"
+        *ngIf="campoInvalidoEstudiante('bloodType')"
+      >
+        Selecciona un tipo de sangre
+      </small>
+    </div>
+
+
+    <div
+      class="field"
+      [class.error]="campoInvalidoEstudiante('stratum')"
+    >
+      <label>Estrato *</label>
+
+      <select formControlName="stratum">
+
+        <option
+          value=""
+          disabled
+        >
+          Seleccionar
+        </option>
+
+        <option
+          *ngFor="let e of estratos"
+          [value]="e"
+        >
+          {{ e }}
+        </option>
+
+      </select>
+
+      <small
+        class="error-msg"
+        *ngIf="campoInvalidoEstudiante('stratum')"
+      >
+        Selecciona un estrato
+      </small>
+    </div>
+
+
+    <div class="field">
+      <label>Discapacidades</label>
+
+      <input
+        type="text"
+        formControlName="disabilities"
+        placeholder="Ninguna"
+      >
+    </div>
+
+
+    <div class="field">
+      <label>Tipo de población</label>
+
+      <input
+        type="text"
+        formControlName="populationType"
+        placeholder="Ej: Ninguna, Indígena, ROM..."
+      >
+    </div>
+
+
+    <div class="field">
+      <label>Régimen de salud</label>
+
+      <input
+        type="text"
+        formControlName="healthRegime"
+        placeholder="Ej: Contributivo"
+      >
+    </div>
+
+
+    <div class="field">
+      <label>EPS</label>
+
+      <input
+        type="text"
+        formControlName="eps"
+        placeholder="Ej: Sura"
+      >
+    </div>
+
+  </div>
+
+
+  <h3 class="section-title">
+    Acudiente
+  </h3>
+
+  <div class="grid-2">
+
+    <div
+      class="field"
+      [class.error]="campoInvalidoEstudiante('guardianName')"
+    >
+      <label>Nombre del acudiente *</label>
+
+      <input
+        type="text"
+        formControlName="guardianName"
+        placeholder="Ej: Carlos Pérez"
+      >
+
+      <small
+        class="error-msg"
+        *ngIf="campoInvalidoEstudiante('guardianName')"
+      >
+        El nombre del acudiente es obligatorio
+      </small>
+    </div>
+
+
+    <div
+      class="field"
+      [class.error]="campoInvalidoEstudiante('guardianPhone')"
+    >
+      <label>Teléfono del acudiente *</label>
+
+      <input
+        type="text"
+        formControlName="guardianPhone"
+        placeholder="Ej: 3001234567"
+      >
+
+      <small
+        class="error-msg"
+        *ngIf="campoInvalidoEstudiante('guardianPhone')"
+      >
+        El teléfono del acudiente es obligatorio
+      </small>
+    </div>
+
+  </div>
+
+
+  <!-- BOTONES -->
+  <div class="modal-footer">
+
+    <button
+      type="button"
+      class="btn-cancelar"
+      (click)="cancelar()"
+    >
+      Cancelar
+    </button>
+
+    <button
+      type="submit"
+      class="btn-guardar"
+      [disabled]="guardando"
+    >
+      {{ guardando ? 'Guardando...' : 'Guardar estudiante' }}
+    </button>
+
+  </div>
+
+</form>
+
+
+
+<form
+  *ngIf="tipo === 'Staff'"
+  [formGroup]="formStaff"
+  class="modal-form"
+  (ngSubmit)="guardarUsuario()"
+>
+
+  <h3 class="section-title">
+    Datos personales
+  </h3>
+
+  <div class="grid-2">
+
+    <div
+      class="field"
+      [class.error]="campoInvalidoStaff('name')"
+    >
+      <label>Nombres *</label>
+
+      <input
+        type="text"
+        formControlName="name"
+        placeholder="Ej: Ana María"
+      >
+
+      <small
+        class="error-msg"
+        *ngIf="campoInvalidoStaff('name')"
+      >
+        El nombre es obligatorio
+      </small>
+    </div>
+
+
+    <div
+      class="field"
+      [class.error]="campoInvalidoStaff('surnames')"
+    >
+      <label>Apellidos *</label>
+
+      <input
+        type="text"
+        formControlName="surnames"
+        placeholder="Ej: Pérez Gómez"
+      >
+
+      <small
+        class="error-msg"
+        *ngIf="campoInvalidoStaff('surnames')"
+      >
+        Los apellidos son obligatorios
+      </small>
+    </div>
+
+
+    <div
+      class="field"
+      [class.error]="campoInvalidoStaff('documentType')"
+    >
+      <label>Tipo de documento *</label>
+
+      <select formControlName="documentType">
+
+        <option
+          *ngFor="let t of tiposDocumento"
+          [value]="t"
+        >
+          {{ t }}
+        </option>
+
+      </select>
+
+      <small
+        class="error-msg"
+        *ngIf="campoInvalidoStaff('documentType')"
+      >
+        Selecciona un tipo de documento
+      </small>
+    </div>
+
+
+    <div
+      class="field"
+      [class.error]="campoInvalidoStaff('document')"
+    >
+      <label>Número de documento *</label>
+
+      <input
+        type="text"
+        formControlName="document"
+        placeholder="Ej: 123456709"
+      >
+
+      <small
+        class="error-msg"
+        *ngIf="campoInvalidoStaff('document')"
+      >
+        El número de documento es obligatorio
+      </small>
+    </div>
+
+
+    <div
+      class="field"
+      [class.error]="campoInvalidoStaff('documentIssuePlace')"
+    >
+      <label>Lugar de expedición *</label>
+
+      <input
+        type="text"
+        formControlName="documentIssuePlace"
+        placeholder="Ej: Armenia"
+      >
+
+      <small
+        class="error-msg"
+        *ngIf="campoInvalidoStaff('documentIssuePlace')"
+      >
+        El lugar de expedición es obligatorio
+      </small>
+    </div>
+
+
+    <div
+      class="field"
+      [class.error]="campoInvalidoStaff('birthdate')"
+    >
+      <label>Fecha de nacimiento *</label>
+
+      <input
+        type="date"
+        formControlName="birthdate"
+      >
+
+      <small
+        class="error-msg"
+        *ngIf="campoInvalidoStaff('birthdate')"
+      >
+        La fecha de nacimiento es obligatoria
+      </small>
+    </div>
+
+
+    <div
+      class="field"
+      [class.error]="campoInvalidoStaff('gender')"
+    >
+      <label>Género *</label>
+
+      <select formControlName="gender">
+
+        <option
+          value=""
+          disabled
+        >
+          Seleccionar género
+        </option>
+
+        <option
+          *ngFor="let g of generos"
+          [value]="g"
+        >
+          {{ g }}
+        </option>
+
+      </select>
+
+      <small
+        class="error-msg"
+        *ngIf="campoInvalidoStaff('gender')"
+      >
+        Selecciona un género
+      </small>
+    </div>
+
+
+    <div
+      class="field"
+      [class.error]="campoInvalidoStaff('email')"
+    >
+      <label>Correo electrónico *</label>
+
+      <input
+        type="email"
+        formControlName="email"
+        placeholder="correo@institucion.edu"
+      >
+
+      <small
+        class="error-msg"
+        *ngIf="campoInvalidoStaff('email')"
+      >
+        El correo electrónico es obligatorio
+      </small>
+    </div>
+
+
+    <div
+      class="field"
+      [class.error]="campoInvalidoStaff('phoneNumber')"
+    >
+      <label>Teléfono *</label>
+
+      <input
+        type="text"
+        formControlName="phoneNumber"
+        placeholder="Ej: 3001234567"
+      >
+
+      <small
+        class="error-msg"
+        *ngIf="campoInvalidoStaff('phoneNumber')"
+      >
+        El teléfono es obligatorio
+      </small>
+    </div>
+
+  </div>
+
+
+  <h3 class="section-title">
+    Datos de salud y socioeconómicos
+  </h3>
+
+  <div class="grid-2">
+
+    <div
+      class="field"
+      [class.error]="campoInvalidoStaff('address')"
+    >
+      <label>Dirección *</label>
+
+      <input
+        type="text"
+        formControlName="address"
+        placeholder="Ej: Calle 10 # 5-20"
+      >
+
+      <small
+        class="error-msg"
+        *ngIf="campoInvalidoStaff('address')"
+      >
+        La dirección es obligatoria
+      </small>
+    </div>
+
+
+    <div
+      class="field"
+      [class.error]="campoInvalidoStaff('bloodType')"
+    >
+      <label>Tipo de sangre *</label>
+
+      <select formControlName="bloodType">
+
+        <option
+          value=""
+          disabled
+        >
+          Seleccionar
+        </option>
+
+        <option
+          *ngFor="let b of tiposSangre"
+          [value]="b"
+        >
+          {{ b }}
+        </option>
+
+      </select>
+
+      <small
+        class="error-msg"
+        *ngIf="campoInvalidoStaff('bloodType')"
+      >
+        Selecciona un tipo de sangre
+      </small>
+    </div>
+
+
+    <div
+      class="field"
+      [class.error]="campoInvalidoStaff('stratum')"
+    >
+      <label>Estrato *</label>
+
+      <select formControlName="stratum">
+
+        <option
+          value=""
+          disabled
+        >
+          Seleccionar
+        </option>
+
+        <option
+          *ngFor="let e of estratos"
+          [value]="e"
+        >
+          {{ e }}
+        </option>
+
+      </select>
+
+      <small
+        class="error-msg"
+        *ngIf="campoInvalidoStaff('stratum')"
+      >
+        Selecciona un estrato
+      </small>
+    </div>
+
+
+    <div class="field">
+      <label>Discapacidades</label>
+
+      <input
+        type="text"
+        formControlName="disabilities"
+        placeholder="Ninguna"
+      >
+    </div>
+
+
+    <div class="field">
+      <label>Tipo de población</label>
+
+      <input
+        type="text"
+        formControlName="populationType"
+        placeholder="Ej: Ninguna, Indígena, ROM..."
+      >
+    </div>
+
+
+    <div class="field">
+      <label>Régimen de salud</label>
+
+      <input
+        type="text"
+        formControlName="healthRegime"
+        placeholder="Ej: Contributivo"
+      >
+    </div>
+
+
+    <div class="field">
+      <label>EPS</label>
+
+      <input
+        type="text"
+        formControlName="eps"
+        placeholder="Ej: Sura"
+      >
+    </div>
+
+  </div>
+
+
+  <h3 class="section-title">
+    Cargo y rol
+  </h3>
+
+
+  <div
+    class="field full"
+    [class.error]="campoInvalidoStaff('position')"
+  >
+    <label>Cargo *</label>
+
+    <input
+      type="text"
+      formControlName="position"
+      placeholder="Ej: Coordinador académico, Rector..."
+    >
+
+    <small
+      class="error-msg"
+      *ngIf="campoInvalidoStaff('position')"
+    >
+      El cargo es obligatorio
+    </small>
+  </div>
+
+
+  <div
+    class="field full"
+    [class.error]="campoInvalidoStaff('idRole')"
+  >
+
+    <label>Rol *</label>
+
+    <div class="role-tabs">
+
+      <button
+        type="button"
+        *ngFor="let r of rolesStaff"
+        class="role-tab"
+        [class.active]="formStaff.value.idRole === r.idRole"
+        (click)="seleccionarRolStaff(r.idRole)"
+      >
+        {{ r.label }}
+      </button>
+
+    </div>
+
+    <small
+      class="error-msg"
+      *ngIf="campoInvalidoStaff('idRole')"
+    >
+      Selecciona un rol
+    </small>
+
+  </div>
+
+
+  <div class="modal-footer">
+
+    <button
+      type="button"
+      class="btn-cancelar"
+      (click)="cancelar()"
+    >
+      Cancelar
+    </button>
+
+    <button
+      type="submit"
+      class="btn-guardar"
+      [disabled]="guardando"
+    >
+      {{ guardando ? 'Guardando...' : 'Guardar usuario' }}
+    </button>
+
+  </div>
+
+</form>
+
+  </div>
+
 </div>

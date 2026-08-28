@@ -62,10 +62,11 @@ interface CursoFila {
 })
 export class HorariosComponent implements OnInit {
 
-  // ================= ESTADO GENERAL =================
+  // =========================================================
+  // ESTADO GENERAL
+  // =========================================================
 
   mostrarDatos = false;
-
   mostrarFormularioDocente = false;
   mostrarFormularioAsignatura = false;
   mostrarFormularioCurso = false;
@@ -75,8 +76,8 @@ export class HorariosComponent implements OnInit {
   editandoCurso = false;
 
   cargandoDatos = false;
-  errorCarga = '';
 
+  errorCarga = '';
   guardandoDocente = false;
   guardandoAsignatura = false;
   guardandoCurso = false;
@@ -88,7 +89,9 @@ export class HorariosComponent implements OnInit {
   imagenBoton = '';
 
 
-  // ================= DATOS =================
+  // =========================================================
+  // DATOS
+  // =========================================================
 
   docentes: DocenteFila[] = [];
   asignaturas: AsignaturaFila[] = [];
@@ -102,11 +105,19 @@ export class HorariosComponent implements OnInit {
   cursosDisponibles: CourseResponseDTO[] = [];
   asignaturasCatalogo: SubjectResponseDTO[] = [];
 
+  /**
+   * IDs de períodos disponibles.
+   * Se obtienen de los cursos existentes que devuelve el backend.
+   */
+  periodosDisponibles: number[] = [];
+
   private academicTeachersPorUsuario =
     new Map<number, AcademicTeacherResponseDTO>();
 
 
-  // ================= FORMULARIO DOCENTE =================
+  // =========================================================
+  // FORMULARIO DOCENTE
+  // =========================================================
 
   formularioDocente = {
     idAcademicLoad: 0,
@@ -119,7 +130,9 @@ export class HorariosComponent implements OnInit {
   };
 
 
-  // ================= FORMULARIO ASIGNATURA =================
+  // =========================================================
+  // FORMULARIO ASIGNATURA
+  // =========================================================
 
   formularioAsignatura = {
     idSubject: 0,
@@ -129,14 +142,24 @@ export class HorariosComponent implements OnInit {
   };
 
 
-  // ================= FORMULARIO CURSO =================
+  // =========================================================
+  // FORMULARIO CURSO
+  // =========================================================
 
-  formularioCurso = {
+  formularioCurso: {
+    idCourse: number;
+    idPeriod: number | null;
+    idLevel: number;
+    idShift: number;
+    homeroomTeacher: number | null;
+    nombre: string;
+    estudiantes: number;
+  } = {
     idCourse: 0,
-    idPeriod: 1,
+    idPeriod: null,
     idLevel: 1,
     idShift: 1,
-    homeroomTeacher: 0,
+    homeroomTeacher: null,
     nombre: '',
     estudiantes: 0
   };
@@ -147,6 +170,10 @@ export class HorariosComponent implements OnInit {
     private docentesService: DocentesService
   ) {}
 
+
+  // =========================================================
+  // INICIALIZACIÓN
+  // =========================================================
 
   ngOnInit(): void {
     this.cargarDatos();
@@ -179,10 +206,27 @@ export class HorariosComponent implements OnInit {
         cargas
       }) => {
 
+        // ================= DATOS PRINCIPALES =================
+
         this.docentesDisponibles = docentes.data ?? [];
         this.cursosDisponibles = cursos.data ?? [];
         this.asignaturasCatalogo = asignaturas.data ?? [];
 
+
+        // ================= PERÍODOS DISPONIBLES =================
+
+        this.periodosDisponibles = [
+          ...new Set(
+            this.cursosDisponibles
+              .map(curso => Number(curso.idPeriod))
+              .filter(
+                id => Number.isInteger(id) && id > 0
+              )
+          )
+        ].sort((a, b) => a - b);
+
+
+        // ================= MAPAS PARA RELACIONES =================
 
         const docentesPorId =
           new Map<number, TeachingResponseDTO>(
@@ -192,7 +236,6 @@ export class HorariosComponent implements OnInit {
             ])
           );
 
-
         const cursosPorId =
           new Map<number, CourseResponseDTO>(
             this.cursosDisponibles.map(curso => [
@@ -200,7 +243,6 @@ export class HorariosComponent implements OnInit {
               curso
             ])
           );
-
 
         const asignaturasPorId =
           new Map<number, SubjectResponseDTO>(
@@ -211,6 +253,8 @@ export class HorariosComponent implements OnInit {
           );
 
 
+        // ================= DOCENTES ACADÉMICOS =================
+
         this.academicTeachersPorUsuario =
           new Map<number, AcademicTeacherResponseDTO>(
             (academicTeachers.data ?? []).map(docente => [
@@ -218,7 +262,6 @@ export class HorariosComponent implements OnInit {
               docente
             ])
           );
-
 
         const academicTeacherPorId =
           new Map<number, AcademicTeacherResponseDTO>(
@@ -231,12 +274,14 @@ export class HorariosComponent implements OnInit {
 
         // ================= ASIGNATURAS =================
 
-        this.asignaturas = this.asignaturasCatalogo.map(asignatura => ({
-          idSubject: asignatura.idSubject,
-          nombre: asignatura.name,
-          descripcion: asignatura.description ?? '',
-          color: asignatura.color ?? '#347d1c'
-        }));
+        this.asignaturas = this.asignaturasCatalogo.map(
+          asignatura => ({
+            idSubject: asignatura.idSubject,
+            nombre: asignatura.name,
+            descripcion: asignatura.description ?? '',
+            color: asignatura.color ?? '#347d1c'
+          })
+        );
 
 
         // ================= CURSOS =================
@@ -285,7 +330,8 @@ export class HorariosComponent implements OnInit {
               return null;
             }
 
-            const curso = cursosPorId.get(carga.idCourse);
+            const curso =
+              cursosPorId.get(carga.idCourse);
 
             const asignatura =
               asignaturasPorId.get(carga.idSubject);
@@ -296,7 +342,6 @@ export class HorariosComponent implements OnInit {
               idUser: academicTeacher.idUser,
               idCourse: carga.idCourse,
               idSubject: carga.idSubject,
-
               nombre: docente.name,
               apellidos: docente.surnames,
 
@@ -311,14 +356,11 @@ export class HorariosComponent implements OnInit {
               maxDailyHours: academicTeacher.maxDailyHours,
               maxWeeklyHours: academicTeacher.maxWeeklyHours,
               horasSemanaArea: carga.weeklyHours
-
             } as DocenteFila;
-
           })
           .filter(
             (fila): fila is DocenteFila => fila !== null
           );
-
 
         this.cargandoDatos = false;
       },
@@ -334,7 +376,6 @@ export class HorariosComponent implements OnInit {
           err?.error?.message ||
           'No se pudo cargar la información desde el servidor.';
       }
-
     });
   }
 
@@ -475,22 +516,21 @@ export class HorariosComponent implements OnInit {
       this.academicTeachersPorUsuario.get(formulario.idUser);
 
 
-    const guardarDisponibilidad$ = academicTeacherExistente
-
-      ? this.horariosService.actualizarDocenteAcademico(
-          academicTeacherExistente.idAcademicTeacher,
-          {
+    const guardarDisponibilidad$ =
+      academicTeacherExistente
+        ? this.horariosService.actualizarDocenteAcademico(
+            academicTeacherExistente.idAcademicTeacher,
+            {
+              idUser: formulario.idUser,
+              maxDailyHours: formulario.maxDailyHours,
+              maxWeeklyHours: formulario.maxWeeklyHours
+            }
+          )
+        : this.horariosService.crearDocenteAcademico({
             idUser: formulario.idUser,
             maxDailyHours: formulario.maxDailyHours,
             maxWeeklyHours: formulario.maxWeeklyHours
-          }
-        )
-
-      : this.horariosService.crearDocenteAcademico({
-          idUser: formulario.idUser,
-          maxDailyHours: formulario.maxDailyHours,
-          maxWeeklyHours: formulario.maxWeeklyHours
-        });
+          });
 
 
     guardarDisponibilidad$.subscribe({
@@ -509,12 +549,10 @@ export class HorariosComponent implements OnInit {
 
 
         const guardarCarga$ = this.editandoDocente
-
           ? this.horariosService.actualizarCargaAcademica(
               formulario.idAcademicLoad,
               carga
             )
-
           : this.horariosService.crearCargaAcademica(carga);
 
 
@@ -529,6 +567,7 @@ export class HorariosComponent implements OnInit {
             this.cargarDatos();
           },
 
+
           error: (err) => {
 
             console.error('Error guardando carga:', err);
@@ -539,14 +578,16 @@ export class HorariosComponent implements OnInit {
               err?.error?.message ||
               'No se pudo guardar la información del docente.';
           }
-
         });
       },
 
 
       error: (err) => {
 
-        console.error('Error guardando docente académico:', err);
+        console.error(
+          'Error guardando docente académico:',
+          err
+        );
 
         this.guardandoDocente = false;
 
@@ -554,7 +595,6 @@ export class HorariosComponent implements OnInit {
           err?.error?.message ||
           'No se pudo guardar la disponibilidad del docente.';
       }
-
     });
   }
 
@@ -582,11 +622,13 @@ export class HorariosComponent implements OnInit {
         next: () => {
 
           this.docentes = this.docentes.filter(
-            item => item.idAcademicLoad !== docente.idAcademicLoad
+            item =>
+              item.idAcademicLoad !== docente.idAcademicLoad
           );
 
           this.docenteSeleccionado = null;
         },
+
 
         error: (err) => {
 
@@ -597,7 +639,6 @@ export class HorariosComponent implements OnInit {
             'No se pudo eliminar la asignación.'
           );
         }
-
       });
   }
 
@@ -606,7 +647,10 @@ export class HorariosComponent implements OnInit {
   // ASIGNATURAS
   // =========================================================
 
-  seleccionarAsignatura(asignatura: AsignaturaFila): void {
+  seleccionarAsignatura(
+    asignatura: AsignaturaFila
+  ): void {
+
     this.asignaturaSeleccionada = asignatura;
   }
 
@@ -668,20 +712,22 @@ export class HorariosComponent implements OnInit {
 
     const dto = {
       name: this.formularioAsignatura.nombre.trim(),
+
       description:
-        this.formularioAsignatura.descripcion.trim() || undefined,
+        this.formularioAsignatura.descripcion.trim() ||
+        undefined,
+
       color:
-        this.formularioAsignatura.color || undefined
+        this.formularioAsignatura.color ||
+        undefined
     };
 
 
     const peticion = this.editandoAsignatura
-
       ? this.horariosService.actualizarAsignatura(
           this.formularioAsignatura.idSubject,
           dto
         )
-
       : this.horariosService.crearAsignatura(dto);
 
 
@@ -696,6 +742,7 @@ export class HorariosComponent implements OnInit {
         this.cargarDatos();
       },
 
+
       error: (err) => {
 
         console.error('Error guardando asignatura:', err);
@@ -706,7 +753,6 @@ export class HorariosComponent implements OnInit {
           err?.error?.message ||
           'No se pudo guardar la asignatura.';
       }
-
     });
   }
 
@@ -719,7 +765,9 @@ export class HorariosComponent implements OnInit {
 
     const asignatura = this.asignaturaSeleccionada;
 
-    if (!confirm(`¿Deseas eliminar ${asignatura.nombre}?`)) {
+    if (!confirm(
+      `¿Deseas eliminar ${asignatura.nombre}?`
+    )) {
       return;
     }
 
@@ -730,22 +778,26 @@ export class HorariosComponent implements OnInit {
         next: () => {
 
           this.asignaturas = this.asignaturas.filter(
-            item => item.idSubject !== asignatura.idSubject
+            item =>
+              item.idSubject !== asignatura.idSubject
           );
 
           this.asignaturaSeleccionada = null;
         },
 
+
         error: (err) => {
 
-          console.error('Error eliminando asignatura:', err);
+          console.error(
+            'Error eliminando asignatura:',
+            err
+          );
 
           alert(
             err?.error?.message ||
             'No se pudo eliminar la asignatura.'
           );
         }
-
       });
   }
 
@@ -764,12 +816,17 @@ export class HorariosComponent implements OnInit {
     this.editandoCurso = false;
     this.errorFormularioCurso = '';
 
+    const primerPeriodoDisponible =
+      this.periodosDisponibles.length > 0
+        ? this.periodosDisponibles[0]
+        : null;
+
     this.formularioCurso = {
       idCourse: 0,
-      idPeriod: 1,
+      idPeriod: primerPeriodoDisponible,
       idLevel: 1,
       idShift: 1,
-      homeroomTeacher: 0,
+      homeroomTeacher: null,
       nombre: '',
       estudiantes: 0
     };
@@ -794,7 +851,7 @@ export class HorariosComponent implements OnInit {
       idPeriod: curso.idPeriod,
       idLevel: curso.idLevel,
       idShift: curso.idShift,
-      homeroomTeacher: curso.homeroomTeacher ?? 0,
+      homeroomTeacher: curso.homeroomTeacher,
       nombre: curso.nombre,
       estudiantes: curso.estudiantes
     };
@@ -811,114 +868,225 @@ export class HorariosComponent implements OnInit {
   }
 
 
-guardarCurso(): void {
-  this.errorFormularioCurso = '';
+  guardarCurso(): void {
 
-  const formulario = this.formularioCurso;
+    this.errorFormularioCurso = '';
 
-  // Validar nombre
-  const nombre = formulario.nombre?.trim();
+    const formulario = this.formularioCurso;
 
-  if (!nombre) {
-    this.errorFormularioCurso = 'El nombre del curso es obligatorio.';
-    return;
-  }
+    // ================= VALIDAR NOMBRE =================
 
-  // Convertir todos los valores explícitamente a número
-  const idPeriod = Number(formulario.idPeriod);
-  const idLevel = Number(formulario.idLevel);
-  const idShift = Number(formulario.idShift);
-  const estudiantes = Number(formulario.estudiantes);
+    const nombre = (formulario.nombre || '').trim();
 
-  // Validar periodo
-  if (!Number.isInteger(idPeriod) || idPeriod <= 0) {
-    this.errorFormularioCurso = 'Selecciona un periodo académico válido.';
-    return;
-  }
+    if (!nombre) {
 
-  // Validar nivel
-  if (!Number.isInteger(idLevel) || idLevel <= 0) {
-    this.errorFormularioCurso = 'Selecciona un nivel válido.';
-    return;
-  }
+      this.errorFormularioCurso =
+        'El nombre del curso es obligatorio.';
 
-  // Validar jornada
-  if (!Number.isInteger(idShift) || idShift <= 0) {
-    this.errorFormularioCurso = 'Selecciona una jornada válida.';
-    return;
-  }
-
-  // Validar estudiantes
-  if (
-    !Number.isInteger(estudiantes) ||
-    estudiantes < 0 ||
-    estudiantes > 32767
-  ) {
-    this.errorFormularioCurso =
-      'La cantidad de estudiantes debe ser un número entero entre 0 y 32.767.';
-    return;
-  }
-
-  /*
-   * IMPORTANTE:
-   * Si no hay docente seleccionado enviamos null.
-   * No enviamos 0 porque normalmente un ID 0 no existe en la base de datos.
-   */
-  const docenteSeleccionado = Number(formulario.homeroomTeacher);
-
-  const dto: CourseRequestDTO = {
-    idPeriod,
-    idLevel,
-    idShift,
-    homeroomTeacher:
-      Number.isInteger(docenteSeleccionado) && docenteSeleccionado > 0
-        ? docenteSeleccionado
-        : null,
-    name: nombre,
-    studentCount: estudiantes
-  };
-
-  console.log('Curso enviado al backend:', dto);
-
-  this.guardandoCurso = true;
-
-  const peticion = this.editandoCurso
-    ? this.horariosService.actualizarCurso(formulario.idCourse, dto)
-    : this.horariosService.crearCurso(dto);
-
-  peticion.subscribe({
-    next: () => {
-      this.guardandoCurso = false;
-      this.mostrarFormularioCurso = false;
-      this.cursoSeleccionado = null;
-
-      // Recargar la información desde la base de datos
-      this.cargarDatos();
-    },
-
-    error: (err) => {
-      this.guardandoCurso = false;
-
-      console.error('Error completo al guardar curso:', err);
-      console.error('Respuesta del servidor:', err?.error);
-      console.error('Datos enviados:', dto);
-
-      if (err.status === 500) {
-        this.errorFormularioCurso =
-          err?.error?.message ||
-          'El servidor presentó un error al registrar el curso.';
-      } else if (err.status === 400) {
-        this.errorFormularioCurso =
-          err?.error?.message ||
-          'Los datos enviados no son válidos.';
-      } else {
-        this.errorFormularioCurso =
-          err?.error?.message ||
-          'No se pudo guardar el curso.';
-      }
+      return;
     }
-  });
-}
+
+
+    // ================= VALIDAR PERÍODO =================
+
+    if (
+      formulario.idPeriod === null ||
+      formulario.idPeriod === undefined
+    ) {
+
+      this.errorFormularioCurso =
+        'Selecciona un período académico.';
+
+      return;
+    }
+
+    const idPeriod = Number(formulario.idPeriod);
+    const idLevel = Number(formulario.idLevel);
+    const idShift = Number(formulario.idShift);
+    const estudiantes = Number(formulario.estudiantes);
+
+
+    if (
+      !Number.isInteger(idPeriod) ||
+      idPeriod <= 0
+    ) {
+
+      this.errorFormularioCurso =
+        'Selecciona un período académico válido.';
+
+      return;
+    }
+
+
+    // Verificar que el período sea uno conocido
+    if (
+      this.periodosDisponibles.length > 0 &&
+      !this.periodosDisponibles.includes(idPeriod)
+    ) {
+
+      this.errorFormularioCurso =
+        'El período seleccionado no existe. Selecciona un período válido.';
+
+      return;
+    }
+
+
+    // ================= VALIDAR NIVEL =================
+
+    if (![1, 2, 3].includes(idLevel)) {
+
+      this.errorFormularioCurso =
+        'Selecciona un nivel válido.';
+
+      return;
+    }
+
+
+    // ================= VALIDAR JORNADA =================
+
+    if (![1, 2].includes(idShift)) {
+
+      this.errorFormularioCurso =
+        'Selecciona una jornada válida.';
+
+      return;
+    }
+
+
+    // ================= VALIDAR ESTUDIANTES =================
+
+    if (
+      !Number.isInteger(estudiantes) ||
+      estudiantes < 0 ||
+      estudiantes > 32767
+    ) {
+
+      this.errorFormularioCurso =
+        'La cantidad de estudiantes debe estar entre 0 y 32.767.';
+
+      return;
+    }
+
+
+    // ================= DOCENTE TITULAR =================
+
+    const homeroomTeacher =
+      formulario.homeroomTeacher !== null &&
+      Number(formulario.homeroomTeacher) > 0
+        ? Number(formulario.homeroomTeacher)
+        : null;
+
+
+    // ================= CREAR DTO =================
+
+    const dto: CourseRequestDTO = {
+      idPeriod,
+      idLevel,
+      idShift,
+      homeroomTeacher,
+      name: nombre,
+      studentCount: estudiantes
+    };
+
+
+    console.log('======================================');
+    console.log('CURSO QUE SE ENVÍA AL BACKEND');
+    console.log(JSON.stringify(dto, null, 2));
+    console.log('======================================');
+
+
+    this.guardandoCurso = true;
+
+
+    const peticion = this.editandoCurso
+      ? this.horariosService.actualizarCurso(
+          formulario.idCourse,
+          dto
+        )
+      : this.horariosService.crearCurso(dto);
+
+
+    peticion.subscribe({
+
+      next: (respuesta) => {
+
+        console.log(
+          'Curso guardado correctamente:',
+          respuesta
+        );
+
+        this.guardandoCurso = false;
+        this.mostrarFormularioCurso = false;
+        this.cursoSeleccionado = null;
+
+        this.cargarDatos();
+      },
+
+
+      error: (err) => {
+
+        this.guardandoCurso = false;
+
+        console.error('======================================');
+        console.error('ERROR AL GUARDAR CURSO');
+        console.error('Status:', err.status);
+        console.error('Respuesta completa:', err);
+        console.error('Respuesta del backend:', err.error);
+        console.error('DTO enviado:', dto);
+        console.error('======================================');
+
+
+        let mensaje = '';
+
+        if (typeof err?.error === 'string') {
+          mensaje = err.error;
+
+        } else if (err?.error?.message) {
+          mensaje = err.error.message;
+
+        } else if (err?.error?.error) {
+          mensaje = err.error.error;
+
+        } else if (err?.message) {
+          mensaje = err.message;
+        }
+
+
+        if (
+          mensaje.toLowerCase().includes('fk_course_period') ||
+          mensaje.toLowerCase().includes('academic_period') ||
+          mensaje.toLowerCase().includes('foreign key')
+        ) {
+
+          this.errorFormularioCurso =
+            'El período seleccionado no existe. Selecciona un período válido.';
+
+        } else if (err.status === 500) {
+
+          this.errorFormularioCurso =
+            mensaje ||
+            'El servidor no pudo registrar el curso.';
+
+        } else if (err.status === 400) {
+
+          this.errorFormularioCurso =
+            mensaje ||
+            'Los datos del curso no son válidos.';
+
+        } else if (err.status === 401) {
+
+          this.errorFormularioCurso =
+            'Tu sesión ha expirado. Inicia sesión nuevamente.';
+
+        } else {
+
+          this.errorFormularioCurso =
+            mensaje ||
+            'No se pudo guardar el curso. Inténtalo nuevamente.';
+        }
+      }
+    });
+  }
 
 
   eliminarCurso(): void {
@@ -929,9 +1097,12 @@ guardarCurso(): void {
 
     const curso = this.cursoSeleccionado;
 
-    if (!confirm(`¿Deseas eliminar el curso ${curso.nombre}?`)) {
+    if (!confirm(
+      `¿Deseas eliminar el curso ${curso.nombre}?`
+    )) {
       return;
     }
+
 
     this.horariosService
       .eliminarCurso(curso.idCourse)
@@ -940,16 +1111,29 @@ guardarCurso(): void {
         next: () => {
 
           this.cursos = this.cursos.filter(
-            item => item.idCourse !== curso.idCourse
+            item =>
+              item.idCourse !== curso.idCourse
           );
 
           this.cursosDisponibles =
             this.cursosDisponibles.filter(
-              item => item.idCourse !== curso.idCourse
+              item =>
+                item.idCourse !== curso.idCourse
             );
 
           this.cursoSeleccionado = null;
+
+          this.periodosDisponibles = [
+            ...new Set(
+              this.cursosDisponibles
+                .map(item => Number(item.idPeriod))
+                .filter(
+                  id => Number.isInteger(id) && id > 0
+                )
+            )
+          ].sort((a, b) => a - b);
         },
+
 
         error: (err) => {
 
@@ -960,8 +1144,6 @@ guardarCurso(): void {
             'No se pudo eliminar el curso.'
           );
         }
-
       });
   }
-
 }
