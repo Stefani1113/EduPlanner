@@ -73,6 +73,7 @@ public class AcademicLevelController {
         }
     }
 
+    
     /**
      * Editar nivel
      * @param id
