@@ -6,7 +6,7 @@ import lombok.Data;
 
 import java.time.LocalDate;
 
-/** HU 4.2 - Registrar tardanzas y salidas anticipadas (y asistencia en general) */
+/** HU 4.2 - Registrar tardanzas y salidas anticipadas y asistencia en general */
 @Data
 public class AttendanceRequestDTO {
 

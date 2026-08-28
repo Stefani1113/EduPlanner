@@ -10,7 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-/** HU 4.2 - Registrar tardanzas y salidas anticipadas. Base: /eduplanner/attendance */
+/** HU 4.2 - Registrar tardanzas y salidas anticipadas 
+ * endpoints /eduplanner/attendance */
 @RestController
 @RequestMapping("/attendance")
 @RequiredArgsConstructor
@@ -24,7 +25,7 @@ public class AttendanceController {
         HttpGlobalResponse<AttendanceResponseDTO> r = new HttpGlobalResponse<>();
         try {
             r.setData(service.registerAttendance(req));
-            r.setMessage("Asistencia registrada con éxito");
+            r.setMessage("Asistencia registrada conrrectamente ");
             return ResponseEntity.status(HttpStatus.CREATED).body(r);
         } catch (IllegalArgumentException e) {
             r.setMessage(e.getMessage());
@@ -38,7 +39,7 @@ public class AttendanceController {
         HttpGlobalResponse<AttendanceResponseDTO> r = new HttpGlobalResponse<>();
         try {
             r.setData(service.updateAttendance(id, req));
-            r.setMessage("Asistencia actualizada con éxito");
+            r.setMessage("Asistencia actualizada correctamente ");
             return ResponseEntity.ok(r);
         } catch (RuntimeException e) {
             r.setMessage(e.getMessage());
