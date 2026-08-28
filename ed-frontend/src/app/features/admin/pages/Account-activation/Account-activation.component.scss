@@ -1,17 +1,17 @@
 .activation-page {
   min-height: 100vh;
-  background: #f6f8f7;
-  display: flex;
+  background: #161616;
+  display: flex; 
   flex-direction: column;
 }
 
 .header {
   height: 70px;
-  background: #ffffff;
+  background: #1B1C1C;
   display: flex;
   align-items: center;
   padding: 0 50px;
-  border-bottom: 1px solid #e8ece9;
+  border-bottom: 1px solid #278d00;;
 }
 
 .logo-container img {
@@ -29,7 +29,7 @@
 .activation-card {
   width: 100%;
   max-width: 520px;
-  background: #ffffff;
+  background: #1B1C1C;
   border-radius: 20px;
   padding: 42px;
   box-shadow: 0 15px 45px rgba(0, 0, 0, 0.08);
@@ -48,7 +48,7 @@
 .activation-header h1 {
   margin: 0;
   font-size: 32px;
-  color: #202020;
+  color: #ffffff;
 }
 
 .activation-header h1 span {
@@ -105,13 +105,14 @@
 }
 
 .security-container {
-  background: #f7faf8;
+  background: #282928;
   border-radius: 12px;
   padding: 18px;
   margin-bottom: 22px;
 }
 
 .security-header {
+  color: #777;
   display: flex;
   justify-content: space-between;
   margin-bottom: 10px;
@@ -120,7 +121,7 @@
 
 .security-bar {
   height: 7px;
-  background: #e4e8e5;
+  background: #1B1C1C;
   border-radius: 10px;
   overflow: hidden;
 }
@@ -206,23 +207,40 @@
 }
 
 .error-message {
-  background: #fff0f0;
+  background: #1B1C1C;
   color: #c73636;
 }
 
 .success-message {
-  background: #eef9e9;
+  background: #1B1C1C;
   color: #3e9517;
 }
 
 .footer {
   padding: 25px;
   text-align: center;
-  background: #ffffff;
+  background: #1B1C1C;
 }
 
 .footer img {
   width: 120px;
+}
+
+.password-container input {
+  width: 100%;
+  height: 50px;
+  padding: 0 95px 0 15px;
+  border: 1px solid #1B1C1C;
+  border-radius: 10px;
+  outline: none;
+  font-size: 15px;
+  box-sizing: border-box;
+  background: #161616;
+  color: #333;
+}
+
+.password-container input::placeholder {
+  color: #9a9a9a;
 }
 
 @media (max-width: 600px) {
