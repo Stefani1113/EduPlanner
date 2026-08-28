@@ -2,7 +2,7 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import {
-  TeachingRequestDTO,
+  RegisterTeacherDTO,
   RegisterStudentDTO,
   RegisterStaffDTO,
   ID_ROL_ADMINISTRADOR,
@@ -15,7 +15,7 @@ const ID_INSTITUCION = 1;
 
 export interface RegistroDocenteEvento {
   tipo: 'Docente';
-  payload: TeachingRequestDTO;
+  payload: RegisterTeacherDTO;
 }
 
 export interface RegistroEstudianteEvento {
@@ -206,7 +206,7 @@ export class RegistroUsuarioModalComponent implements OnInit {
     if (v.asignaturas) notas.push(`Asignaturas: ${v.asignaturas}`);
     if (v.qualificationsDesc) notas.push(v.qualificationsDesc);
 
-    const payload: TeachingRequestDTO = {
+    const payload: RegisterTeacherDTO = {
       name: v.name,
       surnames: v.surnames,
       email: v.email,
@@ -215,7 +215,6 @@ export class RegistroUsuarioModalComponent implements OnInit {
       documentIssuePlace: v.documentIssuePlace || undefined,
       birthdate: v.birthdate,
       phoneNumber: v.phoneNumber || undefined,
-      photoUrl: undefined,
       professionalDegrees: this.titulosProfesionales.join(', ') || v.position,
       qualificationsDesc: notas.join(' | ') || undefined,
       gender: v.gender,
@@ -226,8 +225,7 @@ export class RegistroUsuarioModalComponent implements OnInit {
       populationType: v.populationType || undefined,
       healthRegime: v.healthRegime || undefined,
       eps: v.eps || undefined,
-      position: v.position,
-      idInstitution: ID_INSTITUCION
+      position: v.position
     };
 
     this.guardar.emit({ tipo: 'Docente', payload });
