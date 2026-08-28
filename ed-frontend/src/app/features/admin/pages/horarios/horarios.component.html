@@ -4,6 +4,7 @@
   (click)="abrirDatos()">
 
   <span class="icono-datos">
+
     <img
       *ngIf="imagenBoton"
       [src]="imagenBoton"
@@ -15,8 +16,12 @@
       *ngIf="!imagenBoton"
       src="assets/img/IA.png"
       alt="Datos">
+
   </span>
+
 </button>
+
+
 
 <div
   class="datos-overlay"
@@ -24,9 +29,12 @@
   (click)="cerrarDatos()">
 </div>
 
+
+
 <aside
   class="panel-datos"
   [class.panel-abierto]="mostrarDatos">
+
 
   <div class="panel-datos-header">
 
@@ -35,58 +43,51 @@
         ADMINISTRACIÓN
       </span>
 
-      <h2>
-        Datos
-      </h2>
+      <h2>Datos</h2>
     </div>
 
     <button
       type="button"
       class="btn-cerrar-panel"
       (click)="cerrarDatos()">
-
       ×
-
     </button>
 
   </div>
 
+
+
   <div
     *ngIf="errorCarga"
     class="mensaje-error">
-
     {{ errorCarga }}
-
   </div>
+
+
 
   <div
     *ngIf="cargandoDatos"
     class="mensaje-carga">
-
     Cargando información...
-
   </div>
 
-  <!-- ================= DOCENTES ================= -->
+
 
   <section class="datos-card">
 
     <div class="datos-card-header">
 
-      <h3>
-        Datos de Docentes
-      </h3>
+      <h3>Datos de Docentes</h3>
 
       <button
         type="button"
         class="btn-agregar"
         (click)="abrirAgregarDocente()">
-
         + Agregar
-
       </button>
 
     </div>
+
 
     <div class="tabla-scroll">
 
@@ -101,6 +102,7 @@
           </tr>
         </thead>
 
+
         <tbody>
 
           <tr
@@ -111,10 +113,11 @@
             ">
 
             <td>
+
               <div class="docente-nombre">
 
                 <div class="docente-avatar">
-                  {{ docente.nombre.charAt(0) }}
+                  {{ docente.nombre?.charAt(0) || '?' }}
                 </div>
 
                 <span>
@@ -122,26 +125,28 @@
                 </span>
 
               </div>
+
             </td>
 
-            <td>
-              {{ docente.area }}
-            </td>
+            <td>{{ docente.area }}</td>
 
-            <td>
-              {{ docente.curso }}
-            </td>
+            <td>{{ docente.curso }}</td>
 
-            <td>
-              {{ docente.horasSemanaArea }} H
-            </td>
+            <td>{{ docente.horasSemanaArea }} H</td>
 
           </tr>
 
+
           <tr *ngIf="!cargandoDatos && docentes.length === 0">
-            <td colspan="4" class="sin-registros">
+
+            <td
+              colspan="4"
+              class="sin-registros">
+
               No hay docentes registrados.
+
             </td>
+
           </tr>
 
         </tbody>
@@ -149,6 +154,7 @@
       </table>
 
     </div>
+
 
     <div class="acciones-datos">
 
@@ -161,6 +167,7 @@
         ✎ Editar
 
       </button>
+
 
       <button
         type="button"
@@ -176,15 +183,12 @@
 
   </section>
 
-  <!-- ================= ASIGNATURAS ================= -->
 
   <section class="datos-card">
 
     <div class="datos-card-header">
 
-      <h3>
-        Datos de Asignaturas
-      </h3>
+      <h3>Datos de Asignaturas</h3>
 
       <button
         type="button"
@@ -197,6 +201,7 @@
 
     </div>
 
+
     <div class="tabla-scroll">
 
       <table class="tabla-datos">
@@ -208,6 +213,7 @@
           </tr>
         </thead>
 
+
         <tbody>
 
           <tr
@@ -218,12 +224,14 @@
             ">
 
             <td>
+
               <span
                 class="punto-color"
                 [style.background]="asignatura.color">
               </span>
 
               {{ asignatura.nombre }}
+
             </td>
 
             <td>
@@ -232,10 +240,18 @@
 
           </tr>
 
-          <tr *ngIf="!cargandoDatos && asignaturas.length === 0">
-            <td colspan="2" class="sin-registros">
+
+          <tr
+            *ngIf="!cargandoDatos && asignaturas.length === 0">
+
+            <td
+              colspan="2"
+              class="sin-registros">
+
               No hay asignaturas registradas.
+
             </td>
+
           </tr>
 
         </tbody>
@@ -243,6 +259,7 @@
       </table>
 
     </div>
+
 
     <div class="acciones-datos">
 
@@ -255,6 +272,7 @@
         ✎ Editar
 
       </button>
+
 
       <button
         type="button"
@@ -270,15 +288,12 @@
 
   </section>
 
-  <!-- ================= CURSOS ================= -->
 
   <section class="datos-card">
 
     <div class="datos-card-header">
 
-      <h3>
-        Datos de Cursos
-      </h3>
+      <h3>Datos de Cursos</h3>
 
       <button
         type="button"
@@ -290,6 +305,7 @@
       </button>
 
     </div>
+
 
     <div class="tabla-scroll">
 
@@ -303,6 +319,7 @@
           </tr>
         </thead>
 
+
         <tbody>
 
           <tr
@@ -312,24 +329,28 @@
               cursoSeleccionado?.idCourse === curso.idCourse
             ">
 
-            <td>
-              {{ curso.nombre }}
-            </td>
+            <td>{{ curso.nombre }}</td>
 
             <td>
-              {{ curso.docenteTitular }}
+              {{ curso.docenteTitular || 'Sin asignar' }}
             </td>
 
-            <td>
-              {{ curso.estudiantes }}
-            </td>
+            <td>{{ curso.estudiantes }}</td>
 
           </tr>
 
-          <tr *ngIf="!cargandoDatos && cursos.length === 0">
-            <td colspan="3" class="sin-registros">
+
+          <tr
+            *ngIf="!cargandoDatos && cursos.length === 0">
+
+            <td
+              colspan="3"
+              class="sin-registros">
+
               No hay cursos registrados todavía.
+
             </td>
+
           </tr>
 
         </tbody>
@@ -337,6 +358,7 @@
       </table>
 
     </div>
+
 
     <div class="acciones-datos">
 
@@ -349,6 +371,7 @@
         ✎ Editar
 
       </button>
+
 
       <button
         type="button"
@@ -366,7 +389,6 @@
 
 </aside>
 
-<!-- ================= MODAL DOCENTE ================= -->
 
 <div
   class="modal-overlay"
@@ -386,10 +408,15 @@
         </span>
 
         <h2>
-          {{ editandoDocente ? 'Editar información' : 'Agregar información del docente' }}
+          {{
+            editandoDocente
+              ? 'Editar información'
+              : 'Agregar información del docente'
+          }}
         </h2>
 
       </div>
+
 
       <button
         type="button"
@@ -402,6 +429,7 @@
 
     </div>
 
+
     <div
       *ngIf="errorFormularioDocente"
       class="mensaje-error">
@@ -410,7 +438,9 @@
 
     </div>
 
+
     <div class="form-grid">
+
 
       <div class="campo campo-completo">
 
@@ -418,7 +448,7 @@
 
         <select [(ngModel)]="formularioDocente.idUser">
 
-          <option [ngValue]="null">
+          <option [ngValue]="0">
             Selecciona un docente
           </option>
 
@@ -433,6 +463,8 @@
         </select>
 
       </div>
+
+
 
       <div class="campo">
 
@@ -456,6 +488,8 @@
 
       </div>
 
+
+
       <div class="campo">
 
         <label>Asignatura</label>
@@ -478,6 +512,8 @@
 
       </div>
 
+
+
       <div class="campo">
 
         <label>Máximo horas diarias</label>
@@ -489,6 +525,8 @@
 
       </div>
 
+
+
       <div class="campo">
 
         <label>Máximo horas semanales</label>
@@ -499,6 +537,8 @@
           [(ngModel)]="formularioDocente.maxWeeklyHours">
 
       </div>
+
+
 
       <div class="campo campo-completo">
 
@@ -513,6 +553,7 @@
 
     </div>
 
+
     <div class="modal-acciones">
 
       <button
@@ -524,6 +565,7 @@
         Cancelar
 
       </button>
+
 
       <button
         type="button"
@@ -547,7 +589,6 @@
 
 </div>
 
-<!-- ================= MODAL ASIGNATURA ================= -->
 
 <div
   class="modal-overlay"
@@ -567,10 +608,15 @@
         </span>
 
         <h2>
-          {{ editandoAsignatura ? 'Editar información' : 'Registrar asignatura' }}
+          {{
+            editandoAsignatura
+              ? 'Editar información'
+              : 'Registrar asignatura'
+          }}
         </h2>
 
       </div>
+
 
       <button
         type="button"
@@ -593,12 +639,14 @@
 
     <div class="form-grid">
 
+
       <div class="campo campo-completo">
 
         <label>Nombre de la asignatura</label>
 
         <input
           type="text"
+          maxlength="100"
           [(ngModel)]="formularioAsignatura.nombre"
           placeholder="Ej. Matemáticas">
 
@@ -627,6 +675,7 @@
 
     </div>
 
+
     <div class="modal-acciones">
 
       <button
@@ -638,6 +687,7 @@
         Cancelar
 
       </button>
+
 
       <button
         type="button"
@@ -661,7 +711,6 @@
 
 </div>
 
-<!-- ================= MODAL CURSO ================= -->
 
 <div
   class="modal-overlay"
@@ -681,7 +730,11 @@
         </span>
 
         <h2>
-          {{ editandoCurso ? 'Editar información' : 'Registrar curso' }}
+          {{
+            editandoCurso
+              ? 'Editar información'
+              : 'Registrar curso'
+          }}
         </h2>
 
       </div>
@@ -723,35 +776,77 @@
 
         <label>Periodo académico</label>
 
-        <input
-          type="number"
-          min="1"
-          [(ngModel)]="formularioCurso.idPeriod">
+        <select [(ngModel)]="formularioCurso.idPeriod">
+
+          <option [ngValue]="null">
+            Selecciona un período
+          </option>
+
+          <option
+            *ngFor="let periodo of periodosDisponibles"
+            [ngValue]="periodo">
+
+            Período {{ periodo }}
+
+          </option>
+
+        </select>
+
+        <small
+          *ngIf="periodosDisponibles.length === 0"
+          class="texto-ayuda">
+
+          No hay períodos académicos disponibles.
+
+        </small>
 
       </div>
+
+
 
       <div class="campo">
 
         <label>Nivel</label>
 
         <select [(ngModel)]="formularioCurso.idLevel">
-          <option [ngValue]="1">Primaria</option>
-          <option [ngValue]="2">Secundaria</option>
-          <option [ngValue]="3">Media</option>
+
+          <option [ngValue]="1">
+            Primaria
+          </option>
+
+          <option [ngValue]="2">
+            Secundaria
+          </option>
+
+          <option [ngValue]="3">
+            Media
+          </option>
+
         </select>
 
       </div>
+
+
 
       <div class="campo">
 
         <label>Jornada</label>
 
         <select [(ngModel)]="formularioCurso.idShift">
-          <option [ngValue]="1">Diurna</option>
-          <option [ngValue]="2">Nocturna</option>
+
+          <option [ngValue]="1">
+            Diurna
+          </option>
+
+          <option [ngValue]="2">
+            Nocturna
+          </option>
+
         </select>
 
       </div>
+
+
 
       <div class="campo">
 
@@ -765,13 +860,15 @@
 
       </div>
 
+
+
       <div class="campo campo-completo">
 
         <label>Docente titular</label>
 
         <select [(ngModel)]="formularioCurso.homeroomTeacher">
 
-          <option [ngValue]="0">
+          <option [ngValue]="null">
             Sin asignar
           </option>
 
@@ -789,6 +886,8 @@
 
     </div>
 
+
+
     <div class="modal-acciones">
 
       <button
@@ -800,6 +899,7 @@
         Cancelar
 
       </button>
+
 
       <button
         type="button"
@@ -821,4 +921,4 @@
 
   </div>
 
-</div>
+</div> 
