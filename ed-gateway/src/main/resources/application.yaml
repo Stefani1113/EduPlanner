@@ -80,6 +80,7 @@ security:
     - /autenticacion/eduplanner/auth/login
     - /autenticacion/eduplanner/auth/forgot-password
     - /autenticacion/eduplanner/auth/reset-password
+    - /autenticacion/eduplanner/auth/activation-account
 
 logging:
   level:
