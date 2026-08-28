@@ -70,11 +70,14 @@ public class AttendanceService {
 
     /** HU 4.4 - Paso 1: ingresar la justificación de una falta ya registrada */
     public AttendanceResponseDTO submitJustification(Integer id, JustificationRequestDTO req) {
-        Attendance a = getOrThrow(id);
+        Attendance a = getOrThrow(id); 
 
-        if (a.getAttendanceStatus() != AttendanceStatus.ABSENT) {
-            throw new IllegalArgumentException(
-                    "Solo se puede justificar un registro con estado ABSENT (falta)");
+
+        if (a.getAttendanceStatus() != AttendanceStatus.ABSENT
+            && a.getAttendanceStatus() != AttendanceStatus.LATE
+            && a.getAttendanceStatus() != AttendanceStatus.JUSTIFIED) {
+                throw new IllegalArgumentException(
+            "Solo se puede justificar un registro con estado AUSENTE, TARDE o JUSTIFICADO");
         }
         if (a.getJustificationStatus() == JustificationStatus.PENDING
                 || a.getJustificationStatus() == JustificationStatus.APPROVED) {
