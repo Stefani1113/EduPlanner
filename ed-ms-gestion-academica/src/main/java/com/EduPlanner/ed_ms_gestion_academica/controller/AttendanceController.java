@@ -3,6 +3,8 @@ package com.EduPlanner.ed_ms_gestion_academica.controller;
 import com.eduplanner.ed_lib_common.dto.AttendanceRequestDTO;
 import com.eduplanner.ed_lib_common.dto.AttendanceResponseDTO;
 import com.eduplanner.ed_lib_common.dto.HttpGlobalResponse;
+import com.eduplanner.ed_lib_common.dto.JustificationRequestDTO;
+import com.eduplanner.ed_lib_common.dto.JustificationReviewDTO;
 import com.EduPlanner.ed_ms_gestion_academica.service.AttendanceService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -93,6 +95,48 @@ public class AttendanceController {
         } catch (IllegalArgumentException e) {
             r.setMessage(e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(r);
+        }
+    }
+
+    /**
+     * HU 4.4 - Paso 1: ingresar la justificación de una falta (ABSENT) ya registrada.
+     * PATCH /eduplanner/attendance/{id}/justification
+     */
+    @PatchMapping("/{id}/justification")
+    public ResponseEntity<HttpGlobalResponse<AttendanceResponseDTO>> submitJustification(
+            @PathVariable Integer id, @Valid @RequestBody JustificationRequestDTO req) {
+        HttpGlobalResponse<AttendanceResponseDTO> r = new HttpGlobalResponse<>();
+        try {
+            r.setData(service.submitJustification(id, req));
+            r.setMessage("Justificación registrada, queda pendiente de revisión");
+            return ResponseEntity.ok(r);
+        } catch (IllegalArgumentException e) {
+            r.setMessage(e.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(r);
+        } catch (RuntimeException e) {
+            r.setMessage(e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(r);
+        }
+    }
+
+    /**
+     * HU 4.4 - Paso 2: un directivo/docente aprueba o rechaza la justificación.
+     * PATCH /eduplanner/attendance/{id}/justification/review
+     */
+    @PatchMapping("/{id}/justification/review")
+    public ResponseEntity<HttpGlobalResponse<AttendanceResponseDTO>> reviewJustification(
+            @PathVariable Integer id, @Valid @RequestBody JustificationReviewDTO req) {
+        HttpGlobalResponse<AttendanceResponseDTO> r = new HttpGlobalResponse<>();
+        try {
+            r.setData(service.reviewJustification(id, req));
+            r.setMessage(req.getApproved() ? "Justificación aprobada" : "Justificación rechazada");
+            return ResponseEntity.ok(r);
+        } catch (IllegalArgumentException e) {
+            r.setMessage(e.getMessage());
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(r);
+        } catch (RuntimeException e) {
+            r.setMessage(e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(r);
         }
     }
 }
