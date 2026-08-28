@@ -81,4 +81,13 @@ public class AcademicLevelService {
         return repository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Nivel académico no encontrado con id: " + id));
     }
+
+
+    /**
+     * Listar solo activos
+     * @return
+     */
+    public List<AcademicLevelResponseDTO> findAllActive() {
+        return repository.findByStatusTrue().stream().map(AcademicLevelResponseDTO::fromEntity).toList();
+    }
 }

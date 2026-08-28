@@ -4,11 +4,10 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.eduplanner.ed_lib_common.entity.AcademicPeriod;
 import com.eduplanner.ed_lib_common.entity.SchoolShift;
 
 public interface SchoolShiftRepository extends JpaRepository<SchoolShift, Integer> {
     boolean existsByName(String name);
-    List<AcademicPeriod> findByStatusTrue();
+    List<SchoolShift> findByStatusTrue();
 
 }
