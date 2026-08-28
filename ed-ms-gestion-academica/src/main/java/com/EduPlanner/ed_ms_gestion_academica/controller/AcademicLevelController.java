@@ -23,14 +23,18 @@ public class AcademicLevelController {
     private final AcademicLevelService service;
 
     /**
-     * Listar Niveles
+     * Listar Niveles - listar activos
+     * academic-levels - Todos
+     * academic-levels?active=true - Solo activos
      * @return
      */
     @RequireRole(RolEnum.ADMINISTRADOR)
     @GetMapping
-    public ResponseEntity<HttpGlobalResponse<List<AcademicLevelResponseDTO>>> getAll() {
+    public ResponseEntity<HttpGlobalResponse<List<AcademicLevelResponseDTO>>> getAll(
+        @RequestParam(required = false) Boolean active) {
         HttpGlobalResponse<List<AcademicLevelResponseDTO>> response = new HttpGlobalResponse<>();
-        response.setData(service.findAll());
+        List<AcademicLevelResponseDTO> result = (Boolean.TRUE.equals(active)) ? service.findAllActive() : service.findAll();
+        response.setData(result);
         response.setMessage("Niveles académicos consultados correctamente");
         return ResponseEntity.ok(response);
     }
@@ -73,7 +77,7 @@ public class AcademicLevelController {
         }
     }
 
-    
+
     /**
      * Editar nivel
      * @param id
