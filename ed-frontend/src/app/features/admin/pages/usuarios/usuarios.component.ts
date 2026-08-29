@@ -16,6 +16,7 @@ import {
   ID_ROL_ESTUDIANTE,
   ID_ROL_DIRECTIVO
 } from '../../services/usuarios.service';
+import { ModalService } from '../../../../core/services/modal.service';
 
 type Rol = 'Administrador' | 'Docente' | 'Estudiante' | 'Directivo';
 type Estado = 'Activo' | 'Inactivo';
@@ -88,7 +89,8 @@ export class UsuariosComponent implements OnInit, OnDestroy {
 
   constructor(
     private breadcrumbService: BreadcrumbService,
-    private usuariosService: UsuariosService
+    private usuariosService: UsuariosService,
+    private modalService: ModalService
   ) {}
 
   @HostListener('document:click', ['$event'])
@@ -195,7 +197,7 @@ export class UsuariosComponent implements OnInit, OnDestroy {
         if (this.modalRegistro) {
           this.modalRegistro.onErrorGuardado('No se pudo actualizar el estado del usuario. Intenta de nuevo.');
         } else {
-          alert('No se pudo actualizar el estado del usuario. Intenta de nuevo.');
+          this.modalService.error('No se pudo actualizar el estado del usuario. Intenta de nuevo.');
         }
       }
     });
@@ -246,7 +248,7 @@ export class UsuariosComponent implements OnInit, OnDestroy {
     } else {
       this.tipoRegistro = null;
       this.cargarUsuarios();
-      alert(mensaje);
+      this.modalService.success(mensaje);
     }
   }
 
@@ -257,7 +259,7 @@ export class UsuariosComponent implements OnInit, OnDestroy {
     if (this.modalRegistro) {
       this.modalRegistro.onErrorGuardado(mensajeError);
     } else {  
-      alert(mensajeError);
+      this.modalService.error(mensajeError);
     }
   }
 

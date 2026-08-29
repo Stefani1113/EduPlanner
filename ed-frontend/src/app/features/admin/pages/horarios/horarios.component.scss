@@ -219,6 +219,14 @@
   background-position: center;
 }
 
+.docente-avatar-foto {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
 .sin-registros {
   padding: 20px;
   text-align: center;

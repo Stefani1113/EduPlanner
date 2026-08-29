@@ -13,8 +13,13 @@ import {
   SubjectResponseDTO,
   AcademicTeacherResponseDTO,
   CourseResponseDTO,
-  CourseRequestDTO
+  CourseRequestDTO,
+  AcademicPeriodResponseDTO,
+  AcademicLevelResponseDTO,
+  SchoolShiftResponseDTO
 } from '../../services/horarios.service';
+
+import { ModalService } from '../../../../core/services/modal.service';
 
 
 interface DocenteFila {
@@ -25,6 +30,7 @@ interface DocenteFila {
   idSubject: number;
   nombre: string;
   apellidos: string;
+  photoUrl: string | null;
   area: string;
   curso: string;
   maxDailyHours: number;
@@ -62,11 +68,12 @@ interface CursoFila {
 })
 export class HorariosComponent implements OnInit {
 
-  // =========================================================
-  // ESTADO GENERAL
-  // =========================================================
+  // ==============================
+  // ESTADOS DE VISTAS
+  // ==============================
 
   mostrarDatos = false;
+
   mostrarFormularioDocente = false;
   mostrarFormularioAsignatura = false;
   mostrarFormularioCurso = false;
@@ -77,47 +84,72 @@ export class HorariosComponent implements OnInit {
 
   cargandoDatos = false;
 
-  errorCarga = '';
   guardandoDocente = false;
   guardandoAsignatura = false;
   guardandoCurso = false;
+
+
+  // ==============================
+  // MENSAJES DE ERROR
+  // ==============================
+
+  errorCarga = '';
 
   errorFormularioDocente = '';
   errorFormularioAsignatura = '';
   errorFormularioCurso = '';
 
+
+  // ==============================
+  // IMAGEN
+  // ==============================
+
   imagenBoton = '';
 
 
-  // =========================================================
-  // DATOS
-  // =========================================================
+  // ==============================
+  // LISTAS PARA LA VISTA
+  // ==============================
 
   docentes: DocenteFila[] = [];
   asignaturas: AsignaturaFila[] = [];
   cursos: CursoFila[] = [];
 
+
+  // ==============================
+  // ELEMENTOS SELECCIONADOS
+  // ==============================
+
   docenteSeleccionado: DocenteFila | null = null;
   asignaturaSeleccionada: AsignaturaFila | null = null;
   cursoSeleccionado: CursoFila | null = null;
+
+
+  // ==============================
+  // DATOS DEL BACKEND
+  // ==============================
 
   docentesDisponibles: TeachingResponseDTO[] = [];
   cursosDisponibles: CourseResponseDTO[] = [];
   asignaturasCatalogo: SubjectResponseDTO[] = [];
 
-  /**
-   * IDs de períodos disponibles.
-   * Se obtienen de los cursos existentes que devuelve el backend.
-   */
-  periodosDisponibles: number[] = [];
+  periodosDisponibles: AcademicPeriodResponseDTO[] = [];
+  nivelesDisponibles: AcademicLevelResponseDTO[] = [];
+  jornadasDisponibles: SchoolShiftResponseDTO[] = [];
+
+
+  // ==============================
+  // MAPA DE DOCENTES ACADÉMICOS
+  // Key: idUser
+  // ==============================
 
   private academicTeachersPorUsuario =
     new Map<number, AcademicTeacherResponseDTO>();
 
 
-  // =========================================================
+  // ==============================
   // FORMULARIO DOCENTE
-  // =========================================================
+  // ==============================
 
   formularioDocente = {
     idAcademicLoad: 0,
@@ -130,9 +162,9 @@ export class HorariosComponent implements OnInit {
   };
 
 
-  // =========================================================
+  // ==============================
   // FORMULARIO ASIGNATURA
-  // =========================================================
+  // ==============================
 
   formularioAsignatura = {
     idSubject: 0,
@@ -142,9 +174,9 @@ export class HorariosComponent implements OnInit {
   };
 
 
-  // =========================================================
+  // ==============================
   // FORMULARIO CURSO
-  // =========================================================
+  // ==============================
 
   formularioCurso: {
     idCourse: number;
@@ -157,8 +189,8 @@ export class HorariosComponent implements OnInit {
   } = {
     idCourse: 0,
     idPeriod: null,
-    idLevel: 1,
-    idShift: 1,
+    idLevel: 0,
+    idShift: 0,
     homeroomTeacher: null,
     nombre: '',
     estudiantes: 0
@@ -167,13 +199,10 @@ export class HorariosComponent implements OnInit {
 
   constructor(
     private horariosService: HorariosService,
-    private docentesService: DocentesService
+    private docentesService: DocentesService,
+    private modalService: ModalService
   ) {}
 
-
-  // =========================================================
-  // INICIALIZACIÓN
-  // =========================================================
 
   ngOnInit(): void {
     this.cargarDatos();
@@ -181,9 +210,9 @@ export class HorariosComponent implements OnInit {
   }
 
 
-  // =========================================================
-  // CARGAR DATOS
-  // =========================================================
+  // =====================================================
+  // CARGAR TODOS LOS DATOS
+  // =====================================================
 
   cargarDatos(): void {
 
@@ -195,7 +224,10 @@ export class HorariosComponent implements OnInit {
       cursos: this.horariosService.listarCursos(),
       asignaturas: this.horariosService.listarAsignaturas(),
       academicTeachers: this.horariosService.listarDocentesAcademicos(),
-      cargas: this.horariosService.listarCargasAcademicas()
+      cargas: this.horariosService.listarCargasAcademicas(),
+      periodos: this.horariosService.listarPeriodos(),
+      niveles: this.horariosService.listarNiveles(),
+      jornadas: this.horariosService.listarJornadas()
     }).subscribe({
 
       next: ({
@@ -203,30 +235,28 @@ export class HorariosComponent implements OnInit {
         cursos,
         asignaturas,
         academicTeachers,
-        cargas
+        cargas,
+        periodos,
+        niveles,
+        jornadas
       }) => {
 
-        // ================= DATOS PRINCIPALES =================
+        // ==============================
+        // GUARDAR RESPUESTAS
+        // ==============================
 
         this.docentesDisponibles = docentes.data ?? [];
         this.cursosDisponibles = cursos.data ?? [];
         this.asignaturasCatalogo = asignaturas.data ?? [];
 
-
-        // ================= PERÍODOS DISPONIBLES =================
-
-        this.periodosDisponibles = [
-          ...new Set(
-            this.cursosDisponibles
-              .map(curso => Number(curso.idPeriod))
-              .filter(
-                id => Number.isInteger(id) && id > 0
-              )
-          )
-        ].sort((a, b) => a - b);
+        this.periodosDisponibles = periodos.data ?? [];
+        this.nivelesDisponibles = niveles.data ?? [];
+        this.jornadasDisponibles = jornadas.data ?? [];
 
 
-        // ================= MAPAS PARA RELACIONES =================
+        // ==============================
+        // MAPA DE DOCENTES
+        // ==============================
 
         const docentesPorId =
           new Map<number, TeachingResponseDTO>(
@@ -236,6 +266,11 @@ export class HorariosComponent implements OnInit {
             ])
           );
 
+
+        // ==============================
+        // MAPA DE CURSOS
+        // ==============================
+
         const cursosPorId =
           new Map<number, CourseResponseDTO>(
             this.cursosDisponibles.map(curso => [
@@ -243,6 +278,11 @@ export class HorariosComponent implements OnInit {
               curso
             ])
           );
+
+
+        // ==============================
+        // MAPA DE ASIGNATURAS
+        // ==============================
 
         const asignaturasPorId =
           new Map<number, SubjectResponseDTO>(
@@ -253,169 +293,246 @@ export class HorariosComponent implements OnInit {
           );
 
 
-        // ================= DOCENTES ACADÉMICOS =================
+        // ==============================
+        // DOCENTES ACADÉMICOS
+        // ==============================
+
+        const academicTeachersData =
+          academicTeachers.data ?? [];
 
         this.academicTeachersPorUsuario =
           new Map<number, AcademicTeacherResponseDTO>(
-            (academicTeachers.data ?? []).map(docente => [
+            academicTeachersData.map(docente => [
               docente.idUser,
               docente
             ])
           );
 
+
         const academicTeacherPorId =
           new Map<number, AcademicTeacherResponseDTO>(
-            (academicTeachers.data ?? []).map(docente => [
+            academicTeachersData.map(docente => [
               docente.idAcademicTeacher,
               docente
             ])
           );
 
 
-        // ================= ASIGNATURAS =================
+        // ==============================
+        // MAPEAR ASIGNATURAS
+        // ==============================
 
-        this.asignaturas = this.asignaturasCatalogo.map(
-          asignatura => ({
+        this.asignaturas =
+          this.asignaturasCatalogo.map(asignatura => ({
             idSubject: asignatura.idSubject,
-            nombre: asignatura.name,
+            nombre: asignatura.name ?? '',
             descripcion: asignatura.description ?? '',
             color: asignatura.color ?? '#347d1c'
-          })
-        );
+          }));
 
 
-        // ================= CURSOS =================
+        // ==============================
+        // MAPEAR CURSOS
+        // ==============================
 
-        this.cursos = this.cursosDisponibles.map(curso => {
+        this.cursos =
+          this.cursosDisponibles.map(curso => {
 
-          const docenteTitular = curso.homeroomTeacher
-            ? docentesPorId.get(curso.homeroomTeacher)
-            : null;
-
-          return {
-            idCourse: curso.idCourse,
-            idPeriod: curso.idPeriod,
-            idLevel: curso.idLevel,
-            idShift: curso.idShift,
-            homeroomTeacher: curso.homeroomTeacher,
-            nombre: curso.name,
-
-            docenteTitular: docenteTitular
-              ? `${docenteTitular.name} ${docenteTitular.surnames}`
-              : 'Sin asignar',
-
-            nivel: this.obtenerNombreNivel(curso.idLevel),
-            jornada: this.obtenerNombreJornada(curso.idShift),
-            estudiantes: curso.studentCount
-          };
-        });
-
-
-        // ================= CARGAS DOCENTES =================
-
-        this.docentes = (cargas.data ?? [])
-          .map(carga => {
-
+            /*
+             * homeroomTeacher puede ser el ID del
+             * docente académico, por eso primero
+             * buscamos el docente académico.
+             */
             const academicTeacher =
-              academicTeacherPorId.get(carga.idTeacher);
+              curso.homeroomTeacher !== null &&
+              curso.homeroomTeacher !== undefined
+                ? academicTeacherPorId.get(curso.homeroomTeacher)
+                : undefined;
 
-            if (!academicTeacher) {
-              return null;
-            }
-
-            const docente =
-              docentesPorId.get(academicTeacher.idUser);
-
-            if (!docente) {
-              return null;
-            }
-
-            const curso =
-              cursosPorId.get(carga.idCourse);
-
-            const asignatura =
-              asignaturasPorId.get(carga.idSubject);
+            const docenteTitular =
+              academicTeacher
+                ? docentesPorId.get(academicTeacher.idUser)
+                : undefined;
 
             return {
-              idAcademicLoad: carga.idAcademicLoad,
-              idAcademicTeacher: academicTeacher.idAcademicTeacher,
-              idUser: academicTeacher.idUser,
-              idCourse: carga.idCourse,
-              idSubject: carga.idSubject,
-              nombre: docente.name,
-              apellidos: docente.surnames,
+              idCourse: curso.idCourse,
+              idPeriod: Number(curso.idPeriod ?? 0),
+              idLevel: Number(curso.idLevel ?? 0),
+              idShift: Number(curso.idShift ?? 0),
 
-              area: asignatura
-                ? asignatura.name
-                : 'Asignatura no encontrada',
+              homeroomTeacher:
+                curso.homeroomTeacher ?? null,
 
-              curso: curso
-                ? curso.name
-                : `Curso #${carga.idCourse}`,
+              nombre: curso.name ?? '',
 
-              maxDailyHours: academicTeacher.maxDailyHours,
-              maxWeeklyHours: academicTeacher.maxWeeklyHours,
-              horasSemanaArea: carga.weeklyHours
-            } as DocenteFila;
-          })
-          .filter(
-            (fila): fila is DocenteFila => fila !== null
-          );
+              docenteTitular: docenteTitular
+                ? `${docenteTitular.name ?? ''} ${docenteTitular.surnames ?? ''}`.trim()
+                : 'Sin asignar',
+
+              nivel: this.obtenerNombreNivel(
+                Number(curso.idLevel ?? 0)
+              ),
+
+              jornada: this.obtenerNombreJornada(
+                Number(curso.idShift ?? 0)
+              ),
+
+              estudiantes: Number(
+                curso.studentCount ?? 0
+              )
+            };
+          });
+
+
+        // ==============================
+        // MAPEAR CARGAS ACADÉMICAS
+        // ==============================
+
+        this.docentes =
+          (cargas.data ?? [])
+            .map(carga => {
+
+              const academicTeacher =
+                academicTeacherPorId.get(
+                  carga.idTeacher
+                );
+
+              if (!academicTeacher) {
+                return null;
+              }
+
+              const docente =
+                docentesPorId.get(
+                  academicTeacher.idUser
+                );
+
+              if (!docente) {
+                return null;
+              }
+
+              const curso =
+                cursosPorId.get(carga.idCourse);
+
+              const asignatura =
+                asignaturasPorId.get(
+                  carga.idSubject
+                );
+
+              return {
+                idAcademicLoad:
+                  carga.idAcademicLoad,
+
+                idAcademicTeacher:
+                  academicTeacher.idAcademicTeacher,
+
+                idUser:
+                  academicTeacher.idUser,
+
+                idCourse:
+                  carga.idCourse,
+
+                idSubject:
+                  carga.idSubject,
+
+                nombre:
+                  docente.name ?? '',
+
+                apellidos:
+                  docente.surnames ?? '',
+
+                photoUrl:
+                  docente.photoUrl ?? null,
+
+                area: asignatura
+                  ? (asignatura.name ?? 'Asignatura sin nombre')
+                  : 'Asignatura no encontrada',
+
+                curso: curso
+                  ? (curso.name ?? 'Curso sin nombre')
+                  : `Curso #${carga.idCourse}`,
+
+                maxDailyHours:
+                  academicTeacher.maxDailyHours ?? 0,
+
+                maxWeeklyHours:
+                  academicTeacher.maxWeeklyHours ?? 0,
+
+                horasSemanaArea:
+                  carga.weeklyHours ?? 0
+
+              } as DocenteFila;
+            })
+            .filter(
+              (fila): fila is DocenteFila =>
+                fila !== null
+            );
+
 
         this.cargandoDatos = false;
       },
 
 
-      error: (err) => {
+      error: err => {
 
-        console.error('Error cargando datos:', err);
+        console.error(
+          'Error cargando datos:',
+          err
+        );
 
         this.cargandoDatos = false;
 
         this.errorCarga =
           err?.error?.message ||
+          err?.error?.error ||
           'No se pudo cargar la información desde el servidor.';
       }
+
     });
   }
 
 
-  // =========================================================
-  // UTILIDADES
-  // =========================================================
+  // =====================================================
+  // OBTENER NOMBRES
+  // =====================================================
 
   obtenerNombreNivel(idLevel: number): string {
 
-    const niveles: Record<number, string> = {
-      1: 'Primaria',
-      2: 'Secundaria',
-      3: 'Media'
-    };
-
-    return niveles[idLevel] ?? `Nivel ${idLevel}`;
+    return (
+      this.nivelesDisponibles.find(
+        nivel => nivel.idLevel === idLevel
+      )?.name ?? `Nivel ${idLevel}`
+    );
   }
 
 
   obtenerNombreJornada(idShift: number): string {
 
-    const jornadas: Record<number, string> = {
-      1: 'Diurna',
-      2: 'Nocturna'
-    };
-
-    return jornadas[idShift] ?? `Jornada ${idShift}`;
+    return (
+      this.jornadasDisponibles.find(
+        jornada => jornada.idShift === idShift
+      )?.name ?? `Jornada ${idShift}`
+    );
   }
 
 
+  // =====================================================
+  // IMAGEN DEL BOTÓN
+  // =====================================================
+
   cargarImagenBoton(): void {
 
-    const imagen = localStorage.getItem('imagenBoton');
+    const imagen =
+      localStorage.getItem('imagenBoton');
 
     if (imagen) {
       this.imagenBoton = imagen;
     }
   }
 
+
+  // =====================================================
+  // PANEL DE DATOS
+  // =====================================================
 
   abrirDatos(): void {
     this.mostrarDatos = true;
@@ -428,9 +545,9 @@ export class HorariosComponent implements OnInit {
   }
 
 
-  // =========================================================
+  // =====================================================
   // DOCENTES
-  // =========================================================
+  // =====================================================
 
   seleccionarDocente(docente: DocenteFila): void {
     this.docenteSeleccionado = docente;
@@ -465,7 +582,8 @@ export class HorariosComponent implements OnInit {
     this.editandoDocente = true;
     this.errorFormularioDocente = '';
 
-    const docente = this.docenteSeleccionado;
+    const docente =
+      this.docenteSeleccionado;
 
     this.formularioDocente = {
       idAcademicLoad: docente.idAcademicLoad,
@@ -493,7 +611,8 @@ export class HorariosComponent implements OnInit {
 
     this.errorFormularioDocente = '';
 
-    const formulario = this.formularioDocente;
+    const formulario =
+      this.formularioDocente;
 
     if (
       !formulario.idUser ||
@@ -503,21 +622,51 @@ export class HorariosComponent implements OnInit {
       !formulario.maxDailyHours ||
       !formulario.maxWeeklyHours
     ) {
-
       this.errorFormularioDocente =
         'Completa todos los campos obligatorios.';
-
       return;
     }
 
+
+    if (
+      formulario.maxDailyHours <= 0 ||
+      formulario.maxDailyHours > 24
+    ) {
+      this.errorFormularioDocente =
+        'Las horas máximas diarias deben estar entre 1 y 24.';
+      return;
+    }
+
+
+    if (
+      formulario.maxWeeklyHours <= 0 ||
+      formulario.maxWeeklyHours > 168
+    ) {
+      this.errorFormularioDocente =
+        'Las horas máximas semanales no son válidas.';
+      return;
+    }
+
+
+    if (formulario.horasSemanaArea <= 0) {
+      this.errorFormularioDocente =
+        'Las horas semanales de la asignatura deben ser mayores que 0.';
+      return;
+    }
+
+
     this.guardandoDocente = true;
 
+
     const academicTeacherExistente =
-      this.academicTeachersPorUsuario.get(formulario.idUser);
+      this.academicTeachersPorUsuario.get(
+        formulario.idUser
+      );
 
 
     const guardarDisponibilidad$ =
       academicTeacherExistente
+
         ? this.horariosService.actualizarDocenteAcademico(
             academicTeacherExistente.idAcademicTeacher,
             {
@@ -526,6 +675,7 @@ export class HorariosComponent implements OnInit {
               maxWeeklyHours: formulario.maxWeeklyHours
             }
           )
+
         : this.horariosService.crearDocenteAcademico({
             idUser: formulario.idUser,
             maxDailyHours: formulario.maxDailyHours,
@@ -535,10 +685,27 @@ export class HorariosComponent implements OnInit {
 
     guardarDisponibilidad$.subscribe({
 
-      next: (respuesta) => {
+      next: respuesta => {
 
+        /*
+         * Cuando se actualiza, algunos backends no devuelven
+         * el objeto completo. Por eso usamos el ID existente
+         * como respaldo.
+         */
         const idAcademicTeacher =
-          respuesta.data.idAcademicTeacher;
+          respuesta?.data?.idAcademicTeacher ??
+          academicTeacherExistente?.idAcademicTeacher;
+
+        if (!idAcademicTeacher) {
+
+          this.guardandoDocente = false;
+
+          this.errorFormularioDocente =
+            'El backend no devolvió el ID del docente académico.';
+
+          return;
+        }
+
 
         const carga = {
           idTeacher: idAcademicTeacher,
@@ -548,12 +715,17 @@ export class HorariosComponent implements OnInit {
         };
 
 
-        const guardarCarga$ = this.editandoDocente
-          ? this.horariosService.actualizarCargaAcademica(
-              formulario.idAcademicLoad,
-              carga
-            )
-          : this.horariosService.crearCargaAcademica(carga);
+        const guardarCarga$ =
+          this.editandoDocente
+
+            ? this.horariosService.actualizarCargaAcademica(
+                formulario.idAcademicLoad,
+                carga
+              )
+
+            : this.horariosService.crearCargaAcademica(
+                carga
+              );
 
 
         guardarCarga$.subscribe({
@@ -568,21 +740,26 @@ export class HorariosComponent implements OnInit {
           },
 
 
-          error: (err) => {
+          error: err => {
 
-            console.error('Error guardando carga:', err);
+            console.error(
+              'Error guardando carga:',
+              err
+            );
 
             this.guardandoDocente = false;
 
             this.errorFormularioDocente =
               err?.error?.message ||
-              'No se pudo guardar la información del docente.';
+              err?.error?.error ||
+              'No se pudo guardar la asignación del docente.';
           }
+
         });
       },
 
 
-      error: (err) => {
+      error: err => {
 
         console.error(
           'Error guardando docente académico:',
@@ -593,64 +770,75 @@ export class HorariosComponent implements OnInit {
 
         this.errorFormularioDocente =
           err?.error?.message ||
+          err?.error?.error ||
           'No se pudo guardar la disponibilidad del docente.';
       }
+
     });
   }
 
 
-  eliminarDocente(): void {
+  async eliminarDocente(): Promise<void> {
 
     if (!this.docenteSeleccionado) {
       return;
     }
 
-    const docente = this.docenteSeleccionado;
+    const docente =
+      this.docenteSeleccionado;
 
-    const confirmar = confirm(
-      `¿Deseas quitar la asignación de "${docente.area}" a ${docente.nombre} ${docente.apellidos}?`
+    const confirmar = await this.modalService.confirm(
+      `¿Deseas quitar la asignación de "${docente.area}" a ${docente.nombre} ${docente.apellidos}?`,
+      'Quitar asignación'
     );
 
     if (!confirmar) {
       return;
     }
 
+
     this.horariosService
-      .eliminarCargaAcademica(docente.idAcademicLoad)
+      .eliminarCargaAcademica(
+        docente.idAcademicLoad
+      )
       .subscribe({
 
         next: () => {
 
-          this.docentes = this.docentes.filter(
-            item =>
-              item.idAcademicLoad !== docente.idAcademicLoad
-          );
+          this.docentes =
+            this.docentes.filter(
+              item =>
+                item.idAcademicLoad !==
+                docente.idAcademicLoad
+            );
 
           this.docenteSeleccionado = null;
         },
 
 
-        error: (err) => {
+        error: err => {
 
-          console.error('Error eliminando carga:', err);
+          console.error(
+            'Error eliminando carga:',
+            err
+          );
 
-          alert(
+          this.modalService.error(
             err?.error?.message ||
+            err?.error?.error ||
             'No se pudo eliminar la asignación.'
           );
         }
+
       });
   }
 
 
-  // =========================================================
+  // =====================================================
   // ASIGNATURAS
-  // =========================================================
+  // =====================================================
 
-  seleccionarAsignatura(
-    asignatura: AsignaturaFila
-  ): void {
-
+  seleccionarAsignatura(asignatura: AsignaturaFila): void {
     this.asignaturaSeleccionada = asignatura;
   }
 
@@ -700,7 +888,18 @@ export class HorariosComponent implements OnInit {
 
     this.errorFormularioAsignatura = '';
 
-    if (!this.formularioAsignatura.nombre.trim()) {
+    const nombre =
+      this.formularioAsignatura.nombre.trim();
+
+    const descripcion =
+      this.formularioAsignatura.descripcion.trim();
+
+    const color =
+      this.formularioAsignatura.color ||
+      '#347d1c';
+
+
+    if (!nombre) {
 
       this.errorFormularioAsignatura =
         'El nombre de la asignatura es obligatorio.';
@@ -708,27 +907,28 @@ export class HorariosComponent implements OnInit {
       return;
     }
 
+
     this.guardandoAsignatura = true;
 
+
     const dto = {
-      name: this.formularioAsignatura.nombre.trim(),
-
-      description:
-        this.formularioAsignatura.descripcion.trim() ||
-        undefined,
-
-      color:
-        this.formularioAsignatura.color ||
-        undefined
+      name: nombre,
+      description: descripcion,
+      color: color
     };
 
 
-    const peticion = this.editandoAsignatura
-      ? this.horariosService.actualizarAsignatura(
-          this.formularioAsignatura.idSubject,
-          dto
-        )
-      : this.horariosService.crearAsignatura(dto);
+    const peticion =
+      this.editandoAsignatura
+
+        ? this.horariosService.actualizarAsignatura(
+            this.formularioAsignatura.idSubject,
+            dto
+          )
+
+        : this.horariosService.crearAsignatura(
+            dto
+          );
 
 
     peticion.subscribe({
@@ -743,68 +943,91 @@ export class HorariosComponent implements OnInit {
       },
 
 
-      error: (err) => {
+      error: err => {
 
-        console.error('Error guardando asignatura:', err);
+        console.error(
+          'Error guardando asignatura:',
+          err
+        );
 
         this.guardandoAsignatura = false;
 
         this.errorFormularioAsignatura =
           err?.error?.message ||
+          err?.error?.error ||
           'No se pudo guardar la asignatura.';
       }
+
     });
   }
 
 
-  eliminarAsignatura(): void {
+  async eliminarAsignatura(): Promise<void> {
 
     if (!this.asignaturaSeleccionada) {
       return;
     }
 
-    const asignatura = this.asignaturaSeleccionada;
+    const asignatura =
+      this.asignaturaSeleccionada;
 
-    if (!confirm(
-      `¿Deseas eliminar ${asignatura.nombre}?`
-    )) {
+    const confirmar = await this.modalService.confirm(
+      `¿Deseas eliminar ${asignatura.nombre}?`,
+      'Eliminar asignatura'
+    );
+
+    if (!confirmar) {
       return;
     }
 
+
     this.horariosService
-      .eliminarAsignatura(asignatura.idSubject)
+      .eliminarAsignatura(
+        asignatura.idSubject
+      )
       .subscribe({
 
         next: () => {
 
-          this.asignaturas = this.asignaturas.filter(
-            item =>
-              item.idSubject !== asignatura.idSubject
-          );
+          this.asignaturas =
+            this.asignaturas.filter(
+              item =>
+                item.idSubject !==
+                asignatura.idSubject
+            );
+
+          this.asignaturasCatalogo =
+            this.asignaturasCatalogo.filter(
+              item =>
+                item.idSubject !==
+                asignatura.idSubject
+            );
 
           this.asignaturaSeleccionada = null;
         },
 
 
-        error: (err) => {
+        error: err => {
 
           console.error(
             'Error eliminando asignatura:',
             err
           );
 
-          alert(
+          this.modalService.error(
             err?.error?.message ||
+            err?.error?.error ||
             'No se pudo eliminar la asignatura.'
           );
         }
+
       });
   }
 
 
-  // =========================================================
+  // =====================================================
   // CURSOS
-  // =========================================================
+  // =====================================================
 
   seleccionarCurso(curso: CursoFila): void {
     this.cursoSeleccionado = curso;
@@ -816,16 +1039,26 @@ export class HorariosComponent implements OnInit {
     this.editandoCurso = false;
     this.errorFormularioCurso = '';
 
+
+    /*
+     * El ?? null es importante porque el primer elemento
+     * puede no existir y TypeScript devuelve undefined.
+     */
     const primerPeriodoDisponible =
-      this.periodosDisponibles.length > 0
-        ? this.periodosDisponibles[0]
-        : null;
+      this.periodosDisponibles[0]?.idPeriod ?? null;
+
+    const primerNivelDisponible =
+      this.nivelesDisponibles[0]?.idLevel ?? 0;
+
+    const primeraJornadaDisponible =
+      this.jornadasDisponibles[0]?.idShift ?? 0;
+
 
     this.formularioCurso = {
       idCourse: 0,
       idPeriod: primerPeriodoDisponible,
-      idLevel: 1,
-      idShift: 1,
+      idLevel: primerNivelDisponible,
+      idShift: primeraJornadaDisponible,
       homeroomTeacher: null,
       nombre: '',
       estudiantes: 0
@@ -844,15 +1077,16 @@ export class HorariosComponent implements OnInit {
     this.editandoCurso = true;
     this.errorFormularioCurso = '';
 
-    const curso = this.cursoSeleccionado;
+    const curso =
+      this.cursoSeleccionado;
 
     this.formularioCurso = {
       idCourse: curso.idCourse,
-      idPeriod: curso.idPeriod,
+      idPeriod: curso.idPeriod ?? null,
       idLevel: curso.idLevel,
       idShift: curso.idShift,
       homeroomTeacher: curso.homeroomTeacher,
-      nombre: curso.nombre,
+      nombre: curso.nombre ?? '',
       estudiantes: curso.estudiantes
     };
 
@@ -872,11 +1106,12 @@ export class HorariosComponent implements OnInit {
 
     this.errorFormularioCurso = '';
 
-    const formulario = this.formularioCurso;
+    const formulario =
+      this.formularioCurso;
 
-    // ================= VALIDAR NOMBRE =================
+    const nombre =
+      (formulario.nombre ?? '').trim();
 
-    const nombre = (formulario.nombre || '').trim();
 
     if (!nombre) {
 
@@ -887,12 +1122,7 @@ export class HorariosComponent implements OnInit {
     }
 
 
-    // ================= VALIDAR PERÍODO =================
-
-    if (
-      formulario.idPeriod === null ||
-      formulario.idPeriod === undefined
-    ) {
+    if (formulario.idPeriod === null) {
 
       this.errorFormularioCurso =
         'Selecciona un período académico.';
@@ -900,10 +1130,18 @@ export class HorariosComponent implements OnInit {
       return;
     }
 
-    const idPeriod = Number(formulario.idPeriod);
-    const idLevel = Number(formulario.idLevel);
-    const idShift = Number(formulario.idShift);
-    const estudiantes = Number(formulario.estudiantes);
+
+    const idPeriod =
+      Number(formulario.idPeriod);
+
+    const idLevel =
+      Number(formulario.idLevel);
+
+    const idShift =
+      Number(formulario.idShift);
+
+    const estudiantes =
+      Number(formulario.estudiantes);
 
 
     if (
@@ -918,10 +1156,11 @@ export class HorariosComponent implements OnInit {
     }
 
 
-    // Verificar que el período sea uno conocido
     if (
       this.periodosDisponibles.length > 0 &&
-      !this.periodosDisponibles.includes(idPeriod)
+      !this.periodosDisponibles.some(
+        periodo => periodo.idPeriod === idPeriod
+      )
     ) {
 
       this.errorFormularioCurso =
@@ -931,9 +1170,11 @@ export class HorariosComponent implements OnInit {
     }
 
 
-    // ================= VALIDAR NIVEL =================
-
-    if (![1, 2, 3].includes(idLevel)) {
+    if (
+      !this.nivelesDisponibles.some(
+        nivel => nivel.idLevel === idLevel
+      )
+    ) {
 
       this.errorFormularioCurso =
         'Selecciona un nivel válido.';
@@ -942,9 +1183,11 @@ export class HorariosComponent implements OnInit {
     }
 
 
-    // ================= VALIDAR JORNADA =================
-
-    if (![1, 2].includes(idShift)) {
+    if (
+      !this.jornadasDisponibles.some(
+        jornada => jornada.idShift === idShift
+      )
+    ) {
 
       this.errorFormularioCurso =
         'Selecciona una jornada válida.';
@@ -952,8 +1195,6 @@ export class HorariosComponent implements OnInit {
       return;
     }
 
-
-    // ================= VALIDAR ESTUDIANTES =================
 
     if (
       !Number.isInteger(estudiantes) ||
@@ -968,16 +1209,41 @@ export class HorariosComponent implements OnInit {
     }
 
 
-    // ================= DOCENTE TITULAR =================
-
-    const homeroomTeacher =
+    /*
+     * El select guarda el idUser del docente.
+     * El backend necesita el idAcademicTeacher.
+     */
+    const idUserHomeroomTeacher =
       formulario.homeroomTeacher !== null &&
       Number(formulario.homeroomTeacher) > 0
+
         ? Number(formulario.homeroomTeacher)
+
         : null;
 
 
-    // ================= CREAR DTO =================
+    let homeroomTeacher: number | null = null;
+
+
+    if (idUserHomeroomTeacher !== null) {
+
+      const academicTeacher =
+        this.academicTeachersPorUsuario.get(
+          idUserHomeroomTeacher
+        );
+
+      if (!academicTeacher) {
+
+        this.errorFormularioCurso =
+          'El docente seleccionado todavía no está registrado como docente académico. Regístralo primero antes de asignarlo como titular.';
+
+        return;
+      }
+
+      homeroomTeacher =
+        academicTeacher.idAcademicTeacher;
+    }
+
 
     const dto: CourseRequestDTO = {
       idPeriod,
@@ -989,26 +1255,31 @@ export class HorariosComponent implements OnInit {
     };
 
 
-    console.log('======================================');
-    console.log('CURSO QUE SE ENVÍA AL BACKEND');
-    console.log(JSON.stringify(dto, null, 2));
-    console.log('======================================');
+    console.log(
+      'CURSO QUE SE ENVÍA AL BACKEND:',
+      JSON.stringify(dto, null, 2)
+    );
 
 
     this.guardandoCurso = true;
 
 
-    const peticion = this.editandoCurso
-      ? this.horariosService.actualizarCurso(
-          formulario.idCourse,
-          dto
-        )
-      : this.horariosService.crearCurso(dto);
+    const peticion =
+      this.editandoCurso
+
+        ? this.horariosService.actualizarCurso(
+            formulario.idCourse,
+            dto
+          )
+
+        : this.horariosService.crearCurso(
+            dto
+          );
 
 
     peticion.subscribe({
 
-      next: (respuesta) => {
+      next: respuesta => {
 
         console.log(
           'Curso guardado correctamente:',
@@ -1023,57 +1294,63 @@ export class HorariosComponent implements OnInit {
       },
 
 
-      error: (err) => {
+      error: err => {
 
         this.guardandoCurso = false;
 
-        console.error('======================================');
-        console.error('ERROR AL GUARDAR CURSO');
-        console.error('Status:', err.status);
-        console.error('Respuesta completa:', err);
-        console.error('Respuesta del backend:', err.error);
-        console.error('DTO enviado:', dto);
-        console.error('======================================');
+        console.error(
+          'ERROR AL GUARDAR CURSO',
+          err
+        );
 
 
         let mensaje = '';
 
+
         if (typeof err?.error === 'string') {
+
           mensaje = err.error;
 
         } else if (err?.error?.message) {
+
           mensaje = err.error.message;
 
         } else if (err?.error?.error) {
+
           mensaje = err.error.error;
 
         } else if (err?.message) {
+
           mensaje = err.message;
         }
 
 
+        const mensajeLower =
+          mensaje.toLowerCase();
+
+
         if (
-          mensaje.toLowerCase().includes('fk_course_period') ||
-          mensaje.toLowerCase().includes('academic_period') ||
-          mensaje.toLowerCase().includes('foreign key')
+          mensajeLower.includes('fk_course_period') ||
+          mensajeLower.includes('academic_period') ||
+          mensajeLower.includes('foreign key')
         ) {
 
           this.errorFormularioCurso =
             'El período seleccionado no existe. Selecciona un período válido.';
 
-        } else if (err.status === 500) {
+        } else if (err?.status === 500) {
 
           this.errorFormularioCurso =
             mensaje ||
             'El servidor no pudo registrar el curso.';
 
-        } else if (err.status === 400) {
+        } else if (err?.status === 400) {
 
           this.errorFormularioCurso =
             mensaje ||
             'Los datos del curso no son válidos.';
 
-        } else if (err.status === 401) {
+        } else if (err?.status === 401) {
 
           this.errorFormularioCurso =
             'Tu sesión ha expirado. Inicia sesión nuevamente.';
@@ -1085,35 +1362,43 @@ export class HorariosComponent implements OnInit {
             'No se pudo guardar el curso. Inténtalo nuevamente.';
         }
       }
+
     });
   }
 
 
-  eliminarCurso(): void {
+  async eliminarCurso(): Promise<void> {
 
     if (!this.cursoSeleccionado) {
       return;
     }
 
-    const curso = this.cursoSeleccionado;
+    const curso =
+      this.cursoSeleccionado;
 
-    if (!confirm(
-      `¿Deseas eliminar el curso ${curso.nombre}?`
-    )) {
+    const confirmar = await this.modalService.confirm(
+      `¿Deseas eliminar el curso ${curso.nombre}?`,
+      'Eliminar curso'
+    );
+
+    if (!confirmar) {
       return;
     }
 
 
     this.horariosService
-      .eliminarCurso(curso.idCourse)
+      .eliminarCurso(
+        curso.idCourse
+      )
       .subscribe({
 
         next: () => {
 
-          this.cursos = this.cursos.filter(
-            item =>
-              item.idCourse !== curso.idCourse
-          );
+          this.cursos =
+            this.cursos.filter(
+              item =>
+                item.idCourse !== curso.idCourse
+            );
 
           this.cursosDisponibles =
             this.cursosDisponibles.filter(
@@ -1122,28 +1407,24 @@ export class HorariosComponent implements OnInit {
             );
 
           this.cursoSeleccionado = null;
-
-          this.periodosDisponibles = [
-            ...new Set(
-              this.cursosDisponibles
-                .map(item => Number(item.idPeriod))
-                .filter(
-                  id => Number.isInteger(id) && id > 0
-                )
-            )
-          ].sort((a, b) => a - b);
         },
 
 
-        error: (err) => {
+        error: err => {
 
-          console.error('Error eliminando curso:', err);
+          console.error(
+            'Error eliminando curso:',
+            err
+          );
 
-          alert(
+          this.modalService.error(
             err?.error?.message ||
+            err?.error?.error ||
             'No se pudo eliminar el curso.'
           );
-        }
+        } 
+
       });
   }
+
 }

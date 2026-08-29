@@ -116,7 +116,15 @@
 
               <div class="docente-nombre">
 
-                <div class="docente-avatar">
+                <img
+                  *ngIf="docente.photoUrl"
+                  [src]="docente.photoUrl"
+                  class="docente-avatar-foto"
+                  alt="Foto de {{ docente.nombre }}">
+
+                <div
+                  *ngIf="!docente.photoUrl"
+                  class="docente-avatar">
                   {{ docente.nombre?.charAt(0) || '?' }}
                 </div>
 
@@ -784,9 +792,9 @@
 
           <option
             *ngFor="let periodo of periodosDisponibles"
-            [ngValue]="periodo">
+            [ngValue]="periodo.idPeriod">
 
-            Período {{ periodo }}
+            {{ periodo.name ?? ('Período ' + periodo.idPeriod) }}
 
           </option>
 
@@ -810,16 +818,16 @@
 
         <select [(ngModel)]="formularioCurso.idLevel">
 
-          <option [ngValue]="1">
-            Primaria
+          <option [ngValue]="0" disabled>
+            Selecciona un nivel
           </option>
 
-          <option [ngValue]="2">
-            Secundaria
-          </option>
+          <option
+            *ngFor="let nivel of nivelesDisponibles"
+            [ngValue]="nivel.idLevel">
 
-          <option [ngValue]="3">
-            Media
+            {{ nivel.name }}
+
           </option>
 
         </select>
@@ -834,12 +842,16 @@
 
         <select [(ngModel)]="formularioCurso.idShift">
 
-          <option [ngValue]="1">
-            Diurna
+          <option [ngValue]="0" disabled>
+            Selecciona una jornada
           </option>
 
-          <option [ngValue]="2">
-            Nocturna
+          <option
+            *ngFor="let jornada of jornadasDisponibles"
+            [ngValue]="jornada.idShift">
+
+            {{ jornada.name }}
+
           </option>
 
         </select>

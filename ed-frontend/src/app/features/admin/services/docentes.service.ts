@@ -66,7 +66,7 @@ export interface TeachingResponseDTO {
 })
 export class DocentesService {
 
-  private api = 'http://localhost:8080/administracion/eduplanner/teacher';
+  private api = '/administracion/eduplanner/teacher';
 
   constructor(private http: HttpClient) {}
 
