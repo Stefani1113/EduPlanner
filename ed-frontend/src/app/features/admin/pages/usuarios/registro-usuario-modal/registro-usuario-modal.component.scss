@@ -58,26 +58,6 @@
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
-.mensaje-global {
-  padding: 12px 20px;
-  text-align: center;
-  font-size: 14px;
-  font-weight: 600;
-  animation: slideDown 0.3s ease;
-}
-
-.mensaje-global.success {
-  background: rgba(83, 187, 27, 0.15);
-  color: #6fd62c;
-  border-bottom: 1px solid rgba(83, 187, 27, 0.2);
-}
-
-.mensaje-global.error {
-  background: rgba(229, 106, 106, 0.15);
-  color: #e56a6a;
-  border-bottom: 1px solid rgba(229, 106, 106, 0.2);
-}
-
 .modal-form {
   padding: 20px 24px;
   display: flex;
@@ -500,11 +480,6 @@
     font-size: 12px;
     width: 100%;
   }
-
-  .mensaje-global {
-    font-size: 12px;
-    padding: 10px 16px;
-  }
 }
 
 @media (min-width: 353px) and (max-width: 480px) {
@@ -794,11 +769,6 @@
   .titulo-chip button {
     font-size: 13px;
   }
-
-  .mensaje-global {
-    font-size: 12px;
-    padding: 8px 16px;
-  }
 }
 
 @media (max-height: 600px) {
@@ -898,11 +868,6 @@
     font-size: 11px;
     padding: 0 12px;
     border-radius: 6px;
-  }
-
-  .mensaje-global {
-    font-size: 11px;
-    padding: 6px 12px;
   }
 }
 

@@ -16,6 +16,8 @@ import {
   ID_ROL_DIRECTIVO
 } from '../../../services/usuarios.service';
 
+import { ModalService } from '../../../../../core/services/modal.service';
+
 export type TipoRegistro = 'Docente' | 'Estudiante' | 'Staff';
 
 export interface RegistroDocenteEvento {
@@ -56,10 +58,6 @@ export class RegistroUsuarioModalComponent implements OnInit {
 
   @Output() cerrar = new EventEmitter<void>();
   @Output() guardar = new EventEmitter<UsuarioRegistrado>();
-
-  mensajeGlobal: string | null = null;
-  mensajeExito = false;
-  mensajeTemporal: ReturnType<typeof setTimeout> | null = null;
 
   mostrarErroresValidacion = false;
 
@@ -102,7 +100,10 @@ export class RegistroUsuarioModalComponent implements OnInit {
   formEstudiante!: FormGroup;
   formStaff!: FormGroup;
 
-  constructor(private fb: FormBuilder) {}
+  constructor(
+    private fb: FormBuilder,
+    private modalService: ModalService
+  ) {}
 
   ngOnInit(): void {
     this.formDocente = this.fb.group({
@@ -242,7 +243,6 @@ export class RegistroUsuarioModalComponent implements OnInit {
       return;
     }
 
-    this.limpiarMensaje();
     this.cerrar.emit();
   }
 
@@ -252,7 +252,6 @@ export class RegistroUsuarioModalComponent implements OnInit {
     }
 
     if (event.target === event.currentTarget) {
-      this.limpiarMensaje();
       this.cerrar.emit();
     }
   }
@@ -261,50 +260,24 @@ export class RegistroUsuarioModalComponent implements OnInit {
     mensaje: string,
     autoCerrar: boolean = true
   ): void {
-    this.mensajeGlobal = mensaje;
-    this.mensajeExito = true;
     this.mostrarErroresValidacion = false;
 
-    if (this.mensajeTemporal) {
-      clearTimeout(this.mensajeTemporal);
-      this.mensajeTemporal = null;
-    }
-
-    if (autoCerrar) {
-      this.mensajeTemporal = setTimeout(() => {
-        this.limpiarMensaje();
+    this.modalService.success(mensaje).then(() => {
+      if (autoCerrar) {
         this.cerrar.emit();
-      }, 3500);
-    }
+      }
+    });
   }
 
   mostrarError(mensaje: string): void {
-    this.mensajeGlobal = mensaje;
-    this.mensajeExito = false;
     this.mostrarErroresValidacion = false;
-
-    if (this.mensajeTemporal) {
-      clearTimeout(this.mensajeTemporal);
-      this.mensajeTemporal = null;
-    }
-  }
-
-  limpiarMensaje(): void {
-    this.mensajeGlobal = null;
-    this.mensajeExito = false;
-
-    if (this.mensajeTemporal) {
-      clearTimeout(this.mensajeTemporal);
-      this.mensajeTemporal = null;
-    }
+    this.modalService.error(mensaje);
   }
 
   guardarUsuario(): void {
     if (this.guardando) {
       return;
     }
-
-    this.limpiarMensaje();
 
     const formulario = this.formActual;
 
@@ -523,17 +496,8 @@ export class RegistroUsuarioModalComponent implements OnInit {
       mensaje ||
       `${this.tipo} registrado correctamente.`;
 
-    this.mensajeGlobal = texto;
-    this.mensajeExito = true;
-
-    if (this.mensajeTemporal) {
-      clearTimeout(this.mensajeTemporal);
-    }
-
-    this.mensajeTemporal =
-      setTimeout(() => {
-        this.limpiarMensaje();
-        this.cerrar.emit();
-      }, 1500);
+    this.modalService.success(texto).then(() => {
+      this.cerrar.emit();
+    });
   }
 }

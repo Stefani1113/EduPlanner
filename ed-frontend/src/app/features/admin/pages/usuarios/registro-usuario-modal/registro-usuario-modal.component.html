@@ -14,31 +14,6 @@
   </h2>
 </div>
 
-<div
-  *ngIf="mensajeGlobal"
-  class="mensaje-global"
-  [class.success]="mensajeExito"
-  [class.error]="!mensajeExito"
->
-  <div class="mensaje-contenido">
-    <span class="mensaje-icono">
-      {{ mensajeExito ? '✓' : '✕' }}
-    </span>
-
-    <span class="mensaje-texto">
-      {{ mensajeGlobal }}
-    </span>
-  </div>
-
-  <button
-    type="button"
-    class="mensaje-cerrar"
-    (click)="limpiarMensaje()"
-  >
-    ×
-  </button>
-</div>
-
 
 <form
   *ngIf="tipo === 'Docente'"
