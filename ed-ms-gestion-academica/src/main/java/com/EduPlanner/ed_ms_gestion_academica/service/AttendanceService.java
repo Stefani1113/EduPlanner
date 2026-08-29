@@ -2,11 +2,15 @@ package com.EduPlanner.ed_ms_gestion_academica.service;
 
 import com.eduplanner.ed_lib_common.dto.AttendanceRequestDTO;
 import com.eduplanner.ed_lib_common.dto.AttendanceResponseDTO;
+import com.eduplanner.ed_lib_common.dto.AttendanceSummaryDTO;
 import com.eduplanner.ed_lib_common.dto.JustificationRequestDTO;
 import com.eduplanner.ed_lib_common.dto.JustificationReviewDTO;
+import com.eduplanner.ed_lib_common.dto.UserResponseDTO;
 import com.eduplanner.ed_lib_common.entity.Attendance;
 import com.eduplanner.ed_lib_common.enums.AttendanceStatus;
 import com.eduplanner.ed_lib_common.enums.JustificationStatus;
+import com.eduplanner.ed_lib_common.enums.RolEnum;
+import com.EduPlanner.ed_ms_gestion_academica.client.AdministracionServiceClient;
 import com.EduPlanner.ed_ms_gestion_academica.repository.AttendanceRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -16,13 +20,14 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
-/** HU 4.2 - Registrar tardanzas y salidas anticipadas (y asistencia en general) */
+/**Registrar tardanzas y salidas anticipadas (y asistencia en general) */
 @Service
 @RequiredArgsConstructor
 @Log4j2
 public class AttendanceService {
 
     private final AttendanceRepository repository;
+    private final AdministracionServiceClient administracionServiceClient;
 
     public AttendanceResponseDTO registerAttendance(AttendanceRequestDTO req) {
         if (repository.existsByIdScheduleAndIdStudentAndAttendanceDate(
@@ -30,9 +35,24 @@ public class AttendanceService {
             throw new IllegalArgumentException(
                     "Ya existe un registro de asistencia para este estudiante, horario y fecha");
         }
+        validateIsActiveStudent(req.getIdStudent());
         Attendance a = new Attendance();
         map(req, a);
         return toResponse(repository.save(a));
+    }
+
+    /** Confirma en ed-ms-administracion que el idStudent existe, está activo y tiene rol ESTUDIANTE */
+    private void validateIsActiveStudent(Integer idStudent) {
+        UserResponseDTO user = administracionServiceClient.getUserById(idStudent);
+        if (user == null) {
+            throw new IllegalArgumentException("El estudiante " + idStudent + " no existe en administración");
+        }
+        if (!Boolean.TRUE.equals(user.getStatus())) {
+            throw new IllegalArgumentException("El estudiante " + idStudent + " no tiene la cuenta activa");
+        }
+        if (user.getIdRole() == null || user.getIdRole() != RolEnum.ESTUDIANTE.getId()) {
+            throw new IllegalArgumentException("El usuario " + idStudent + " no tiene rol ESTUDIANTE");
+        }
     }
 
     public AttendanceResponseDTO updateAttendance(Integer id, AttendanceRequestDTO req) {
@@ -45,18 +65,38 @@ public class AttendanceService {
         return toResponse(getOrThrow(id));
     }
 
-    /** HU 4.3 - Consultar historial de asistencia de un estudiante en un periodo */
+    /**Consultar historial de asistencia de un estudiante en un periodo */
     public List<AttendanceResponseDTO> getHistoryByStudent(Integer idStudent, LocalDate startDate, LocalDate endDate) {
         validateRange(startDate, endDate);
         return repository.findByIdStudentAndAttendanceDateBetweenOrderByAttendanceDateAsc(idStudent, startDate, endDate)
                 .stream().map(this::toResponse).toList();
     }
 
-    /** HU 4.3 - Consultar historial de asistencia de un curso/grupo en un periodo */
+    /**Consultar historial de asistencia de un curso/grupo en un periodo */
     public List<AttendanceResponseDTO> getHistoryByCourse(Integer idCourse, LocalDate startDate, LocalDate endDate) {
         validateRange(startDate, endDate);
         return repository.findByIdCourseAndAttendanceDateBetweenOrderByAttendanceDateAsc(idCourse, startDate, endDate)
                 .stream().map(this::toResponse).toList();
+    }
+
+    /**Resumen/estadísticas de asistencia de un estudiante en un periodo */
+    public AttendanceSummaryDTO getSummaryByStudent(Integer idStudent, LocalDate startDate, LocalDate endDate) {
+        validateRange(startDate, endDate);
+        List<Attendance> records = repository.findByIdStudentAndAttendanceDateBetweenOrderByAttendanceDateAsc(
+                idStudent, startDate, endDate);
+
+        long total = records.size();
+        long present = records.stream().filter(a -> a.getAttendanceStatus() == AttendanceStatus.PRESENT).count();
+        long late = records.stream().filter(a -> a.getAttendanceStatus() == AttendanceStatus.LATE).count();
+        long earlyDeparture = records.stream().filter(a -> a.getAttendanceStatus() == AttendanceStatus.EARLY_DEPARTURE).count();
+        long justified = records.stream().filter(a -> a.getAttendanceStatus() == AttendanceStatus.JUSTIFIED).count();
+        long unjustifiedAbsence = records.stream().filter(a -> a.getAttendanceStatus() == AttendanceStatus.ABSENT).count();
+
+        // Cuenta como "asistencia" todo lo que no sea una falta sin justificar
+        double percentage = total == 0 ? 0.0 : ((total - unjustifiedAbsence) * 100.0) / total;
+
+        return new AttendanceSummaryDTO(idStudent, startDate, endDate, total, present, late,
+                earlyDeparture, justified, unjustifiedAbsence, Math.round(percentage * 100.0) / 100.0);
     }
 
     private void validateRange(LocalDate startDate, LocalDate endDate) {
@@ -68,16 +108,15 @@ public class AttendanceService {
         }
     }
 
-    /** HU 4.4 - Paso 1: ingresar la justificación de una falta ya registrada */
+    /**Ingresar la justificación de una falta, tardanza o justificación ya registrada */
     public AttendanceResponseDTO submitJustification(Integer id, JustificationRequestDTO req) {
-        Attendance a = getOrThrow(id); 
-
+        Attendance a = getOrThrow(id);
 
         if (a.getAttendanceStatus() != AttendanceStatus.ABSENT
-            && a.getAttendanceStatus() != AttendanceStatus.LATE
-            && a.getAttendanceStatus() != AttendanceStatus.JUSTIFIED) {
-                throw new IllegalArgumentException(
-            "Solo se puede justificar un registro con estado AUSENTE, TARDE o JUSTIFICADO");
+                && a.getAttendanceStatus() != AttendanceStatus.LATE
+                && a.getAttendanceStatus() != AttendanceStatus.JUSTIFIED) {
+            throw new IllegalArgumentException(
+                    "Solo se puede justificar un registro con estado ABSENT, LATE o JUSTIFIED");
         }
         if (a.getJustificationStatus() == JustificationStatus.PENDING
                 || a.getJustificationStatus() == JustificationStatus.APPROVED) {
@@ -94,7 +133,7 @@ public class AttendanceService {
         return toResponse(repository.save(a));
     }
 
-    /** HU 4.4 - Paso 2: un directivo/docente aprueba o rechaza la justificación */
+    /**Un directivo/docente aprueba o rechaza la justificación */
     public AttendanceResponseDTO reviewJustification(Integer id, JustificationReviewDTO req) {
         Attendance a = getOrThrow(id);
 
