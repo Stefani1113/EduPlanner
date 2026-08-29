@@ -9,7 +9,7 @@ import { timeout, catchError } from 'rxjs/operators';
 export class ImportacionService {
 
   private readonly api =
-    'http://localhost:8080/administracion/eduplanner/users/import';
+    '/administracion/eduplanner/users/import';
 
   private readonly TIMEOUT_MS = 60000;
 

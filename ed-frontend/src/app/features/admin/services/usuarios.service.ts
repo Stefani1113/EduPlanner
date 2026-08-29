@@ -141,7 +141,7 @@ export const ID_ROL_DIRECTIVO = 4;
 })
 export class UsuariosService {
 
-  private api = 'http://localhost:8080/administracion/eduplanner';
+  private api = '/administracion/eduplanner';
 
   constructor(private http: HttpClient) {}
 
