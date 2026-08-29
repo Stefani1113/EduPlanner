@@ -1,12 +1,11 @@
 package com.EduPlanner.ed_ms_gestion_academica.controller;
 
-import com.eduplanner.ed_lib_common.dto.SchoolShiftRequestDTO;
-import com.eduplanner.ed_lib_common.dto.SchoolShiftResponseDTO;
-import com.eduplanner.ed_lib_common.dto.AcademicPeriodResponseDTO;
+import com.eduplanner.ed_lib_common.dto.TimeSlotRequestDTO;
+import com.eduplanner.ed_lib_common.dto.TimeSlotResponseDTO;
 import com.eduplanner.ed_lib_common.dto.HttpGlobalResponse;
 import com.eduplanner.ed_lib_common.enums.RolEnum;
 import com.EduPlanner.ed_ms_gestion_academica.security.RequireRole;
-import com.EduPlanner.ed_ms_gestion_academica.service.SchoolShiftService;
+import com.EduPlanner.ed_ms_gestion_academica.service.TimeSlotService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,41 +18,37 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/school-shifts")
+@RequestMapping("/time-slots")
 @RequiredArgsConstructor
-public class SchoolShiftController {
+public class TimeSlotController {
 
-    private final SchoolShiftService service;
+    private final TimeSlotService service;
 
-    /**
-     * Listar Jornadas y listar activos
-     * /school-shifts - Todos
-     * /school-shifts?active=true - solo activos
-     * @return
-     */
+    // GET /time-slots            -> todos
+    // GET /time-slots?idShift=2  -> filtrado por jornada
     @RequireRole(RolEnum.ADMINISTRADOR)
     @GetMapping
-    public ResponseEntity<HttpGlobalResponse<List<SchoolShiftResponseDTO>>> getAll(
-        @RequestParam(required = false) Boolean active) {
-        HttpGlobalResponse<List<SchoolShiftResponseDTO>> response = new HttpGlobalResponse<>();
-        List<SchoolShiftResponseDTO> result = (Boolean.TRUE.equals(active)) ? service.findAllActive() : service.findAll();
+    public ResponseEntity<HttpGlobalResponse<List<TimeSlotResponseDTO>>> getAll(
+            @RequestParam(required = false) Integer idShift) {
+        HttpGlobalResponse<List<TimeSlotResponseDTO>> response = new HttpGlobalResponse<>();
+        List<TimeSlotResponseDTO> result = (idShift != null) ? service.findByShift(idShift) : service.findAll();
         response.setData(result);
-        response.setMessage("Jornadas consultadas correctamente");
+        response.setMessage("Bloques horarios consultados correctamente");
         return ResponseEntity.ok(response);
     }
 
     /**
-     * Traer jornada por Id
+     * Buscar por Id
      * @param id
      * @return
      */
     @RequireRole(RolEnum.ADMINISTRADOR)
     @GetMapping("/{id}")
-    public ResponseEntity<HttpGlobalResponse<SchoolShiftResponseDTO>> getById(@PathVariable Integer id) {
-        HttpGlobalResponse<SchoolShiftResponseDTO> response = new HttpGlobalResponse<>();
+    public ResponseEntity<HttpGlobalResponse<TimeSlotResponseDTO>> getById(@PathVariable Integer id) {
+        HttpGlobalResponse<TimeSlotResponseDTO> response = new HttpGlobalResponse<>();
         try {
             response.setData(service.findById(id));
-            response.setMessage("Jornada encontrada");
+            response.setMessage("Bloque horario encontrado");
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             response.setMessage(e.getMessage());
@@ -62,17 +57,15 @@ public class SchoolShiftController {
     }
 
     /**
-     * Crear Jornada
-     * @param dto
-     * @return
+     * Crear Franja
      */
     @RequireRole(RolEnum.ADMINISTRADOR)
     @PostMapping
-    public ResponseEntity<HttpGlobalResponse<SchoolShiftResponseDTO>> create(@Valid @RequestBody SchoolShiftRequestDTO dto) {
-        HttpGlobalResponse<SchoolShiftResponseDTO> response = new HttpGlobalResponse<>();
+    public ResponseEntity<HttpGlobalResponse<TimeSlotResponseDTO>> create(@Valid @RequestBody TimeSlotRequestDTO dto) {
+        HttpGlobalResponse<TimeSlotResponseDTO> response = new HttpGlobalResponse<>();
         try {
             response.setData(service.create(dto));
-            response.setMessage("Jornada creada correctamente");
+            response.setMessage("Bloque horario creado correctamente");
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (IllegalArgumentException e) {
             response.setMessage(e.getMessage());
@@ -81,19 +74,19 @@ public class SchoolShiftController {
     }
 
     /**
-     * Editar Jornada
+     * Editar Franja
      * @param id
      * @param dto
      * @return
      */
     @RequireRole(RolEnum.ADMINISTRADOR)
     @PutMapping("/{id}")
-    public ResponseEntity<HttpGlobalResponse<SchoolShiftResponseDTO>> update(
-            @PathVariable Integer id, @Valid @RequestBody SchoolShiftRequestDTO dto) {
-        HttpGlobalResponse<SchoolShiftResponseDTO> response = new HttpGlobalResponse<>();
+    public ResponseEntity<HttpGlobalResponse<TimeSlotResponseDTO>> update(
+            @PathVariable Integer id, @Valid @RequestBody TimeSlotRequestDTO dto) {
+        HttpGlobalResponse<TimeSlotResponseDTO> response = new HttpGlobalResponse<>();
         try {
             response.setData(service.update(id, dto));
-            response.setMessage("Jornada actualizada correctamente");
+            response.setMessage("Bloque horario actualizado correctamente");
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             response.setMessage(e.getMessage());
@@ -102,7 +95,7 @@ public class SchoolShiftController {
     }
 
     /**
-     * Desactivar Jornada
+     * Desactivar Franja
      * @param id
      * @return
      */
@@ -112,7 +105,7 @@ public class SchoolShiftController {
         HttpGlobalResponse<Void> response = new HttpGlobalResponse<>();
         try {
             service.deactivate(id);
-            response.setMessage("Jornada desactivada correctamente");
+            response.setMessage("Bloque horario desactivado correctamente");
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             response.setMessage(e.getMessage());
@@ -121,7 +114,7 @@ public class SchoolShiftController {
     }
 
     /**
-     * Eliminar Jornada
+     * Eliminar Franja
      * @param id
      * @return
      */
@@ -130,13 +123,13 @@ public class SchoolShiftController {
         HttpGlobalResponse<Void> response = new HttpGlobalResponse<>();
         try {
             service.deletePermanently(id);
-            response.setMessage("Jornada eliminada permanentemente");
+            response.setMessage("Bloque horario eliminado permanentemente");
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             response.setMessage(e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         } catch (DataIntegrityViolationException e) {
-            response.setMessage("No se puede eliminar: esta jornada está siendo usada por otros registros");
+            response.setMessage("No se puede eliminar: este bloque está siendo usado por otros registros (ej. disponibilidad docente, horarios)");
             return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
         }
     }
