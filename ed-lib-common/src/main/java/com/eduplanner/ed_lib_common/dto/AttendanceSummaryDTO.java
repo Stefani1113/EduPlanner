@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
-/** HU 4.5 - Resumen personal de asistencia (estadísticas de un estudiante en un periodo) */
+/** Resumen personal de asistencia (estadísticas de un estudiante en un periodo) */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
