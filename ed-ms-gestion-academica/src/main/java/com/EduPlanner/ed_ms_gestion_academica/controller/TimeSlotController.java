@@ -9,6 +9,8 @@ import com.EduPlanner.ed_ms_gestion_academica.service.TimeSlotService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -108,6 +110,27 @@ public class TimeSlotController {
         } catch (IllegalArgumentException e) {
             response.setMessage(e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+    }
+
+    /**
+     * Eliminar Franja
+     * @param id
+     * @return
+     */
+    @DeleteMapping("/{id}/permanent")
+    public ResponseEntity<HttpGlobalResponse<Void>> deletePermanently(@PathVariable Integer id) {
+        HttpGlobalResponse<Void> response = new HttpGlobalResponse<>();
+        try {
+            service.deletePermanently(id);
+            response.setMessage("Bloque horario eliminado permanentemente");
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            response.setMessage(e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        } catch (DataIntegrityViolationException e) {
+            response.setMessage("No se puede eliminar: este bloque está siendo usado por otros registros (ej. disponibilidad docente, horarios)");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
         }
     }
 }

@@ -110,6 +110,18 @@ public class TimeSlotService {
         repository.save(slot);
     }
 
+    /**
+     * Eliminar Franja
+     * @param id
+     */
+    @Transactional
+    public void deletePermanently(Integer id) {
+        if (!repository.existsById(id)) {
+            throw new IllegalArgumentException("Bloque horario no encontrado con id: " + id);
+        }
+        repository.deleteById(id);
+    }
+
     private void validateTimes(LocalTime start, LocalTime end) {
         if (!start.isBefore(end)) {
             throw new IllegalArgumentException("La hora de inicio debe ser anterior a la hora de fin");
