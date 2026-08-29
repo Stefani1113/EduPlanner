@@ -27,7 +27,7 @@ public class AcademicPeriodController {
     /**
      * Listar todos o activos 
      * academic-periods - Todos
-     * academic-periods?activate=true - Solo activos
+     * academic-periods?active=true - Solo activos
      * @return
      */
     @RequireRole(RolEnum.ADMINISTRADOR)
