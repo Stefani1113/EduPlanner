@@ -21,3 +21,7 @@ server:
 security:
   jwt:
     secret-key: czyYSEj017tCB8M8mnOSvhgV4gSdI4P5Bql+3HrWZtM=
+
+services: 
+  administracion:
+    base-url: http://localhost:8082/eduplanner
