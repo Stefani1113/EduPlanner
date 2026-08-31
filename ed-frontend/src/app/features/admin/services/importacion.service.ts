@@ -9,22 +9,18 @@ import { timeout, catchError } from 'rxjs/operators';
 export class ImportacionService {
 
   private readonly api =
-    'http://localhost:8080/administracion/eduplanner/users/import';
+    '/administracion/eduplanner/users/import';
 
   private readonly TIMEOUT_MS = 60000;
 
   constructor(private http: HttpClient) {}
 
-  /**
-   * Obtiene el reporte de una importación realizada.
-   */
+
   obtenerReporte(idImport: number): Observable<any> {
     return this.http.get<any>(`${this.api}/${idImport}/report`);
   }
 
-  /**
-   * Envía el archivo Excel al backend para importar estudiantes.
-   */
+
   importarExcel(file: File): Observable<any> {
     const formData = new FormData();
     formData.append('file', file);
