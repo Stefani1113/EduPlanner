@@ -48,6 +48,7 @@ export class AccountActivationComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+
     this.route.queryParams.subscribe(params => {
 
       this.token = params['token'] || '';
@@ -56,8 +57,11 @@ export class AccountActivationComponent implements OnInit {
         this.mensajeError =
           'El enlace de activación no es válido o ha expirado.';
       }
+
     });
+
   }
+
 
   evaluarFortaleza(): void {
 
@@ -71,11 +75,26 @@ export class AccountActivationComponent implements OnInit {
 
     let puntos = 0;
 
-    if (this.tieneLongitud) puntos++;
-    if (this.tieneMayuscula) puntos++;
-    if (this.tieneMinuscula) puntos++;
-    if (this.tieneNumero) puntos++;
-    if (this.tieneEspecial) puntos++;
+    if (this.tieneLongitud) {
+      puntos++;
+    }
+
+    if (this.tieneMayuscula) {
+      puntos++;
+    }
+
+    if (this.tieneMinuscula) {
+      puntos++;
+    }
+
+    if (this.tieneNumero) {
+      puntos++;
+    }
+
+    if (this.tieneEspecial) {
+      puntos++;
+    }
+
 
     if (password.length === 0) {
 
@@ -106,10 +125,13 @@ export class AccountActivationComponent implements OnInit {
       this.fortaleza = 'excelente';
       this.porcentajeSeguridad = 100;
       this.passwordValida = true;
+
     }
 
     this.validarCoincidencia();
+
   }
+
 
   validarCoincidencia(): void {
 
@@ -117,37 +139,57 @@ export class AccountActivationComponent implements OnInit {
       this.nuevaPassword &&
       this.confirmarPassword
     ) {
+
       this.passwordsCoinciden =
         this.nuevaPassword === this.confirmarPassword;
+
     } else {
+
       this.passwordsCoinciden = false;
+
     }
+
   }
+
 
   activarCuenta(): void {
 
     this.mensajeError = '';
     this.mensajeExito = '';
 
+
     if (!this.token) {
+
       this.mensajeError =
         'El enlace de activación no es válido o ha expirado.';
+
       return;
+
     }
+
 
     if (!this.passwordValida) {
+
       this.mensajeError =
         'La contraseña no cumple con los requisitos de seguridad.';
+
       return;
+
     }
+
 
     if (!this.passwordsCoinciden) {
+
       this.mensajeError =
         'Las contraseñas no coinciden.';
+
       return;
+
     }
 
+
     this.cargando = true;
+
 
     this.authService.activarCuenta(
       this.token,
@@ -161,13 +203,22 @@ export class AccountActivationComponent implements OnInit {
         this.mensajeExito =
           '¡Tu cuenta ha sido activada correctamente!';
 
+
         this.nuevaPassword = '';
         this.confirmarPassword = '';
 
+        this.evaluarFortaleza();
+        this.validarCoincidencia();
+
+
         setTimeout(() => {
+
           this.router.navigate(['/auth']);
+
         }, 2500);
+
       },
+
 
       error: (error) => {
 
@@ -178,11 +229,16 @@ export class AccountActivationComponent implements OnInit {
           error
         );
 
+
         this.mensajeError =
           error.error?.message ||
           error.error?.mensaje ||
           'No se pudo activar la cuenta. El enlace puede haber expirado.';
+
       }
+
     });
+
   }
+
 }

@@ -46,18 +46,12 @@ export class PerfilService {
 
   constructor(private http: HttpClient) {}
 
-  /**
-   * GET /users/me
-   * Trae los datos del usuario actualmente logueado (según el token).
-   */
+ 
   obtenerMiPerfil(): Observable<HttpGlobalResponse<MiPerfilDTO>> {
     return this.http.get<HttpGlobalResponse<MiPerfilDTO>>(this.api);
   }
 
-  /**
-   * POST /users/me/photo
-   * Envía el archivo real (multipart/form-data), nunca Base64.
-   */
+ 
   actualizarFoto(archivo: File): Observable<HttpGlobalResponse<string>> {
     const formData = new FormData();
     formData.append('file', archivo, archivo.name);

@@ -187,85 +187,6 @@ export class DocentesComponent implements OnInit {
   }
 
 
-  manejarErrorImagen(event: Event): void {
-    const img = event.target as HTMLImageElement;
-    img.onerror = null;
-    img.src = '/assets/img/profile.png';
-  }
-
-
-  onFotoSeleccionada(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const archivo = input.files && input.files[0];
-
-    if (!archivo) {
-      return;
-    }
-
-    if (!archivo.type.startsWith('image/')) {
-      this.errorFormulario = 'El archivo seleccionado no es una imagen válida.';
-      input.value = '';
-      return;
-    }
-
-    this.redimensionarImagen(archivo, 400, 400, 0.75)
-      .then(dataUrl => {
-        this.form.photoUrl = dataUrl;
-        this.errorFormulario = '';
-      })
-      .catch(() => {
-        this.errorFormulario = 'No se pudo procesar la imagen seleccionada.';
-      });
-
-    input.value = '';
-  }
-
-  private redimensionarImagen(
-    archivo: File,
-    maxAncho: number,
-    maxAlto: number,
-    calidad: number
-  ): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const lector = new FileReader();
-
-      lector.onload = () => {
-        const img = new Image();
-
-        img.onload = () => {
-          let { width, height } = img;
-
-          if (width > maxAncho || height > maxAlto) {
-            const ratio = Math.min(maxAncho / width, maxAlto / height);
-            width = Math.round(width * ratio);
-            height = Math.round(height * ratio);
-          }
-
-          const canvas = document.createElement('canvas');
-          canvas.width = width;
-          canvas.height = height;
-
-          const ctx = canvas.getContext('2d');
-
-          if (!ctx) {
-            reject(new Error('No se pudo procesar la imagen.'));
-            return;
-          }
-
-          ctx.drawImage(img, 0, 0, width, height);
-
-          resolve(canvas.toDataURL('image/jpeg', calidad));
-        };
-
-        img.onerror = () => reject(new Error('No se pudo cargar la imagen.'));
-        img.src = lector.result as string;
-      };
-
-      lector.onerror = () => reject(new Error('No se pudo leer el archivo.'));
-      lector.readAsDataURL(archivo);
-    });
-  }
-
  
   obtenerDescripcionLineas(desc: string | null | undefined): string[] {
     if (!desc) {
@@ -410,10 +331,10 @@ export class DocentesComponent implements OnInit {
       !this.form.bloodType ||
       !this.form.position?.trim();
 
-    if (camposBase || !this.form.password?.trim()) {
+    if (camposBase) {
       this.errorFormulario =
         this.docenteEnEdicion
-          ? 'Completa todos los campos obligatorios, incluida la contraseña, para guardar los cambios.'
+          ? 'Completa todos los campos obligatorios para guardar los cambios.'
           : 'Por favor completa todos los campos obligatorios.';
 
       return;

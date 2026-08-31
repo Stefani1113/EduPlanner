@@ -166,9 +166,6 @@ export class HorariosService {
     );
   }
 
-  // =========================================================
-  // DOCENTES ACADÉMICOS
-  // =========================================================
 
   listarDocentesAcademicos(): Observable<
     HttpGlobalResponse<AcademicTeacherResponseDTO[]>

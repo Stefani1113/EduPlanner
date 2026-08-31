@@ -1,13 +1,18 @@
 <div class="activation-page">
 
   <header class="header">
+
     <div class="logo-container">
+
       <img
         src="assets/img/Logo-nav.png"
         alt="EduPlanner"
       >
+
     </div>
+
   </header>
+
 
   <main class="activation-container">
 
@@ -34,12 +39,12 @@
 
       </div>
 
+
       <form
         class="activation-form"
         (ngSubmit)="activarCuenta()"
       >
 
-        <!-- NUEVA CONTRASEÑA -->
 
         <div class="form-group">
 
@@ -71,7 +76,7 @@
 
         </div>
 
-        <!-- SEGURIDAD -->
+
 
         <div
           class="security-container"
@@ -95,47 +100,82 @@
 
           </div>
 
+
           <div class="security-bar">
 
             <div
               class="security-progress"
+              [class.weak]="fortaleza === 'débil'"
+              [class.medium]="fortaleza === 'media'"
+              [class.strong]="fortaleza === 'fuerte'"
+              [class.excellent]="fortaleza === 'excelente'"
               [style.width.%]="porcentajeSeguridad"
             ></div>
 
           </div>
 
+
           <div class="requirements">
 
             <div [class.valid]="tieneLongitud">
-              {{ tieneLongitud ? '✓' : '○' }}
+
+              <span class="requirement-icon">
+                {{ tieneLongitud ? '✓' : '○' }}
+              </span>
+
               Mínimo 8 caracteres
+
             </div>
+
 
             <div [class.valid]="tieneMayuscula">
-              {{ tieneMayuscula ? '✓' : '○' }}
+
+              <span class="requirement-icon">
+                {{ tieneMayuscula ? '✓' : '○' }}
+              </span>
+
               Una letra mayúscula
+
             </div>
+
 
             <div [class.valid]="tieneMinuscula">
-              {{ tieneMinuscula ? '✓' : '○' }}
+
+              <span class="requirement-icon">
+                {{ tieneMinuscula ? '✓' : '○' }}
+              </span>
+
               Una letra minúscula
+
             </div>
+
 
             <div [class.valid]="tieneNumero">
-              {{ tieneNumero ? '✓' : '○' }}
+
+              <span class="requirement-icon">
+                {{ tieneNumero ? '✓' : '○' }}
+              </span>
+
               Un número
+
             </div>
 
+
             <div [class.valid]="tieneEspecial">
-              {{ tieneEspecial ? '✓' : '○' }}
+
+              <span class="requirement-icon">
+                {{ tieneEspecial ? '✓' : '○' }}
+              </span>
+
               Un carácter especial
+
             </div>
 
           </div>
 
         </div>
 
-        <!-- CONFIRMAR -->
+
 
         <div class="form-group">
 
@@ -147,7 +187,11 @@
 
             <input
               id="confirmarPassword"
-              [type]="mostrarConfirmacion ? 'text' : 'password'"
+              [type]="
+                mostrarConfirmacion
+                  ? 'text'
+                  : 'password'
+              "
               [(ngModel)]="confirmarPassword"
               name="confirmarPassword"
               placeholder="Repite tu contraseña"
@@ -158,12 +202,20 @@
             <button
               type="button"
               class="password-toggle"
-              (click)="mostrarConfirmacion = !mostrarConfirmacion"
+              (click)="
+                mostrarConfirmacion =
+                !mostrarConfirmacion
+              "
             >
-              {{ mostrarConfirmacion ? 'Ocultar' : 'Mostrar' }}
+              {{
+                mostrarConfirmacion
+                  ? 'Ocultar'
+                  : 'Mostrar'
+              }}
             </button>
 
           </div>
+
 
           <div
             class="match-message"
@@ -171,34 +223,40 @@
             [class.match]="passwordsCoinciden"
             [class.no-match]="!passwordsCoinciden"
           >
+
             {{
               passwordsCoinciden
                 ? '✓ Las contraseñas coinciden'
                 : '✕ Las contraseñas no coinciden'
             }}
+
           </div>
 
         </div>
 
-        <!-- MENSAJE ERROR -->
+
 
         <div
           class="error-message"
           *ngIf="mensajeError"
         >
+
           {{ mensajeError }}
+
         </div>
 
-        <!-- MENSAJE ÉXITO -->
+
 
         <div
           class="success-message"
           *ngIf="mensajeExito"
         >
+
           {{ mensajeExito }}
+
         </div>
 
-        <!-- BOTÓN -->
+
 
         <button
           type="submit"
@@ -226,11 +284,16 @@
 
   </main>
 
+
   <footer class="footer">
+
     <img
       src="assets/img/logo-footer.png"
       alt="EduPlanner"
+      width="120"
+      height="54"
     >
+
   </footer>
 
 </div>
