@@ -71,7 +71,7 @@ public class SchoolShiftService {
     }
 
     /**
-     * Desactivar / Eliminar Jornada
+     * Desactivar Jornada
      * @param id
      */
     @Transactional
@@ -79,6 +79,18 @@ public class SchoolShiftService {
         SchoolShift shift = getOrThrow(id);
         shift.setStatus(false);
         repository.save(shift);
+    }
+
+    /**
+     * Eliminar Jornada
+     * @param id
+     */
+    @Transactional
+    public void deletePermanently(Integer id) {
+        if (!repository.existsById(id)) {
+            throw new IllegalArgumentException("Jornada no encontrada con id: " + id);
+        }
+        repository.deleteById(id);
     }
 
     private void validateTimes(LocalTime start, LocalTime end) {
