@@ -15,8 +15,15 @@ import {
   CourseResponseDTO,
   CourseRequestDTO,
   AcademicPeriodResponseDTO,
+  AcademicPeriodRequestDTO,
   AcademicLevelResponseDTO,
-  SchoolShiftResponseDTO
+  AcademicLevelRequestDTO,
+  SchoolShiftResponseDTO,
+  SchoolShiftRequestDTO,
+  TimeSlotResponseDTO,
+  TimeSlotRequestDTO,
+  TeacherAvailabilityResponseDTO,
+  TeacherAvailabilityRequestDTO
 } from '../../services/horarios.service';
 
 import { ModalService } from '../../../../core/services/modal.service';
@@ -58,6 +65,56 @@ interface CursoFila {
   estudiantes: number;
 }
 
+interface NivelFila {
+  idLevel: number;
+  nombre: string;
+  descripcion: string;
+}
+
+interface PeriodoFila {
+  idPeriod: number;
+  nombre: string;
+  fechaInicio: string;
+  fechaFin: string;
+}
+
+interface JornadaFila {
+  idShift: number;
+  nombre: string;
+  horaInicio: string;
+  horaFin: string;
+}
+
+interface FranjaFila {
+  idTimeSlot: number;
+  idShift: number;
+  jornada: string;
+  orden: number;
+  horaInicio: string;
+  horaFin: string;
+  esDescanso: boolean;
+}
+
+interface DisponibilidadFila {
+  idAvailability: number;
+  idTeacher: number;
+  docente: string;
+  idTimeSlot: number;
+  franja: string;
+  diaSemana: number;
+  diaNombre: string;
+  disponible: boolean;
+}
+
+const DIAS_SEMANA = [
+  { valor: 1, nombre: 'Lunes' },
+  { valor: 2, nombre: 'Martes' },
+  { valor: 3, nombre: 'Miércoles' },
+  { valor: 4, nombre: 'Jueves' },
+  { valor: 5, nombre: 'Viernes' },
+  { valor: 6, nombre: 'Sábado' }
+];
+
 
 @Component({
   selector: 'app-horarios',
@@ -74,16 +131,31 @@ export class HorariosComponent implements OnInit {
   mostrarFormularioDocente = false;
   mostrarFormularioAsignatura = false;
   mostrarFormularioCurso = false;
+  mostrarFormularioNivel = false;
+  mostrarFormularioPeriodo = false;
+  mostrarFormularioJornada = false;
+  mostrarFormularioFranja = false;
+  mostrarFormularioDisponibilidad = false;
 
   editandoDocente = false;
   editandoAsignatura = false;
   editandoCurso = false;
+  editandoNivel = false;
+  editandoPeriodo = false;
+  editandoJornada = false;
+  editandoFranja = false;
+  editandoDisponibilidad = false;
 
   cargandoDatos = false;
 
   guardandoDocente = false;
   guardandoAsignatura = false;
   guardandoCurso = false;
+  guardandoNivel = false;
+  guardandoPeriodo = false;
+  guardandoJornada = false;
+  guardandoFranja = false;
+  guardandoDisponibilidad = false;
 
 
   
@@ -92,6 +164,11 @@ export class HorariosComponent implements OnInit {
   errorFormularioDocente = '';
   errorFormularioAsignatura = '';
   errorFormularioCurso = '';
+  errorFormularioNivel = '';
+  errorFormularioPeriodo = '';
+  errorFormularioJornada = '';
+  errorFormularioFranja = '';
+  errorFormularioDisponibilidad = '';
 
 
   
@@ -102,12 +179,24 @@ export class HorariosComponent implements OnInit {
   docentes: DocenteFila[] = [];
   asignaturas: AsignaturaFila[] = [];
   cursos: CursoFila[] = [];
+  niveles: NivelFila[] = [];
+  periodos: PeriodoFila[] = [];
+  jornadas: JornadaFila[] = [];
+  franjas: FranjaFila[] = [];
+  disponibilidades: DisponibilidadFila[] = [];
+
+  diasSemana = DIAS_SEMANA;
 
 
   
   docenteSeleccionado: DocenteFila | null = null;
   asignaturaSeleccionada: AsignaturaFila | null = null;
   cursoSeleccionado: CursoFila | null = null;
+  nivelSeleccionado: NivelFila | null = null;
+  periodoSeleccionado: PeriodoFila | null = null;
+  jornadaSeleccionada: JornadaFila | null = null;
+  franjaSeleccionada: FranjaFila | null = null;
+  disponibilidadSeleccionada: DisponibilidadFila | null = null;
 
 
 
@@ -118,6 +207,8 @@ export class HorariosComponent implements OnInit {
   periodosDisponibles: AcademicPeriodResponseDTO[] = [];
   nivelesDisponibles: AcademicLevelResponseDTO[] = [];
   jornadasDisponibles: SchoolShiftResponseDTO[] = [];
+  franjasDisponibles: TimeSlotResponseDTO[] = [];
+  academicTeachersCatalogo: AcademicTeacherResponseDTO[] = [];
 
 
   private academicTeachersPorUsuario =
@@ -165,6 +256,48 @@ export class HorariosComponent implements OnInit {
   };
 
 
+  formularioNivel = {
+    idLevel: 0,
+    nombre: '',
+    descripcion: ''
+  };
+
+
+  formularioPeriodo = {
+    idPeriod: 0,
+    nombre: '',
+    fechaInicio: '',
+    fechaFin: ''
+  };
+
+
+  formularioJornada = {
+    idShift: 0,
+    nombre: '',
+    horaInicio: '',
+    horaFin: ''
+  };
+
+
+  formularioFranja = {
+    idTimeSlot: 0,
+    idShift: 0,
+    orden: 1,
+    horaInicio: '',
+    horaFin: '',
+    esDescanso: false
+  };
+
+
+  formularioDisponibilidad = {
+    idAvailability: 0,
+    idTeacher: 0,
+    idTimeSlot: 0,
+    diaSemana: 1,
+    disponible: true
+  };
+
+
   constructor(
     private horariosService: HorariosService,
     private docentesService: DocentesService,
@@ -192,7 +325,9 @@ export class HorariosComponent implements OnInit {
       cargas: this.horariosService.listarCargasAcademicas(),
       periodos: this.horariosService.listarPeriodos(),
       niveles: this.horariosService.listarNiveles(),
-      jornadas: this.horariosService.listarJornadas()
+      jornadas: this.horariosService.listarJornadas(),
+      franjas: this.horariosService.listarFranjas(),
+      disponibilidad: this.horariosService.listarDisponibilidad()
     }).subscribe({
 
       next: ({
@@ -203,7 +338,9 @@ export class HorariosComponent implements OnInit {
         cargas,
         periodos,
         niveles,
-        jornadas
+        jornadas,
+        franjas,
+        disponibilidad
       }) => {
 
         this.docentesDisponibles = docentes.data ?? [];
@@ -213,6 +350,7 @@ export class HorariosComponent implements OnInit {
         this.periodosDisponibles = periodos.data ?? [];
         this.nivelesDisponibles = niveles.data ?? [];
         this.jornadasDisponibles = jornadas.data ?? [];
+        this.franjasDisponibles = franjas.data ?? [];
 
 
         const docentesPorId =
@@ -246,6 +384,8 @@ export class HorariosComponent implements OnInit {
 
         const academicTeachersData =
           academicTeachers.data ?? [];
+
+        this.academicTeachersCatalogo = academicTeachersData;
 
         this.academicTeachersPorUsuario =
           new Map<number, AcademicTeacherResponseDTO>(
@@ -402,6 +542,104 @@ export class HorariosComponent implements OnInit {
             );
 
 
+        this.niveles =
+          this.nivelesDisponibles.map(nivel => ({
+            idLevel: nivel.idLevel,
+            nombre: nivel.name ?? '',
+            descripcion: nivel.description ?? ''
+          }));
+
+
+        this.periodos =
+          this.periodosDisponibles.map(periodo => ({
+            idPeriod: periodo.idPeriod,
+            nombre: periodo.name ?? '',
+            fechaInicio: periodo.startDate ?? '',
+            fechaFin: periodo.endDate ?? ''
+          }));
+
+
+        this.jornadas =
+          this.jornadasDisponibles.map(jornada => ({
+            idShift: jornada.idShift,
+            nombre: jornada.name ?? '',
+            horaInicio: jornada.startTime ?? '',
+            horaFin: jornada.endTime ?? ''
+          }));
+
+
+        const jornadasPorId =
+          new Map<number, SchoolShiftResponseDTO>(
+            this.jornadasDisponibles.map(jornada => [
+              jornada.idShift,
+              jornada
+            ])
+          );
+
+
+        this.franjas =
+          this.franjasDisponibles.map(franja => ({
+            idTimeSlot: franja.idTimeSlot,
+            idShift: franja.idShift,
+            jornada:
+              jornadasPorId.get(franja.idShift)?.name ??
+              `Jornada ${franja.idShift}`,
+            orden: franja.slotOrder,
+            horaInicio: franja.startTime ?? '',
+            horaFin: franja.endTime ?? '',
+            esDescanso: !!franja.isBreak
+          }));
+
+
+        const franjasPorId =
+          new Map<number, TimeSlotResponseDTO>(
+            this.franjasDisponibles.map(franja => [
+              franja.idTimeSlot,
+              franja
+            ])
+          );
+
+
+        this.disponibilidades =
+          (disponibilidad.data ?? []).map(item => {
+
+            const academicTeacher =
+              academicTeacherPorId.get(item.idTeacher);
+
+            const docente =
+              academicTeacher
+                ? docentesPorId.get(academicTeacher.idUser)
+                : undefined;
+
+            const franja =
+              franjasPorId.get(item.idTimeSlot);
+
+            const diaNombre =
+              DIAS_SEMANA.find(
+                dia => dia.valor === item.dayOfWeek
+              )?.nombre ?? `Día ${item.dayOfWeek}`;
+
+            return {
+              idAvailability: item.idAvailability,
+              idTeacher: item.idTeacher,
+
+              docente: docente
+                ? `${docente.name ?? ''} ${docente.surnames ?? ''}`.trim()
+                : `Docente #${item.idTeacher}`,
+
+              idTimeSlot: item.idTimeSlot,
+
+              franja: franja
+                ? `${franja.startTime ?? ''} - ${franja.endTime ?? ''}`
+                : `Franja #${item.idTimeSlot}`,
+
+              diaSemana: item.dayOfWeek,
+              diaNombre,
+              disponible: item.available
+            };
+          });
+
+
         this.cargandoDatos = false;
       },
 
@@ -443,6 +681,18 @@ export class HorariosComponent implements OnInit {
         jornada => jornada.idShift === idShift
       )?.name ?? `Jornada ${idShift}`
     );
+  }
+
+
+  nombreDocenteAcademico(academico: AcademicTeacherResponseDTO): string {
+
+    const docente = this.docentesDisponibles.find(
+      d => d.idUser === academico.idUser
+    );
+
+    return docente
+      ? `${docente.name ?? ''} ${docente.surnames ?? ''}`.trim()
+      : `Docente #${academico.idUser}`;
   }
 
 
@@ -1326,6 +1576,641 @@ export class HorariosComponent implements OnInit {
         } 
 
       });
+  }
+
+
+  seleccionarNivel(nivel: NivelFila): void {
+    this.nivelSeleccionado = nivel;
+  }
+
+  abrirAgregarNivel(): void {
+    this.editandoNivel = false;
+    this.errorFormularioNivel = '';
+
+    this.formularioNivel = {
+      idLevel: 0,
+      nombre: '',
+      descripcion: ''
+    };
+
+    this.mostrarFormularioNivel = true;
+  }
+
+  abrirEditarNivel(): void {
+    if (!this.nivelSeleccionado) {
+      return;
+    }
+
+    this.editandoNivel = true;
+    this.errorFormularioNivel = '';
+
+    const nivel = this.nivelSeleccionado;
+
+    this.formularioNivel = {
+      idLevel: nivel.idLevel,
+      nombre: nivel.nombre,
+      descripcion: nivel.descripcion
+    };
+
+    this.mostrarFormularioNivel = true;
+  }
+
+  cerrarFormularioNivel(): void {
+    if (!this.guardandoNivel) {
+      this.mostrarFormularioNivel = false;
+    }
+  }
+
+  guardarNivel(): void {
+    this.errorFormularioNivel = '';
+
+    const nombre = this.formularioNivel.nombre.trim();
+
+    if (!nombre) {
+      this.errorFormularioNivel = 'El nombre del nivel es obligatorio.';
+      return;
+    }
+
+    this.guardandoNivel = true;
+
+    const dto: AcademicLevelRequestDTO = {
+      name: nombre,
+      description: this.formularioNivel.descripcion.trim()
+    };
+
+    const peticion = this.editandoNivel
+      ? this.horariosService.actualizarNivel(this.formularioNivel.idLevel, dto)
+      : this.horariosService.crearNivel(dto);
+
+    peticion.subscribe({
+      next: () => {
+        this.guardandoNivel = false;
+        this.mostrarFormularioNivel = false;
+        this.nivelSeleccionado = null;
+        this.cargarDatos();
+      },
+      error: err => {
+        console.error('Error guardando nivel:', err);
+        this.guardandoNivel = false;
+        this.errorFormularioNivel =
+          err?.error?.message ||
+          err?.error?.error ||
+          'No se pudo guardar el nivel académico.';
+      }
+    });
+  }
+
+  async eliminarNivel(): Promise<void> {
+    if (!this.nivelSeleccionado) {
+      return;
+    }
+
+    const nivel = this.nivelSeleccionado;
+
+    const confirmar = await this.modalService.confirm(
+      `¿Deseas eliminar el nivel ${nivel.nombre}?`,
+      'Eliminar nivel académico'
+    );
+
+    if (!confirmar) {
+      return;
+    }
+
+    this.horariosService.eliminarNivel(nivel.idLevel).subscribe({
+      next: () => {
+        this.niveles = this.niveles.filter(item => item.idLevel !== nivel.idLevel);
+        this.nivelesDisponibles = this.nivelesDisponibles.filter(item => item.idLevel !== nivel.idLevel);
+        this.nivelSeleccionado = null;
+      },
+      error: err => {
+        console.error('Error eliminando nivel:', err);
+        this.modalService.error(
+          err?.error?.message ||
+          err?.error?.error ||
+          'No se pudo eliminar el nivel académico.'
+        );
+      }
+    });
+  }
+
+
+  
+  seleccionarPeriodo(periodo: PeriodoFila): void {
+    this.periodoSeleccionado = periodo;
+  }
+
+  abrirAgregarPeriodo(): void {
+    this.editandoPeriodo = false;
+    this.errorFormularioPeriodo = '';
+
+    this.formularioPeriodo = {
+      idPeriod: 0,
+      nombre: '',
+      fechaInicio: '',
+      fechaFin: ''
+    };
+
+    this.mostrarFormularioPeriodo = true;
+  }
+
+  abrirEditarPeriodo(): void {
+    if (!this.periodoSeleccionado) {
+      return;
+    }
+
+    this.editandoPeriodo = true;
+    this.errorFormularioPeriodo = '';
+
+    const periodo = this.periodoSeleccionado;
+
+    this.formularioPeriodo = {
+      idPeriod: periodo.idPeriod,
+      nombre: periodo.nombre,
+      fechaInicio: periodo.fechaInicio,
+      fechaFin: periodo.fechaFin
+    };
+
+    this.mostrarFormularioPeriodo = true;
+  }
+
+  cerrarFormularioPeriodo(): void {
+    if (!this.guardandoPeriodo) {
+      this.mostrarFormularioPeriodo = false;
+    }
+  }
+
+  guardarPeriodo(): void {
+    this.errorFormularioPeriodo = '';
+
+    const formulario = this.formularioPeriodo;
+    const nombre = formulario.nombre.trim();
+
+    if (!nombre) {
+      this.errorFormularioPeriodo = 'El nombre del período es obligatorio.';
+      return;
+    }
+
+    if (!formulario.fechaInicio || !formulario.fechaFin) {
+      this.errorFormularioPeriodo = 'Las fechas de inicio y fin son obligatorias.';
+      return;
+    }
+
+    if (formulario.fechaFin < formulario.fechaInicio) {
+      this.errorFormularioPeriodo = 'La fecha de fin no puede ser anterior a la fecha de inicio.';
+      return;
+    }
+
+    this.guardandoPeriodo = true;
+
+    const dto: AcademicPeriodRequestDTO = {
+      name: nombre,
+      startDate: formulario.fechaInicio,
+      endDate: formulario.fechaFin
+    };
+
+    const peticion = this.editandoPeriodo
+      ? this.horariosService.actualizarPeriodo(formulario.idPeriod, dto)
+      : this.horariosService.crearPeriodo(dto);
+
+    peticion.subscribe({
+      next: () => {
+        this.guardandoPeriodo = false;
+        this.mostrarFormularioPeriodo = false;
+        this.periodoSeleccionado = null;
+        this.cargarDatos();
+      },
+      error: err => {
+        console.error('Error guardando período:', err);
+        this.guardandoPeriodo = false;
+        this.errorFormularioPeriodo =
+          err?.error?.message ||
+          err?.error?.error ||
+          'No se pudo guardar el período académico.';
+      }
+    });
+  }
+
+  async eliminarPeriodo(): Promise<void> {
+    if (!this.periodoSeleccionado) {
+      return;
+    }
+
+    const periodo = this.periodoSeleccionado;
+
+    const confirmar = await this.modalService.confirm(
+      `¿Deseas eliminar el período ${periodo.nombre}?`,
+      'Eliminar período académico'
+    );
+
+    if (!confirmar) {
+      return;
+    }
+
+    this.horariosService.eliminarPeriodo(periodo.idPeriod).subscribe({
+      next: () => {
+        this.periodos = this.periodos.filter(item => item.idPeriod !== periodo.idPeriod);
+        this.periodosDisponibles = this.periodosDisponibles.filter(item => item.idPeriod !== periodo.idPeriod);
+        this.periodoSeleccionado = null;
+      },
+      error: err => {
+        console.error('Error eliminando período:', err);
+        this.modalService.error(
+          err?.error?.message ||
+          err?.error?.error ||
+          'No se pudo eliminar el período académico.'
+        );
+      }
+    });
+  }
+
+
+  seleccionarJornada(jornada: JornadaFila): void {
+    this.jornadaSeleccionada = jornada;
+  }
+
+  abrirAgregarJornada(): void {
+    this.editandoJornada = false;
+    this.errorFormularioJornada = '';
+
+    this.formularioJornada = {
+      idShift: 0,
+      nombre: '',
+      horaInicio: '',
+      horaFin: ''
+    };
+
+    this.mostrarFormularioJornada = true;
+  }
+
+  abrirEditarJornada(): void {
+    if (!this.jornadaSeleccionada) {
+      return;
+    }
+
+    this.editandoJornada = true;
+    this.errorFormularioJornada = '';
+
+    const jornada = this.jornadaSeleccionada;
+
+    this.formularioJornada = {
+      idShift: jornada.idShift,
+      nombre: jornada.nombre,
+      horaInicio: jornada.horaInicio,
+      horaFin: jornada.horaFin
+    };
+
+    this.mostrarFormularioJornada = true;
+  }
+
+  cerrarFormularioJornada(): void {
+    if (!this.guardandoJornada) {
+      this.mostrarFormularioJornada = false;
+    }
+  }
+
+  guardarJornada(): void {
+    this.errorFormularioJornada = '';
+
+    const formulario = this.formularioJornada;
+    const nombre = formulario.nombre.trim();
+
+    if (!nombre) {
+      this.errorFormularioJornada = 'El nombre de la jornada es obligatorio.';
+      return;
+    }
+
+    if (!formulario.horaInicio || !formulario.horaFin) {
+      this.errorFormularioJornada = 'Las horas de inicio y fin son obligatorias.';
+      return;
+    }
+
+    this.guardandoJornada = true;
+
+    const dto: SchoolShiftRequestDTO = {
+      name: nombre,
+      startTime: formulario.horaInicio,
+      endTime: formulario.horaFin
+    };
+
+    const peticion = this.editandoJornada
+      ? this.horariosService.actualizarJornada(formulario.idShift, dto)
+      : this.horariosService.crearJornada(dto);
+
+    peticion.subscribe({
+      next: () => {
+        this.guardandoJornada = false;
+        this.mostrarFormularioJornada = false;
+        this.jornadaSeleccionada = null;
+        this.cargarDatos();
+      },
+      error: err => {
+        console.error('Error guardando jornada:', err);
+        this.guardandoJornada = false;
+        this.errorFormularioJornada =
+          err?.error?.message ||
+          err?.error?.error ||
+          'No se pudo guardar la jornada académica.';
+      }
+    });
+  }
+
+  async eliminarJornada(): Promise<void> {
+    if (!this.jornadaSeleccionada) {
+      return;
+    }
+
+    const jornada = this.jornadaSeleccionada;
+
+    const confirmar = await this.modalService.confirm(
+      `¿Deseas eliminar la jornada ${jornada.nombre}?`,
+      'Eliminar jornada académica'
+    );
+
+    if (!confirmar) {
+      return;
+    }
+
+    this.horariosService.eliminarJornada(jornada.idShift).subscribe({
+      next: () => {
+        this.jornadas = this.jornadas.filter(item => item.idShift !== jornada.idShift);
+        this.jornadasDisponibles = this.jornadasDisponibles.filter(item => item.idShift !== jornada.idShift);
+        this.jornadaSeleccionada = null;
+      },
+      error: err => {
+        console.error('Error eliminando jornada:', err);
+        this.modalService.error(
+          err?.error?.message ||
+          err?.error?.error ||
+          'No se pudo eliminar la jornada académica.'
+        );
+      }
+    });
+  }
+
+
+  seleccionarFranja(franja: FranjaFila): void {
+    this.franjaSeleccionada = franja;
+  }
+
+  abrirAgregarFranja(): void {
+    this.editandoFranja = false;
+    this.errorFormularioFranja = '';
+
+    this.formularioFranja = {
+      idTimeSlot: 0,
+      idShift: this.jornadasDisponibles[0]?.idShift ?? 0,
+      orden: 1,
+      horaInicio: '',
+      horaFin: '',
+      esDescanso: false
+    };
+
+    this.mostrarFormularioFranja = true;
+  }
+
+  abrirEditarFranja(): void {
+    if (!this.franjaSeleccionada) {
+      return;
+    }
+
+    this.editandoFranja = true;
+    this.errorFormularioFranja = '';
+
+    const franja = this.franjaSeleccionada;
+
+    this.formularioFranja = {
+      idTimeSlot: franja.idTimeSlot,
+      idShift: franja.idShift,
+      orden: franja.orden,
+      horaInicio: franja.horaInicio,
+      horaFin: franja.horaFin,
+      esDescanso: franja.esDescanso
+    };
+
+    this.mostrarFormularioFranja = true;
+  }
+
+  cerrarFormularioFranja(): void {
+    if (!this.guardandoFranja) {
+      this.mostrarFormularioFranja = false;
+    }
+  }
+
+  guardarFranja(): void {
+    this.errorFormularioFranja = '';
+
+    const formulario = this.formularioFranja;
+
+    if (!formulario.idShift) {
+      this.errorFormularioFranja = 'Selecciona la jornada a la que pertenece la franja.';
+      return;
+    }
+
+    if (!formulario.orden || formulario.orden <= 0) {
+      this.errorFormularioFranja = 'El orden del bloque debe ser mayor que 0.';
+      return;
+    }
+
+    if (!formulario.horaInicio || !formulario.horaFin) {
+      this.errorFormularioFranja = 'Las horas de inicio y fin son obligatorias.';
+      return;
+    }
+
+    this.guardandoFranja = true;
+
+    const dto: TimeSlotRequestDTO = {
+      idShift: Number(formulario.idShift),
+      slotOrder: Number(formulario.orden),
+      startTime: formulario.horaInicio,
+      endTime: formulario.horaFin,
+      isBreak: formulario.esDescanso
+    };
+
+    const peticion = this.editandoFranja
+      ? this.horariosService.actualizarFranja(formulario.idTimeSlot, dto)
+      : this.horariosService.crearFranja(dto);
+
+    peticion.subscribe({
+      next: () => {
+        this.guardandoFranja = false;
+        this.mostrarFormularioFranja = false;
+        this.franjaSeleccionada = null;
+        this.cargarDatos();
+      },
+      error: err => {
+        console.error('Error guardando franja:', err);
+        this.guardandoFranja = false;
+        this.errorFormularioFranja =
+          err?.error?.message ||
+          err?.error?.error ||
+          'No se pudo guardar la franja horaria.';
+      }
+    });
+  }
+
+  async eliminarFranja(): Promise<void> {
+    if (!this.franjaSeleccionada) {
+      return;
+    }
+
+    const franja = this.franjaSeleccionada;
+
+    const confirmar = await this.modalService.confirm(
+      `¿Deseas eliminar la franja ${franja.horaInicio} - ${franja.horaFin}?`,
+      'Eliminar franja horaria'
+    );
+
+    if (!confirmar) {
+      return;
+    }
+
+    this.horariosService.eliminarFranja(franja.idTimeSlot).subscribe({
+      next: () => {
+        this.franjas = this.franjas.filter(item => item.idTimeSlot !== franja.idTimeSlot);
+        this.franjasDisponibles = this.franjasDisponibles.filter(item => item.idTimeSlot !== franja.idTimeSlot);
+        this.franjaSeleccionada = null;
+      },
+      error: err => {
+        console.error('Error eliminando franja:', err);
+        this.modalService.error(
+          err?.error?.message ||
+          err?.error?.error ||
+          'No se pudo eliminar la franja horaria.'
+        );
+      }
+    });
+  }
+
+
+  seleccionarDisponibilidad(item: DisponibilidadFila): void {
+    this.disponibilidadSeleccionada = item;
+  }
+
+  abrirAgregarDisponibilidad(): void {
+    this.editandoDisponibilidad = false;
+    this.errorFormularioDisponibilidad = '';
+
+    this.formularioDisponibilidad = {
+      idAvailability: 0,
+      idTeacher: this.academicTeachersCatalogo[0]?.idAcademicTeacher ?? 0,
+      idTimeSlot: this.franjasDisponibles[0]?.idTimeSlot ?? 0,
+      diaSemana: 1,
+      disponible: true
+    };
+
+    this.mostrarFormularioDisponibilidad = true;
+  }
+
+  abrirEditarDisponibilidad(): void {
+    if (!this.disponibilidadSeleccionada) {
+      return;
+    }
+
+    this.editandoDisponibilidad = true;
+    this.errorFormularioDisponibilidad = '';
+
+    const item = this.disponibilidadSeleccionada;
+
+    this.formularioDisponibilidad = {
+      idAvailability: item.idAvailability,
+      idTeacher: item.idTeacher,
+      idTimeSlot: item.idTimeSlot,
+      diaSemana: item.diaSemana,
+      disponible: item.disponible
+    };
+
+    this.mostrarFormularioDisponibilidad = true;
+  }
+
+  cerrarFormularioDisponibilidad(): void {
+    if (!this.guardandoDisponibilidad) {
+      this.mostrarFormularioDisponibilidad = false;
+    }
+  }
+
+  guardarDisponibilidad(): void {
+    this.errorFormularioDisponibilidad = '';
+
+    const formulario = this.formularioDisponibilidad;
+
+    if (!formulario.idTeacher) {
+      this.errorFormularioDisponibilidad = 'Selecciona un docente.';
+      return;
+    }
+
+    if (!formulario.idTimeSlot) {
+      this.errorFormularioDisponibilidad = 'Selecciona una franja horaria.';
+      return;
+    }
+
+    if (!formulario.diaSemana) {
+      this.errorFormularioDisponibilidad = 'Selecciona el día de la semana.';
+      return;
+    }
+
+    this.guardandoDisponibilidad = true;
+
+    const dto: TeacherAvailabilityRequestDTO = {
+      idTeacher: Number(formulario.idTeacher),
+      idTimeSlot: Number(formulario.idTimeSlot),
+      dayOfWeek: Number(formulario.diaSemana),
+      available: formulario.disponible
+    };
+
+    const peticion = this.editandoDisponibilidad
+      ? this.horariosService.actualizarDisponibilidad(formulario.idAvailability, dto)
+      : this.horariosService.crearDisponibilidad(dto);
+
+    peticion.subscribe({
+      next: () => {
+        this.guardandoDisponibilidad = false;
+        this.mostrarFormularioDisponibilidad = false;
+        this.disponibilidadSeleccionada = null;
+        this.cargarDatos();
+      },
+      error: err => {
+        console.error('Error guardando disponibilidad:', err);
+        this.guardandoDisponibilidad = false;
+        this.errorFormularioDisponibilidad =
+          err?.error?.message ||
+          err?.error?.error ||
+          'No se pudo guardar la disponibilidad del docente.';
+      }
+    });
+  }
+
+  async eliminarDisponibilidad(): Promise<void> {
+    if (!this.disponibilidadSeleccionada) {
+      return;
+    }
+
+    const item = this.disponibilidadSeleccionada;
+
+    const confirmar = await this.modalService.confirm(
+      `¿Deseas eliminar la disponibilidad de ${item.docente} el ${item.diaNombre}?`,
+      'Eliminar disponibilidad'
+    );
+
+    if (!confirmar) {
+      return;
+    }
+
+    this.horariosService.eliminarDisponibilidad(item.idAvailability).subscribe({
+      next: () => {
+        this.disponibilidades = this.disponibilidades.filter(
+          registro => registro.idAvailability !== item.idAvailability
+        );
+        this.disponibilidadSeleccionada = null;
+      },
+      error: err => {
+        console.error('Error eliminando disponibilidad:', err);
+        this.modalService.error(
+          err?.error?.message ||
+          err?.error?.error ||
+          'No se pudo eliminar la disponibilidad.'
+        );
+      }
+    });
   }
 
 }
