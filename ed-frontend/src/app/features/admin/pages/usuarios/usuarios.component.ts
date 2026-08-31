@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BreadcrumbService } from '../../services/breadcrumb.service';
@@ -16,6 +16,7 @@ import {
   ID_ROL_ESTUDIANTE,
   ID_ROL_DIRECTIVO
 } from '../../services/usuarios.service';
+import { ModalService } from '../../../../core/services/modal.service';
 
 type Rol = 'Administrador' | 'Docente' | 'Estudiante' | 'Directivo';
 type Estado = 'Activo' | 'Inactivo';
@@ -61,8 +62,8 @@ interface Usuario {
 })
 export class UsuariosComponent implements OnInit, OnDestroy {
 
-  // Solo Listado e Importación; la pestaña "Registro" se eliminó:
-  // el registro de usuarios ahora se hace únicamente desde "+ Registrar".
+  @ViewChild(RegistroUsuarioModalComponent) modalRegistro!: RegistroUsuarioModalComponent;
+
   tabs: { key: Tab; label: string }[] = [
     { key: 'listado', label: 'Listado' },
     { key: 'importacion', label: 'Importación' }
@@ -88,12 +89,10 @@ export class UsuariosComponent implements OnInit, OnDestroy {
 
   constructor(
     private breadcrumbService: BreadcrumbService,
-    private usuariosService: UsuariosService
+    private usuariosService: UsuariosService,
+    private modalService: ModalService
   ) {}
 
-  // Cierra los menús desplegables (filtro de rol / registrar) al hacer clic
-  // fuera de ellos, o al abrir el modal de registro, para que no se queden
-  // "pegados" flotando por encima del modal.
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
     if (!this.mostrarFiltroRol && !this.mostrarMenuRegistrar) return;
@@ -114,7 +113,6 @@ export class UsuariosComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.breadcrumbService.setExtra(null);
   }
-
 
   private cargarUsuarios(): void {
     this.cargando = true;
@@ -149,7 +147,6 @@ export class UsuariosComponent implements OnInit, OnDestroy {
     };
   }
 
-
   get usuariosFiltrados(): Usuario[] {
     const term = this.busqueda.trim().toLowerCase();
     return this.usuarios.filter(u => !term || u.nombre.toLowerCase().includes(term));
@@ -183,14 +180,11 @@ export class UsuariosComponent implements OnInit, OnDestroy {
     this.cargarUsuarios();
   }
 
-
   cambiarTab(tab: Tab): void {
     this.activeTab = tab;
     this.actualizarBreadcrumb();
   }
 
-
-  // Único punto de acción sobre un usuario en el listado: activar / inactivar.
   toggleEstado(usuario: Usuario): void {
     const nuevoEstado = usuario.estado === 'Activo' ? false : true;
 
@@ -200,20 +194,23 @@ export class UsuariosComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         console.error(err);
-        alert('No se pudo actualizar el estado del usuario. Intenta de nuevo.');
+        if (this.modalRegistro) {
+          this.modalRegistro.onErrorGuardado('No se pudo actualizar el estado del usuario. Intenta de nuevo.');
+        } else {
+          this.modalService.error('No se pudo actualizar el estado del usuario. Intenta de nuevo.');
+        }
       }
     });
   }
 
-
   abrirRegistro(tipo: TipoRegistro): void {
     this.tipoRegistro = tipo;
     this.mostrarMenuRegistrar = false;
-    this.mostrarFiltroRol = false; // evita que el filtro quede flotando sobre el modal
+    this.mostrarFiltroRol = false;
   }
 
   cerrarModal(): void {
-    if (this.guardandoUsuario) return; // evita cerrar mientras hay una petición en curso
+    if (this.guardandoUsuario) return;
     this.tipoRegistro = null;
   }
 
@@ -223,21 +220,21 @@ export class UsuariosComponent implements OnInit, OnDestroy {
     switch (evento.tipo) {
       case 'Docente':
         this.usuariosService.registrarDocente(evento.payload).subscribe({
-          next: (res) => this.onRegistroExitoso(res.message ?? 'Docente registrado correctamente.'),
+          next: (res) => this.onRegistroExitoso(res.message ?? 'Docente registrado correctamente. Se envió un correo de activación.'),
           error: (err) => this.onRegistroFallido(err, 'No se pudo registrar el docente.')
         });
         break;
 
       case 'Estudiante':
         this.usuariosService.registrarEstudiante(evento.payload).subscribe({
-          next: (res) => this.onRegistroExitoso(res.message ?? 'Estudiante registrado correctamente.'),
+          next: (res) => this.onRegistroExitoso(res.message ?? 'Estudiante registrado correctamente. Se envió un correo de activación.'),
           error: (err) => this.onRegistroFallido(err, 'No se pudo registrar el estudiante.')
         });
         break;
 
       case 'Staff':
         this.usuariosService.registrarPersonal(evento.payload).subscribe({
-          next: (res) => this.onRegistroExitoso(res.message ?? 'Usuario registrado correctamente.'),
+          next: (res) => this.onRegistroExitoso(res.message ?? 'Usuario registrado correctamente. Se envió un correo de activación.'),
           error: (err) => this.onRegistroFallido(err, 'No se pudo registrar el usuario.')
         });
         break;
@@ -246,15 +243,24 @@ export class UsuariosComponent implements OnInit, OnDestroy {
 
   private onRegistroExitoso(mensaje: string): void {
     this.guardandoUsuario = false;
-    this.tipoRegistro = null;
-    this.cargarUsuarios();
-    alert(mensaje);
+    if (this.modalRegistro) {
+      this.modalRegistro.onGuardadoExitoso(mensaje);
+    } else {
+      this.tipoRegistro = null;
+      this.cargarUsuarios();
+      this.modalService.success(mensaje);
+    }
   }
 
   private onRegistroFallido(err: any, mensajePorDefecto: string): void {
     this.guardandoUsuario = false;
     console.error(err);
-    alert(err.error?.message ?? mensajePorDefecto);
+    const mensajeError = err.error?.message ?? mensajePorDefecto;
+    if (this.modalRegistro) {
+      this.modalRegistro.onErrorGuardado(mensajeError);
+    } else {  
+      this.modalService.error(mensajeError);
+    }
   }
 
   private actualizarBreadcrumb(): void {

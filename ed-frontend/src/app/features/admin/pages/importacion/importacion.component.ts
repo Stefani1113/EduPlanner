@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ImportacionService } from '../../services/importacion.service';
+import { ModalService } from '../../../../core/services/modal.service';
 
 interface ImportErrorDetail {
   rowNumber: number;
@@ -18,7 +19,11 @@ interface ImportReport {
   errors: ImportErrorDetail[];
 }
 
-type TipoError = 'DUPLICADO' | 'FILA_INCOMPLETA' | 'FORMATO_INVALIDO' | 'OTRO';
+type TipoError =
+  | 'DUPLICADO'
+  | 'FILA_INCOMPLETA'
+  | 'FORMATO_INVALIDO'
+  | 'OTRO';
 
 @Component({
   selector: 'app-importacion',
@@ -29,32 +34,28 @@ type TipoError = 'DUPLICADO' | 'FILA_INCOMPLETA' | 'FORMATO_INVALIDO' | 'OTRO';
 })
 export class ImportacionComponent {
 
-  archivo!: File;
-
+  archivo: File | null = null;
   cargando = false;
-
   vista: 'formulario' | 'reporte' = 'formulario';
-
   reporte: ImportReport | null = null;
-
   errorGeneral: string | null = null;
 
-  constructor(private service: ImportacionService) {}
+  constructor(
+    private service: ImportacionService,
+    private modalService: ModalService
+  ) {}
 
   seleccionarArchivo(event: Event): void {
-
     const input = event.target as HTMLInputElement;
 
     if (input.files && input.files.length > 0) {
       this.archivo = input.files[0];
     }
-
   }
 
   importar(): void {
-
     if (!this.archivo) {
-      alert('Seleccione un archivo Excel');
+      this.modalService.warning('Seleccione un archivo Excel');
       return;
     }
 
@@ -62,7 +63,6 @@ export class ImportacionComponent {
     this.errorGeneral = null;
 
     this.service.importarExcel(this.archivo).subscribe({
-
       next: (resp: any) => {
         const idImport = resp?.data;
 
@@ -70,101 +70,171 @@ export class ImportacionComponent {
           this.verReporte(idImport);
         } else {
           this.cargando = false;
-          alert(resp?.message || 'Importación realizada correctamente');
+          this.modalService.success(resp?.message || 'Importación realizada correctamente');
         }
       },
 
-      error: (err) => {
-
+      error: (err: any) => {
         this.cargando = false;
-        alert(err?.error?.message || 'Ocurrió un error al importar el archivo');
 
+        this.modalService.error(
+          err?.error?.message ||
+          'Ocurrió un error al importar el archivo'
+        );
       }
-
     });
-
   }
 
-
   verReporte(idImport: number): void {
-
     this.cargando = true;
 
     this.service.obtenerReporte(idImport).subscribe({
-
       next: (resp: any) => {
         this.cargando = false;
         this.reporte = resp?.data ?? null;
         this.vista = 'reporte';
       },
 
-      error: (err) => {
+      error: (err: any) => {
         this.cargando = false;
-        this.errorGeneral = err?.error?.message || 'No se pudo cargar el reporte de importación';
+
+        this.errorGeneral =
+          err?.error?.message ||
+          'No se pudo cargar el reporte de importación';
       }
-
     });
-
   }
-
 
   volver(): void {
     this.vista = 'formulario';
     this.reporte = null;
-    this.archivo = null as any;
+    this.archivo = null;
+    this.errorGeneral = null;
   }
 
 
-  private clasificar(mensaje: string): { tipo: TipoError; campo: string | null } {
+  mensajeAmigable(mensaje: string): string {
+    const texto = (mensaje || '').toLowerCase();
+
+    if (
+      texto.includes('could not be parsed') ||
+      texto.includes('datetimeparseexception')
+    ) {
+      return 'La fecha de nacimiento tiene un formato inválido. ' +
+             'Utilice el formato DD/MM/AAAA.';
+    }
+
+    if (texto.includes('for input string')) {
+      return 'El estrato debe ser un número válido.';
+    }
+
+    return mensaje;
+  }
+
+
+  private clasificar(
+    mensaje: string
+  ): { tipo: TipoError; campo: string | null } {
 
     const texto = (mensaje || '').toLowerCase();
 
-    if (texto.includes('ya está registrado') || texto.includes('ya esta registrado')) {
-      if (texto.includes('correo')) return { tipo: 'DUPLICADO', campo: 'Correo' };
-      if (texto.includes('documento')) return { tipo: 'DUPLICADO', campo: 'Documento' };
-      if (texto.includes('celular') || texto.includes('teléfono') || texto.includes('telefono')) {
+    if (
+      texto.includes('ya está registrado') ||
+      texto.includes('ya esta registrado') ||
+      texto.includes('duplicado')
+    ) {
+      if (texto.includes('correo')) {
+        return { tipo: 'DUPLICADO', campo: 'Correo' };
+      }
+
+      if (texto.includes('documento')) {
+        return { tipo: 'DUPLICADO', campo: 'Documento' };
+      }
+
+      if (
+        texto.includes('celular') ||
+        texto.includes('teléfono') ||
+        texto.includes('telefono')
+      ) {
         return { tipo: 'DUPLICADO', campo: 'Teléfono' };
       }
       return { tipo: 'DUPLICADO', campo: null };
     }
 
-    if (texto.includes('la fila tiene') && texto.includes('columnas')) {
-      return { tipo: 'FILA_INCOMPLETA', campo: null };
+    if (
+      texto.includes('la fila tiene') &&
+      texto.includes('columnas')
+    ) {
+      return {
+        tipo: 'FILA_INCOMPLETA',
+        campo: null
+      };
     }
 
-    if (texto.includes('could not be parsed') || texto.includes('date') || texto.includes('parse')) {
-      return { tipo: 'FORMATO_INVALIDO', campo: 'Fecha de nacimiento' };
+    if (
+      texto.includes('fecha de nacimiento tiene un formato inválido') ||
+      texto.includes('fecha de nacimiento tiene un formato invalido') ||
+      texto.includes('could not be parsed') ||
+      texto.includes('datetimeparseexception')
+    ) {
+      return {
+        tipo: 'FORMATO_INVALIDO',
+        campo: 'Fecha de nacimiento'
+      };
     }
 
-    if (texto.includes('for input string')) {
-      return { tipo: 'FORMATO_INVALIDO', campo: 'Estrato' };
+    if (
+      texto.includes('for input string') ||
+      texto.includes('formato inválido en el estrato') ||
+      texto.includes('formato invalido en el estrato')
+    ) {
+      return {
+        tipo: 'FORMATO_INVALIDO',
+        campo: 'Estrato'
+      };
     }
 
-    return { tipo: 'OTRO', campo: null };
+    return {
+      tipo: 'OTRO',
+      campo: null
+    };
   }
 
   etiquetaTipoError(mensaje: string): string {
     switch (this.clasificar(mensaje).tipo) {
-      case 'DUPLICADO': return 'Duplicado';
-      case 'FILA_INCOMPLETA': return 'Fila incompleta';
-      case 'FORMATO_INVALIDO': return 'Formato inválido';
-      default: return 'Otro error';
+
+      case 'DUPLICADO':
+        return 'Duplicado';
+
+      case 'FILA_INCOMPLETA':
+        return 'Fila incompleta';
+
+      case 'FORMATO_INVALIDO':
+        return 'Formato inválido';
+
+      default:
+        return 'Otro error';
     }
   }
-
 
   claseTipoError(mensaje: string): string {
     switch (this.clasificar(mensaje).tipo) {
-      case 'DUPLICADO': return 'badge-duplicado';
-      case 'FILA_INCOMPLETA': return 'badge-fila';
-      case 'FORMATO_INVALIDO': return 'badge-formato';
-      default: return 'badge-otro';
+
+      case 'DUPLICADO':
+        return 'badge-duplicado';
+
+      case 'FILA_INCOMPLETA':
+        return 'badge-fila';
+
+      case 'FORMATO_INVALIDO':
+        return 'badge-formato';
+
+      default:
+        return 'badge-otro';
     }
   }
 
-  
   campoAfectado(mensaje: string): string {
     return this.clasificar(mensaje).campo || '—';
   }
-
 }

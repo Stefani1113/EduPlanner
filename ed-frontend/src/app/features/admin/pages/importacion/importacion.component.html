@@ -34,24 +34,22 @@
 
       </label>
 
-
       <div class="archivo" *ngIf="archivo">
         <i class="fa-solid fa-file"></i>
-        {{archivo.name}}
+        {{ archivo.name }}
       </div>
 
       <div class="error-general" *ngIf="errorGeneral">
         {{ errorGeneral }}
       </div>
 
-      <button class="btn-importar"
+      <button
+        class="btn-importar"
         [disabled]="cargando"
-        (click)="importar()">
-
+        (click)="importar()"
+      >
         {{ cargando ? 'IMPORTANDO...' : 'IMPORTAR ARCHIVO' }}
-
       </button>
-
 
     </div>
 
@@ -60,81 +58,177 @@
 </div>
 
 
-<div class="reporte-container" *ngIf="vista === 'reporte' && reporte">
+<div
+  class="reporte-container"
+  *ngIf="vista === 'reporte' && reporte"
+>
 
   <div class="reporte-card">
 
-    <button class="btn-volver" (click)="volver()">
+    <button
+      type="button"
+      class="btn-volver"
+      (click)="volver()"
+    >
       <i class="fa-solid fa-arrow-left"></i>
       Volver
     </button>
 
+
     <div class="reporte-titulo">
       Reporte de importación
     </div>
+
     <div class="reporte-subtitulo">
       Consulta el resultado detallado del proceso de importación.
     </div>
 
+
     <div class="reporte-meta">
-      <span><strong>Archivo:</strong> {{ reporte.fileName }}</span>
-      <span><strong>Fecha:</strong> {{ reporte.importDate | date:'dd/MM/yyyy HH:mm' }}</span>
-      <span><strong>ID de importación:</strong> #{{ reporte.idImport }}</span>
+
+      <span>
+        <strong>Archivo:</strong>
+        {{ reporte.fileName }}
+      </span>
+
+      <span>
+        <strong>Fecha:</strong>
+        {{ reporte.importDate | date:'dd/MM/yyyy HH:mm' }}
+      </span>
+
+      <span>
+        <strong>ID de importación:</strong>
+        #{{ reporte.idImport }}
+      </span>
+
     </div>
+
 
     <div class="resumen-cards">
 
       <div class="resumen-card total">
-        <span class="resumen-label">Total</span>
-        <span class="resumen-valor">{{ reporte.totalRows }}</span>
+
+        <span class="resumen-label">
+          Total
+        </span>
+
+        <span class="resumen-valor">
+          {{ reporte.totalRows }}
+        </span>
+
       </div>
+
 
       <div class="resumen-card exitosos">
-        <span class="resumen-label">Exitosos</span>
-        <span class="resumen-valor">{{ reporte.successRows }}</span>
+
+        <span class="resumen-label">
+          Exitosos
+        </span>
+
+        <span class="resumen-valor">
+          {{ reporte.successRows }}
+        </span>
+
       </div>
 
+
       <div class="resumen-card errores">
-        <span class="resumen-label">Con errores</span>
-        <span class="resumen-valor">{{ reporte.failedRows }}</span>
+
+        <span class="resumen-label">
+          Con errores
+        </span>
+
+        <span class="resumen-valor">
+          {{ reporte.failedRows }}
+        </span>
+
       </div>
 
     </div>
 
-    <div class="tabla-errores-titulo" *ngIf="reporte.errors?.length">
+
+    <div
+      class="tabla-errores-titulo"
+      *ngIf="reporte.errors?.length"
+    >
       Tabla de errores
     </div>
 
-    <div class="table-wrapper" *ngIf="reporte.errors?.length">
+
+    <div
+      class="table-wrapper"
+      *ngIf="reporte.errors?.length"
+    >
+
       <table class="errores-table">
+
         <thead>
+
           <tr>
             <th>Fila</th>
             <th>Tipo de error</th>
             <th>Casilla</th>
             <th>Detalle</th>
           </tr>
+
         </thead>
+
+
         <tbody>
+
           <tr *ngFor="let err of reporte.errors">
-            <td>{{ err.rowNumber }}</td>
+
             <td>
-              <span class="badge" [ngClass]="claseTipoError(err.error)">
+              {{ err.rowNumber }}
+            </td>
+
+
+            <td>
+
+              <span
+                class="badge"
+                [ngClass]="claseTipoError(err.error)"
+              >
                 {{ etiquetaTipoError(err.error) }}
               </span>
+
             </td>
-            <td>{{ campoAfectado(err.error) }}</td>
-            <td class="detalle-cell">{{ err.error }}</td>
+
+
+            <td>
+              {{ campoAfectado(err.error) }}
+            </td>
+
+
+            <td class="detalle-cell">
+              {{ mensajeAmigable(err.error) }}
+            </td>
+
           </tr>
+
         </tbody>
+
       </table>
+
     </div>
 
-    <div class="sin-errores" *ngIf="!reporte.errors?.length">
-      Todos los registros se importaron correctamente, sin errores.
+
+    <div
+      class="sin-errores"
+      *ngIf="!reporte.errors?.length"
+    >
+
+      Todos los registros se importaron correctamente,
+      sin errores.
+
     </div>
 
-    <button class="btn-nueva-importacion" (click)="volver()">
+
+    <button
+      type="button"
+      class="btn-nueva-importacion"
+      (click)="volver()"
+    >
       REALIZAR OTRA IMPORTACIÓN
     </button>
 

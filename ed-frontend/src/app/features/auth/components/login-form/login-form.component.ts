@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { ModalService } from '../../../../core/services/modal.service';
 
 @Component({
   selector: 'app-login-form',
@@ -15,7 +16,8 @@ export class LoginFormComponent {
 
   constructor(
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    private modalService: ModalService
   ) {}
 
   login(): void {
@@ -34,7 +36,7 @@ export class LoginFormComponent {
 
       error: (error) => {
         console.error(error);
-        alert('Correo o contraseña incorrectos');
+        this.modalService.error('Correo o contraseña incorrectos');
       }
 
     });

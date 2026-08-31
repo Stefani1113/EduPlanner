@@ -13,10 +13,6 @@ import com.eduplanner.ed_ms_autenticacion.service.TokenBlacklistService;
 
 import java.io.IOException;
 
-/**
- * RF 1.2.1 - Valida el JWT en cada petición protegida.
- * RF 1.6    - Rechaza tokens revocados (sesión cerrada).
- */
 @Component
 @RequiredArgsConstructor
 @Log4j2
@@ -39,7 +35,6 @@ public class JwtValidationFilter extends OncePerRequestFilter {
 
         String token = authHeader.substring(7);
 
-        // RF 1.6 - Token revocado por logout
         if (tokenBlacklistService.isBlacklisted(token)) {
             sendError(response, HttpServletResponse.SC_UNAUTHORIZED,
                     "Sesión cerrada. Por favor inicie sesión nuevamente.");
@@ -48,8 +43,8 @@ public class JwtValidationFilter extends OncePerRequestFilter {
 
         try {
             if (jwtService.isTokenValid(token)) {
-                request.setAttribute("idUser",  jwtService.extractIdUser(token));
-                request.setAttribute("role",      jwtService.extractIdRole(token));
+                request.setAttribute("idUser", jwtService.extractIdUser(token));
+                request.setAttribute("role", jwtService.extractRole(token)); 
                 filterChain.doFilter(request, response);
             } else {
                 sendError(response, HttpServletResponse.SC_UNAUTHORIZED,
@@ -64,12 +59,16 @@ public class JwtValidationFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
+        System.out.println("URI: " + request.getRequestURI());
+        System.out.println("CONTEXT PATH: " + request.getContextPath());
+        System.out.println("SERVLET PATH: " + request.getServletPath());
+
         String path = request.getRequestURI();
-        // Solo el login y cambio de contraseña es público
+
         return path.startsWith("/eduplanner/auth/login")
                         || path.startsWith("/eduplanner/auth/forgot-password")
                         || path.startsWith("/eduplanner/auth/reset-password")
-                        || path.startsWith("/eduplanner/activation-account")
+                        || path.startsWith("/eduplanner/auth/activation-account") 
                         || path.startsWith("/eduplanner/internal/tokens");
     }
 

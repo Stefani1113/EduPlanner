@@ -19,5 +19,12 @@ export const routes: Routes = [
     path: 'admin',
     loadChildren: () =>
       import('./features/admin/admin.module').then(m => m.AdminModule)
-  }
+  },
+
+  {
+  path: 'activate',
+  loadComponent: () =>
+    import('./features/admin/pages/Account-activation/Account-activation.component')
+      .then(m => m.AccountActivationComponent)
+},
 ];

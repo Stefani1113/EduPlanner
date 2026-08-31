@@ -214,46 +214,6 @@
 
       <div class="modal-body">
 
-        <div class="foto-edicion">
-
-          <div class="foto-upload" (click)="fileFotoInput.click()">
-
-            <img [src]="form.photoUrl || '/assets/img/profile.png'"
-                 alt="Foto del docente"
-                 (error)="manejarErrorImagen($event)" />
-
-            <div class="foto-overlay">
-              <svg class="foto-overlay-icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-                <circle cx="12" cy="13" r="4"></circle>
-              </svg>
-              <span>Cambiar foto</span>
-            </div>
-
-            <input
-              #fileFotoInput
-              type="file"
-              accept="image/*"
-              class="foto-input-oculto"
-              (click)="$event.stopPropagation()"
-              (change)="onFotoSeleccionada($event)"
-            />
-
-          </div>
-
-          <div class="foto-control">
-
-            <label>Foto del docente</label>
-
-            <button type="button" class="btn-seleccionar-foto" (click)="fileFotoInput.click()">
-              Seleccionar imagen
-            </button>
-
-            <small>Formatos JPG, PNG o GIF. Haz clic en la foto o en el botón para subir una imagen desde tu computadora.</small>
-
-          </div>
-        </div>
-
         <div class="grid-2">
           <div class="campo">
             <label>Nombres *</label>
@@ -265,19 +225,9 @@
           </div>
         </div>
 
-        <div class="grid-2">
-          <div class="campo">
-            <label>Correo *</label>
-            <input type="email" [(ngModel)]="form.email" name="email" />
-          </div>
-          <div class="campo">
-            <label>Contraseña *</label>
-            <input type="password" [(ngModel)]="form.password" name="password"
-                   [placeholder]="docenteEnEdicion ? 'Contraseña para confirmar cambios' : ''" />
-            <small class="ayuda" *ngIf="docenteEnEdicion">
-              Escribe la contraseña para guardar los cambios.
-            </small>
-          </div>
+        <div class="campo">
+          <label>Correo *</label>
+          <input type="email" [(ngModel)]="form.email" name="email" />
         </div>
 
         <div class="grid-3">
