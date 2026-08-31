@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ImportacionService } from '../../services/importacion.service';
+import { ModalService } from '../../../../core/services/modal.service';
 
 interface ImportErrorDetail {
   rowNumber: number;
@@ -39,7 +40,10 @@ export class ImportacionComponent {
   reporte: ImportReport | null = null;
   errorGeneral: string | null = null;
 
-  constructor(private service: ImportacionService) {}
+  constructor(
+    private service: ImportacionService,
+    private modalService: ModalService
+  ) {}
 
   seleccionarArchivo(event: Event): void {
     const input = event.target as HTMLInputElement;
@@ -51,7 +55,7 @@ export class ImportacionComponent {
 
   importar(): void {
     if (!this.archivo) {
-      alert('Seleccione un archivo Excel');
+      this.modalService.warning('Seleccione un archivo Excel');
       return;
     }
 
@@ -66,14 +70,14 @@ export class ImportacionComponent {
           this.verReporte(idImport);
         } else {
           this.cargando = false;
-          alert(resp?.message || 'Importación realizada correctamente');
+          this.modalService.success(resp?.message || 'Importación realizada correctamente');
         }
       },
 
       error: (err: any) => {
         this.cargando = false;
 
-        alert(
+        this.modalService.error(
           err?.error?.message ||
           'Ocurrió un error al importar el archivo'
         );
