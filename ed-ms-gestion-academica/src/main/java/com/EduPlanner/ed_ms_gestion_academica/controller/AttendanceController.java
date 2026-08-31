@@ -2,13 +2,17 @@ package com.EduPlanner.ed_ms_gestion_academica.controller;
 
 import com.eduplanner.ed_lib_common.dto.AttendanceRequestDTO;
 import com.eduplanner.ed_lib_common.dto.AttendanceResponseDTO;
+import com.eduplanner.ed_lib_common.dto.AttendanceSummaryDTO;
 import com.eduplanner.ed_lib_common.dto.HttpGlobalResponse;
 import com.eduplanner.ed_lib_common.dto.JustificationRequestDTO;
 import com.eduplanner.ed_lib_common.dto.JustificationReviewDTO;
+import com.EduPlanner.ed_ms_gestion_academica.service.AttendancePdfService;
 import com.EduPlanner.ed_ms_gestion_academica.service.AttendanceService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
@@ -16,13 +20,14 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.List;
 
-/** HU 4.2 - Registrar tardanzas y salidas anticipadas. Base: /eduplanner/attendance */
+/**Registrar tardanzas y salidas anticipadas. Base: /eduplanner/attendance */
 @RestController
 @RequestMapping("/attendance")
 @RequiredArgsConstructor
 public class AttendanceController {
 
     private final AttendanceService service;
+    private final AttendancePdfService pdfService;
 
     @PostMapping
     public ResponseEntity<HttpGlobalResponse<AttendanceResponseDTO>> registerAttendance(
@@ -67,7 +72,7 @@ public class AttendanceController {
     }
 
     /**
-     * HU 4.3 - Consultar historial de asistencia de un estudiante o de un curso/grupo
+     *Consultar historial de asistencia de un estudiante o de un curso/grupo
      * en un periodo determinado. Se debe mandar student O course, no ambos.
      * GET /eduplanner/attendance/history?student=15&startDate=2026-01-01&endDate=2026-06-30
      * GET /eduplanner/attendance/history?course=1&startDate=2026-01-01&endDate=2026-06-30
@@ -99,7 +104,7 @@ public class AttendanceController {
     }
 
     /**
-     * HU 4.4 - Paso 1: ingresar la justificación de una falta (ABSENT) ya registrada.
+     *Ingresar la justificación de un registro en estado ABSENT, LATE o JUSTIFIED.
      * PATCH /eduplanner/attendance/{id}/justification
      */
     @PatchMapping("/{id}/justification")
@@ -120,7 +125,7 @@ public class AttendanceController {
     }
 
     /**
-     * HU 4.4 - Paso 2: un directivo/docente aprueba o rechaza la justificación.
+     *Un directivo/docente aprueba o rechaza la justificación.
      * PATCH /eduplanner/attendance/{id}/justification/review
      */
     @PatchMapping("/{id}/justification/review")
@@ -138,5 +143,70 @@ public class AttendanceController {
             r.setMessage(e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(r);
         }
+    }
+
+    /**
+     *Visualizar resumen personal de asistencia (estadísticas de un estudiante en un periodo).
+     * GET /eduplanner/attendance/summary?student=15&startDate=2026-01-01&endDate=2026-06-30
+     */
+    @GetMapping("/summary")
+    public ResponseEntity<HttpGlobalResponse<AttendanceSummaryDTO>> getSummary(
+            @RequestParam Integer student,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+        HttpGlobalResponse<AttendanceSummaryDTO> r = new HttpGlobalResponse<>();
+        try {
+            r.setData(service.getSummaryByStudent(student, startDate, endDate));
+            r.setMessage("Resumen de asistencia calculado con éxito");
+            return ResponseEntity.ok(r);
+        } catch (IllegalArgumentException e) {
+            r.setMessage(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(r);
+        }
+    }
+
+    /**
+     * Generar y descargar en PDF el historial de asistencia
+     * de un estudiante (incluye el resumen de la HU 4.5) o de un curso/grupo.
+     * GET /eduplanner/attendance/pdf?student=15&startDate=2026-01-01&endDate=2026-06-30
+     * GET /eduplanner/attendance/pdf?course=1&startDate=2026-01-01&endDate=2026-06-30
+     */
+    @GetMapping("/pdf")
+    public ResponseEntity<byte[]> downloadPdf(
+            @RequestParam(required = false) Integer student,
+            @RequestParam(required = false) Integer course,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+
+        List<AttendanceResponseDTO> records;
+        String title;
+        String fileName;
+        AttendanceSummaryDTO summary = null;
+
+        try {
+            if (student != null) {
+                records = service.getHistoryByStudent(student, startDate, endDate);
+                summary = service.getSummaryByStudent(student, startDate, endDate);
+                title = "Historial de asistencia - Estudiante " + student;
+                fileName = pdfService.buildFileName("asistencia_estudiante", student, startDate, endDate);
+            } else if (course != null) {
+                records = service.getHistoryByCourse(course, startDate, endDate);
+                title = "Historial de asistencia - Curso " + course;
+                fileName = pdfService.buildFileName("asistencia_curso", course, startDate, endDate);
+            } else {
+                return ResponseEntity.badRequest().build();
+            }
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        String subtitle = "Periodo: " + startDate + " a " + endDate;
+        byte[] pdf = pdfService.generatePdf(title, subtitle, records, summary);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("attachment", fileName);
+
+        return ResponseEntity.ok().headers(headers).body(pdf);
     }
 }

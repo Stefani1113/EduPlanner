@@ -51,7 +51,7 @@ public class AttendancePdfService {
             content.endText();
             y -= 25;
 
-            // Resumen (si viene, para HU 4.5 combinado con el PDF)
+            // Resumen (si viene, combinado con el PDF)
             if (summary != null) {
                 content.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD), 11);
                 content.beginText();
