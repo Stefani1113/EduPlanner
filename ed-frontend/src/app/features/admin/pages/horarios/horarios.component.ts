@@ -68,10 +68,7 @@ interface CursoFila {
 })
 export class HorariosComponent implements OnInit {
 
-  // ==============================
-  // ESTADOS DE VISTAS
-  // ==============================
-
+ 
   mostrarDatos = false;
 
   mostrarFormularioDocente = false;
@@ -89,10 +86,7 @@ export class HorariosComponent implements OnInit {
   guardandoCurso = false;
 
 
-  // ==============================
-  // MENSAJES DE ERROR
-  // ==============================
-
+  
   errorCarga = '';
 
   errorFormularioDocente = '';
@@ -100,34 +94,22 @@ export class HorariosComponent implements OnInit {
   errorFormularioCurso = '';
 
 
-  // ==============================
-  // IMAGEN
-  // ==============================
-
+  
   imagenBoton = '';
 
 
-  // ==============================
-  // LISTAS PARA LA VISTA
-  // ==============================
-
+  
   docentes: DocenteFila[] = [];
   asignaturas: AsignaturaFila[] = [];
   cursos: CursoFila[] = [];
 
 
-  // ==============================
-  // ELEMENTOS SELECCIONADOS
-  // ==============================
-
+  
   docenteSeleccionado: DocenteFila | null = null;
   asignaturaSeleccionada: AsignaturaFila | null = null;
   cursoSeleccionado: CursoFila | null = null;
 
 
-  // ==============================
-  // DATOS DEL BACKEND
-  // ==============================
 
   docentesDisponibles: TeachingResponseDTO[] = [];
   cursosDisponibles: CourseResponseDTO[] = [];
@@ -138,19 +120,11 @@ export class HorariosComponent implements OnInit {
   jornadasDisponibles: SchoolShiftResponseDTO[] = [];
 
 
-  // ==============================
-  // MAPA DE DOCENTES ACADÉMICOS
-  // Key: idUser
-  // ==============================
-
   private academicTeachersPorUsuario =
     new Map<number, AcademicTeacherResponseDTO>();
 
 
-  // ==============================
-  // FORMULARIO DOCENTE
-  // ==============================
-
+ 
   formularioDocente = {
     idAcademicLoad: 0,
     idUser: 0,
@@ -162,10 +136,7 @@ export class HorariosComponent implements OnInit {
   };
 
 
-  // ==============================
-  // FORMULARIO ASIGNATURA
-  // ==============================
-
+ 
   formularioAsignatura = {
     idSubject: 0,
     nombre: '',
@@ -174,10 +145,7 @@ export class HorariosComponent implements OnInit {
   };
 
 
-  // ==============================
-  // FORMULARIO CURSO
-  // ==============================
-
+  
   formularioCurso: {
     idCourse: number;
     idPeriod: number | null;
@@ -210,10 +178,7 @@ export class HorariosComponent implements OnInit {
   }
 
 
-  // =====================================================
-  // CARGAR TODOS LOS DATOS
-  // =====================================================
-
+  
   cargarDatos(): void {
 
     this.cargandoDatos = true;
@@ -241,10 +206,6 @@ export class HorariosComponent implements OnInit {
         jornadas
       }) => {
 
-        // ==============================
-        // GUARDAR RESPUESTAS
-        // ==============================
-
         this.docentesDisponibles = docentes.data ?? [];
         this.cursosDisponibles = cursos.data ?? [];
         this.asignaturasCatalogo = asignaturas.data ?? [];
@@ -253,10 +214,6 @@ export class HorariosComponent implements OnInit {
         this.nivelesDisponibles = niveles.data ?? [];
         this.jornadasDisponibles = jornadas.data ?? [];
 
-
-        // ==============================
-        // MAPA DE DOCENTES
-        // ==============================
 
         const docentesPorId =
           new Map<number, TeachingResponseDTO>(
@@ -267,9 +224,6 @@ export class HorariosComponent implements OnInit {
           );
 
 
-        // ==============================
-        // MAPA DE CURSOS
-        // ==============================
 
         const cursosPorId =
           new Map<number, CourseResponseDTO>(
@@ -280,10 +234,6 @@ export class HorariosComponent implements OnInit {
           );
 
 
-        // ==============================
-        // MAPA DE ASIGNATURAS
-        // ==============================
-
         const asignaturasPorId =
           new Map<number, SubjectResponseDTO>(
             this.asignaturasCatalogo.map(asignatura => [
@@ -293,9 +243,6 @@ export class HorariosComponent implements OnInit {
           );
 
 
-        // ==============================
-        // DOCENTES ACADÉMICOS
-        // ==============================
 
         const academicTeachersData =
           academicTeachers.data ?? [];
@@ -318,9 +265,6 @@ export class HorariosComponent implements OnInit {
           );
 
 
-        // ==============================
-        // MAPEAR ASIGNATURAS
-        // ==============================
 
         this.asignaturas =
           this.asignaturasCatalogo.map(asignatura => ({
@@ -331,18 +275,11 @@ export class HorariosComponent implements OnInit {
           }));
 
 
-        // ==============================
-        // MAPEAR CURSOS
-        // ==============================
 
         this.cursos =
           this.cursosDisponibles.map(curso => {
 
-            /*
-             * homeroomTeacher puede ser el ID del
-             * docente académico, por eso primero
-             * buscamos el docente académico.
-             */
+
             const academicTeacher =
               curso.homeroomTeacher !== null &&
               curso.homeroomTeacher !== undefined
@@ -384,9 +321,6 @@ export class HorariosComponent implements OnInit {
           });
 
 
-        // ==============================
-        // MAPEAR CARGAS ACADÉMICAS
-        // ==============================
 
         this.docentes =
           (cargas.data ?? [])
@@ -491,10 +425,7 @@ export class HorariosComponent implements OnInit {
   }
 
 
-  // =====================================================
-  // OBTENER NOMBRES
-  // =====================================================
-
+ 
   obtenerNombreNivel(idLevel: number): string {
 
     return (
@@ -515,10 +446,6 @@ export class HorariosComponent implements OnInit {
   }
 
 
-  // =====================================================
-  // IMAGEN DEL BOTÓN
-  // =====================================================
-
   cargarImagenBoton(): void {
 
     const imagen =
@@ -529,10 +456,6 @@ export class HorariosComponent implements OnInit {
     }
   }
 
-
-  // =====================================================
-  // PANEL DE DATOS
-  // =====================================================
 
   abrirDatos(): void {
     this.mostrarDatos = true;
@@ -545,10 +468,7 @@ export class HorariosComponent implements OnInit {
   }
 
 
-  // =====================================================
-  // DOCENTES
-  // =====================================================
-
+  
   seleccionarDocente(docente: DocenteFila): void {
     this.docenteSeleccionado = docente;
   }
@@ -687,11 +607,7 @@ export class HorariosComponent implements OnInit {
 
       next: respuesta => {
 
-        /*
-         * Cuando se actualiza, algunos backends no devuelven
-         * el objeto completo. Por eso usamos el ID existente
-         * como respaldo.
-         */
+
         const idAcademicTeacher =
           respuesta?.data?.idAcademicTeacher ??
           academicTeacherExistente?.idAcademicTeacher;
@@ -833,10 +749,6 @@ export class HorariosComponent implements OnInit {
       });
   }
 
-
-  // =====================================================
-  // ASIGNATURAS
-  // =====================================================
 
   seleccionarAsignatura(asignatura: AsignaturaFila): void {
     this.asignaturaSeleccionada = asignatura;
@@ -1025,9 +937,6 @@ export class HorariosComponent implements OnInit {
   }
 
 
-  // =====================================================
-  // CURSOS
-  // =====================================================
 
   seleccionarCurso(curso: CursoFila): void {
     this.cursoSeleccionado = curso;
@@ -1040,10 +949,6 @@ export class HorariosComponent implements OnInit {
     this.errorFormularioCurso = '';
 
 
-    /*
-     * El ?? null es importante porque el primer elemento
-     * puede no existir y TypeScript devuelve undefined.
-     */
     const primerPeriodoDisponible =
       this.periodosDisponibles[0]?.idPeriod ?? null;
 
@@ -1209,10 +1114,6 @@ export class HorariosComponent implements OnInit {
     }
 
 
-    /*
-     * El select guarda el idUser del docente.
-     * El backend necesita el idAcademicTeacher.
-     */
     const idUserHomeroomTeacher =
       formulario.homeroomTeacher !== null &&
       Number(formulario.homeroomTeacher) > 0

@@ -15,16 +15,12 @@ export class ImportacionService {
 
   constructor(private http: HttpClient) {}
 
-  /**
-   * Obtiene el reporte de una importación realizada.
-   */
+
   obtenerReporte(idImport: number): Observable<any> {
     return this.http.get<any>(`${this.api}/${idImport}/report`);
   }
 
-  /**
-   * Envía el archivo Excel al backend para importar estudiantes.
-   */
+
   importarExcel(file: File): Observable<any> {
     const formData = new FormData();
     formData.append('file', file);
