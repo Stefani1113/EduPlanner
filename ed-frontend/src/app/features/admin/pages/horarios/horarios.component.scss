@@ -371,6 +371,19 @@
   grid-column: 1 / -1;
 }
 
+.campo-checkbox label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-direction: row;
+}
+
+.campo-checkbox input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #53bb1b;
+}
+
 .campo label {
   margin-bottom: 6px;
   color: #53bb1b;
