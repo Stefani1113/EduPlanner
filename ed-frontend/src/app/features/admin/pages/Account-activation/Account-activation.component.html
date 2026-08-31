@@ -1,0 +1,299 @@
+<div class="activation-page">
+
+  <header class="header">
+
+    <div class="logo-container">
+
+      <img
+        src="assets/img/Logo-nav.png"
+        alt="EduPlanner"
+      >
+
+    </div>
+
+  </header>
+
+
+  <main class="activation-container">
+
+    <section class="activation-card">
+
+      <div class="activation-header">
+
+        <img
+          src="assets/img/Logo-nav.png"
+          alt="EduPlanner"
+          class="activation-logo"
+        >
+
+        <h1>
+          Activa tu
+          <span>cuenta</span>
+        </h1>
+
+        <p>
+          Bienvenido a EduPlanner.
+          Para comenzar, crea una contraseña segura
+          para tu cuenta.
+        </p>
+
+      </div>
+
+
+      <form
+        class="activation-form"
+        (ngSubmit)="activarCuenta()"
+      >
+
+
+        <div class="form-group">
+
+          <label for="nuevaPassword">
+            Nueva contraseña
+          </label>
+
+          <div class="password-container">
+
+            <input
+              id="nuevaPassword"
+              [type]="mostrarPassword ? 'text' : 'password'"
+              [(ngModel)]="nuevaPassword"
+              name="nuevaPassword"
+              placeholder="Crea tu contraseña"
+              autocomplete="new-password"
+              (input)="evaluarFortaleza()"
+            >
+
+            <button
+              type="button"
+              class="password-toggle"
+              (click)="mostrarPassword = !mostrarPassword"
+            >
+              {{ mostrarPassword ? 'Ocultar' : 'Mostrar' }}
+            </button>
+
+          </div>
+
+        </div>
+
+
+
+        <div
+          class="security-container"
+          *ngIf="nuevaPassword"
+        >
+
+          <div class="security-header">
+
+            <span>
+              Seguridad de la contraseña
+            </span>
+
+            <strong
+              [class.weak]="fortaleza === 'débil'"
+              [class.medium]="fortaleza === 'media'"
+              [class.strong]="fortaleza === 'fuerte'"
+              [class.excellent]="fortaleza === 'excelente'"
+            >
+              {{ fortaleza | titlecase }}
+            </strong>
+
+          </div>
+
+
+          <div class="security-bar">
+
+            <div
+              class="security-progress"
+              [class.weak]="fortaleza === 'débil'"
+              [class.medium]="fortaleza === 'media'"
+              [class.strong]="fortaleza === 'fuerte'"
+              [class.excellent]="fortaleza === 'excelente'"
+              [style.width.%]="porcentajeSeguridad"
+            ></div>
+
+          </div>
+
+
+          <div class="requirements">
+
+            <div [class.valid]="tieneLongitud">
+
+              <span class="requirement-icon">
+                {{ tieneLongitud ? '✓' : '○' }}
+              </span>
+
+              Mínimo 8 caracteres
+
+            </div>
+
+
+            <div [class.valid]="tieneMayuscula">
+
+              <span class="requirement-icon">
+                {{ tieneMayuscula ? '✓' : '○' }}
+              </span>
+
+              Una letra mayúscula
+
+            </div>
+
+
+            <div [class.valid]="tieneMinuscula">
+
+              <span class="requirement-icon">
+                {{ tieneMinuscula ? '✓' : '○' }}
+              </span>
+
+              Una letra minúscula
+
+            </div>
+
+
+            <div [class.valid]="tieneNumero">
+
+              <span class="requirement-icon">
+                {{ tieneNumero ? '✓' : '○' }}
+              </span>
+
+              Un número
+
+            </div>
+
+
+            <div [class.valid]="tieneEspecial">
+
+              <span class="requirement-icon">
+                {{ tieneEspecial ? '✓' : '○' }}
+              </span>
+
+              Un carácter especial
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+
+        <div class="form-group">
+
+          <label for="confirmarPassword">
+            Confirmar contraseña
+          </label>
+
+          <div class="password-container">
+
+            <input
+              id="confirmarPassword"
+              [type]="
+                mostrarConfirmacion
+                  ? 'text'
+                  : 'password'
+              "
+              [(ngModel)]="confirmarPassword"
+              name="confirmarPassword"
+              placeholder="Repite tu contraseña"
+              autocomplete="new-password"
+              (input)="validarCoincidencia()"
+            >
+
+            <button
+              type="button"
+              class="password-toggle"
+              (click)="
+                mostrarConfirmacion =
+                !mostrarConfirmacion
+              "
+            >
+              {{
+                mostrarConfirmacion
+                  ? 'Ocultar'
+                  : 'Mostrar'
+              }}
+            </button>
+
+          </div>
+
+
+          <div
+            class="match-message"
+            *ngIf="confirmarPassword"
+            [class.match]="passwordsCoinciden"
+            [class.no-match]="!passwordsCoinciden"
+          >
+
+            {{
+              passwordsCoinciden
+                ? '✓ Las contraseñas coinciden'
+                : '✕ Las contraseñas no coinciden'
+            }}
+
+          </div>
+
+        </div>
+
+
+
+        <div
+          class="error-message"
+          *ngIf="mensajeError"
+        >
+
+          {{ mensajeError }}
+
+        </div>
+
+
+
+        <div
+          class="success-message"
+          *ngIf="mensajeExito"
+        >
+
+          {{ mensajeExito }}
+
+        </div>
+
+
+
+        <button
+          type="submit"
+          class="activation-button"
+          [disabled]="
+            cargando ||
+            !nuevaPassword ||
+            !confirmarPassword ||
+            !passwordValida ||
+            !passwordsCoinciden
+          "
+        >
+
+          {{
+            cargando
+              ? 'Activando cuenta...'
+              : 'Activar mi cuenta'
+          }}
+
+        </button>
+
+      </form>
+
+    </section>
+
+  </main>
+
+
+  <footer class="footer">
+
+    <img
+      src="assets/img/logo-footer.png"
+      alt="EduPlanner"
+      width="120"
+      height="54"
+    >
+
+  </footer>
+
+</div>

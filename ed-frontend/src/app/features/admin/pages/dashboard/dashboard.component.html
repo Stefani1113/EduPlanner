@@ -1,117 +1,115 @@
 <div class="institution-page" *ngIf="info$ | async as info">
-
-  <section class="institution-hero">
-    <div class="hero-photo" [style.backgroundImage]="'url(' + carouselUrl(info, 0, 'assets/img/institucion-edificio.png') + ')'" aria-hidden="true"></div>
-    <div class="hero-wash" aria-hidden="true"></div>
-
-    <div class="hero-content">
-      <span class="eyebrow">EXCELENCIA ACADÉMICA</span>
-
-      <h1>
-        Institución Educativa<br>
-        <strong>{{ info.nombreCorto }}</strong>
-      </h1>
-
-      <p>
-        {{ info.descripcion }}
-      </p>
-
-      <div class="hero-actions">
-        <button type="button" class="primary-action">Conocer institución <span>→</span></button>
-        <span class="hero-location">{{ info.contactoDireccion }}</span>
+  <section class="hero-section">
+    <div class="hero-background" [style.backgroundImage]="'url(' + carouselUrl(info, 0, 'assets/img/institucion-edificio.png') + ')'" aria-hidden="true">
+      <div class="hero-overlay"></div>
+    </div>
+    
+    <div class="hero-container">
+      <div class="hero-content">
+        <span class="hero-badge">✦ EXCELENCIA ACADÉMICA</span>
+        <h1 class="hero-title">
+          Institución Educativa<br>
+          <span class="highlight">{{ info.nombreCorto }}</span>
+        </h1>
+        <p class="hero-description">{{ info.descripcion }}</p>
+        <div class="hero-actions">
+          <button class="btn-primary">
+            Conocer institución
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </button>
+          <span class="hero-location">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+            {{ info.contactoDireccion }}
+          </span>
+        </div>
       </div>
     </div>
-
-    <div class="hero-dots" aria-hidden="true">
+    
+    <div class="hero-indicators">
       <span *ngFor="let img of info.carousel; let i = index" [class.active]="i === 0"></span>
     </div>
   </section>
 
-  <section class="institution-intro">
-    <div class="intro-copy">
-      <span class="section-kicker">NUESTRA INSTITUCIÓN</span>
-      <h2>Un lugar para <strong>aprender, crecer y transformar.</strong></h2>
-      <p>
-        {{ info.nombreCorto }} es una institución orientada a formar estudiantes
-        con pensamiento crítico, valores y herramientas para afrontar los
-        retos del futuro.
-      </p>
-    </div>
-
-    <div class="quick-data">
-      <div>
-        <strong>486</strong>
-        <span>Estudiantes</span>
+  <section class="intro-section">
+    <div class="intro-container">
+      <div class="intro-text">
+        <span class="section-tag">NUESTRA INSTITUCIÓN</span>
+        <h2>Un lugar para <span class="highlight">aprender, crecer y transformar.</span></h2>
+        <p>{{ info.nombreCorto }} es una institución orientada a formar estudiantes con pensamiento crítico, valores y herramientas para afrontar los retos del futuro.</p>
       </div>
-      <div>
-        <strong>32</strong>
-        <span>Docentes</span>
-      </div>
-      <div>
-        <strong>18</strong>
-        <span>Cursos</span>
+      <div class="stats-grid">
+        <div class="stat-item">
+          <span class="stat-number">486</span>
+          <span class="stat-label">Estudiantes</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">32</span>
+          <span class="stat-label">Docentes</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">18</span>
+          <span class="stat-label">Cursos</span>
+        </div>
       </div>
     </div>
   </section>
 
-  <section class="institution-cards">
+  <section class="cards-section">
+    <div class="cards-grid">
+      <article class="card-mission">
+        <div class="card-icon">⌁</div>
+        <span class="card-tag">MISIÓN</span>
+        <h3>Formar personas íntegras</h3>
+        <p>{{ info.mision }}</p>
+      </article>
 
-    <article class="mission-card white-card">
-      <div class="card-icon">⌁</div>
-      <span class="section-kicker">MISIÓN</span>
-      <h3>Formar personas íntegras</h3>
-      <p>
-        {{ info.mision }}
-      </p>
-    </article>
+      <article class="card-image">
+        <img [src]="carouselUrl(info, 1, 'assets/img/estudiantes-institucion.png')" alt="Estudiantes">
+        <div class="card-image-overlay">
+          <span>COMUNIDAD EDUCATIVA</span>
+          <strong>Aprendemos juntos</strong>
+        </div>
+      </article>
 
-    <article class="students-card image-card">
-      <img [src]="carouselUrl(info, 1, 'assets/img/estudiantes-institucion.png')" alt="Estudiantes de la institución">
-      <div class="image-caption">
-        <span>COMUNIDAD EDUCATIVA</span>
-        <strong>Aprendemos juntos</strong>
-      </div>
-    </article>
+      <article class="card-vision">
+        <div class="card-icon light">◈</div>
+        <span class="card-tag">VISIÓN</span>
+        <h3>Innovar para transformar</h3>
+        <p>{{ info.vision }}</p>
+      </article>
 
-    <article class="vision-card teal-card">
-      <div class="card-icon light">◈</div>
-      <span class="section-kicker">VISIÓN</span>
-      <h3>Innovar para transformar</h3>
-      <p>
-        {{ info.vision }}
-      </p>
-    </article>
-
-    <article class="campus-card image-card">
-      <img [src]="carouselUrl(info, 2, carouselUrl(info, 0, 'assets/img/estudiantes-institucion.png'))" alt="Edificio de la institución educativa">
-      <div class="image-caption">
-        <span>ESPACIOS EDUCATIVOS</span>
-        <strong>Un entorno para crecer</strong>
-      </div>
-    </article>
-
+      <article class="card-image">
+        <img [src]="carouselUrl(info, 2, carouselUrl(info, 0, 'assets/img/estudiantes-institucion.png'))" alt="Campus">
+        <div class="card-image-overlay">
+          <span>ESPACIOS EDUCATIVOS</span>
+          <strong>Un entorno para crecer</strong>
+        </div>
+      </article>
+    </div>
   </section>
 
   <section class="pillars-section">
-    <div class="section-heading">
-      <span class="section-kicker">NUESTROS PILARES</span>
-      <h2>Lo que nos representa</h2>
+    <div class="section-header">
+      <span class="section-tag">NUESTROS PILARES</span>
+      <h2>Lo que nos <span class="highlight">representa</span></h2>
     </div>
-
-    <div class="pillar-grid">
+    <div class="pillars-grid">
       <article class="pillar-card">
         <span class="pillar-number">01</span>
         <h3>Integralidad</h3>
         <p>Desarrollamos competencias académicas, sociales y personales.</p>
       </article>
-
       <article class="pillar-card featured">
         <span class="pillar-number">02</span>
         <h3>Innovación</h3>
         <p>Integramos tecnología y nuevas metodologías al aprendizaje.</p>
       </article>
-
-      <article class="pillar-card dark-featured">
+      <article class="pillar-card dark">
         <span class="pillar-number">03</span>
         <h3>Comunidad</h3>
         <p>Construimos una comunidad educativa basada en respeto y colaboración.</p>
@@ -119,17 +117,15 @@
     </div>
   </section>
 
-  <section class="contact-strip">
-    <div>
-      <span class="section-kicker">CONTACTO INSTITUCIONAL</span>
-      <h2>Estamos para acompañarte</h2>
+  <section class="contact-section">
+    <div class="contact-content">
+      <span class="section-tag">CONTACTO INSTITUCIONAL</span>
+      <h2>Estamos para <span class="highlight">acompañarte</span></h2>
     </div>
-
-    <div class="contact-data">
+    <div class="contact-info">
       <span>{{ info.contactoDireccion }}</span>
       <span>+57 600 123 4567</span>
       <span>contacto&#64;nuevohorizonte.edu.co</span>
     </div>
   </section>
-
 </div>

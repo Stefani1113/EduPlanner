@@ -350,4 +350,18 @@ export class AuthService {
       return null;
     }
   }
+
+  activarCuenta(
+  token: string,
+  newPassword: string
+): Observable<any> {
+
+  return this.http.put(
+    `${this.api}/activation-account`,
+    {
+      token,
+      newPassword
+    }
+  );
+}
 }

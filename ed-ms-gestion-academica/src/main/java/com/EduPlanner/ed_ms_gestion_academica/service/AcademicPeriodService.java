@@ -86,6 +86,19 @@ public class AcademicPeriodService {
         repository.save(period);
     }
 
+    /**
+     * Eliminar fisicamnete el registro 
+     * Falla si otra tabla lo esta referenciando
+     * @param id
+     */
+    @Transactional
+    public void deletePermanently(Integer id) {
+        if (!repository.existsById(id)) {
+            throw new IllegalArgumentException("Periodo académico no encontrado con id: " + id);
+        }
+        repository.deleteById(id);
+    }
+
     private void validateDates(java.time.LocalDate start, java.time.LocalDate end) {
         if (!start.isBefore(end)) {
             throw new IllegalArgumentException("La fecha de inicio debe ser anterior a la fecha de fin");
@@ -95,5 +108,13 @@ public class AcademicPeriodService {
     private AcademicPeriod getOrThrow(Integer id) {
         return repository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Periodo académico no encontrado con id: " + id));
+    }
+
+    /**
+     * Buscar por activos
+     * @return
+     */
+    public List<AcademicPeriodResponseDTO> findAllActive() {
+        return repository.findByStatusTrue().stream().map(AcademicPeriodResponseDTO::fromEntity).toList();
     }
 }

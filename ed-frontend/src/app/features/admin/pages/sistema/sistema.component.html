@@ -1,147 +1,251 @@
-<div class="panel-control" *ngIf="palette && info">
+<div class="panel-container" *ngIf="palette && info">
+  <header class="panel-header">
+    <div class="header-left">
+      <h1>Configuración Institucional</h1>
+      <span class="header-sub">Personaliza la información y apariencia de tu institución</span>
+    </div>
+    <div class="header-actions">
+      <span class="status-badge" *ngIf="savedMessage">{{ savedMessage }}</span>
+    </div>
+  </header>
 
   <div class="panel-grid">
-
-    <div class="panel-col panel-col-main">
-
+    <div class="panel-main">
       <section class="panel-card">
-        <h3 class="card-title"><span class="dot"></span> Logo institucional</h3>
-
-        <div class="logo-row">
+        <div class="card-header">
+          <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <polyline points="21 15 16 10 5 21"/>
+          </svg>
+          <h3>Logo institucional</h3>
+        </div>
+        <div class="logo-section">
           <div class="logo-preview">
-            <img *ngIf="info.logoUrl" [src]="info.logoUrl" alt="Logo institucional">
-            <span *ngIf="!info.logoUrl" class="logo-placeholder">Sin logo</span>
+            <img *ngIf="info.logoUrl" [src]="info.logoUrl" alt="Logo">
+            <span *ngIf="!info.logoUrl" class="empty-placeholder">Sin logo</span>
           </div>
-
-          <div class="logo-actions">
-            <p>Recomendamos usar el logo en fondo transparente (.png). Se usará en la barra de navegación pública.</p>
+          <div class="logo-upload">
+            <p>Recomendamos usar logo en fondo transparente (.png). Se mostrará en la barra de navegación.</p>
             <input #logoInput type="file" accept="image/*" hidden (change)="onLogoSelected($event)">
-            <button type="button" class="btn-outline" (click)="logoInput.click()">Cambiar logo</button>
+            <button class="btn-secondary" (click)="logoInput.click()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+              Cambiar logo
+            </button>
           </div>
         </div>
       </section>
 
       <section class="panel-card">
-        <h3 class="card-title"><span class="dot"></span> Información</h3>
-
-        <div class="field-grid">
-          <div class="field">
+        <div class="card-header">
+          <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="16" y1="13" x2="8" y2="13"/>
+            <line x1="16" y1="17" x2="8" y2="17"/>
+            <polyline points="10 9 9 9 8 9"/>
+          </svg>
+          <h3>Información general</h3>
+        </div>
+        <div class="form-grid-2">
+          <div class="form-group">
             <label>Nombre corto</label>
             <input type="text" [(ngModel)]="info.nombreCorto" placeholder="Ej: Nuevo Horizonte">
           </div>
-
-          <div class="field">
+          <div class="form-group">
             <label>Nombre largo</label>
             <input type="text" [(ngModel)]="info.nombreLargo" placeholder="Ej: Institución Educativa Nuevo Horizonte">
           </div>
         </div>
-
-        <div class="field">
+        <div class="form-group">
           <label>Descripción</label>
           <textarea rows="3" [(ngModel)]="info.descripcion" placeholder="Frase que aparece en la portada"></textarea>
         </div>
       </section>
 
       <section class="panel-card">
-        <h3 class="card-title"><span class="dot"></span> Imágenes del carrusel</h3>
-
+        <div class="card-header">
+          <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="2" width="20" height="20" rx="2.18"/>
+            <line x1="8" y1="2" x2="8" y2="22"/>
+            <line x1="16" y1="2" x2="16" y2="22"/>
+            <line x1="2" y1="8" x2="22" y2="8"/>
+            <line x1="2" y1="16" x2="22" y2="16"/>
+          </svg>
+          <h3>Imágenes del carrusel</h3>
+          <span class="card-badge">Máx. 4</span>
+        </div>
         <div class="carousel-grid">
           <div class="carousel-item" *ngFor="let img of info.carousel; let i = index">
             <div class="carousel-thumb">
-              <img *ngIf="img.url" [src]="img.url" alt="Imagen del carrusel {{ i + 1 }}">
-              <span *ngIf="!img.url" class="logo-placeholder">Sin imagen</span>
+              <img *ngIf="img.url" [src]="img.url" alt="Imagen {{ i + 1 }}">
+              <span *ngIf="!img.url" class="empty-placeholder">Sin imagen</span>
             </div>
             <input type="text" [(ngModel)]="img.url" placeholder="URL de la imagen">
-            <div class="carousel-item-actions">
+            <div class="carousel-actions">
               <input #carouselInput type="file" accept="image/*" hidden (change)="onCarouselFileSelected($event, i)">
-              <button type="button" class="btn-link" (click)="carouselInput.click()">Subir</button>
-              <button type="button" class="btn-link danger" (click)="removeCarouselImage(i)">Quitar</button>
+              <button class="btn-link" (click)="carouselInput.click()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="17 8 12 3 7 8"/>
+                  <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                Subir
+              </button>
+              <button class="btn-link danger" (click)="removeCarouselImage(i)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="3 6 5 6 21 6"/>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                  <line x1="10" y1="11" x2="10" y2="17"/>
+                  <line x1="14" y1="11" x2="14" y2="17"/>
+                </svg>
+                Quitar
+              </button>
             </div>
           </div>
         </div>
-
-        <button type="button" class="btn-outline small" (click)="addCarouselImage()" [disabled]="info.carousel.length >= 4">
-          + Agregar imagen
+        <button class="btn-secondary small" (click)="addCarouselImage()" [disabled]="info.carousel.length >= 4">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+          Agregar imagen
         </button>
       </section>
 
-      <div class="two-col">
+      <div class="form-grid-2">
         <section class="panel-card">
-          <h3 class="card-title"><span class="dot"></span> Misión</h3>
-          <div class="field">
-            <label>Descripción</label>
-            <textarea rows="4" [(ngModel)]="info.mision"></textarea>
+          <div class="card-header">
+            <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="16"/>
+              <line x1="8" y1="12" x2="16" y2="12"/>
+            </svg>
+            <h3>Misión</h3>
+          </div>
+          <div class="form-group">
+            <textarea rows="4" [(ngModel)]="info.mision" placeholder="Describe la misión de la institución"></textarea>
           </div>
         </section>
-
         <section class="panel-card">
-          <h3 class="card-title"><span class="dot"></span> Visión</h3>
-          <div class="field">
-            <label>Descripción</label>
-            <textarea rows="4" [(ngModel)]="info.vision"></textarea>
+          <div class="card-header">
+            <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            <h3>Visión</h3>
+          </div>
+          <div class="form-group">
+            <textarea rows="4" [(ngModel)]="info.vision" placeholder="Describe la visión de la institución"></textarea>
           </div>
         </section>
       </div>
 
-      <div class="three-col">
+      <div class="form-grid-3">
         <section class="panel-card">
-          <h3 class="card-title small-title">Dirección / contacto</h3>
-          <div class="field">
-            <label>Descripción</label>
-            <textarea rows="2" [(ngModel)]="info.contactoDireccion"></textarea>
+          <div class="card-header small">
+            <svg class="card-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+            <h4>Dirección / contacto</h4>
+          </div>
+          <div class="form-group">
+            <textarea rows="2" [(ngModel)]="info.contactoDireccion" placeholder="Dirección de la institución"></textarea>
           </div>
         </section>
-
         <section class="panel-card">
-          <h3 class="card-title small-title">Reglamento estudiantil</h3>
-          <div class="field">
-            <label>Enlace o descripción</label>
+          <div class="card-header small">
+            <svg class="card-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+              <polyline points="14 2 14 8 20 8"/>
+              <line x1="16" y1="13" x2="8" y2="13"/>
+              <line x1="16" y1="17" x2="8" y2="17"/>
+            </svg>
+            <h4>Reglamento estudiantil</h4>
+          </div>
+          <div class="form-group">
             <textarea rows="2" [(ngModel)]="info.reglamentoUrl" placeholder="URL del documento"></textarea>
           </div>
         </section>
-
         <section class="panel-card">
-          <h3 class="card-title small-title">Construcción / legales</h3>
-          <div class="field">
-            <label>Enlace o descripción</label>
+          <div class="card-header small">
+            <svg class="card-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              <polyline points="9 12 11 14 15 10"/>
+            </svg>
+            <h4>Construcción / legales</h4>
+          </div>
+          <div class="form-group">
             <textarea rows="2" [(ngModel)]="info.construccionLegalUrl" placeholder="URL del documento"></textarea>
           </div>
         </section>
       </div>
-
     </div>
 
-    
-    <div class="panel-col panel-col-side">
+    <aside class="panel-sidebar">
       <section class="panel-card palette-card">
-        <h3 class="card-title"><span class="dot"></span> Paleta de colores</h3>
-
-        <div class="swatch-row" *ngFor="let sw of swatches">
-          <div class="swatch-preview" [style.background]="palette[sw.key]"></div>
-
-          <div class="swatch-info">
-            <strong>{{ sw.label }}</strong>
-            <span>{{ sw.hint }}</span>
-          </div>
-
-          <label class="swatch-edit">
-            <input type="color" [(ngModel)]="palette[sw.key]" (ngModelChange)="onColorChange()">
-            <span class="pencil">✎</span>
-          </label>
+        <div class="card-header">
+          <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="13.5" cy="6.5" r=".5"/>
+            <circle cx="17.5" cy="10.5" r=".5"/>
+            <circle cx="8.5" cy="7.5" r=".5"/>
+            <circle cx="6.5" cy="12.5" r=".5"/>
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+          </svg>
+          <h3>Paleta de colores</h3>
         </div>
-
-        <p class="palette-note">
-          Los colores se aplican de inmediato en la vista previa de "Mi institución".
-        </p>
+        <div class="swatch-list">
+          <div class="swatch-item" *ngFor="let sw of swatches">
+            <div class="swatch-color" [style.background]="palette[sw.key]"></div>
+            <div class="swatch-info">
+              <strong>{{ sw.label }}</strong>
+              <span>{{ sw.hint }}</span>
+            </div>
+            <label class="swatch-picker">
+              <input type="color" [(ngModel)]="palette[sw.key]" (ngModelChange)="onColorChange()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 20h9"/>
+                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+              </svg>
+            </label>
+          </div>
+        </div>
+        <p class="palette-note">Los cambios se aplican en tiempo real en la vista previa de "Mi institución".</p>
       </section>
+    </aside>
+  </div>
+
+  <footer class="panel-footer">
+    <div class="footer-left">
+      <span class="status-indicator" *ngIf="savedMessage">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+          <polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+        {{ savedMessage }}
+      </span>
     </div>
-
-  </div>
-
-  <div class="panel-footer-actions">
-    <span class="saved-message" *ngIf="savedMessage">{{ savedMessage }}</span>
-    <button type="button" class="btn-outline" (click)="restablecer()">Restablecer</button>
-    <button type="button" class="btn-primary" (click)="guardar()">Guardar cambios</button>
-  </div>
-
+    <div class="footer-actions">
+      <button class="btn-outline" (click)="restablecer()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 12a9 9 0 1 0 9-9m0 0v6m0-6h-6"/>
+        </svg>
+        Restablecer
+      </button>
+      <button class="btn-primary" (click)="guardar()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+          <polyline points="17 21 17 13 7 13 7 21"/>
+          <polyline points="7 3 7 8 15 8"/>
+        </svg>
+        Guardar cambios
+      </button>
+    </div>
+  </footer>
 </div>

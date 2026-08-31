@@ -67,7 +67,7 @@ public class AcademicLevelService {
     }
 
     /**
-     * Eliminar / Desactivar Nivel
+     * Desactivar Nivel
      * @param id
      */
     @Transactional
@@ -77,8 +77,29 @@ public class AcademicLevelService {
         repository.save(level);
     }
 
+    /**
+     * Eliminar Nivel
+     * @param id
+     */
+    @Transactional
+    public void deletePermanently(Integer id) {
+        if (!repository.existsById(id)) {
+            throw new IllegalArgumentException("Nivel académico no encontrado con id: " + id);
+        }
+        repository.deleteById(id);
+    }
+
     private AcademicLevel getOrThrow(Integer id) {
         return repository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Nivel académico no encontrado con id: " + id));
+    }
+
+
+    /**
+     * Listar solo activos
+     * @return
+     */
+    public List<AcademicLevelResponseDTO> findAllActive() {
+        return repository.findByStatusTrue().stream().map(AcademicLevelResponseDTO::fromEntity).toList();
     }
 }

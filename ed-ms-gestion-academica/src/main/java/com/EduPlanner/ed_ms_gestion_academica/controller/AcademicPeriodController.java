@@ -9,6 +9,8 @@ import com.eduplanner.ed_lib_common.enums.RolEnum;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,14 +25,18 @@ public class AcademicPeriodController {
     private final AcademicPeriodService service;
 
     /**
-     * Listar todos
+     * Listar todos o activos 
+     * academic-periods - Todos
+     * academic-periods?active=true - Solo activos
      * @return
      */
     @RequireRole(RolEnum.ADMINISTRADOR)
     @GetMapping
-    public ResponseEntity<HttpGlobalResponse<List<AcademicPeriodResponseDTO>>> getAll() {
+    public ResponseEntity<HttpGlobalResponse<List<AcademicPeriodResponseDTO>>> getAll(
+        @RequestParam(required = false) Boolean active) {
         HttpGlobalResponse<List<AcademicPeriodResponseDTO>> response = new HttpGlobalResponse<>();
-        response.setData(service.findAll());
+        List<AcademicPeriodResponseDTO> result = (Boolean.TRUE.equals(active)) ? service.findAllActive() : service.findAll();
+        response.setData(result);
         response.setMessage("Periodos académicos consultados correctamente");
         return ResponseEntity.ok(response);
     }
@@ -95,7 +101,7 @@ public class AcademicPeriodController {
     }
 
     /**
-     * Desactivar / Eliminar periodo
+     * Desactivar periodo
      * @param id
      * @return
      */
@@ -110,6 +116,27 @@ public class AcademicPeriodController {
         } catch (IllegalArgumentException e) {
             response.setMessage(e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+    }
+
+    /**
+     * Eliminar Periodo
+     * @param id
+     * @return
+     */
+    @DeleteMapping("/{id}/permanent")
+    public ResponseEntity<HttpGlobalResponse<Void>> deletePermanently(@PathVariable Integer id) {
+        HttpGlobalResponse<Void> response = new HttpGlobalResponse<>();
+        try {
+            service.deletePermanently(id);
+            response.setMessage("Periodo académico eliminado permanentemente");
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            response.setMessage(e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        } catch (DataIntegrityViolationException e) {
+            response.setMessage("No se puede eliminar: este periodo está siendo usado por otros registros");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
         }
     }
 }

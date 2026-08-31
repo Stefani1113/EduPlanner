@@ -1,0 +1,59 @@
+<ng-container *ngIf="modal$ | async as modal">
+
+  <div
+    *ngIf="modal.visible"
+    class="modal-overlay"
+    (click)="cancelar()"
+  >
+
+    <div
+      class="global-modal"
+      [ngClass]="modal.type"
+      (click)="$event.stopPropagation()"
+    >
+
+      <button
+        class="modal-close"
+        type="button"
+        (click)="cerrar()"
+        aria-label="Cerrar"
+      >
+        ×
+      </button>
+
+      <div class="modal-icon">
+        {{ obtenerIcono(modal.type) }}
+      </div>
+
+      <h2>{{ modal.title }}</h2>
+
+      <p>{{ modal.message }}</p>
+
+      <div class="modal-actions">
+
+        <button
+          *ngIf="modal.showCancel"
+          type="button"
+          class="btn-modal btn-cancel"
+          (click)="cancelar()"
+        >
+          {{ modal.cancelText }}
+        </button>
+
+        <button
+          type="button"
+          class="btn-modal btn-confirm"
+          [ngClass]="'btn-' + modal.type"
+          (click)="confirmar()"
+        >
+          {{ modal.confirmText }}
+          <span *ngIf="modal.type === 'success'">✓</span>
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</ng-container>

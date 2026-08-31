@@ -103,6 +103,29 @@ export interface TeachingResponseDTO {
   rol: string;
 }
 
+
+export interface RegisterTeacherDTO {
+  name: string;
+  surnames: string;
+  email: string;
+  phoneNumber?: string;
+  document: string;
+  documentType: string;
+  documentIssuePlace?: string;
+  gender?: string;
+  birthdate?: string | null;
+  address?: string;
+  bloodType?: string;
+  disabilities?: string;
+  stratum?: number;
+  populationType?: string;
+  healthRegime?: string;
+  eps?: string;
+  position: string;
+  professionalDegrees: string;
+  qualificationsDesc?: string;
+}
+
 export interface UpdateRoleDTO {
   idRole: number;
   position?: string;
@@ -118,7 +141,7 @@ export const ID_ROL_DIRECTIVO = 4;
 })
 export class UsuariosService {
 
-  private api = 'http://localhost:8080/administracion/eduplanner';
+  private api = '/administracion/eduplanner';
 
   constructor(private http: HttpClient) {}
 
@@ -153,9 +176,9 @@ export class UsuariosService {
   );
 }
 
-  registrarDocente(dto: TeachingRequestDTO): Observable<HttpGlobalResponse<TeachingResponseDTO>> {
-  return this.http.post<HttpGlobalResponse<TeachingResponseDTO>>(
-    `${this.api}/teacher`,
+  registrarDocente(dto: RegisterTeacherDTO): Observable<HttpGlobalResponse<void>> {
+  return this.http.post<HttpGlobalResponse<void>>(
+    `${this.api}/users/register/teacher`,
     dto
   );
 }

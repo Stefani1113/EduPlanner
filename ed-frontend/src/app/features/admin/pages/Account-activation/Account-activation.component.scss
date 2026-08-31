@@ -1,0 +1,449 @@
+.activation-page {
+  min-height: 100vh;
+  background-color: #161616;
+  background-image: radial-gradient(
+    rgba(255, 255, 255, 0.08) 1px,
+    transparent 1px
+  );
+
+  background-size: 18px 18px;
+
+  display: flex;
+  flex-direction: column;
+  color: #ffffff;
+  box-sizing: border-box;
+}
+
+
+
+.header {
+  height: 70px;
+  background: #1b1c1c;
+  display: flex;
+  align-items: center;
+  padding: 0 50px;
+  border-bottom: 1px solid #278d00;
+  box-sizing: border-box;
+}
+
+
+.logo-container {
+  display: flex;
+  align-items: center;
+}
+
+
+.logo-container img {
+  width: auto;
+  height: 40px;
+  display: block;
+}
+
+.activation-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 50px 20px;
+  box-sizing: border-box;
+}
+
+.activation-card {
+  width: 100%;
+  max-width: 520px;
+  background: #1b1c1c;
+  border: 1px solid #292929;
+  border-radius: 20px;
+  padding: 42px;
+  box-shadow:
+    0 15px 45px rgba(0, 0, 0, 0.35);
+  box-sizing: border-box;
+}
+
+.activation-header {
+  text-align: center;
+  margin-bottom: 35px;
+}
+
+.activation-logo {
+  width: 90px;
+  height: auto;
+  margin-bottom: 15px;
+  object-fit: contain;
+}
+
+.activation-header h1 {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #ffffff;
+}
+
+.activation-header h1 span {
+  color: #53bb1b;
+}
+
+.activation-header p {
+  margin-top: 12px;
+  margin-bottom: 0;
+  color: #999999;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+
+.activation-form {
+  width: 100%;
+}
+
+.form-group {
+  margin-bottom: 22px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #dddddd;
+}
+
+.password-container {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.password-container input {
+  width: 100%;
+  height: 50px;
+  padding: 0 95px 0 15px;
+  border: 1px solid #303030;
+  border-radius: 10px;
+  outline: none;
+  font-size: 15px;
+  box-sizing: border-box;
+  background: #161616;
+  color: #ffffff;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.password-container input:focus {
+  border-color: #53bb1b;
+  box-shadow:
+    0 0 0 3px rgba(83, 187, 27, 0.1);
+}
+
+
+.password-container input::placeholder {
+  color: #777777;
+}
+
+
+.password-toggle {
+  position: absolute;
+  right: 10px;
+  border: none;
+  background: transparent;
+  color: #53bb1b;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px;
+  transition:
+    color 0.2s ease,
+    opacity 0.2s ease;
+}
+
+
+.password-toggle:hover {
+  color: #6cdb32;
+}
+
+
+.password-toggle:focus {
+  outline: none;
+}
+
+
+.security-container {
+  background: #282928;
+  border: 1px solid #333333;
+  border-radius: 12px;
+  padding: 18px;
+  margin-bottom: 22px;
+  box-sizing: border-box;
+}
+
+.security-header {
+  color: #999999;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+
+
+.security-header strong {
+  font-size: 13px;
+}
+
+
+.security-header strong.weak {
+  color: #d64545;
+}
+
+.security-header strong.medium {
+  color: #d49b20;
+}
+
+.security-header strong.strong {
+  color: #53bb1b;
+}
+
+.security-header strong.excellent {
+  color: #278d00;
+}
+
+.security-bar {
+  width: 100%;
+  height: 7px;
+  background: #1b1c1c;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+
+.security-progress {
+  height: 100%;
+  background: #53bb1b;
+  border-radius: 10px;
+  transition:
+    width 0.3s ease,
+    background 0.3s ease;
+}
+
+
+.security-progress.weak {
+  background: #d64545;
+}
+
+
+.security-progress.medium {
+  background: #d49b20;
+}
+
+
+.security-progress.strong {
+  background: #53bb1b;
+}
+
+
+.security-progress.excellent {
+  background: #278d00;
+}
+
+.requirements {
+  margin-top: 14px;
+  display: grid;
+  gap: 7px;
+  font-size: 13px;
+  color: #999999;
+}
+
+
+.requirements div {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  transition: color 0.2s ease;
+}
+
+
+.requirements .valid {
+  color: #53bb1b;
+  font-weight: 600;
+}
+
+
+.requirement-icon {
+  width: 16px;
+  display: inline-flex;
+  justify-content: center;
+
+  font-weight: 700;
+}
+
+
+.match-message {
+  margin-top: 8px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.match-message.match {
+  color: #53bb1b;
+}
+
+.match-message.no-match {
+  color: #d64545;
+}
+
+
+.activation-button {
+  width: 100%;
+  height: 52px;
+  border: none;
+  border-radius: 10px;
+  background: #53bb1b;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    opacity 0.2s ease;
+  box-sizing: border-box;
+}
+
+.activation-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  background: #46a513;
+}
+
+
+.activation-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+
+.activation-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+
+.error-message,
+.success-message {
+  padding: 13px;
+  border-radius: 9px;
+  margin-bottom: 18px;
+  font-size: 14px;
+  line-height: 1.5;
+  box-sizing: border-box;
+}
+
+
+.error-message {
+  background: rgba(199, 54, 54, 0.08);
+  border: 1px solid rgba(199, 54, 54, 0.25);
+  color: #e05252;
+}
+
+
+.success-message {
+  background: rgba(62, 149, 23, 0.08);
+  border: 1px solid rgba(83, 187, 27, 0.25);
+  color: #53bb1b;
+}
+
+.footer {
+  padding: 25px;
+  text-align: center;
+  background: #1b1c1c;
+  border-top: 1px solid #252525;
+  box-sizing: border-box;
+}
+
+.footer img {
+  width: 120px;
+  height: auto;
+  display: inline-block;
+  object-fit: contain;
+}
+
+
+
+@media (max-width: 600px) {
+
+  .header {
+    height: 60px;
+    padding: 0 20px;
+  }
+
+
+  .logo-container img {
+    width: 130px;
+  }
+
+
+  .activation-container {
+    padding: 30px 15px;
+  }
+
+
+  .activation-card {
+    padding: 28px 22px;
+    border-radius: 16px;
+  }
+
+
+  .activation-header {
+    margin-bottom: 28px;
+  }
+
+
+  .activation-logo {
+    width: 75px;
+  }
+
+
+  .activation-header h1 {
+    font-size: 27px;
+  }
+
+
+  .activation-header p {
+    font-size: 13px;
+  }
+
+
+  .password-container input {
+    height: 48px;
+    font-size: 14px;
+  }
+
+
+  .security-container {
+    padding: 15px;
+  }
+
+
+  .requirements {
+    font-size: 12px;
+  }
+
+
+  .activation-button {
+    height: 50px;
+    font-size: 15px;
+  }
+
+
+  .footer {
+    padding: 20px;
+  }
+
+
+  .footer img {
+    width: 100px;
+  }
+
+}
