@@ -5,11 +5,9 @@ import com.eduplanner.ed_lib_common.dto.AttendanceResponseDTO;
 import com.eduplanner.ed_lib_common.dto.AttendanceSummaryDTO;
 import com.eduplanner.ed_lib_common.dto.JustificationRequestDTO;
 import com.eduplanner.ed_lib_common.dto.JustificationReviewDTO;
-import com.eduplanner.ed_lib_common.dto.UserResponseDTO;
 import com.eduplanner.ed_lib_common.entity.Attendance;
 import com.eduplanner.ed_lib_common.enums.AttendanceStatus;
 import com.eduplanner.ed_lib_common.enums.JustificationStatus;
-import com.eduplanner.ed_lib_common.enums.RolEnum;
 import com.EduPlanner.ed_ms_gestion_academica.client.AdministracionServiceClient;
 import com.EduPlanner.ed_ms_gestion_academica.repository.AttendanceRepository;
 import lombok.RequiredArgsConstructor;
@@ -41,16 +39,13 @@ public class AttendanceService {
         return toResponse(repository.save(a));
     }
 
-    /** Confirma en ed-ms-administracion que el idStudent existe, está activo y tiene rol ESTUDIANTE */
+    /** Confirma en ed-ms-administracion que el idStudent existe y tiene rol ESTUDIANTE */
     private void validateIsActiveStudent(Integer idStudent) {
-        UserResponseDTO user = administracionServiceClient.getUserById(idStudent);
-        if (user == null) {
+        String role = administracionServiceClient.getUserRole(idStudent);
+        if (role == null) {
             throw new IllegalArgumentException("El estudiante " + idStudent + " no existe en administración");
         }
-        if (!Boolean.TRUE.equals(user.getStatus())) {
-            throw new IllegalArgumentException("El estudiante " + idStudent + " no tiene la cuenta activa");
-        }
-        if (user.getIdRole() == null || user.getIdRole() != RolEnum.ESTUDIANTE.getId()) {
+        if (!"ESTUDIANTE".equals(role)) {
             throw new IllegalArgumentException("El usuario " + idStudent + " no tiene rol ESTUDIANTE");
         }
     }
