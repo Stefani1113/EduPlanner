@@ -13,23 +13,8 @@ from typing import Any
 
 from dotenv import load_dotenv
 from mcp.server import MCPServer
-from starlette.requests import Request
-from starlette.responses import JSONResponse
 
-# Cargar variables de entorno desde .env
-load_dotenv()
 
-# Configuración leída desde variables de entorno (.env)
-HOST = os.getenv("HOST", "127.0.0.1")
-PORT = int(os.getenv("PORT", "8000"))
-TRANSPORT = os.getenv("TRANSPORT", "sse").lower().strip()
-
-# Variable de entorno de EduPlanner
-EDUPLANNER_BASE_URL = os.getenv("EDUPLANNER_BASE_URL")
-EDUPLANNER_LOGIN_URL = os.getenv("EDUPLANNER_LOGIN_URL")
-EDUPLANNER_REFRESH_URL = os.getenv("EDUPLANNER_REFRESH_URL")
-EDUPLANNER_ADMIN_USER = os.getenv("EDUPLANNER_ADMIN_USER")
-EDUPLANNER_ADMIN_PASSWORD = os.getenv("EDUPLANNER_ADMIN_PASSWORD")
 
 TOKEN_DURATION = 600 # 10 min
 SAFETY_MARGIN = 30 #Renovar el token cada 30sg
@@ -139,26 +124,22 @@ def create_server() -> MCPServer:
 
 
     # -------------------------------------------------------------
-    # 3. HERRAMIENTA: Listar Cargas académicas
+    # 4. HERRAMIENTA: Listar Cargas académicas
     # -------------------------------------------------------------
     @server.tool(
         name="listar_carga_academica",
         description="Por medio del endpoint http://localhost:8080/eduplanner/academic-loads consultar y devolver la lista de todas las cargas academicas registradas",
     )
     def listar_cursos() -> dict[str, Any]:
-        print(f"👉 [MCP Tool] Ejecutando listar carga académica")
+        print(f"👉 [MCP Tool] Ejecutando listar cargas académicas")
         try : 
             token = valid_token()
             headers = {"Authorization" : f"Bearer {token}"}
-            response = requests.get(f"{EDUPLANNER_BASE_URL}/courses", headers=headers)
+            response = requests.get(f"{EDUPLANNER_BASE_URL}/academic-loads", headers=headers)
             response.raise_for_status()
             return {"success" : True, "cargas" : response.json() }
         except requests.exceptions.RequestException as exc : 
             return {"success" : False, "error" : f"Error consultando cargas academicas: {str(exc)}"}
-
-    # -------------------------------------------------------------
-    # 4. HERRAMIENTA: Listar Cargas académicas
-    # -------------------------------------------------------------
 
     # -------------------------------------------------------------
     # RECURSO DE ESTADO (MCP Resource)
