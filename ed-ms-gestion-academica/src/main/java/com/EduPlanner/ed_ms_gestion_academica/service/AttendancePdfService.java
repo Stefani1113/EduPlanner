@@ -4,8 +4,14 @@ import com.eduplanner.ed_lib_common.dto.AttendanceResponseDTO;
 import com.eduplanner.ed_lib_common.dto.AttendanceSummaryDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
 import org.springframework.stereotype.Service;
+
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
