@@ -21,7 +21,7 @@ export class AuthService {
   private idTimeoutRenovacion: ReturnType<typeof setTimeout> | null = null;
   private ultimaActividad = 0;
   private ultimaRenovacion = 0;
-  private renovando = false;
+  private renovando = false; 
 
   private eventosActividad = [
     'click',

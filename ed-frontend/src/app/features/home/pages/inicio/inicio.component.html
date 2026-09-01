@@ -6,11 +6,11 @@
     </div>
 
     <div class="menu" [class.active]="menuOpen">
-      <a href="#identidad" (click)="closeMenu()">Identidad</a>
-      <a href="#beneficios" (click)="closeMenu()">Beneficios</a>
-      <a href="#faq" (click)="closeMenu()">FAQ</a>
-      <a href="#contacto" (click)="closeMenu()">Contacto</a>
-      <a href="#soporte" (click)="closeMenu()">Soporte técnico</a>
+      <a href="#identidad" (click)="irA('identidad', $event)">Identidad</a>
+      <a href="#beneficios" (click)="irA('beneficios', $event)">Beneficios</a>
+      <a href="#faq" (click)="irA('faq', $event)">FAQ</a>
+      <a href="#contacto" (click)="irA('contacto', $event)">Contacto</a>
+      <a href="#soporte" (click)="irA('soporte', $event)">Soporte técnico</a>
     </div>
 
   <a routerLink="/auth" class="btn-login">
@@ -27,7 +27,7 @@
 
   <section class="hero">
     <div class="hero-text">
-      <a class="in" href="#identidad">
+      <a class="in" href="#identidad" (click)="irA('identidad', $event)">
         <img class="icon-menu" src="assets/img/calendar_month.png" alt="">
         SISTEMA INSTITUCIONAL
       </a>
@@ -206,7 +206,7 @@
     <div class="soporte" id="soporte">
       <h2><span class="verde">Soporte Técnico</span></h2>
 
-      <form class="form-soporte">
+      <form class="form-soporte" (ngSubmit)="enviarSoporte()">
         <div class="input-group">
 
           <label for="nombreRemitente">Nombre remitente</label>
@@ -214,6 +214,7 @@
             id="nombreRemitente"
             type="text"
             name="nombreRemitente"
+            [(ngModel)]="formularioSoporte.nombreRemitente"
             placeholder="Escribe tu nombre">
 
           <label for="emailSoporte">Email</label>
@@ -221,12 +222,14 @@
             id="emailSoporte"
             type="email"
             name="emailSoporte"
+            [(ngModel)]="formularioSoporte.emailSoporte"
             placeholder="ejemplo&#64;correo.com">
 
           <label for="asuntoSoporte">Asunto</label>
           <select
             id="asuntoSoporte"
-            name="asuntoSoporte">
+            name="asuntoSoporte"
+            [(ngModel)]="formularioSoporte.asuntoSoporte">
             <option value="" disabled selected>Selecciona un asunto</option>
             <option value="soporte">Soporte técnico</option>
             <option value="cuenta">Problemas con mi cuenta</option>
@@ -239,11 +242,14 @@
             id="mensajeSoporte"
             rows="4"
             name="mensajeSoporte"
+            [(ngModel)]="formularioSoporte.mensajeSoporte"
             placeholder="¿En qué podemos ayudarte?"></textarea>
 
         </div>
 
-        <button type="submit" class="btn-enviar">Enviar</button>
+        <button type="submit" class="btn-enviar" [disabled]="enviandoSoporte">
+          {{ enviandoSoporte ? 'Enviando...' : 'Enviar' }}
+        </button>
       </form>
     </div>
 
