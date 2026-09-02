@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import emailjs from '@emailjs/browser';
+import { SoporteService } from '../../services/soporte.service';
 import { ModalService } from '../../../../core/services/modal.service';
 
 @Component({
@@ -11,6 +11,7 @@ import { ModalService } from '../../../../core/services/modal.service';
 export class InicioComponent {
 
   constructor(
+    private soporteService: SoporteService,
     private modalService: ModalService
   ) {}
 
@@ -42,23 +43,6 @@ irA(idSeccion: string, event?: Event): void {
 }
 
 
-  // ==========================================================
-  // EmailJS: reemplaza estos 3 valores con los de tu cuenta
-  // (los obtienes gratis en https://www.emailjs.com)
-  // ==========================================================
-  private readonly EMAILJS_SERVICE_ID = 'TU_SERVICE_ID';
-  private readonly EMAILJS_TEMPLATE_ID = 'TU_TEMPLATE_ID';
-  private readonly EMAILJS_PUBLIC_KEY = 'TU_PUBLIC_KEY';
-
-
-  private readonly ASUNTOS: Record<string, string> = {
-    soporte: 'Soporte técnico',
-    cuenta: 'Problemas con mi cuenta',
-    sugerencia: 'Sugerencia',
-    otro: 'Otro'
-  };
-
-
   formularioSoporte = {
     nombreRemitente: '',
     emailSoporte: '',
@@ -87,42 +71,42 @@ irA(idSeccion: string, event?: Event): void {
 
     this.enviandoSoporte = true;
 
-    const parametros = {
-      from_name: formulario.nombreRemitente.trim(),
-      from_email: formulario.emailSoporte.trim(),
-      subject: this.ASUNTOS[formulario.asuntoSoporte] || formulario.asuntoSoporte,
-      message: formulario.mensajeSoporte.trim()
-    };
-
-    emailjs
-      .send(
-        this.EMAILJS_SERVICE_ID,
-        this.EMAILJS_TEMPLATE_ID,
-        parametros,
-        { publicKey: this.EMAILJS_PUBLIC_KEY }
-      )
-      .then(() => {
-        this.enviandoSoporte = false;
-
-        this.modalService.success(
-          'Tu mensaje fue enviado correctamente. Te responderemos pronto.'
-        );
-
-        this.formularioSoporte = {
-          nombreRemitente: '',
-          emailSoporte: '',
-          asuntoSoporte: '',
-          mensajeSoporte: ''
-        };
+    this.soporteService
+      .enviarSoporte({
+        name: formulario.nombreRemitente.trim(),
+        email: formulario.emailSoporte.trim(),
+        subject: formulario.asuntoSoporte,
+        message: formulario.mensajeSoporte.trim()
       })
-      .catch(err => {
-        this.enviandoSoporte = false;
+      .subscribe({
 
-        console.error('Error enviando soporte:', err);
+        next: respuesta => {
+          this.enviandoSoporte = false;
 
-        this.modalService.error(
-          'No se pudo enviar tu mensaje. Inténtalo nuevamente en unos minutos.'
-        );
+          this.modalService.success(
+            respuesta?.message ||
+            'Tu mensaje fue enviado correctamente. Te responderemos pronto.'
+          );
+
+          this.formularioSoporte = {
+            nombreRemitente: '',
+            emailSoporte: '',
+            asuntoSoporte: '',
+            mensajeSoporte: ''
+          };
+        },
+
+        error: err => {
+          this.enviandoSoporte = false;
+
+          console.error('Error enviando soporte:', err);
+
+          this.modalService.error(
+            err?.error?.message ||
+            'No se pudo enviar tu mensaje. Inténtalo nuevamente en unos minutos.'
+          );
+        }
+
       });
   }
 
@@ -152,5 +136,5 @@ preguntasFrecuentes = [
 
 toggleFaq(index: number) {
   this.preguntasFrecuentes[index].abierta = !this.preguntasFrecuentes[index].abierta;
-} 
+}
 }
