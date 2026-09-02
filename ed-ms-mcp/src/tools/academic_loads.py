@@ -4,7 +4,7 @@ def create_academic_load_tool(server, client) :
     """Crea la herramienta list_academic_loads para consultar datos de cargas academicas desde el microservicio de gestión académica de EduPlanner."""
 
     # -------------------------------------------------------------
-    # 4. HERRAMIENTA: Listar Cargas académicas
+    # 1. HERRAMIENTA: Listar Cargas académicas
     # -------------------------------------------------------------
     @server.tool(
         name="list_academic_loads",
@@ -21,7 +21,7 @@ def create_academic_load_tool(server, client) :
             return {"success" : False, "error" : f"Error consultando cargas académicas: {str(exc)}"}
 
     # -------------------------------------------------------------
-    # 5. HERRAMIENTA: Listar Cargas académicas por Docente
+    # 2. HERRAMIENTA: Listar Cargas académicas por Docente
     # -------------------------------------------------------------
     @server.tool(
         name="List_academic_loads_teacher",
@@ -36,3 +36,20 @@ def create_academic_load_tool(server, client) :
             return {"success" : True, "cargas_academicas" : academic_loads_teacher}
         except Exception as exc :
             return {"success" : False, "error" : f"Error consultando cargas academicas de dicho docente: {str(exc)}"}
+
+    # -------------------------------------------------------------
+    # 3. HERRAMIENTA: Listar Cargas académicas por cursos
+    # -------------------------------------------------------------
+    @server.tool(
+        name="List_academic_loads_course",
+        description="Por medio del endpoint http://localhost:8080/gestion-academica/eduplanner/academic-loads/filter?course=id consultar y devolver la lista de las cargar académicas de el curso al que pertenece ese Id",
+    )
+    def list_academic_loads_teacher(id_course: int) -> dict[str, Any]:
+        print(f"👉 [MCP Tool] Ejecutando listar cargas académicas por Curso")
+        try :
+            academic_loads_course = client.get(
+                f"/academic-loads/filter?course={id_course}"
+            )
+            return {"success" : True, "cargas_academicas" : academic_loads_course}
+        except Exception as exc :
+            return {"success" : False, "error" : f"Error consultando cargas academicas de dicho curso: {str(exc)}"}
