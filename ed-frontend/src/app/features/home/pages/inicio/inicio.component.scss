@@ -22,7 +22,6 @@
   background: #1B1C1C ;
   border-bottom: 1px solid rgba(83, 187, 27, 0.35);
 
-
   .logo {
     flex: 1;
 
@@ -202,8 +201,8 @@
       max-width: 590px;
       margin: 25px 0 0;
       color: #a7aaa8;
-      font-size: 16px;
-      line-height: 1.8;
+      font-size: 18px;
+      line-height: 1.75;
       font-weight: 400;
     }
 
@@ -311,8 +310,6 @@
     }
   }
 
-
-
   .hero-visual {
     position: relative;
     min-height: 500px;
@@ -341,14 +338,12 @@
           #0f120f,
           #0f120f
 
-
         );
       box-shadow:
         0 30px 80px rgba(0, 0, 0, 0.45),
         0 0 50px rgba(83, 187, 27, 0.06);
       transform: rotate(1.5deg);
       transition: transform 0.4s ease;
-
 
       .image-top-bar {
         height: 34px;
@@ -401,11 +396,9 @@
         }
       }
 
-  
         }
       }
     }
-
 
     .floating-card {
       position: absolute;
@@ -433,7 +426,7 @@
       strong {
         margin-top: 3px;
         color: #eeeeee;
-        font-size: 10px;
+        font-size: 12px;
       }
 
       .floating-icon,
@@ -470,8 +463,6 @@
       bottom: 75px;
       animation-delay: -2s;
     }
-
-
 
 .stats-section {
   position: relative;
@@ -517,7 +508,7 @@
 
     strong {
       color: #e8e8e8;
-      font-size: 11px;
+      font-size: 13px;
     }
 
     span {
@@ -565,8 +556,6 @@
   }
 }
 
-
-
 .identidad {
   padding: 125px 7% 100px;
 }
@@ -579,7 +568,6 @@
   align-items: center;
   gap: 75px;
 }
-
 
 .identity-image {
   position: relative;
@@ -654,13 +642,11 @@
   }
 }
 
-
 .cards-identidad {
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
-
 
 .card-identidad {
   position: relative;
@@ -709,15 +695,15 @@
     h3 {
       margin: 0 0 8px;
       color: #ffffff;
-      font-size: 19px;
+      font-size: 22px;
       font-weight: 600;
     }
 
     p {
       margin: 0;
       color: #7d827f;
-      font-size: 11px;
-      line-height: 1.8;
+      font-size: 14px;
+      line-height: 1.75;
     }
 
     .card-line {
@@ -741,8 +727,6 @@
       );
   }
 }
-
-
 
 .beneficios {
   padding: 100px 7% 120px;
@@ -788,7 +772,6 @@
   }
 }
 
-
 .cards-beneficios {
   max-width: 1250px;
   margin: auto;
@@ -796,7 +779,6 @@
   grid-template-columns: repeat(3, 1fr);
   gap: 20px;
 }
-
 
 .card-beneficio {
   position: relative;
@@ -853,7 +835,7 @@
   h3 {
     margin: 35px 0 10px;
     color: #ffffff;
-    font-size: 20px;
+    font-size: 24px;
     font-weight: 600;
   }
 
@@ -910,7 +892,6 @@
       );
   }
 }
-
 
 .innovation-banner {
   border: 1px solid #53bb1b6f;
@@ -970,7 +951,7 @@
     h3 {
       margin: 0;
       color: #ffffff;
-      font-size: 25px;
+      font-size: 29px;
       line-height: 1.25;
     }
 
@@ -996,8 +977,6 @@
   }
 }
 
-
-
 .faq {
   padding: 120px 7% 110px;
   background: #090b0a;
@@ -1010,7 +989,6 @@
   flex-direction: column;
   gap: 10px;
 }
-
 
 .faq-item {
   border:  solid transparent;
@@ -1026,7 +1004,6 @@
     background: #151915;
   }
 }
-
 
 .faq-question {
   min-height: 68px;
@@ -1072,7 +1049,6 @@
   }
 }
 
-
 .faq-answer {
   padding: 0 70px 22px 75px;
 
@@ -1084,7 +1060,6 @@
   }
 }
 
-
 .contacto-soporte {
   position: relative;
   background-color: #161616;
@@ -1094,7 +1069,6 @@
   grid-template-columns: 0.85fr 1.15fr;
   gap: 70px;
   padding: 110px 7%;
-
 
   &::before {
     content: '';
@@ -1113,7 +1087,6 @@
     line-height: 1.2;
   }
 }
-
 
 .contacto {
   max-width: 500px;
@@ -1135,13 +1108,11 @@
   }
 }
 
-
 .contacto-items {
   display: flex;
   flex-direction: column;
   gap: 13px;
 }
-
 
 .contacto-item {
   display: flex;
@@ -1184,7 +1155,7 @@
 
     .value {
       color: #dcdedc;
-      font-size: 11px;
+      font-size: 13px;
     }
   }
 
@@ -1194,8 +1165,6 @@
   }
 }
 
-
-
 .soporte {
   max-width: 600px;
   padding: 35px;
@@ -1204,11 +1173,10 @@
     linear-gradient(
       145deg,
       #1B1C1C,
-      #53bb1b33
+      #53bb1b2d
     );
   box-shadow: 0 25px 60px rgba(0, 0, 0, 0.25);
 }
-
 
 .support-header {
   display: flex;
@@ -1246,7 +1214,6 @@
     font-size: 21px;
   }
 }
-
 
 .form-soporte {
   .input-group {
@@ -1346,7 +1313,6 @@
   }
 }
 
-
 footer {
   min-height: 100px;
   display: grid;
@@ -1391,111 +1357,144 @@ footer {
   }
 }
 
-
-@keyframes floatingCard {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-
-  50% {
-    transform: translateY(-8px);
-  }
-}
-
-
 @media (max-width: 1000px) {
 
   .navbar {
     padding: 14px 5%;
 
     .menu {
-      gap: 18px;
+      gap: 16px;
 
       a {
-        font-size: 11px;
+        font-size: 12px;
       }
     }
 
     .btn-login {
-      margin-left: 18px;
-      padding: 9px 12px;
-      font-size: 11px;
+      margin-left: 15px;
+      padding: 10px 14px;
+      font-size: 13px;
     }
   }
 
-
   .hero {
-    grid-template-columns: 1fr 0.85fr;
-    gap: 25px;
-    padding: 65px 5% 80px;
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 0.85fr);
+    gap: 35px;
+    padding: 70px 5% 90px;
+    align-items: center;
 
     .hero-text {
       h1 {
-        font-size: 45px;
+        font-size: clamp(42px, 5vw, 58px);
+        line-height: 1.05;
       }
 
       p {
-        font-size: 13px;
+        max-width: 560px;
+        font-size: 16px;
+        line-height: 1.75;
+      }
+
+      .hero-buttons {
+        margin-top: 28px;
+      }
+
+      .hero-features {
+        gap: 18px;
+
+        .hero-feature {
+          strong {
+            font-size: 10px;
+          }
+
+          span {
+            font-size: 8px;
+          }
+        }
       }
     }
 
     .hero-visual {
-      min-height: 400px;
+      min-height: 410px;
 
       .hero-image-card {
+        width: 100%;
+
         .hero-image-container {
-          height: 310px;
+          height: 320px;
+        }
+      }
+
+      .floating-card {
+        padding: 10px 12px;
+
+        span {
+          font-size: 8px;
+        }
+
+        strong {
+          font-size: 9px;
         }
       }
 
       .floating-card-top {
-        left: -10px;
+        left: -15px;
+        top: 45px;
       }
 
       .floating-card-bottom {
-        right: -10px;
+        right: -15px;
+        bottom: 35px;
       }
     }
   }
 
-
   .stats-section {
     width: 90%;
-    padding: 18px;
+    padding: 20px 18px;
+    gap: 10px;
 
     .stat-item {
-      gap: 7px;
+      gap: 8px;
 
       strong {
-        font-size: 9px;
+        font-size: 10px;
       }
 
       span {
-        font-size: 7px;
+        font-size: 8px;
       }
 
       .stat-icon {
-        width: 32px;
-        height: 32px;
+        width: 34px;
+        height: 34px;
 
         img {
-          width: 16px;
-          height: 16px;
+          width: 17px;
+          height: 17px;
         }
       }
     }
   }
 
-
   .identity-content {
-    gap: 40px;
+    gap: 45px;
   }
 
+  .identity-image {
+    img {
+      max-width: 100%;
+    }
+  }
 
   .card-identidad {
-    grid-template-columns: auto 50px 1fr;
+    grid-template-columns: 42px 50px minmax(0, 1fr);
+    gap: 12px;
     padding: 20px;
+
+    .card-number {
+      font-size: 12px;
+    }
 
     .icon-circle {
       width: 50px;
@@ -1506,6 +1505,68 @@ footer {
         height: 25px;
       }
     }
+
+    .card-content {
+      h3 {
+        font-size: 18px;
+      }
+
+      p {
+        font-size: 13px;
+        line-height: 1.65;
+      }
+    }
+  }
+
+  .beneficios-header {
+    h2 {
+      font-size: clamp(32px, 4vw, 42px);
+    }
+
+    > p {
+      font-size: 14px;
+      line-height: 1.7;
+    }
+  }
+
+  .card-beneficio {
+    h3 {
+      font-size: 20px;
+    }
+
+    > p {
+      font-size: 13px;
+      line-height: 1.65;
+    }
+  }
+
+  .innovation-content {
+    h3 {
+      font-size: 25px;
+    }
+
+    p {
+      font-size: 13px;
+      line-height: 1.7;
+    }
+  }
+
+  .faq-answer {
+    p {
+      font-size: 13px;
+      line-height: 1.7;
+    }
+  }
+
+  .contacto-soporte {
+    h2 {
+      font-size: clamp(32px, 4vw, 40px);
+    }
+
+    .contacto-description {
+      font-size: 14px;
+      line-height: 1.7;
+    }
   }
 }
 
@@ -1514,14 +1575,15 @@ footer {
 
   .navbar {
     min-height: 67px;
-
     padding: 12px 18px;
+    position: relative;
 
     .logo {
       flex: initial;
 
       img {
         height: 34px;
+        width: auto;
       }
     }
 
@@ -1529,16 +1591,17 @@ footer {
       display: flex;
       order: 3;
       margin-left: 10px;
+      background: #1B1C1C;
     }
 
     .btn-login {
       order: 2;
       margin-left: auto;
-      padding: 8px 10px;
+      padding: 9px 12px;
       border-radius: 9px;
 
       span {
-        font-size: 10px;
+        font-size: 12px;
       }
 
       .icon-small {
@@ -1552,13 +1615,18 @@ footer {
       top: 100%;
       left: 0;
       right: 0;
+      z-index: 1000;
+
       display: none;
       flex-direction: column;
       align-items: stretch;
       gap: 0;
-      padding: 12px 20px 18px;
+
+      padding: 10px 20px 18px;
+
       background: rgba(13, 15, 14, 0.98);
       border-bottom: 1px solid rgba(83, 187, 27, 0.35);
+
       backdrop-filter: blur(20px);
 
       &.active {
@@ -1566,9 +1634,9 @@ footer {
       }
 
       a {
-        padding: 12px 4px;
+        padding: 13px 4px;
         border-bottom: 1px solid #252a27;
-        font-size: 12px;
+        font-size: 13px;
 
         &:last-child {
           border-bottom: none;
@@ -1586,62 +1654,75 @@ footer {
     min-height: auto;
     display: flex;
     flex-direction: column;
-    padding: 55px 18px 80px;
+
+    padding: 60px 18px 85px;
+
     text-align: center;
 
     .hero-text {
-      max-width: 100%;
+      width: 100%;
+      max-width: 680px;
+      margin: 0 auto;
 
       .hero-badge {
         margin: 0 auto 20px;
-
-        font-size: 9px;
+        font-size: 10px;
       }
 
       h1 {
-        font-size: 38px;
+        max-width: 650px;
+        margin-left: auto;
+        margin-right: auto;
+
+        font-size: clamp(38px, 8vw, 52px);
+        line-height: 1.08;
         letter-spacing: -1.5px;
       }
 
       p {
-        margin: 20px auto 0;
-        font-size: 12px;
+        max-width: 600px;
+        margin: 22px auto 0;
+
+        font-size: 15px;
         line-height: 1.75;
       }
 
       .hero-buttons {
         justify-content: center;
         flex-wrap: wrap;
-        margin-top: 28px;
+        gap: 12px;
+        margin-top: 30px;
 
         .btn-primary,
         .btn-secondary {
-          font-size: 11px;
+          font-size: 12px;
+          padding: 11px 16px;
         }
       }
 
       .hero-features {
         justify-content: center;
-        gap: 16px;
-        margin-top: 32px;
+        flex-wrap: wrap;
+        gap: 20px;
+        margin-top: 34px;
 
         .hero-feature {
           .feature-icon {
-            width: 30px;
-            height: 30px;
+            width: 32px;
+            height: 32px;
 
             img {
-              width: 15px;
-              height: 15px;
+              width: 16px;
+              height: 16px;
             }
           }
 
           strong {
-            font-size: 9px;
+            font-size: 10px;
           }
 
           span {
-            font-size: 7px;
+            font-size: 8px;
           }
         }
       }
@@ -1650,43 +1731,47 @@ footer {
 
     .hero-visual {
       width: 100%;
-      min-height: 360px;
-      margin-top: 20px;
+      min-height: 380px;
+      margin-top: 25px;
+
+      display: flex;
+      justify-content: center;
+      align-items: center;
 
       .hero-image-card {
-        width: 90%;
+        width: min(92%, 520px);
 
         .hero-image-container {
-          height: 300px;
+          height: 320px;
         }
       }
 
       .floating-card {
-        padding: 9px 10px;
+        padding: 10px 12px;
 
         .floating-icon,
         .floating-check {
-          width: 30px;
-          height: 30px;
+          width: 32px;
+          height: 32px;
         }
 
         span {
-          font-size: 7px;
+          font-size: 8px;
         }
 
         strong {
-          font-size: 8px;
+          font-size: 9px;
         }
       }
 
       .floating-card-top {
         left: 0;
-        top: 55px;
+        top: 50px;
       }
 
       .floating-card-bottom {
         right: 0;
-        bottom: 40px;
+        bottom: 35px;
       }
     }
   }
@@ -1695,9 +1780,12 @@ footer {
   .stats-section {
     width: calc(100% - 36px);
     margin-top: -25px;
+
     display: grid;
     grid-template-columns: 1fr 1fr;
+
     gap: 15px;
+
     padding: 20px;
 
     .stat-divider {
@@ -1706,9 +1794,29 @@ footer {
 
     .stat-item {
       justify-content: flex-start;
+      gap: 9px;
+
+      strong {
+        font-size: 10px;
+      }
+
+      span {
+        font-size: 8px;
+      }
+
+      .stat-icon {
+        width: 34px;
+        height: 34px;
+
+        img {
+          width: 17px;
+          height: 17px;
+        }
+      }
 
       &:nth-child(7) {
         grid-column: 1 / -1;
+        justify-content: center;
       }
     }
   }
@@ -1729,14 +1837,20 @@ footer {
 
 
   .section-heading {
-    margin-bottom: 40px;
+    margin-bottom: 42px;
 
     h2 {
-      font-size: 30px;
+      font-size: clamp(30px, 7vw, 38px);
+      line-height: 1.1;
     }
 
     .subtitulo {
-      font-size: 11px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+
+      font-size: 14px;
+      line-height: 1.7;
     }
   }
 
@@ -1752,9 +1866,14 @@ footer {
     width: 100%;
     min-height: 330px;
 
-     img {
-      width: 90%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    img {
+      width: min(90%, 520px);
       height: 300px;
+      object-fit: cover;
     }
 
     .identity-image-badge {
@@ -1771,17 +1890,35 @@ footer {
 
   .card-identidad {
     display: grid;
-    grid-template-columns: auto 50px 1fr;
+    grid-template-columns: 42px 50px minmax(0, 1fr);
+
     gap: 12px;
-    padding: 18px;
+    padding: 20px;
+
+    .card-number {
+      font-size: 12px;
+    }
+
+    .icon-circle {
+      width: 50px;
+      height: 50px;
+
+      img {
+        width: 25px;
+        height: 25px;
+      }
+    }
 
     .card-content {
       h3 {
-        font-size: 17px;
+        font-size: 19px;
+        line-height: 1.2;
       }
 
       p {
-        font-size: 10px;
+        margin-top: 7px;
+        font-size: 13px;
+        line-height: 1.65;
       }
     }
   }
@@ -1791,50 +1928,73 @@ footer {
     display: flex;
     flex-direction: column;
     gap: 18px;
+
     text-align: center;
 
     h2 {
-      font-size: 30px;
+      font-size: clamp(30px, 7vw, 38px);
+      line-height: 1.1;
     }
 
     p {
-      font-size: 11px;
+      max-width: 620px;
+      margin: 0 auto;
+
+      font-size: 14px;
+      line-height: 1.7;
     }
   }
 
 
   .cards-beneficios {
     grid-template-columns: 1fr;
+    gap: 20px;
   }
 
 
   .card-beneficio {
-    min-height: 310px;
+    min-height: 300px;
+    padding: 25px;
+
+    h3 {
+      font-size: 21px;
+    }
+
+    > p {
+      font-size: 13px;
+      line-height: 1.7;
+    }
   }
 
 
   .innovation-banner {
     flex-direction: column;
+
     text-align: center;
-    padding: 30px 20px;
+
+    gap: 20px;
+
+    padding: 32px 22px;
 
     .innovation-image {
-      width: 80px;
-      height: 80px;
+      width: 85px;
+      height: 85px;
 
       img {
-        width: 50px;
-        height: 50px;
+        width: 52px;
+        height: 52px;
       }
     }
 
     .innovation-content {
       h3 {
-        font-size: 20px;
+        font-size: 22px;
+        line-height: 1.2;
       }
 
       p {
-        font-size: 10px;
+        font-size: 13px;
+        line-height: 1.7;
       }
     }
 
@@ -1850,23 +2010,29 @@ footer {
 
 
   .faq-question {
-    min-height: 60px;
-    grid-template-columns: 25px 1fr 30px;
-    gap: 8px;
-    padding: 0 13px;
-    font-size: 10px;
+    min-height: 62px;
+
+    grid-template-columns: 26px minmax(0, 1fr) 30px;
+
+    gap: 9px;
+
+    padding: 0 14px;
+
+    font-size: 12px;
+    line-height: 1.4;
 
     .faq-question-number {
-      font-size: 8px;
+      font-size: 9px;
     }
   }
 
 
   .faq-answer {
-    padding: 0 15px 18px 46px;
+    padding: 0 16px 20px 48px;
 
     p {
-      font-size: 10px;
+      font-size: 13px;
+      line-height: 1.7;
     }
   }
 
@@ -1874,34 +2040,41 @@ footer {
   .contacto-soporte {
     display: flex;
     flex-direction: column;
+
     gap: 50px;
+
     padding-top: 85px;
     padding-bottom: 70px;
 
     h2 {
-      font-size: 30px;
+      font-size: clamp(30px, 7vw, 38px);
+      line-height: 1.1;
     }
   }
 
 
   .contacto {
-    max-width: 100%;
+    width: 100%;
+    max-width: 680px;
+    margin: 0 auto;
 
     .contacto-description {
-      font-size: 11px;
+      font-size: 14px;
+      line-height: 1.7;
     }
   }
 
 
   .soporte {
     width: 100%;
-    padding: 22px;
+    padding: 24px;
   }
 
 
   .form-soporte {
     .input-group {
       grid-template-columns: 1fr;
+      gap: 15px;
 
       .input-field:last-child {
         grid-column: auto;
@@ -1913,8 +2086,11 @@ footer {
   footer {
     display: flex;
     flex-direction: column;
-    gap: 13px;
-    padding: 25px 18px;
+
+    gap: 14px;
+
+    padding: 28px 18px;
+
     text-align: center;
 
     .logo-footer {
@@ -1930,45 +2106,169 @@ footer {
 }
 
 
+@media (max-width: 600px) {
 
-@media (max-width: 420px) {
+  .hero {
+    padding-top: 50px;
 
-  .navbar {
-    .logo img {
-      height: 30px;
+    .hero-text {
+
+      h1 {
+        font-size: clamp(34px, 9vw, 44px);
+      }
+
+      p {
+        font-size: 14px;
+        line-height: 1.7;
+      }
+
+      .hero-buttons {
+        flex-direction: column;
+        align-items: center;
+
+        .btn-primary,
+        .btn-secondary {
+          width: min(100%, 320px);
+          justify-content: center;
+        }
+      }
     }
 
-    .btn-login {
-      span {
-        display: none;
+    .hero-visual {
+      min-height: 350px;
+
+      .hero-image-card {
+        width: 92%;
+
+        .hero-image-container {
+          height: 290px;
+        }
+      }
+
+      .floating-card-top {
+        left: -2px;
+      }
+
+      .floating-card-bottom {
+        right: -2px;
       }
     }
   }
 
 
+  .stats-section {
+    grid-template-columns: 1fr;
+    gap: 12px;
+
+    .stat-item {
+      justify-content: center;
+
+      &:nth-child(7) {
+        grid-column: auto;
+      }
+    }
+  }
+
+
+  .card-identidad {
+    grid-template-columns: 40px 48px minmax(0, 1fr);
+
+    padding: 18px;
+
+    .icon-circle {
+      width: 48px;
+      height: 48px;
+    }
+
+    .card-content {
+      h3 {
+        font-size: 18px;
+      }
+
+      p {
+        font-size: 13px;
+      }
+    }
+  }
+
+
+  .card-beneficio {
+    min-height: 280px;
+  }
+}
+
+
+@media (max-width: 420px) {
+
+  .navbar {
+    padding: 11px 15px;
+
+    .logo {
+      img {
+        height: 30px;
+      }
+    }
+
+    .btn-login {
+      padding: 8px 10px;
+
+      span {
+        display: none;
+      }
+
+      .icon-small {
+        width: 18px;
+        height: 18px;
+      }
+    }
+
+    .menu-toggle {
+      margin-left: 8px;
+    }
+  }
+
+
   .hero {
-    padding-top: 45px;
+    padding: 45px 15px 70px;
 
     .hero-text {
+
+      .hero-badge {
+        font-size: 9px;
+        padding: 7px 12px;
+      }
+
       h1 {
         font-size: 32px;
+        line-height: 1.08;
+        letter-spacing: -1px;
+      }
+
+      p {
+        margin-top: 18px;
+        font-size: 14px;
+        line-height: 1.7;
       }
 
       .hero-features {
         display: grid;
         grid-template-columns: 1fr;
         justify-items: center;
+
+        gap: 18px;
       }
     }
 
+
     .hero-visual {
-      min-height: 320px;
+      min-height: 315px;
+      margin-top: 15px;
 
       .hero-image-card {
         width: 94%;
 
         .hero-image-container {
-          height: 260px;
+          height: 255px;
         }
       }
 
@@ -1980,25 +2280,53 @@ footer {
 
 
   .stats-section {
-    grid-template-columns: 1fr;
+    width: calc(100% - 30px);
+    padding: 18px 15px;
+  }
 
-    .stat-item {
-      justify-content: center;
+
+  .identidad,
+  .beneficios,
+  .faq,
+  .contacto-soporte {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+
+
+  .identidad {
+    padding-top: 75px;
+  }
+
+
+  .section-heading {
+    margin-bottom: 32px;
+
+    h2 {
+      font-size: 29px;
+    }
+
+    .subtitulo {
+      font-size: 13px;
+      line-height: 1.65;
     }
   }
 
 
   .identity-image {
-    min-height: 290px;
+    min-height: 280px;
 
     > img {
-      height: 260px;
+      width: 94%;
+      height: 250px;
     }
   }
 
 
   .card-identidad {
-    grid-template-columns: 45px 1fr;
+    grid-template-columns: 44px 1fr;
+
+    gap: 10px;
 
     .card-number {
       grid-column: 1;
@@ -2008,20 +2336,147 @@ footer {
     .icon-circle {
       grid-column: 2;
       grid-row: 1;
+
+      width: 44px;
+      height: 44px;
+
+      img {
+        width: 22px;
+        height: 22px;
+      }
     }
 
     .card-content {
       grid-column: 1 / -1;
+
+      h3 {
+        font-size: 18px;
+      }
+
+      p {
+        font-size: 13px;
+        line-height: 1.65;
+      }
     }
   }
 
 
-  .hero-buttons {
-    flex-direction: column;
+  .beneficios-header {
 
-    a {
-      width: 100%;
-      justify-content: center;
+    h2 {
+      font-size: 29px;
+    }
+
+    p {
+      font-size: 13px;
+    }
+  }
+
+
+  .card-beneficio {
+    min-height: auto;
+    padding: 22px;
+
+    h3 {
+      font-size: 19px;
+    }
+
+    > p {
+      font-size: 13px;
+    }
+  }
+
+
+  .innovation-banner {
+    padding: 25px 18px;
+
+    .innovation-image {
+      width: 75px;
+      height: 75px;
+
+      img {
+        width: 45px;
+        height: 45px;
+      }
+    }
+
+    .innovation-content {
+      h3 {
+        font-size: 20px;
+      }
+
+      p {
+        font-size: 13px;
+      }
+    }
+  }
+
+
+  .faq {
+    padding-top: 75px;
+  }
+
+
+  .faq-question {
+    min-height: 58px;
+
+    grid-template-columns: 22px minmax(0, 1fr) 26px;
+
+    gap: 7px;
+
+    padding: 0 11px;
+
+    font-size: 11px;
+
+    .faq-question-number {
+      font-size: 8px;
+    }
+  }
+
+
+  .faq-answer {
+    padding: 0 12px 18px 40px;
+
+    p {
+      font-size: 12px;
+      line-height: 1.7;
+    }
+  }
+
+
+  .contacto-soporte {
+    gap: 40px;
+
+    padding-top: 75px;
+    padding-bottom: 60px;
+
+    h2 {
+      font-size: 29px;
+    }
+  }
+
+
+  .contacto {
+
+    .contacto-description {
+      font-size: 13px;
+      line-height: 1.7;
+    }
+  }
+
+
+  .soporte {
+    padding: 20px 16px;
+  }
+
+
+  footer {
+    padding: 24px 15px;
+
+    .logo-footer {
+      img {
+        height: 34px;
+      }
     }
   }
 }
