@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../../auth/services/auth.service';
+import { SesionUsuarioService } from '../../../auth/services/sesion-usuario.service';
 
 @Component({
   selector: 'app-account-activation',
@@ -44,7 +45,8 @@ export class AccountActivationComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private sesionUsuarioService: SesionUsuarioService
   ) {}
 
   ngOnInit(): void {
@@ -182,15 +184,10 @@ export class AccountActivationComponent implements OnInit {
 
     this.cargando = true;
 
-    /*
-     * Guardamos la contraseña antes de limpiar el formulario.
-     * La necesitaremos para hacer el login automático.
-     */
+
     const password = this.nuevaPassword;
 
-    /*
-     * 1. Activar la cuenta y cambiar la contraseña.
-     */
+
     this.authService.activarCuenta(
       this.token,
       password
@@ -203,12 +200,7 @@ export class AccountActivationComponent implements OnInit {
           respuesta
         );
 
-        /*
-         * 2. El endpoint de activación no devuelve JWT.
-         *
-         * El correo del usuario está almacenado como "sub"
-         * dentro del JWT de activación.
-         */
+
         const email =
           this.obtenerEmailDesdeToken(this.token);
 
@@ -228,10 +220,6 @@ export class AccountActivationComponent implements OnInit {
           email
         );
 
-        /*
-         * 3. Iniciar sesión automáticamente con
-         * el correo y la nueva contraseña.
-         */
         this.authService.login(
           email,
           password
@@ -246,10 +234,7 @@ export class AccountActivationComponent implements OnInit {
 
             this.cargando = false;
 
-            /*
-             * Validamos que el backend realmente
-             * haya enviado el JWT.
-             */
+
             if (!loginResponse?.data?.token) {
 
               console.error(
@@ -263,44 +248,26 @@ export class AccountActivationComponent implements OnInit {
 
             }
 
-            /*
-             * 4. Guardar la sesión exactamente igual
-             * que en LoginPageComponent.
-             */
             localStorage.setItem(
               'token',
               loginResponse.data.token
             );
 
-            localStorage.setItem(
-              'usuario',
-              JSON.stringify(loginResponse.data)
-            );
+            this.sesionUsuarioService.establecerDesdeLogin(loginResponse.data);
 
-            /*
-             * 5. Activar la renovación automática
-             * del JWT.
-             */
             this.authService.iniciarRenovacionAutomatica();
 
-            /*
-             * 6. Mostrar mensaje de éxito.
-             */
             this.mensajeExito =
               '¡Tu cuenta ha sido activada correctamente! Iniciando sesión...';
 
-            /*
-             * Limpiar los campos.
-             */
+
             this.nuevaPassword = '';
             this.confirmarPassword = '';
 
             this.evaluarFortaleza();
             this.validarCoincidencia();
 
-            /*
-             * 7. Entrar directamente al sistema.
-             */
+
             setTimeout(() => {
 
               this.router.navigate([
@@ -330,10 +297,6 @@ export class AccountActivationComponent implements OnInit {
               error.error
             );
 
-            /*
-             * La activación ya se realizó.
-             * El problema estaría solamente en el login.
-             */
             this.mensajeError =
               error.error?.message ||
               error.error?.mensaje ||
@@ -375,13 +338,7 @@ export class AccountActivationComponent implements OnInit {
 
   }
 
-  /**
-   * Obtiene el correo electrónico desde el JWT
-   * de activación.
-   *
-   * El backend genera el token colocando el correo
-   * como subject ("sub").
-   */
+
   private obtenerEmailDesdeToken(
     token: string
   ): string | null {
@@ -390,10 +347,7 @@ export class AccountActivationComponent implements OnInit {
 
       const partes = token.split('.');
 
-      /*
-       * Un JWT válido tiene:
-       * header.payload.signature
-       */
+
       if (partes.length !== 3) {
 
         console.error(
@@ -406,16 +360,11 @@ export class AccountActivationComponent implements OnInit {
 
       const payloadBase64 = partes[1];
 
-      /*
-       * Convertir Base64URL a Base64 normal.
-       */
+
       const base64 = payloadBase64
         .replace(/-/g, '+')
         .replace(/_/g, '/');
 
-      /*
-       * Agregar padding si es necesario.
-       */
       const padding =
         '='.repeat(
           (4 - (base64.length % 4)) % 4
@@ -434,9 +383,7 @@ export class AccountActivationComponent implements OnInit {
         payload
       );
 
-      /*
-       * El backend utiliza el email como subject.
-       */
+
       return payload?.sub || null;
 
     } catch (error) {

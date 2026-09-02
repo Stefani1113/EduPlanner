@@ -127,6 +127,7 @@ export class RegistroComponent implements OnInit {
 
  
   mostrarDatos = false;
+  pestanaActivaDatos: 'academico' | 'calendario' | 'disponibilidad' = 'academico';
 
   mostrarFormularioDocente = false;
   mostrarFormularioAsignatura = false;
@@ -709,12 +710,20 @@ export class RegistroComponent implements OnInit {
 
   abrirDatos(): void {
     this.mostrarDatos = true;
+    this.pestanaActivaDatos = 'academico';
     this.cargarDatos();
   }
 
 
   cerrarDatos(): void {
     this.mostrarDatos = false;
+  }
+
+
+  cambiarPestanaDatos(
+    pestana: 'academico' | 'calendario' | 'disponibilidad'
+  ): void {
+    this.pestanaActivaDatos = pestana;
   }
 
 
@@ -1579,10 +1588,6 @@ export class RegistroComponent implements OnInit {
   }
 
 
-  // =====================================================
-  // NIVELES ACADÉMICOS
-  // =====================================================
-
   seleccionarNivel(nivel: NivelFila): void {
     this.nivelSeleccionado = nivel;
   }
@@ -1697,10 +1702,6 @@ export class RegistroComponent implements OnInit {
     });
   }
 
-
-  // =====================================================
-  // PERIODOS ACADÉMICOS
-  // =====================================================
 
   seleccionarPeriodo(periodo: PeriodoFila): void {
     this.periodoSeleccionado = periodo;
@@ -1831,10 +1832,6 @@ export class RegistroComponent implements OnInit {
   }
 
 
-  // =====================================================
-  // JORNADAS ACADÉMICAS
-  // =====================================================
-
   seleccionarJornada(jornada: JornadaFila): void {
     this.jornadaSeleccionada = jornada;
   }
@@ -1959,9 +1956,6 @@ export class RegistroComponent implements OnInit {
   }
 
 
-  // =====================================================
-  // FRANJAS HORARIAS (TIME SLOTS)
-  // =====================================================
 
   seleccionarFranja(franja: FranjaFila): void {
     this.franjaSeleccionada = franja;
@@ -2096,10 +2090,6 @@ export class RegistroComponent implements OnInit {
     });
   }
 
-
-  // =====================================================
-  // DISPONIBILIDAD DE DOCENTES
-  // =====================================================
 
   seleccionarDisponibilidad(item: DisponibilidadFila): void {
     this.disponibilidadSeleccionada = item;

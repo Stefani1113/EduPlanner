@@ -107,7 +107,7 @@ export class InstitutionSettingsService {
     this.settingsSubject.next(settings);
     this.applyPalette(settings.palette);
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
     } catch {
     }
   }
@@ -123,7 +123,7 @@ export class InstitutionSettingsService {
 
   private load(): InstitutionSettings {
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
+      const raw = sessionStorage.getItem(STORAGE_KEY);
       if (!raw) {
         return { palette: { ...DEFAULT_PALETTE }, info: { ...DEFAULT_INFO } };
       }
