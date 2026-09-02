@@ -36,8 +36,8 @@
 }
 
 .icono-datos img {
-  width: 140%;
-  height: 120%;
+  width: 150%;
+  height: 140%;
   border-radius: 50%;
   object-fit: contain;
 }
@@ -54,13 +54,13 @@
   top: 0;
   right: 0;
   z-index: 100;
-  width: 470px;
+  width: 770px;
   max-width: 94vw;
   height: 100vh;
   box-sizing: border-box;
   padding: 25px;
   overflow-y: auto;
-  background: #191a19;
+  background: #1B1C1C;
   box-shadow: -15px 0 45px rgba(0, 0, 0, .55);
   transform: translateX(100%);
   transition: transform .3s ease;
@@ -140,7 +140,7 @@
 .btn-agregar {
   border: 0;
   padding: 7px 11px;
-  border-radius: 6px;
+  border-radius: 10px;
   background: #347d1c;
   color: #fff;
   font-family: 'Poppins', sans-serif;
