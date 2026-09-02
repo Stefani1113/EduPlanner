@@ -16,7 +16,7 @@ def create_academic_load_tool(server, client) :
             academic_loads = client.get(
                 "/academic-loads"
             )
-            return {"success" : True, "cargas académicas" : academic_loads}
+            return {"success" : True, "cargas_academicas" : academic_loads}
         except Exception as exc : 
             return {"success" : False, "error" : f"Error consultando cargas académicas: {str(exc)}"}
 
@@ -24,15 +24,15 @@ def create_academic_load_tool(server, client) :
     # 5. HERRAMIENTA: Listar Cargas académicas por Docente
     # -------------------------------------------------------------
     @server.tool(
-        name="List_academic_loads_teacher"
+        name="List_academic_loads_teacher",
         description="Por medio del endpoint http://localhost:8080/eduplanner/academic-loads/filter?teacher=id consultar y devolver la lista de las cargar académicas de el docente al que pertenece ese Id",
     )
-    def list_academic_loads_teacher(id_teacher = int) -> dict[str, Any]:
+    def list_academic_loads_teacher(id_teacher: int) -> dict[str, Any]:
         print(f"👉 [MCP Tool] Ejecutando listar cargas académicas por Docente")
         try :
             academic_loads_teacher = client.get(
-                "/academic-loads/{id_teacher}"
+                f"/academic-loads/filter?teacher={id_teacher}"
             )
-            return {"success" : True, "cargas académicas" : academic_loads_teacher}
+            return {"success" : True, "cargas_academicas" : academic_loads_teacher}
         except Exception as exc :
             return {"success" : False, "error" : f"Error consultando cargas academicas de dicho docente: {str(exc)}"}
