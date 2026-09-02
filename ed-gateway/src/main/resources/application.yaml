@@ -82,7 +82,6 @@ security:
     - /autenticacion/eduplanner/auth/reset-password
     - /autenticacion/eduplanner/auth/activation-account
     - /administracion/eduplanner/internal
-   - /administracion/eduplanner/support
 
 logging:
   level:
