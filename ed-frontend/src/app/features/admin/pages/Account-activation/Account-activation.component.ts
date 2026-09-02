@@ -62,7 +62,6 @@ export class AccountActivationComponent implements OnInit {
 
   }
 
-
   evaluarFortaleza(): void {
 
     const password = this.nuevaPassword;
@@ -94,7 +93,6 @@ export class AccountActivationComponent implements OnInit {
     if (this.tieneEspecial) {
       puntos++;
     }
-
 
     if (password.length === 0) {
 
@@ -132,7 +130,6 @@ export class AccountActivationComponent implements OnInit {
 
   }
 
-
   validarCoincidencia(): void {
 
     if (
@@ -151,12 +148,10 @@ export class AccountActivationComponent implements OnInit {
 
   }
 
-
   activarCuenta(): void {
 
     this.mensajeError = '';
     this.mensajeExito = '';
-
 
     if (!this.token) {
 
@@ -167,7 +162,6 @@ export class AccountActivationComponent implements OnInit {
 
     }
 
-
     if (!this.passwordValida) {
 
       this.mensajeError =
@@ -176,7 +170,6 @@ export class AccountActivationComponent implements OnInit {
       return;
 
     }
-
 
     if (!this.passwordsCoinciden) {
 
@@ -187,48 +180,189 @@ export class AccountActivationComponent implements OnInit {
 
     }
 
-
     this.cargando = true;
 
+    /*
+     * Guardamos la contraseña antes de limpiar el formulario.
+     * La necesitaremos para hacer el login automático.
+     */
+    const password = this.nuevaPassword;
 
+    /*
+     * 1. Activar la cuenta y cambiar la contraseña.
+     */
     this.authService.activarCuenta(
       this.token,
-      this.nuevaPassword
+      password
     ).subscribe({
 
-      next: () => {
+      next: (respuesta) => {
 
-        this.cargando = false;
+        console.log(
+          '[ACTIVACION] Cuenta activada correctamente:',
+          respuesta
+        );
 
-        this.mensajeExito =
-          '¡Tu cuenta ha sido activada correctamente!';
+        /*
+         * 2. El endpoint de activación no devuelve JWT.
+         *
+         * El correo del usuario está almacenado como "sub"
+         * dentro del JWT de activación.
+         */
+        const email =
+          this.obtenerEmailDesdeToken(this.token);
 
+        if (!email) {
 
-        this.nuevaPassword = '';
-        this.confirmarPassword = '';
+          this.cargando = false;
 
-        this.evaluarFortaleza();
-        this.validarCoincidencia();
+          this.mensajeError =
+            'La cuenta fue activada, pero no se pudo obtener el correo para iniciar sesión automáticamente.';
 
+          return;
 
-        setTimeout(() => {
+        }
 
-          this.router.navigate(['/auth']);
+        console.log(
+          '[ACTIVACION] Correo obtenido del token:',
+          email
+        );
 
-        }, 2500);
+        /*
+         * 3. Iniciar sesión automáticamente con
+         * el correo y la nueva contraseña.
+         */
+        this.authService.login(
+          email,
+          password
+        ).subscribe({
+
+          next: (loginResponse: any) => {
+
+            console.log(
+              '[ACTIVACION] Login automático exitoso:',
+              loginResponse
+            );
+
+            this.cargando = false;
+
+            /*
+             * Validamos que el backend realmente
+             * haya enviado el JWT.
+             */
+            if (!loginResponse?.data?.token) {
+
+              console.error(
+                '[ACTIVACION] El backend no devolvió un token de sesión.'
+              );
+
+              this.mensajeError =
+                'La cuenta fue activada, pero no se pudo iniciar sesión automáticamente.';
+
+              return;
+
+            }
+
+            /*
+             * 4. Guardar la sesión exactamente igual
+             * que en LoginPageComponent.
+             */
+            localStorage.setItem(
+              'token',
+              loginResponse.data.token
+            );
+
+            localStorage.setItem(
+              'usuario',
+              JSON.stringify(loginResponse.data)
+            );
+
+            /*
+             * 5. Activar la renovación automática
+             * del JWT.
+             */
+            this.authService.iniciarRenovacionAutomatica();
+
+            /*
+             * 6. Mostrar mensaje de éxito.
+             */
+            this.mensajeExito =
+              '¡Tu cuenta ha sido activada correctamente! Iniciando sesión...';
+
+            /*
+             * Limpiar los campos.
+             */
+            this.nuevaPassword = '';
+            this.confirmarPassword = '';
+
+            this.evaluarFortaleza();
+            this.validarCoincidencia();
+
+            /*
+             * 7. Entrar directamente al sistema.
+             */
+            setTimeout(() => {
+
+              this.router.navigate([
+                '/admin/dashboard'
+              ]);
+
+            }, 1000);
+
+          },
+
+          error: (error) => {
+
+            this.cargando = false;
+
+            console.error(
+              '[ACTIVACION] Error en login automático:',
+              error
+            );
+
+            console.error(
+              '[ACTIVACION] STATUS:',
+              error.status
+            );
+
+            console.error(
+              '[ACTIVACION] BODY:',
+              error.error
+            );
+
+            /*
+             * La activación ya se realizó.
+             * El problema estaría solamente en el login.
+             */
+            this.mensajeError =
+              error.error?.message ||
+              error.error?.mensaje ||
+              'La cuenta fue activada, pero no se pudo iniciar sesión automáticamente.';
+
+          }
+
+        });
 
       },
-
 
       error: (error) => {
 
         this.cargando = false;
 
         console.error(
-          'Error activando cuenta:',
+          '[ACTIVACION] Error activando cuenta:',
           error
         );
 
+        console.error(
+          '[ACTIVACION] STATUS:',
+          error.status
+        );
+
+        console.error(
+          '[ACTIVACION] BODY:',
+          error.error
+        );
 
         this.mensajeError =
           error.error?.message ||
@@ -238,6 +372,83 @@ export class AccountActivationComponent implements OnInit {
       }
 
     });
+
+  }
+
+  /**
+   * Obtiene el correo electrónico desde el JWT
+   * de activación.
+   *
+   * El backend genera el token colocando el correo
+   * como subject ("sub").
+   */
+  private obtenerEmailDesdeToken(
+    token: string
+  ): string | null {
+
+    try {
+
+      const partes = token.split('.');
+
+      /*
+       * Un JWT válido tiene:
+       * header.payload.signature
+       */
+      if (partes.length !== 3) {
+
+        console.error(
+          '[ACTIVACION] El token no tiene formato JWT válido.'
+        );
+
+        return null;
+
+      }
+
+      const payloadBase64 = partes[1];
+
+      /*
+       * Convertir Base64URL a Base64 normal.
+       */
+      const base64 = payloadBase64
+        .replace(/-/g, '+')
+        .replace(/_/g, '/');
+
+      /*
+       * Agregar padding si es necesario.
+       */
+      const padding =
+        '='.repeat(
+          (4 - (base64.length % 4)) % 4
+        );
+
+      const payloadJson = atob(
+        base64 + padding
+      );
+
+      const payload = JSON.parse(
+        payloadJson
+      );
+
+      console.log(
+        '[ACTIVACION] Payload del token:',
+        payload
+      );
+
+      /*
+       * El backend utiliza el email como subject.
+       */
+      return payload?.sub || null;
+
+    } catch (error) {
+
+      console.error(
+        '[ACTIVACION] No se pudo leer el correo del token:',
+        error
+      );
+
+      return null;
+
+    }
 
   }
 
