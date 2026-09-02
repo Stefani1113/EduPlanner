@@ -24,16 +24,11 @@
 
 
 <div
-  class="datos-overlay"
-  *ngIf="mostrarDatos"
-  (click)="cerrarDatos()">
-</div>
-
-
+  class="datos-inline"
+  *ngIf="mostrarDatos">
 
 <aside
-  class="panel-datos"
-  [class.panel-abierto]="mostrarDatos">
+  class="panel-datos">
 
 
   <div class="panel-datos-header">
@@ -72,6 +67,41 @@
   </div>
 
 
+
+  <div class="panel-tabs" role="tablist">
+
+    <button
+      type="button"
+      role="tab"
+      class="panel-tab"
+      [class.activo]="pestanaActivaDatos === 'academico'"
+      (click)="cambiarPestanaDatos('academico')">
+      Académico
+    </button>
+
+    <button
+      type="button"
+      role="tab"
+      class="panel-tab"
+      [class.activo]="pestanaActivaDatos === 'calendario'"
+      (click)="cambiarPestanaDatos('calendario')">
+      Calendario
+    </button>
+
+    <button
+      type="button"
+      role="tab"
+      class="panel-tab"
+      [class.activo]="pestanaActivaDatos === 'disponibilidad'"
+      (click)="cambiarPestanaDatos('disponibilidad')">
+      Disponibilidad
+    </button>
+
+  </div>
+
+
+
+  <div *ngIf="pestanaActivaDatos === 'academico'" class="panel-grupo">
 
   <section class="datos-card">
 
@@ -395,6 +425,11 @@
 
   </section>
 
+  </div>
+
+
+
+  <div *ngIf="pestanaActivaDatos === 'calendario'" class="panel-grupo">
 
   <section class="datos-card">
 
@@ -721,6 +756,11 @@
 
   </section>
 
+  </div>
+
+
+
+  <div *ngIf="pestanaActivaDatos === 'disponibilidad'" class="panel-grupo">
 
   <section class="datos-card">
 
@@ -804,7 +844,11 @@
 
   </section>
 
+  </div>
+
 </aside>
+
+</div>
 
 
 <div

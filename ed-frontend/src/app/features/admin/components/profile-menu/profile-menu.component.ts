@@ -31,7 +31,7 @@ export class ProfileMenuComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Cargar el perfil automáticamente al iniciar el componente
+  
     this.cargarPerfil();
   }
 
@@ -124,7 +124,6 @@ export class ProfileMenuComponent implements OnInit {
   toggle(): void {
     this.abierto = !this.abierto;
 
-    // Si el perfil está vacío, recargar
     if (this.abierto && !this.perfil && !this.cargando) {
       this.cargarPerfil();
     }
@@ -190,6 +189,8 @@ export class ProfileMenuComponent implements OnInit {
         if (this.perfil) {
           this.perfil.photoUrl = respuesta.data;
         }
+
+        this.perfilService.actualizarFotoEnCache(respuesta.data);
 
         input.value = '';
       },

@@ -43,31 +43,25 @@
 }
 
 .datos-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 90;
-  background: rgba(0, 0, 0, .65);
+  display: none;
 }
+
+.datos-inline {
+  display: flex;
+  justify-content: center;
+  animation: datosInlineEntrada .25s ease;
+}
+
 
 .panel-datos {
-  position: fixed;
-  top: 0;
-  right: 0;
-  z-index: 100;
-  width: 770px;
-  max-width: 94vw;
-  height: 100vh;
   box-sizing: border-box;
+  width: 100%;
+  max-width: 900px;
   padding: 25px;
-  overflow-y: auto;
   background: #1B1C1C;
-  box-shadow: -15px 0 45px rgba(0, 0, 0, .55);
-  transform: translateX(100%);
-  transition: transform .3s ease;
-}
-
-.panel-datos.panel-abierto {
-  transform: translateX(0);
+  border: 1px solid rgba(255, 255, 255, .04);
+  border-radius: 16px;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, .35);
 }
 
 
@@ -113,8 +107,50 @@
   color: #53bb1b;
 }
 
+
+.panel-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 22px;
+  padding: 4px;
+  background: #101110;
+  border-radius: 10px;
+}
+
+.panel-tab {
+  flex: 1;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: #8a8c8a;
+  font-family: 'Poppins', sans-serif;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: .18s ease;
+}
+
+.panel-tab:hover {
+  color: #cfcfcf;
+}
+
+.panel-tab.activo {
+  background: #292a29;
+  color: #53bb1b;
+  font-weight: 600;
+  box-shadow: inset 0 0 0 1px rgba(83, 187, 27, .35);
+}
+
+.panel-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  animation: panelGrupoEntrada .18s ease;
+}
+
+
 .datos-card {
-  margin-bottom: 18px;
   padding: 18px;
   background: #292a29;
   border: 1px solid rgba(255, 255, 255, .02);
@@ -131,9 +167,10 @@
 
 .datos-card-header h3 {
   margin: 0;
-  color: #53bb1b;
-  font-size: 13px;
+  color: #eaeaea;
+  font-size: 14.5px;
   font-weight: 600;
+  letter-spacing: .2px;
 }
 
 
@@ -168,11 +205,13 @@
 
 .tabla-datos th {
   padding: 9px 7px;
-  background: #347d1c;
-  color: #d8ffd0;
+  background: transparent;
+  border-bottom: 1px solid rgba(83, 187, 27, .35);
+  color: #53bb1b;
   text-align: left;
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 600;
+  letter-spacing: .4px;
   white-space: nowrap;
 }
 
@@ -228,9 +267,10 @@
 }
 
 .sin-registros {
-  padding: 20px;
+  padding: 28px 12px;
   text-align: center;
-  color: #777;
+  color: #6b6d6b;
+  font-size: 12.5px;
   cursor: default;
 }
 

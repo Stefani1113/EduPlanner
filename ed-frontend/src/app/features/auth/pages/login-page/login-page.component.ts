@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { SesionUsuarioService } from '../../services/sesion-usuario.service';
 
 @Component({
   selector: 'app-login-page',
@@ -27,7 +28,8 @@ export class LoginPageComponent implements OnInit {
   constructor(
     private router: Router,
     private route: ActivatedRoute,
-    private authService: AuthService
+    private authService: AuthService,
+    private sesionUsuarioService: SesionUsuarioService
   ) {}
 
   ngOnInit(): void {
@@ -59,7 +61,7 @@ export class LoginPageComponent implements OnInit {
         this.loading = false;
 
         localStorage.setItem('token', response.data.token);
-        localStorage.setItem('usuario', JSON.stringify(response.data));
+        this.sesionUsuarioService.establecerDesdeLogin(response.data);
         this.authService.iniciarRenovacionAutomatica();
 
         this.router.navigate(['/admin/dashboard']);
