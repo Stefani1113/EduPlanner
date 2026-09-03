@@ -3,7 +3,6 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { PerfilService } from '../../admin/services/perfil.service';
-import { SesionUsuarioService } from './sesion-usuario.service';
 
 export interface JwtResponse {
   token: string;
@@ -40,8 +39,7 @@ export class AuthService {
   constructor(
     private http: HttpClient,
     private router: Router,
-    private perfilService: PerfilService,
-    private sesionUsuarioService: SesionUsuarioService
+    private perfilService: PerfilService
   ) {}
 
   login(email: string, password: string): Observable<any> {
@@ -275,11 +273,12 @@ export class AuthService {
     this.detenerRenovacionAutomatica();
 
     localStorage.removeItem('token');
+    // Se limpia por compatibilidad con sesiones antiguas que aún
+    // guardaban este dato; el flujo actual ya no lo usa.
     localStorage.removeItem('usuario');
     sessionStorage.removeItem('ultimaActividad');
 
     this.perfilService.limpiarCache();
-    this.sesionUsuarioService.limpiar();
   }
 
   private cerrarSesionPorExpiracion(): void {
