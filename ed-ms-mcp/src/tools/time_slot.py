@@ -14,7 +14,7 @@ def create_time_slot_tool(server, client):
         print(f"👉 [MCP Tool] Ejecutando listar franjas de dicha jornada")
         try :
             time_slot_shift = client.get(
-                f"/time_slot?idShift={idShift}"
+                f"/time-slots?idShift={idShift}"
             )
             return {"success" : True, "franjas_de_jornada" : time_slot_shift}
         except Exception as exc : 

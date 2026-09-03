@@ -14,7 +14,7 @@ def create_academic_teacher_tool(server, client) :
         print(f"👉 [MCP Tool] Ejecutando listar docente")
         try : 
             academic_teacher = client.get(
-                f"/academic_teachers/id_academic_teacher={id_academic_teacher}"
+                f"/academic_teachers/{id_academic_teacher}"
             )
             return {"success" : True, "docente_academico" : academic_teacher}
         except Exception as exc : 
