@@ -14,6 +14,9 @@ from services.eduplanner_client import EduPlannerClient
 from tools.academic_loads import create_academic_load_tool
 from tools.courses import create_course_tool
 from tools.subjects import create_subject_tool
+from tools.teacher_availability import create_teacher_availability_tool
+from tools.time_slot import create_time_slot_tool
+from tools.academic_teacher import create_academic_teacher_tool
 
 def create_server() -> MCPServer:
     """Crea y configura el servidor MCP para consultar datos desde el microservicio de gestión académica de EduPlanner."""
@@ -46,6 +49,21 @@ def create_server() -> MCPServer:
 
     create_academic_load_tool(
         server,
+        client,
+    )
+
+    create_teacher_availability_tool(
+        server,
+        client,
+    )
+
+    create_time_slot_tool(
+        server,
+        client,
+    )
+
+    create_academic_teacher_tool(
+        server, 
         client,
     )
 
