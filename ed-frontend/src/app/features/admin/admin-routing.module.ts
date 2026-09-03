@@ -38,16 +38,6 @@ const routes: Routes = [
       },
 
       {
-        path: 'horarios',
-        loadComponent: () =>
-          import('./pages/horarios/horarios.component')
-            .then(m => m.HorariosComponent),
-        data: {
-          breadcrumb: ['Horarios']
-        }
-      },
-
-      {
         path: 'registro',
         loadComponent: () =>
           import('./pages/registro/registro.component')
@@ -64,26 +54,6 @@ const routes: Routes = [
             .then(m => m.DocentesComponent),
         data: {
           breadcrumb: ['Docentes']
-        }
-      },
-
-      {
-        path: 'asistencia',
-        loadComponent: () =>
-          import('./pages/asistencia/asistencia.component')
-            .then(m => m.AsistenciaComponent),
-        data: {
-          breadcrumb: ['Asistencia']
-        }
-      },
-
-      {
-        path: 'notas',
-        loadComponent: () =>
-          import('./pages/notas/notas.component')
-            .then(m => m.NotasComponent),
-        data: {
-          breadcrumb: ['Notas']
         }
       },
 
