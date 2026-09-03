@@ -8,6 +8,8 @@ import {
   TeachingResponseDTO
 } from '../../services/docentes.service';
 
+import { PerfilService } from '../../services/perfil.service';
+
 const ID_INSTITUCION_FIJO = 1;
 const API_BASE_URL = 'http://localhost:8080';
 
@@ -102,12 +104,28 @@ export class DocentesComponent implements OnInit {
 
   form: TeachingRequestDTO = emptyForm();
 
+  puedeGestionar = false;
+
   constructor(
-    private docentesService: DocentesService
+    private docentesService: DocentesService,
+    private perfilService: PerfilService
   ) {}
 
   ngOnInit(): void {
     this.cargarDocentes();
+    this.cargarPermisos();
+  }
+
+  private cargarPermisos(): void {
+    this.perfilService.obtenerMiPerfil().subscribe({
+      next: respuesta => {
+        const rol = (respuesta.data?.roleName || '').toLowerCase();
+        this.puedeGestionar = rol.includes('admin') && !rol.includes('direct');
+      },
+      error: () => {
+        this.puedeGestionar = false;
+      }
+    });
   }
 
   cargarDocentes(): void {
