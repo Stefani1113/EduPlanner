@@ -13,7 +13,8 @@ spring:
     port: 587
     username: eduplannerr@gmail.com
     password: xoguovkhuxdbbgll
-    properties:
+    support-team: eduplannerr@gmail.com
+    properties: 
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
 
