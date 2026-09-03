@@ -3,7 +3,6 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { PerfilService } from '../../admin/services/perfil.service';
-import { SesionUsuarioService } from './sesion-usuario.service';
 
 export interface JwtResponse {
   token: string;
@@ -17,43 +16,30 @@ export class AuthService {
   private api = '/autenticacion/eduplanner/auth';
 
   private readonly TIEMPO_INACTIVIDAD_MS = 10 * 60 * 1000;
-  private readonly MARGEN_RENOVACION_MS = 2 * 60 * 1000;
+  private readonly MARGEN_RENOVACION_MS = 60 * 1000;
   private readonly MINIMO_ENTRE_RENOVACIONES_MS = 30 * 1000;
 
   private idTimeoutRenovacion: ReturnType<typeof setTimeout> | null = null;
-  private idTimeoutInactividad: ReturnType<typeof setTimeout> | null = null;
-
   private ultimaActividad = 0;
   private ultimaRenovacion = 0;
-  private renovando = false;
+  private renovando = false; 
 
   private eventosActividad = [
     'click',
+    'mousemove',
     'keydown',
     'scroll',
-    'touchstart',
-    'pointerdown'
+    'touchstart'
   ];
 
   private actividadHandler = () => {
     this.registrarActividad();
   };
 
-  private movimientoMouseHandler = () => {
-    this.detectarMovimiento();
-  };
-
-  private visibilityHandler = () => {
-    if (document.hidden) {
-      this.programarCierrePorInactividad();
-    }
-  };
-
   constructor(
     private http: HttpClient,
     private router: Router,
-    private perfilService: PerfilService,
-    private sesionUsuarioService: SesionUsuarioService
+    private perfilService: PerfilService
   ) {}
 
   login(email: string, password: string): Observable<any> {
@@ -70,7 +56,7 @@ export class AuthService {
   private registrarActividad(): void {
     const token = localStorage.getItem('token');
 
-    if (!token || document.hidden) {
+    if (!token) {
       return;
     }
 
@@ -81,33 +67,11 @@ export class AuthService {
       this.ultimaActividad.toString()
     );
 
-    this.programarCierrePorInactividad();
-
     const tiempoParaExpirar = this.msHastaExpiracion(token);
 
     if (
       tiempoParaExpirar !== null &&
-      tiempoParaExpirar <= this.MARGEN_RENOVACION_MS &&
-      tiempoParaExpirar > 0
-    ) {
-      this.renovarToken();
-    }
-  }
-
-  private detectarMovimiento(): void {
-    const token = localStorage.getItem('token');
-
-    if (!token || document.hidden) {
-      return;
-    }
-
-    const tiempoParaExpirar = this.msHastaExpiracion(token);
-
-    if (
-      tiempoParaExpirar !== null &&
-      tiempoParaExpirar <= this.MARGEN_RENOVACION_MS &&
-      tiempoParaExpirar > 0 &&
-      this.usuarioActivo()
+      tiempoParaExpirar <= this.MARGEN_RENOVACION_MS
     ) {
       this.renovarToken();
     }
@@ -133,16 +97,10 @@ export class AuthService {
     }
 
     if (!this.ultimaActividad) {
-      this.ultimaActividad = Date.now();
-
-      sessionStorage.setItem(
-        'ultimaActividad',
-        this.ultimaActividad.toString()
-      );
+      this.registrarActividad();
     }
 
     this.activarDetectorActividad();
-    this.programarCierrePorInactividad();
     this.programarRenovacion(token);
   }
 
@@ -158,19 +116,6 @@ export class AuthService {
         }
       );
     });
-
-    window.addEventListener(
-      'mousemove',
-      this.movimientoMouseHandler,
-      {
-        passive: true
-      }
-    );
-
-    document.addEventListener(
-      'visibilitychange',
-      this.visibilityHandler
-    );
   }
 
   private desactivarDetectorActividad(): void {
@@ -180,16 +125,6 @@ export class AuthService {
         this.actividadHandler
       );
     });
-
-    window.removeEventListener(
-      'mousemove',
-      this.movimientoMouseHandler
-    );
-
-    document.removeEventListener(
-      'visibilitychange',
-      this.visibilityHandler
-    );
   }
 
   private usuarioActivo(): boolean {
@@ -197,34 +132,11 @@ export class AuthService {
       return false;
     }
 
-    return (
-      Date.now() - this.ultimaActividad <
-      this.TIEMPO_INACTIVIDAD_MS
-    );
-  }
-
-  private programarCierrePorInactividad(): void {
-    this.detenerTimeoutInactividad();
-
-    const tiempoDesdeActividad =
+    const tiempoSinActividad =
       Date.now() - this.ultimaActividad;
 
-    const tiempoRestante =
-      this.TIEMPO_INACTIVIDAD_MS -
-      tiempoDesdeActividad;
-
-    if (tiempoRestante <= 0) {
-      this.cerrarSesionPorInactividad();
-      return;
-    }
-
-    this.idTimeoutInactividad = setTimeout(() => {
-      if (!this.usuarioActivo()) {
-        this.cerrarSesionPorInactividad();
-      } else {
-        this.programarCierrePorInactividad();
-      }
-    }, tiempoRestante);
+    return tiempoSinActividad <
+      this.TIEMPO_INACTIVIDAD_MS;
   }
 
   private programarRenovacion(token: string): void {
@@ -237,22 +149,32 @@ export class AuthService {
       return;
     }
 
-    if (msHastaExpirar <= 0) {
-      this.cerrarSesionPorExpiracion();
+    if (!this.usuarioActivo()) {
+      console.log(
+        '[AUTH] Usuario inactivo. No se renovará el token.'
+      );
       return;
     }
 
     const espera = Math.max(
-      msHastaExpirar - this.MARGEN_RENOVACION_MS,
+      msHastaExpirar -
+        this.MARGEN_RENOVACION_MS,
       1000
     );
 
     this.idTimeoutRenovacion = setTimeout(() => {
+
       if (!this.usuarioActivo()) {
+        console.log(
+          '[AUTH] Sesión detenida por inactividad.'
+        );
+
+        this.detenerTimeoutRenovacion();
         return;
       }
 
       this.renovarToken();
+
     }, espera);
   }
 
@@ -262,24 +184,35 @@ export class AuthService {
     }
 
     if (!this.usuarioActivo()) {
+      console.log(
+        '[AUTH] No se renueva el token porque el usuario está inactivo.'
+      );
+
+      this.detenerTimeoutRenovacion();
       return;
     }
 
     if (
       this.ultimaRenovacion > 0 &&
       Date.now() - this.ultimaRenovacion <
-      this.MINIMO_ENTRE_RENOVACIONES_MS
+        this.MINIMO_ENTRE_RENOVACIONES_MS
     ) {
       return;
     }
 
     this.renovando = true;
 
+    console.log('[AUTH] Renovando JWT...');
+
     this.refrescarToken().subscribe({
       next: (respuesta) => {
         this.renovando = false;
 
         if (!respuesta?.token) {
+          console.error(
+            '[AUTH] El backend no devolvió un token.'
+          );
+
           this.cerrarSesionPorExpiracion();
           return;
         }
@@ -291,13 +224,23 @@ export class AuthService {
 
         this.ultimaRenovacion = Date.now();
 
+        console.log(
+          '[AUTH] JWT renovado correctamente.'
+        );
+
         this.programarRenovacion(
           respuesta.token
         );
       },
 
-      error: () => {
+      error: (error) => {
         this.renovando = false;
+
+        console.error(
+          '[AUTH] Error renovando JWT:',
+          error
+        );
+
         this.cerrarSesionPorExpiracion();
       }
     });
@@ -305,25 +248,24 @@ export class AuthService {
 
   detenerRenovacionAutomatica(): void {
     this.detenerTimeoutRenovacion();
-    this.detenerTimeoutInactividad();
     this.desactivarDetectorActividad();
 
     this.ultimaActividad = 0;
     this.ultimaRenovacion = 0;
     this.renovando = false;
+
+    sessionStorage.removeItem(
+      'ultimaActividad'
+    );
   }
 
   private detenerTimeoutRenovacion(): void {
     if (this.idTimeoutRenovacion !== null) {
-      clearTimeout(this.idTimeoutRenovacion);
-      this.idTimeoutRenovacion = null;
-    }
-  }
+      clearTimeout(
+        this.idTimeoutRenovacion
+      );
 
-  private detenerTimeoutInactividad(): void {
-    if (this.idTimeoutInactividad !== null) {
-      clearTimeout(this.idTimeoutInactividad);
-      this.idTimeoutInactividad = null;
+      this.idTimeoutRenovacion = null;
     }
   }
 
@@ -331,27 +273,12 @@ export class AuthService {
     this.detenerRenovacionAutomatica();
 
     localStorage.removeItem('token');
+    // Se limpia por compatibilidad con sesiones antiguas que aún
+    // guardaban este dato; el flujo actual ya no lo usa.
     localStorage.removeItem('usuario');
-
-    sessionStorage.removeItem(
-      'ultimaActividad'
-    );
+    sessionStorage.removeItem('ultimaActividad');
 
     this.perfilService.limpiarCache();
-    this.sesionUsuarioService.limpiar();
-  }
-
-  private cerrarSesionPorInactividad(): void {
-    this.logout();
-
-    this.router.navigate(
-      ['/auth'],
-      {
-        queryParams: {
-          sesionExpirada: true
-        }
-      }
-    );
   }
 
   private cerrarSesionPorExpiracion(): void {
@@ -382,19 +309,6 @@ export class AuthService {
   ): Observable<any> {
     return this.http.put(
       `${this.api}/reset-password`,
-      {
-        token,
-        newPassword
-      }
-    );
-  }
-
-  activarCuenta(
-    token: string,
-    newPassword: string
-  ): Observable<any> {
-    return this.http.put(
-      `${this.api}/activation-account`,
       {
         token,
         newPassword
@@ -433,8 +347,27 @@ export class AuthService {
         Date.now()
       );
 
-    } catch {
+    } catch (error) {
+      console.error(
+        '[AUTH] No se pudo leer el JWT:',
+        error
+      );
+
       return null;
     }
   }
+
+  activarCuenta(
+  token: string,
+  newPassword: string
+): Observable<any> {
+
+  return this.http.put(
+    `${this.api}/activation-account`,
+    {
+      token,
+      newPassword
+    }
+  );
+}
 }
