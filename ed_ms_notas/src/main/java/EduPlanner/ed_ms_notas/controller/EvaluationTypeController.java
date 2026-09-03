@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/** RF 9.1 - Tipos de evaluación dentro de una escala. Base: /eduplanner/evaluation-types */
+/**Tipos de evaluación dentro de una escala. Base: /eduplanner/evaluation-types */
 @RestController
 @RequestMapping("/evaluation-types")
 @RequiredArgsConstructor

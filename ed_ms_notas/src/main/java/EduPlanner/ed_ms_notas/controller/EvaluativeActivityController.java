@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/** RF 9 - Actividades evaluativas. Base: /eduplanner/evaluative-activities */
+/** Actividades evaluativas. Base: /eduplanner/evaluative-activities */
 @RestController
 @RequestMapping("/evaluative-activities")
 @RequiredArgsConstructor

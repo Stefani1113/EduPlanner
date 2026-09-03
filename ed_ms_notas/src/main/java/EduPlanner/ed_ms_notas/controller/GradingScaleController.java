@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/** RF 9.1 - Configurar escala de calificación. Base: /eduplanner/grading-scales */
+/**Configurar escala de calificación. Base: /eduplanner/grading-scales */
 @RestController
 @RequestMapping("/grading-scales")
 @RequiredArgsConstructor
