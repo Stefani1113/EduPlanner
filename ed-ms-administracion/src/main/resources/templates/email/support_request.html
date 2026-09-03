@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body style="margin:0; padding:0; background-color:#f4f4f4; font-family: Arial, sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0">
+    <tr>
+      <td align="center" style="padding: 30px 0;">
+        <table width="500" cellpadding="0" cellspacing="0" style="background-color:#ffffff; border-radius:8px; overflow:hidden;">
+          <tr>
+            <td style="background-color:#1a1a1a; padding:30px; text-align:center;">
+              <h1 style="color:#7ed957; margin:0;">EduPlanner</h1>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:30px;">
+              <p style="font-size:16px;">Nueva solicitud de soporte recibida</p>
+              <p style="font-size:14px;"><strong>Nombre:</strong> <span th:text="${senderName}">Nombre</span></p>
+              <p style="font-size:14px;"><strong>Correo:</strong> <span th:text="${senderEmail}">correo</span></p>
+              <p style="font-size:14px;"><strong>Asunto:</strong> <span th:text="${subject}">asunto</span></p>
+              <p style="font-size:14px;"><strong>Mensaje:</strong></p>
+              <p style="font-size:14px; background-color:#f4f4f4; padding:15px; border-radius:6px;" th:text="${message}">mensaje</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
