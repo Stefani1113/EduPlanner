@@ -1,9 +1,39 @@
 <div class="institution-page" *ngIf="info$ | async as info">
   <section class="hero-section">
-    <div class="hero-background" [style.backgroundImage]="'url(' + carouselUrl(info, 0, 'assets/img/institucion-edificio.png') + ')'" aria-hidden="true">
-      <div class="hero-overlay"></div>
+    <div class="hero-carousel">
+      <div class="carousel-track" [style.transform]="'translateX(-' + (currentSlide * 100) + '%)'">
+        <div 
+          class="carousel-slide" 
+          *ngFor="let image of info.carousel; let i = index"
+          [style.backgroundImage]="'url(' + (image.url || 'assets/img/institucion-edificio.png') + ')'"
+        >
+          <div class="hero-overlay"></div>
+        </div>
+      </div>
     </div>
+
+    <button 
+      class="carousel-control prev" 
+      (click)="prevSlide(info)"
+      aria-label="Anterior"
+      *ngIf="info.carousel.length > 1"
+    >
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M15 18l-6-6 6-6"/>
+      </svg>
+    </button>
     
+    <button 
+      class="carousel-control next" 
+      (click)="nextSlide(info)"
+      aria-label="Siguiente"
+      *ngIf="info.carousel.length > 1"
+    >
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M9 18l6-6-6-6"/>
+      </svg>
+    </button>
+
     <div class="hero-container">
       <div class="hero-content">
         <span class="hero-badge">✦ EXCELENCIA ACADÉMICA</span>
@@ -30,8 +60,12 @@
       </div>
     </div>
     
-    <div class="hero-indicators">
-      <span *ngFor="let img of info.carousel; let i = index" [class.active]="i === 0"></span>
+    <div class="hero-indicators" *ngIf="info.carousel.length > 1">
+      <span 
+        *ngFor="let image of info.carousel; let i = index" 
+        [class.active]="i === currentSlide"
+        (click)="goToSlide(i, info)"
+      ></span>
     </div>
   </section>
 
@@ -69,7 +103,7 @@
       </article>
 
       <article class="card-image">
-        <img [src]="carouselUrl(info, 1, 'assets/img/estudiantes-institucion.png')" alt="Estudiantes">
+        <img src="assets/img/estudiantes-institucion.png" alt="Estudiantes">
         <div class="card-image-overlay">
           <span>COMUNIDAD EDUCATIVA</span>
           <strong>Aprendemos juntos</strong>
@@ -84,7 +118,7 @@
       </article>
 
       <article class="card-image">
-        <img [src]="carouselUrl(info, 2, carouselUrl(info, 0, 'assets/img/estudiantes-institucion.png'))" alt="Campus">
+        <img src="/assets/img/carrucel-libreria.png" alt="Campus">
         <div class="card-image-overlay">
           <span>ESPACIOS EDUCATIVOS</span>
           <strong>Un entorno para crecer</strong>

@@ -137,6 +137,23 @@
   transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
 }
 
+.docente-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 20px;
+  right: 20px;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, transparent, #53bb1b, transparent);
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+
+.docente-card:hover::before {
+  opacity: 1;
+}
+
 .docente-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 14px 32px rgba(0, 0, 0, 0.5);
@@ -222,8 +239,9 @@
 
 .card-body {
   padding: 14px 20px;
-  background: rgba(39, 51, 35, 0.575);
-  border-radius: 20px;
+  background: rgba(83, 187, 27, 0.06);
+  border: 1px solid rgba(83, 187, 27, 0.1);
+  border-radius: 16px;
 }
 
 .info-row {
@@ -231,7 +249,11 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 6px 0;
+  padding: 7px 0;
+}
+
+.info-row + .info-row {
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 .info-label {
@@ -257,18 +279,25 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 16px;
-  padding: 10px 10px 10px;
+  gap: 6px;
+  padding: 14px 4px 2px;
+  margin-top: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .card-actions button {
   border: 0;
   background: transparent;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 11px;
   font-weight: 600;
-  padding: 2px 0;
-  transition: opacity 0.2s;
+  padding: 6px 10px;
+  transition: background 0.2s, opacity 0.2s;
+}
+
+.card-actions button:hover {
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .link-ver {

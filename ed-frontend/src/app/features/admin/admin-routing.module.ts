@@ -48,12 +48,12 @@ const routes: Routes = [
       },
 
       {
-        path: 'emergencia',
+        path: 'registro',
         loadComponent: () =>
-          import('./pages/emergencia/emergencia.component')
-            .then(m => m.EmergenciaComponent),
+          import('./pages/registro/registro.component')
+            .then(m => m.RegistroComponent),
         data: {
-          breadcrumb: ['Emergencia']
+          breadcrumb: ['Registro']
         }
       },
 
