@@ -1,7 +1,7 @@
 from typing import Any
 
 def create_academic_load_tool(server, client) :
-    """Crea la herramienta list_academic_loads para consultar datos de cargas academicas desde el microservicio de gestión académica de EduPlanner."""
+    """Crea herramientas para consultar datos de cargas academicas desde el microservicio de gestión académica de EduPlanner."""
 
     # -------------------------------------------------------------
     # 1. HERRAMIENTA: Listar Cargas académicas

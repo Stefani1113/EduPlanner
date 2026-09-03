@@ -2,7 +2,7 @@ from typing import Any
 
 
 def create_course_tool(server, client) :
-    """Crea la herramienta list_courses para consultar datos de cursos desde el microservicio de gestión académica de EduPlanner."""
+    """Crea herramientas para consultar datos de cursos desde el microservicio de gestión académica de EduPlanner."""
 
     # -------------------------------------------------------------
     # 1. HERRAMIENTA: Listar Cursos
