@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/** RF 9 - Registrar notas. Base: /eduplanner/grades */
+/**Registrar notas. Base: /eduplanner/grades */
 @RestController
 @RequestMapping("/grades")
 @RequiredArgsConstructor
