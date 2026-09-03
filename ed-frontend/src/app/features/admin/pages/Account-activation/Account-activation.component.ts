@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../../auth/services/auth.service';
+import { SesionUsuarioService } from '../../../auth/services/sesion-usuario.service';
 
 @Component({
   selector: 'app-account-activation',
@@ -44,7 +45,8 @@ export class AccountActivationComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
-    private authService: AuthService
+    private authService: AuthService,
+    private sesionUsuarioService: SesionUsuarioService
   ) {}
 
   ngOnInit(): void {
@@ -61,7 +63,6 @@ export class AccountActivationComponent implements OnInit {
     });
 
   }
-
 
   evaluarFortaleza(): void {
 
@@ -94,7 +95,6 @@ export class AccountActivationComponent implements OnInit {
     if (this.tieneEspecial) {
       puntos++;
     }
-
 
     if (password.length === 0) {
 
@@ -132,7 +132,6 @@ export class AccountActivationComponent implements OnInit {
 
   }
 
-
   validarCoincidencia(): void {
 
     if (
@@ -151,12 +150,10 @@ export class AccountActivationComponent implements OnInit {
 
   }
 
-
   activarCuenta(): void {
 
     this.mensajeError = '';
     this.mensajeExito = '';
-
 
     if (!this.token) {
 
@@ -167,7 +164,6 @@ export class AccountActivationComponent implements OnInit {
 
     }
 
-
     if (!this.passwordValida) {
 
       this.mensajeError =
@@ -176,7 +172,6 @@ export class AccountActivationComponent implements OnInit {
       return;
 
     }
-
 
     if (!this.passwordsCoinciden) {
 
@@ -187,48 +182,150 @@ export class AccountActivationComponent implements OnInit {
 
     }
 
-
     this.cargando = true;
+
+
+    const password = this.nuevaPassword;
 
 
     this.authService.activarCuenta(
       this.token,
-      this.nuevaPassword
+      password
     ).subscribe({
 
-      next: () => {
+      next: (respuesta) => {
 
-        this.cargando = false;
-
-        this.mensajeExito =
-          '¡Tu cuenta ha sido activada correctamente!';
-
-
-        this.nuevaPassword = '';
-        this.confirmarPassword = '';
-
-        this.evaluarFortaleza();
-        this.validarCoincidencia();
+        console.log(
+          '[ACTIVACION] Cuenta activada correctamente:',
+          respuesta
+        );
 
 
-        setTimeout(() => {
+        const email =
+          this.obtenerEmailDesdeToken(this.token);
 
-          this.router.navigate(['/auth']);
+        if (!email) {
 
-        }, 2500);
+          this.cargando = false;
+
+          this.mensajeError =
+            'La cuenta fue activada, pero no se pudo obtener el correo para iniciar sesión automáticamente.';
+
+          return;
+
+        }
+
+        console.log(
+          '[ACTIVACION] Correo obtenido del token:',
+          email
+        );
+
+        this.authService.login(
+          email,
+          password
+        ).subscribe({
+
+          next: (loginResponse: any) => {
+
+            console.log(
+              '[ACTIVACION] Login automático exitoso:',
+              loginResponse
+            );
+
+            this.cargando = false;
+
+
+            if (!loginResponse?.data?.token) {
+
+              console.error(
+                '[ACTIVACION] El backend no devolvió un token de sesión.'
+              );
+
+              this.mensajeError =
+                'La cuenta fue activada, pero no se pudo iniciar sesión automáticamente.';
+
+              return;
+
+            }
+
+            localStorage.setItem(
+              'token',
+              loginResponse.data.token
+            );
+
+            this.sesionUsuarioService.establecerDesdeLogin(loginResponse.data);
+
+            this.authService.iniciarRenovacionAutomatica();
+
+            this.mensajeExito =
+              '¡Tu cuenta ha sido activada correctamente! Iniciando sesión...';
+
+
+            this.nuevaPassword = '';
+            this.confirmarPassword = '';
+
+            this.evaluarFortaleza();
+            this.validarCoincidencia();
+
+
+            setTimeout(() => {
+
+              this.router.navigate([
+                '/admin/dashboard'
+              ]);
+
+            }, 1000);
+
+          },
+
+          error: (error) => {
+
+            this.cargando = false;
+
+            console.error(
+              '[ACTIVACION] Error en login automático:',
+              error
+            );
+
+            console.error(
+              '[ACTIVACION] STATUS:',
+              error.status
+            );
+
+            console.error(
+              '[ACTIVACION] BODY:',
+              error.error
+            );
+
+            this.mensajeError =
+              error.error?.message ||
+              error.error?.mensaje ||
+              'La cuenta fue activada, pero no se pudo iniciar sesión automáticamente.';
+
+          }
+
+        });
 
       },
-
 
       error: (error) => {
 
         this.cargando = false;
 
         console.error(
-          'Error activando cuenta:',
+          '[ACTIVACION] Error activando cuenta:',
           error
         );
 
+        console.error(
+          '[ACTIVACION] STATUS:',
+          error.status
+        );
+
+        console.error(
+          '[ACTIVACION] BODY:',
+          error.error
+        );
 
         this.mensajeError =
           error.error?.message ||
@@ -238,6 +335,67 @@ export class AccountActivationComponent implements OnInit {
       }
 
     });
+
+  }
+
+
+  private obtenerEmailDesdeToken(
+    token: string
+  ): string | null {
+
+    try {
+
+      const partes = token.split('.');
+
+
+      if (partes.length !== 3) {
+
+        console.error(
+          '[ACTIVACION] El token no tiene formato JWT válido.'
+        );
+
+        return null;
+
+      }
+
+      const payloadBase64 = partes[1];
+
+
+      const base64 = payloadBase64
+        .replace(/-/g, '+')
+        .replace(/_/g, '/');
+
+      const padding =
+        '='.repeat(
+          (4 - (base64.length % 4)) % 4
+        );
+
+      const payloadJson = atob(
+        base64 + padding
+      );
+
+      const payload = JSON.parse(
+        payloadJson
+      );
+
+      console.log(
+        '[ACTIVACION] Payload del token:',
+        payload
+      );
+
+
+      return payload?.sub || null;
+
+    } catch (error) {
+
+      console.error(
+        '[ACTIVACION] No se pudo leer el correo del token:',
+        error
+      );
+
+      return null;
+
+    }
 
   }
 

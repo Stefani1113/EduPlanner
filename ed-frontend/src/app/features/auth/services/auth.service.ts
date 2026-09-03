@@ -2,6 +2,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
+import { PerfilService } from '../../admin/services/perfil.service';
+import { SesionUsuarioService } from './sesion-usuario.service';
 
 export interface JwtResponse {
   token: string;
@@ -21,7 +23,7 @@ export class AuthService {
   private idTimeoutRenovacion: ReturnType<typeof setTimeout> | null = null;
   private ultimaActividad = 0;
   private ultimaRenovacion = 0;
-  private renovando = false;
+  private renovando = false; 
 
   private eventosActividad = [
     'click',
@@ -37,7 +39,9 @@ export class AuthService {
 
   constructor(
     private http: HttpClient,
-    private router: Router
+    private router: Router,
+    private perfilService: PerfilService,
+    private sesionUsuarioService: SesionUsuarioService
   ) {}
 
   login(email: string, password: string): Observable<any> {
@@ -60,7 +64,7 @@ export class AuthService {
 
     this.ultimaActividad = Date.now();
 
-    localStorage.setItem(
+    sessionStorage.setItem(
       'ultimaActividad',
       this.ultimaActividad.toString()
     );
@@ -86,7 +90,7 @@ export class AuthService {
       return;
     }
 
-    const actividadGuardada = localStorage.getItem(
+    const actividadGuardada = sessionStorage.getItem(
       'ultimaActividad'
     );
 
@@ -252,7 +256,7 @@ export class AuthService {
     this.ultimaRenovacion = 0;
     this.renovando = false;
 
-    localStorage.removeItem(
+    sessionStorage.removeItem(
       'ultimaActividad'
     );
   }
@@ -272,7 +276,10 @@ export class AuthService {
 
     localStorage.removeItem('token');
     localStorage.removeItem('usuario');
-    localStorage.removeItem('ultimaActividad');
+    sessionStorage.removeItem('ultimaActividad');
+
+    this.perfilService.limpiarCache();
+    this.sesionUsuarioService.limpiar();
   }
 
   private cerrarSesionPorExpiracion(): void {
