@@ -22,7 +22,7 @@ public class SupportRequestService {
     private final NotifierFactory notifierFactory;
     private final EmailTemplateService emailTemplateService;
 
-    @Value("${app.mail.support-team}")
+    @Value("${mail.support-team}")
     private String supportTeamEmail;
 
     @Transactional
