@@ -5,6 +5,10 @@ import {
   InstitutionInfo,
   InstitutionSettingsService
 } from '../../services/institution-settings.service';
+import {
+  EstadisticasInstitucion,
+  EstadisticasService
+} from '../../services/estadisticas.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -19,13 +23,22 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private slideInterval: Subscription | null = null;
   private readonly AUTOPLAY_DELAY = 5000;
 
+  estadisticas: EstadisticasInstitucion = {
+    estudiantes: 0,
+    docentes: 0,
+    cursos: 0
+  };
+
   private heroCarouselImages = [
     '/assets/img/img-principal.png',
     '/assets/img/carrucel.png',
     '/assets/img/carrucel-libreria.png',
   ];
 
-  constructor(private settingsService: InstitutionSettingsService) {
+  constructor(
+    private settingsService: InstitutionSettingsService,
+    private estadisticasService: EstadisticasService
+  ) {
     this.info$ = this.settingsService.settings$.pipe(
       map(settings => {
         const info = settings.info;
@@ -39,6 +52,18 @@ export class DashboardComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.startAutoplay();
+    this.cargarEstadisticas();
+  }
+
+  private cargarEstadisticas(): void {
+    this.estadisticasService.obtenerEstadisticasInstitucion().subscribe({
+      next: estadisticas => {
+        this.estadisticas = estadisticas;
+      },
+      error: err => {
+        console.error('Error cargando estadísticas de la institución:', err);
+      }
+    });
   }
 
   ngOnDestroy(): void {
