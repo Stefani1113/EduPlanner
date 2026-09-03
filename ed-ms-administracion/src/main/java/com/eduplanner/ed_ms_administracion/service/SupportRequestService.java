@@ -22,7 +22,7 @@ public class SupportRequestService {
     private final NotifierFactory notifierFactory;
     private final EmailTemplateService emailTemplateService;
 
-    @Value("${mail.support-team}")
+    @Value("${app.mail.support-team}")
     private String supportTeamEmail;
 
     @Transactional
@@ -37,7 +37,7 @@ public class SupportRequestService {
 
         //Enviar correo de notificación al equipo de soporte
         String htmlBody = emailTemplateService.render(
-                "email/nueva-solicitud-soporte",
+                "email/support_request",
                 Map.of(
                         "senderName", dto.getSenderName(),
                         "senderEmail", dto.getSenderEmail(),
