@@ -31,7 +31,9 @@ export class ProfileMenuComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-  
+    // Se pide una sola vez al montar el panel (reutiliza el perfil
+    // que ya quedó cacheado tras el login), así el avatar con la foto
+    // real se ve desde que entras al dashboard, sin abrir la tarjeta.
     this.cargarPerfil();
   }
 

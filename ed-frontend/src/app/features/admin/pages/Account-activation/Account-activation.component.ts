@@ -3,7 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../../auth/services/auth.service';
-import { SesionUsuarioService } from '../../../auth/services/sesion-usuario.service';
+import { PerfilService } from '../../services/perfil.service';
 
 @Component({
   selector: 'app-account-activation',
@@ -46,7 +46,7 @@ export class AccountActivationComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private authService: AuthService,
-    private sesionUsuarioService: SesionUsuarioService
+    private perfilService: PerfilService
   ) {}
 
   ngOnInit(): void {
@@ -253,7 +253,9 @@ export class AccountActivationComponent implements OnInit {
               loginResponse.data.token
             );
 
-            this.sesionUsuarioService.establecerDesdeLogin(loginResponse.data);
+            // Solo se guarda el token; el resto del perfil (con foto)
+            // se pide una única vez desde /users/me y queda cacheado.
+            this.perfilService.obtenerMiPerfil(true).subscribe();
 
             this.authService.iniciarRenovacionAutomatica();
 
