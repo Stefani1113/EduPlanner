@@ -5,12 +5,8 @@ import { filter } from 'rxjs/operators';
 import { BreadcrumbService } from '../../services/breadcrumb.service';
 import { SidebarService } from '../../services/sidebar.service';
 import { ProfileMenuComponent } from '../profile-menu/profile-menu.component';
-
-interface UsuarioSesion {
-  name?: string;
-  lastName?: string;
-  role?: string;
-}
+import { PerfilService } from '../../services/perfil.service';
+import { SesionUsuarioService } from '../../../auth/services/sesion-usuario.service';
 
 @Component({
   selector: 'app-topbar',
@@ -33,7 +29,9 @@ export class TopbarComponent implements OnInit {
     private router: Router,
     private activatedRoute: ActivatedRoute,
     private breadcrumbService: BreadcrumbService,
-    private sidebarService: SidebarService
+    private sidebarService: SidebarService,
+    private perfilService: PerfilService,
+    private sesionUsuarioService: SesionUsuarioService
   ) {}
 
   toggleSidebar(): void {
@@ -55,39 +53,59 @@ export class TopbarComponent implements OnInit {
 
   private cargarUsuario(): void {
 
-    const raw = localStorage.getItem('usuario');
+    const sesion = this.sesionUsuarioService.actual;
 
-    if (!raw) return;
-
-    try {
-
-      const usuario: UsuarioSesion = JSON.parse(raw);
-
-      const nombreCompleto = [
-        usuario.name,
-        usuario.lastName
-      ]
-        .filter(Boolean)
-        .join(' ');
-
-      if (nombreCompleto) {
-        this.nombreUsuario = nombreCompleto;
+    if (sesion) {
+      if (sesion.nombre) {
+        this.nombreUsuario = sesion.nombre;
       }
-
-      if (usuario.role) {
-        this.rolUsuario = this.formatearRol(usuario.role);
+      if (sesion.role) {
+        this.rolUsuario = this.formatearRol(sesion.role);
       }
-
-    } catch {
-
+      return;
     }
+
+    this.perfilService.obtenerMiPerfil().subscribe({
+      next: (respuesta) => {
+
+        const usuario = respuesta.data;
+
+        const nombreCompleto = [usuario.name, usuario.surnames]
+          .filter(Boolean)
+          .join(' ');
+
+        if (nombreCompleto) {
+          this.nombreUsuario = nombreCompleto;
+        }
+
+        if (usuario.roleName) {
+          this.rolUsuario = this.formatearRol(usuario.roleName);
+        }
+      },
+      error: () => {
+      }
+    });
   }
 
   private formatearRol(rol: string): string {
 
-    const limpio = rol
-      .toLowerCase()
-      .trim();
+    const limpio = (rol || '').toLowerCase().trim();
+
+    if (limpio.includes('admin')) {
+      return 'Administrador';
+    }
+
+    if (limpio.includes('doc')) {
+      return 'Docente';
+    }
+
+    if (limpio.includes('estud')) {
+      return 'Estudiante';
+    }
+
+    if (limpio.includes('direct')) {
+      return 'Directivo';
+    }
 
     return limpio.charAt(0).toUpperCase() + limpio.slice(1);
   }
