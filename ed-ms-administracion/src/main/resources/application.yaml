@@ -13,7 +13,6 @@ spring:
     port: 587
     username: eduplannerr@gmail.com
     password: xoguovkhuxdbbgll
-    support-team: eduplannerr@gmail.com
     properties: 
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
@@ -41,6 +40,7 @@ security:
 app:
   mail:
     from: eduplannerr@gmail.com
+    support-team: eduplannerr@gmail.com
   csv:
     export-path: ./exports/
     max-rows-import: 5000  
