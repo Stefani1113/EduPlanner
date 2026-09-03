@@ -5,6 +5,7 @@ import { filter } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
 import { AuthService } from '../../../auth/services/auth.service';
 import { SidebarService } from '../../services/sidebar.service';
+import { PerfilService } from '../../services/perfil.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -16,12 +17,14 @@ import { SidebarService } from '../../services/sidebar.service';
 export class SidebarComponent implements OnInit, OnDestroy {
 
   abierto = false;
+  esAdministrador = false;
   private subs = new Subscription();
 
   constructor(
     private authService: AuthService,
     private router: Router,
-    private sidebarService: SidebarService
+    private sidebarService: SidebarService,
+    private perfilService: PerfilService
   ) {}
 
   ngOnInit(): void {
@@ -33,6 +36,18 @@ export class SidebarComponent implements OnInit, OnDestroy {
       this.router.events
         .pipe(filter(event => event instanceof NavigationEnd))
         .subscribe(() => this.sidebarService.close())
+    );
+
+    this.subs.add(
+      this.perfilService.obtenerMiPerfil().subscribe({
+        next: respuesta => {
+          const rol = (respuesta.data?.roleName || '').toLowerCase();
+          this.esAdministrador = rol.includes('admin') && !rol.includes('direct');
+        },
+        error: () => {
+          this.esAdministrador = false;
+        }
+      })
     );
   }
 
