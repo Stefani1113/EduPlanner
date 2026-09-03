@@ -10,11 +10,11 @@ def create_time_slot_tool(server, client):
             name="list_time_slot_shift",
             description="Por medio del endpoint http://localhost:8080/eduplanner/time-slots?idShift=id consultar y devolver la disponibilidad de dicho docente al que pertenece ese id"
     )
-    def list_time_slot_shift(id_shift : int) :
+    def list_time_slot_shift(idShift : int) :
         print(f"👉 [MCP Tool] Ejecutando listar franjas de dicha jornada")
         try :
             time_slot_shift = client.get(
-                f"/time_slot/id_shift={id_shift}"
+                f"/time_slot?idShift={idShift}"
             )
             return {"success" : True, "franjas_de_jornada" : time_slot_shift}
         except Exception as exc : 

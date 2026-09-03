@@ -27,13 +27,13 @@ def create_subject_tool(server, client) :
     # -------------------------------------------------------------
     @server.tool(
         name="list_subjects_id",
-        description="Por medio del endpoint http://localhost:8080/eduplanner/subjects=id consultar y devolver la asignatura a la cual pertenece ese id",
+        description="Por medio del endpoint http://localhost:8080/eduplanner/subjects/id consultar y devolver la asignatura a la cual pertenece ese id",
     )
     def list_subjects_id(id_subject : int) -> dict[str, Any]:
         print(f"👉 [MCP Tool] Ejecutando listar asignatura")
         try :
             subjects_id = client.get(
-                f"/subjects={id_subject}"
+                f"/subjects/{id_subject}"
             )
             return {"success" : True, "asignatura" : subjects_id}
         except Exception as exc : 
