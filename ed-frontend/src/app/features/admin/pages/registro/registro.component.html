@@ -1,31 +1,4 @@
-<button
-  type="button"
-  class="btn-datos"
-  (click)="abrirDatos()">
-
-  <span class="icono-datos">
-
-    <img
-      *ngIf="imagenBoton"
-      [src]="imagenBoton"
-      alt="Icono"
-      class="icono-imagen"
-      (error)="imagenBoton = ''">
-
-    <img
-      *ngIf="!imagenBoton"
-      src="assets/img/IA.png"
-      alt="Datos">
-
-  </span>
-
-</button>
-
-
-
-<div
-  class="datos-inline"
-  *ngIf="mostrarDatos">
+<div class="datos-inline">
 
 <aside
   class="panel-datos">
@@ -40,13 +13,6 @@
 
       <h2>Datos</h2>
     </div>
-
-    <button
-      type="button"
-      class="btn-cerrar-panel"
-      (click)="cerrarDatos()">
-      ×
-    </button>
 
   </div>
 
@@ -1709,4 +1675,4 @@
 
   </div>
 
-</div> 
+</div>
