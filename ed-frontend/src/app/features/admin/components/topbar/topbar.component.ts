@@ -6,7 +6,6 @@ import { BreadcrumbService } from '../../services/breadcrumb.service';
 import { SidebarService } from '../../services/sidebar.service';
 import { ProfileMenuComponent } from '../profile-menu/profile-menu.component';
 import { PerfilService } from '../../services/perfil.service';
-import { SesionUsuarioService } from '../../../auth/services/sesion-usuario.service';
 
 @Component({
   selector: 'app-topbar',
@@ -30,8 +29,7 @@ export class TopbarComponent implements OnInit {
     private activatedRoute: ActivatedRoute,
     private breadcrumbService: BreadcrumbService,
     private sidebarService: SidebarService,
-    private perfilService: PerfilService,
-    private sesionUsuarioService: SesionUsuarioService
+    private perfilService: PerfilService
   ) {}
 
   toggleSidebar(): void {
@@ -53,18 +51,8 @@ export class TopbarComponent implements OnInit {
 
   private cargarUsuario(): void {
 
-    const sesion = this.sesionUsuarioService.actual;
-
-    if (sesion) {
-      if (sesion.nombre) {
-        this.nombreUsuario = sesion.nombre;
-      }
-      if (sesion.role) {
-        this.rolUsuario = this.formatearRol(sesion.role);
-      }
-      return;
-    }
-
+    // Reutiliza el perfil ya cacheado por PerfilService (pedido una
+    // sola vez justo tras el login); no dispara una llamada nueva.
     this.perfilService.obtenerMiPerfil().subscribe({
       next: (respuesta) => {
 
@@ -83,6 +71,7 @@ export class TopbarComponent implements OnInit {
         }
       },
       error: () => {
+        // Si falla, se deja el valor por defecto ('Administrador').
       }
     });
   }

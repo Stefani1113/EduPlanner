@@ -126,7 +126,7 @@ const DIAS_SEMANA = [
 export class RegistroComponent implements OnInit {
 
  
-  mostrarDatos = false;
+  mostrarDatos = true;
   pestanaActivaDatos: 'academico' | 'calendario' | 'disponibilidad' = 'academico';
 
   mostrarFormularioDocente = false;
@@ -173,8 +173,6 @@ export class RegistroComponent implements OnInit {
 
 
   
-  imagenBoton = '';
-
 
   
   docentes: DocenteFila[] = [];
@@ -308,7 +306,6 @@ export class RegistroComponent implements OnInit {
 
   ngOnInit(): void {
     this.cargarDatos();
-    this.cargarImagenBoton();
   }
 
 
@@ -694,29 +691,6 @@ export class RegistroComponent implements OnInit {
     return docente
       ? `${docente.name ?? ''} ${docente.surnames ?? ''}`.trim()
       : `Docente #${academico.idUser}`;
-  }
-
-
-  cargarImagenBoton(): void {
-
-    const imagen =
-      localStorage.getItem('imagenBoton');
-
-    if (imagen) {
-      this.imagenBoton = imagen;
-    }
-  }
-
-
-  abrirDatos(): void {
-    this.mostrarDatos = true;
-    this.pestanaActivaDatos = 'academico';
-    this.cargarDatos();
-  }
-
-
-  cerrarDatos(): void {
-    this.mostrarDatos = false;
   }
 
 
