@@ -58,7 +58,17 @@ const routes: Routes = [
       },
 
       {
-        path: 'importacion',
+        path: 'asistencia',
+        loadComponent: () =>
+          import('../asistencias/pages/asistencias/asistencias.component')
+            .then(m => m.AsistenciaComponent),
+        data: {
+          breadcrumb: ['Asistencia']
+        }
+      },
+
+      { 
+        path: 'importacion', 
         loadComponent: () =>
           import('./pages/importacion/importacion.component')
             .then(m => m.ImportacionComponent),
