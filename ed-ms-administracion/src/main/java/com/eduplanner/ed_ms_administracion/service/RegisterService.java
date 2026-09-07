@@ -9,6 +9,7 @@ import com.eduplanner.ed_lib_common.entity.User;
 import com.eduplanner.ed_lib_common.enums.RolEnum;
 import com.eduplanner.ed_lib_common.notifications.NotificationType;
 import com.eduplanner.ed_ms_administracion.client.AuthServiceClient;
+import com.eduplanner.ed_ms_administracion.client.GestionAcademicaServiceClient;
 import com.eduplanner.ed_ms_administracion.notifications.EmailTemplateService;
 import com.eduplanner.ed_ms_administracion.notifications.NotifierFactory;
 import com.eduplanner.ed_ms_administracion.repository.GuardianRepository;
@@ -36,6 +37,7 @@ public class RegisterService {
     private final NotifierFactory notifierFactory;
     private final ImportRepository importRepository;
     private final EmailTemplateService emailTemplateService;
+    private final GestionAcademicaServiceClient gestionAcademicaServiceClient;
 
     @Value("${institution.id}")
     private Integer institutionId;
@@ -50,7 +52,7 @@ public class RegisterService {
     }
 
     @Transactional
-    public void registerStudentInternal(RegisterStudentDTO dto, Integer idImport) {
+        public void registerStudentInternal(RegisterStudentDTO dto, Integer idImport) {
         validateNotDuplicated(dto.getEmail(), dto.getDocument(), dto.getPhoneNumber());
 
         Role role = getRoleOrThrow(RolEnum.ESTUDIANTE.getId());
@@ -64,16 +66,17 @@ public class RegisterService {
         );
         user.setPosition("Estudiante");
         user.setRole(role);
-        
-        //Si viene de una importación, se asocia el resgistro Import correspondiente;
-        //Se el resgitro es manual queda null
+        user.setIdCourse(dto.getIdCourse()); //se asigna el curso al registrar
+
         if (idImport != null) {
             user.setImportEntity(importRepository.getReferenceById(idImport));
         }
 
         userRepository.save(user);
 
-        // Guardar el acudiente asociado, solo aplica para estudiantes
+        //sincroniza el contador de estudiantes del curso
+        gestionAcademicaServiceClient.adjustCourseStudentCount(dto.getIdCourse(), 1);
+
         Guardian guardian = new Guardian();
         guardian.setGuardianName(dto.getGuardian().getGuardianName());
         guardian.setGuardianPhone(dto.getGuardian().getGuardianPhone());
@@ -81,7 +84,7 @@ public class RegisterService {
         guardianRepository.save(guardian);
 
         sendActivationEmail(user);
-    }
+}
 
     // REGISTRO DE DOCENTE
     @Transactional
