@@ -23,7 +23,6 @@ const ID_ROL_ESTUDIANTE = 3;
 })
 export class EstadisticasService {
 
-  // Los 3 endpoints ya existían en el backend, no se agregó nada nuevo.
   private apiUsuarios = '/administracion/eduplanner/users';
   private apiDocentes = '/administracion/eduplanner/teacher';
   private apiCursos = '/gestion-academica/eduplanner/courses';
@@ -32,9 +31,7 @@ export class EstadisticasService {
 
   obtenerEstadisticasInstitucion(): Observable<EstadisticasInstitucion> {
 
-    // GET /users?idRole=3 es exclusivo de ADMINISTRADOR en el backend.
-    // Si quien mira la página no es admin, esta llamada devuelve 403 y
-    // simplemente se muestra 0 en vez de romper el resto de la sección.
+   
     const estudiantes$ = this.http
       .get<HttpGlobalResponse<unknown[]>>(this.apiUsuarios, {
         params: { idRole: ID_ROL_ESTUDIANTE }
