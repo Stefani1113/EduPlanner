@@ -27,7 +27,8 @@ public class GestionAcademicaServiceClient {
             return;
         }
         try {
-            String url = gestionAcademicaBaseUrl + "/internal/courses/" + idCourse + "/student-count?delta=" + delta;
+            String url = gestionAcademicaBaseUrl + "/eduplanner/internal/courses/" 
+            + idCourse + "/student-count?delta=" + delta;
             restTemplate.exchange(url, HttpMethod.PATCH, null, Void.class);
         } catch (Exception e) {
             log.error("No se pudo sincronizar el contador de estudiantes del curso {}: {}", idCourse, e.getMessage());
