@@ -5,6 +5,7 @@ import com.eduplanner.ed_lib_common.entity.Guardian;
 import com.eduplanner.ed_lib_common.entity.Role;
 import com.eduplanner.ed_lib_common.entity.User;
 import com.eduplanner.ed_lib_common.enums.RolEnum;
+import com.eduplanner.ed_ms_administracion.client.GestionAcademicaServiceClient;
 import com.eduplanner.ed_ms_administracion.repository.GuardianRepository;
 import com.eduplanner.ed_ms_administracion.repository.RoleRepository;
 import com.eduplanner.ed_ms_administracion.repository.UserRepository;
@@ -24,6 +25,7 @@ public class UserEditService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final GuardianRepository guardianRepository;
+    private final GestionAcademicaServiceClient gestionAcademicaServiceClient;
 
 
     //Actualizar estudiantes
@@ -46,6 +48,29 @@ public class UserEditService {
 
         if (userRepository.existsByPhoneNumberAndIdUserNot(dto.getPhoneNumber(), idUser)) {
             throw new IllegalArgumentException("El número de celular ya está registrado por otro usuario");
+        }
+    }
+
+    @Transactional
+    public void assignCourse(Integer idUser, AssignCourseDTO dto) {
+        User user = getUserOrThrow(idUser);
+
+        if (user.getRole().getIdRole() != RolEnum.ESTUDIANTE.getId()) {
+            throw new IllegalArgumentException("Solo se puede asignar un curso a usuarios con rol ESTUDIANTE");
+        }
+
+        Integer oldCourseId = user.getIdCourse();
+        Integer newCourseId = dto.getIdCourse();
+
+        user.setIdCourse(newCourseId);
+        userRepository.save(user);
+
+        // Sincronizar el contador: resta del curso anterior, suma al nuevo
+        if (oldCourseId != null && !oldCourseId.equals(newCourseId)) {
+            gestionAcademicaServiceClient.adjustCourseStudentCount(oldCourseId, -1);
+        }
+        if (newCourseId != null && !newCourseId.equals(oldCourseId)) {
+            gestionAcademicaServiceClient.adjustCourseStudentCount(newCourseId, 1);
         }
     }
 
