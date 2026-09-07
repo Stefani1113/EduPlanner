@@ -1,0 +1,148 @@
+<div class="modal-overlay" (click)="onOverlayClick($event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <span class="eyebrow">GESTIÓN DE USUARIOS</span>
+        <h2>{{ titulo }}</h2>
+        <p>{{ usuario.name }} {{ usuario.surnames }} · ID {{ usuario.idUser }}</p>
+      </div>
+    </div>
+
+    <form class="modal-form" [formGroup]="form" (ngSubmit)="guardarCambios()">
+      <h3 class="section-title">Datos personales</h3>
+
+      <div class="grid-2">
+        <div class="field" [class.error]="campoInvalido('name')">
+          <label>Nombres *</label>
+          <input formControlName="name" type="text" placeholder="Nombres">
+          <small *ngIf="campoInvalido('name')">El nombre es obligatorio.</small>
+        </div>
+
+        <div class="field" [class.error]="campoInvalido('surnames')">
+          <label>Apellidos *</label>
+          <input formControlName="surnames" type="text" placeholder="Apellidos">
+          <small *ngIf="campoInvalido('surnames')">Los apellidos son obligatorios.</small>
+        </div>
+
+        <div class="field" [class.error]="campoInvalido('documentType')">
+          <label>Tipo de documento *</label>
+          <select formControlName="documentType">
+            <option *ngFor="let tipo of tiposDocumento" [value]="tipo">{{ tipo }}</option>
+          </select>
+        </div>
+
+        <div class="field" [class.error]="campoInvalido('document')">
+          <label>Número de documento *</label>
+          <input formControlName="document" type="text" placeholder="Número de documento">
+        </div>
+
+        <div class="field" [class.error]="campoInvalido('documentIssuePlace')">
+          <label>Lugar de expedición *</label>
+          <input formControlName="documentIssuePlace" type="text" placeholder="Armenia">
+        </div>
+
+        <div class="field" [class.error]="campoInvalido('birthdate')">
+          <label>Fecha de nacimiento *</label>
+          <input formControlName="birthdate" type="date">
+        </div>
+
+        <div class="field" [class.error]="campoInvalido('gender')">
+          <label>Género *</label>
+          <select formControlName="gender">
+            <option value="">Seleccionar género</option>
+            <option *ngFor="let genero of generos" [value]="genero">{{ genero }}</option>
+          </select>
+        </div>
+
+        <div class="field" [class.error]="campoInvalido('email')">
+          <label>Correo electrónico *</label>
+          <input formControlName="email" type="email" placeholder="correo@institucion.edu">
+          <small *ngIf="tipo !== 'Docente'" class="hint">El correo no se modifica desde este endpoint.</small>
+        </div>
+
+        <div class="field" [class.error]="campoInvalido('phoneNumber')">
+          <label>Teléfono *</label>
+          <input formControlName="phoneNumber" type="text" placeholder="3001234567">
+        </div>
+      </div>
+
+      <h3 class="section-title">Datos adicionales</h3>
+
+      <div class="grid-2">
+        <div class="field">
+          <label>Dirección</label>
+          <input formControlName="address" type="text" placeholder="Dirección">
+        </div>
+
+        <div class="field">
+          <label>Tipo de sangre</label>
+          <select formControlName="bloodType">
+            <option value="">Seleccionar</option>
+            <option *ngFor="let sangre of tiposSangre" [value]="sangre">{{ sangre }}</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Estrato</label>
+          <select formControlName="stratum">
+            <option value="">Seleccionar</option>
+            <option *ngFor="let estrato of estratos" [value]="estrato">{{ estrato }}</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Tipo de población</label>
+          <input formControlName="populationType" type="text" placeholder="Tipo de población">
+        </div>
+
+        <div class="field">
+          <label>Régimen de salud</label>
+          <input formControlName="healthRegime" type="text" placeholder="Régimen de salud">
+        </div>
+
+        <div class="field">
+          <label>EPS</label>
+          <input formControlName="eps" type="text" placeholder="EPS">
+        </div>
+
+        <div class="field full">
+          <label>Discapacidades</label>
+          <textarea formControlName="disabilities" placeholder="Información de discapacidades, si aplica"></textarea>
+        </div>
+      </div>
+
+      <ng-container *ngIf="tipo === 'Docente'">
+        <h3 class="section-title">Información profesional del docente</h3>
+        <div class="grid-2">
+          <div class="field full" [class.error]="campoInvalido('professionalDegrees')">
+            <label>Títulos profesionales *</label>
+            <textarea formControlName="professionalDegrees" placeholder="Ej: Licenciatura en Matemáticas"></textarea>
+            <small *ngIf="campoInvalido('professionalDegrees')">Los títulos profesionales son obligatorios.</small>
+          </div>
+
+          <div class="field full">
+            <label>Descripción de cualificaciones</label>
+            <textarea formControlName="qualificationsDesc" placeholder="Experiencia, especializaciones, certificaciones..."></textarea>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="tipo === 'Staff'">
+        <h3 class="section-title">Información laboral</h3>
+      </ng-container>
+
+      <div class="field" [class.error]="campoInvalido('position')">
+        <label>{{ tipo === 'Docente' ? 'Cargo / posición *' : 'Cargo *' }}</label>
+        <input formControlName="position" type="text" placeholder="Cargo">
+        <small *ngIf="campoInvalido('position')">El cargo es obligatorio.</small>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-cancelar" (click)="cancelar()" [disabled]="guardando">Cancelar</button>
+        <button type="submit" class="btn-guardar" [disabled]="guardando">
+          {{ guardando ? 'Guardando...' : 'Guardar cambios' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
