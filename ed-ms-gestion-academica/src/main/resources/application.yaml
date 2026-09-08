@@ -2,6 +2,17 @@ spring:
   application:
     name: ed-ms-gestion-academica
 
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+
+      discovery:
+        enabled: true
+        register: true
+        service-name: ${spring.application.name}
+        prefer-ip-address: true
+
   datasource:
     url: jdbc:mysql://localhost:3306/academic_management
     username: root
@@ -21,7 +32,3 @@ server:
 security:
   jwt:
     secret-key: czyYSEj017tCB8M8mnOSvhgV4gSdI4P5Bql+3HrWZtM=
-
-services: 
-  administracion:
-    base-url: http://localhost:8082/eduplanner
