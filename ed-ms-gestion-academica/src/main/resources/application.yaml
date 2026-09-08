@@ -12,6 +12,7 @@ spring:
         register: true
         service-name: ${spring.application.name}
         prefer-ip-address: true
+        health-check-path: /eduplanner/actuator/health
 
   datasource:
     url: jdbc:mysql://localhost:3306/academic_management
@@ -32,3 +33,12 @@ server:
 security:
   jwt:
     secret-key: czyYSEj017tCB8M8mnOSvhgV4gSdI4P5Bql+3HrWZtM=
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
