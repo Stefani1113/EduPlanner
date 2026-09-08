@@ -18,6 +18,8 @@ import com.eduplanner.ed_ms_administracion.repository.RoleRepository;
 import com.eduplanner.ed_ms_administracion.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import com.eduplanner.ed_lib_common.dto.ActivationTokenRequestDTO;
+import com.eduplanner.ed_lib_common.dto.ActivationTokenResponseDTO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -193,11 +195,19 @@ public class RegisterService {
     }
 
     /**
-     * Pide el token de activación a ed-ms-autenticacion (vía HTTP)
+     * Pide el token de activación a ed-ms-autenticacion (vía Feign)
      * y envía el correo con el enlace de activación.
      */
     private void sendActivationEmail(User user) {
-        String activationToken = authServiceClient.requestActivationToken(user.getEmail());
+
+        ActivationTokenRequestDTO request = new ActivationTokenRequestDTO();
+        request.setEmail(user.getEmail());
+
+        ActivationTokenResponseDTO response =
+                authServiceClient.requestActivationToken(request);
+
+        String activationToken = response.getToken();
+
         String activationLink = activationUrlBase + "?token=" + activationToken;
 
         Map<String, Object> variables = Map.of(
@@ -205,8 +215,16 @@ public class RegisterService {
                 "activationLink", activationLink
         );
 
-        String htmlContent = emailTemplateService.render("email/activation-account", variables);
+        String htmlContent = emailTemplateService.render(
+                "email/activation-account",
+                variables
+        );
+
         notifierFactory.create(NotificationType.EMAIL)
-                .send(user.getEmail(), "Activa tu cuenta en EduPlanner", htmlContent);
+                .send(
+                        user.getEmail(),
+                        "Activa tu cuenta en EduPlanner",
+                        htmlContent
+                );
     }
 }
