@@ -12,6 +12,7 @@ spring:
         register: true
         service-name: ${spring.application.name}
         prefer-ip-address: true
+        health-check-path: /eduplanner/actuator/health
 
   datasource:
     url: jdbc:mysql://localhost:3306/auth_administration
@@ -65,3 +66,12 @@ cloudinary:
   cloud-name: f0qiiq22
   api-key: 588271412933438
   api-secret: _pVZj_anQw5kn-Hkj2RLwSt0C8k
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
