@@ -4,6 +4,7 @@ import java.time.LocalDate;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 
 /**
@@ -49,6 +50,7 @@ public class RegisterStudentDTO {
 
     private Integer idImport;
 
+    @NotNull(message = "El curso es obligatorio")
     private Integer idCourse;
 
     //datos anidados de acudiente 
