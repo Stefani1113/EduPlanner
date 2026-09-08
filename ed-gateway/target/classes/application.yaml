@@ -3,6 +3,16 @@ spring:
     name: ed-gateway
 
   cloud:
+    consul:
+      host: localhost
+      port: 8500
+
+      discovery:
+        enabled: true
+        register: true
+        service-name: ${spring.application.name}
+        prefer-ip-address: true
+        
     gateway:
       globalcors:
         add-to-simple-url-handler-mapping: true
@@ -24,7 +34,7 @@ spring:
 
         # ── Microservicio Autenticación (ACTIVO: 8081) ─────────────────────────
         - id: ed-ms-autenticacion
-          uri: http://localhost:8081
+          uri: lb://ed-ms-autenticacion
           predicates:
             - Path=/autenticacion/**
           filters:
@@ -32,23 +42,24 @@ spring:
 
         # ── Microservicio Administración (ACTIVO: 8082) ─────────────────────────
         - id: ed-ms-administracion
-          uri: http://localhost:8082
+          uri: lb://ed-ms-administracion
           predicates:
-             - Path=/administracion/**
+            - Path=/administracion/**
           filters:
             - StripPrefix=1
+
         
          # ── Microservicio Gestion Academica (ACTIVO: 8083) ─────────────────────────
         - id: ed-ms-gestion-academica
-          uri: http://localhost:8083
+          uri: lb://ed-ms-gestion-academica
           predicates:
             - Path=/gestion-academica/**
           filters:
             - StripPrefix=1
-        
+
          # ── Microservicio Notas (ACTIVO: 8084) ─────────────────────────
         - id: ed-ms-notas
-          uri: http://localhost:8084
+          uri: lb://ed-ms-notas
           predicates:
             - Path=/notas/**
           filters:
@@ -56,7 +67,7 @@ spring:
 
       # ── Microservicio Inteligencia Artificial (ACTIVO: 8085) ─────────────────────────
         - id: ed-ms-ia
-          uri: http://localhost:8085
+          uri: lb://ed-ms-ia
           predicates:
             - Path=/ia/**
           filters:
@@ -64,7 +75,7 @@ spring:
         
       # ── Microservicio Administración (ACTIVO: 8086) ─────────────────────────
         - id: ed-ms-configuracion-institucional
-          uri: http://localhost:8086
+          uri: lb://ed-ms-configuracion-institucional
           predicates:
             - Path=/configuracion-institucional/**
           filters:
