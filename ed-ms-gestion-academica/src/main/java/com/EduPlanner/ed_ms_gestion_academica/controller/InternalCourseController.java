@@ -15,19 +15,36 @@ public class InternalCourseController {
 
     private final CourseRepository repository;
 
-    /**
-     * Ajusta el contador de estudiantes de un curso.
-     * delta=1 al asignar un estudiante, delta=-1 al quitarlo/cambiarlo de curso.
-     */
-    @PatchMapping("/{id}/student-count")
+    @PutMapping("/{id}/student-count")
     public ResponseEntity<Void> adjustStudentCount(
-            @PathVariable Integer id, @RequestParam int delta) {
+            @PathVariable Integer id,
+            @RequestParam int delta) {
+
+        System.out.println(">>> INTERNAL COURSE CONTROLLER");
+        System.out.println(">>> COURSE ID: " + id);
+        System.out.println(">>> DELTA: " + delta);
 
         return repository.findById(id).map(course -> {
-            short newCount = (short) Math.max(0, course.getStudentCount() + delta);
+
+            System.out.println(">>> CURSO ENCONTRADO");
+            System.out.println(">>> COUNT ANTERIOR: " + course.getStudentCount());
+
+            short newCount = (short) Math.max(
+                    0,
+                    course.getStudentCount() + delta
+            );
+
             course.setStudentCount(newCount);
+
             repository.save(course);
+
+            System.out.println(">>> COUNT NUEVO: " + newCount);
+
             return ResponseEntity.ok().<Void>build();
-        }).orElse(ResponseEntity.notFound().build());
+
+        }).orElseGet(() -> {
+            System.out.println(">>> CURSO NO ENCONTRADO: " + id);
+            return ResponseEntity.notFound().build();
+        });
     }
 }
