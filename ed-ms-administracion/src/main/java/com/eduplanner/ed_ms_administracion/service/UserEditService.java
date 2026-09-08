@@ -12,12 +12,13 @@ import com.eduplanner.ed_ms_administracion.repository.UserRepository;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 
 import java.util.Map;
 import java.util.Set;
-
 import org.springframework.stereotype.Service;
 
+@Log4j2
 @Service
 @RequiredArgsConstructor
 public class UserEditService {
@@ -53,26 +54,48 @@ public class UserEditService {
 
     @Transactional
     public void assignCourse(Integer idUser, AssignCourseDTO dto) {
-        User user = getUserOrThrow(idUser);
 
-        if (user.getRole().getIdRole() != RolEnum.ESTUDIANTE.getId()) {
-            throw new IllegalArgumentException("Solo se puede asignar un curso a usuarios con rol ESTUDIANTE");
-        }
+    User user = getUserOrThrow(idUser);
 
-        Integer oldCourseId = user.getIdCourse();
-        Integer newCourseId = dto.getIdCourse();
-
-        user.setIdCourse(newCourseId);
-        userRepository.save(user);
-
-        // Sincronizar el contador: resta del curso anterior, suma al nuevo
-        if (oldCourseId != null && !oldCourseId.equals(newCourseId)) {
-            gestionAcademicaServiceClient.adjustCourseStudentCount(oldCourseId, -1);
-        }
-        if (newCourseId != null && !newCourseId.equals(oldCourseId)) {
-            gestionAcademicaServiceClient.adjustCourseStudentCount(newCourseId, 1);
-        }
+    if (user.getRole().getIdRole() != RolEnum.ESTUDIANTE.getId()) {
+        throw new IllegalArgumentException(
+                "Solo se puede asignar un curso a usuarios con rol ESTUDIANTE"
+        );
     }
+
+    Integer oldCourseId = user.getIdCourse();
+    Integer newCourseId = dto.getIdCourse();
+
+    log.info("======================================");
+    log.info("CAMBIO DE CURSO");
+    log.info("Usuario: {}", idUser);
+    log.info("Curso anterior: {}", oldCourseId);
+    log.info("Curso nuevo: {}", newCourseId);
+    log.info("======================================");
+
+    user.setIdCourse(newCourseId);
+    userRepository.save(user);
+
+    log.info("Usuario {} guardado con curso {}", idUser, newCourseId);
+
+    // RESTAR DEL CURSO ANTERIOR
+    if (oldCourseId != null && !oldCourseId.equals(newCourseId)) {
+
+        log.info("RESTANDO 1 AL CURSO {}", oldCourseId);
+
+        gestionAcademicaServiceClient
+                .adjustCourseStudentCount(oldCourseId, -1);
+    }
+
+    // SUMAR AL CURSO NUEVO
+    if (newCourseId != null && !newCourseId.equals(oldCourseId)) {
+
+        log.info("SUMANDO 1 AL CURSO {}", newCourseId);
+
+        gestionAcademicaServiceClient
+                .adjustCourseStudentCount(newCourseId, 1);
+    }
+}
 
     //Actualizar Staff (administrador, directivo)
     @Transactional
