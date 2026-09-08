@@ -1,4 +1,18 @@
 spring:
+  application:
+    name: ed-ms-administracion
+
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+
+      discovery:
+        enabled: true
+        register: true
+        service-name: ${spring.application.name}
+        prefer-ip-address: true
+
   datasource:
     url: jdbc:mysql://localhost:3306/auth_administration
     username: root
@@ -28,10 +42,6 @@ server:
   servlet:
     context-path: /eduplanner/
 
-service:
-  auth:
-    base-url: http://localhost:8081/eduplanner
-
 security:
   jwt:
     secret-key: czyYSEj017tCB8M8mnOSvhgV4gSdI4P5Bql+3HrWZtM=
@@ -55,7 +65,3 @@ cloudinary:
   cloud-name: f0qiiq22
   api-key: 588271412933438
   api-secret: _pVZj_anQw5kn-Hkj2RLwSt0C8k
-
-services:
-  gestion-academica:
-    base-url: http://localhost:8083/eduplanner
