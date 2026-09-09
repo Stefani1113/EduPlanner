@@ -12,6 +12,7 @@ spring:
         register: true
         service-name: ${spring.application.name}
         prefer-ip-address: true
+        health-check-path: /actuator/health
         
     gateway:
       globalcors:
@@ -94,7 +95,17 @@ security:
     - /autenticacion/eduplanner/auth/activation-account
     - /administracion/eduplanner/internal
     - /administracion/eduplanner/support
+    - /eduplanner/actuator/health
 
 logging:
   level:
     org.springframework.cloud.gateway: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
