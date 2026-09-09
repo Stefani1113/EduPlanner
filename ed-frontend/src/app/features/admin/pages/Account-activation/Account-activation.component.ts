@@ -253,8 +253,6 @@ export class AccountActivationComponent implements OnInit {
               loginResponse.data.token
             );
 
-            // Solo se guarda el token; el resto del perfil (con foto)
-            // se pide una única vez desde /users/me y queda cacheado.
             this.perfilService.obtenerMiPerfil(true).subscribe();
 
             this.authService.iniciarRenovacionAutomatica();

@@ -1,6 +1,6 @@
 .usuarios-container {
   width: 100%;
-  color: #fff;
+  color: var(--inst-text);
   padding: 0 4px;
 }
 
@@ -16,7 +16,7 @@
 .tabs {
   display: flex;
   gap: 6px;
-  background: #1a1a1a;
+  background: var(--inst-surface-alt);
   border-radius: 12px;
   padding: 4px;
   flex-shrink: 0;
@@ -25,7 +25,7 @@
 .tab {
   background: transparent;
   border: none;
-  color: #888;
+  color: var(--inst-muted);
   cursor: pointer;
   padding: 10px 24px;
   border-radius: 10px;
@@ -36,15 +36,15 @@
 }
 
 .tab:hover {
-  color: #fff;
+  color: var(--inst-text);
   background: rgba(255, 255, 255, 0.05);
 }
 
 .tab.active {
-  background: #314c2184;
-  color: #6fd62c;
+  background: color-mix(in srgb, var(--inst-secondary) 20%, transparent);
+  color: var(--inst-secondary);
   font-weight: 600;
-  box-shadow: 0 2px 8px rgba(83, 187, 27, 0.15);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--inst-secondary) 15%, transparent);
 }
 
 .header-actions {
@@ -58,9 +58,9 @@
   height: 40px;
   padding: 0 16px;
   border-radius: 8px;
-  border: 1px solid rgba(83, 187, 27, 0.3);
-  background: rgba(83, 187, 27, 0.08);
-  color: #6fd62c;
+  border: 1px solid color-mix(in srgb, var(--inst-secondary) 30%, transparent);
+  background: color-mix(in srgb, var(--inst-secondary) 8%, transparent);
+  color: var(--inst-secondary);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -69,8 +69,8 @@
 }
 
 .btn-exportar:hover:not(:disabled) {
-  background: rgba(83, 187, 27, 0.16);
-  border-color: rgba(83, 187, 27, 0.5);
+  background: color-mix(in srgb, var(--inst-secondary) 16%, transparent);
+  border-color: color-mix(in srgb, var(--inst-secondary) 50%, transparent);
   transform: translateY(-1px);
 }
 
@@ -86,10 +86,10 @@
 .role-toggle {
   min-width: 150px;
   height: 40px;
-  border: 1px solid rgba(83, 187, 27, 0.3);
+  border: 1px solid color-mix(in srgb, var(--inst-secondary) 30%, transparent);
   border-radius: 8px;
-  background: rgba(83, 187, 27, 0.08);
-  color: #fff;
+  background: color-mix(in srgb, var(--inst-secondary) 8%, transparent);
+  color: var(--inst-text);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -101,17 +101,17 @@
 }
 
 .role-toggle:hover {
-  background: rgba(83, 187, 27, 0.15);
-  border-color: rgba(83, 187, 27, 0.5);
+  background: color-mix(in srgb, var(--inst-secondary) 15%, transparent);
+  border-color: color-mix(in srgb, var(--inst-secondary) 50%, transparent);
 }
 
 .role-toggle span:first-child {
-  color: #ccc;
+  color: var(--inst-muted);
 }
 
 .chevron {
   font-size: 10px;
-  color: #888;
+  color: var(--inst-muted);
   transition: transform 0.25s ease;
   margin-left: 8px;
 }
@@ -125,8 +125,8 @@
   top: calc(100% + 6px);
   left: 0;
   min-width: 180px;
-  background: #1e1e1e;
-  border: 1px solid #333;
+  background: var(--inst-surface);
+  border: 1px solid var(--inst-border);
   border-radius: 10px;
   overflow: hidden;
   z-index: 50;
@@ -140,27 +140,27 @@
   cursor: pointer;
   transition: all 0.2s ease;
   font-size: 13px;
-  color: #bbb;
+  color: var(--inst-muted);
 }
 
 .role-menu li:hover {
-  background: rgba(83, 187, 27, 0.12);
-  color: #fff;
+  background: color-mix(in srgb, var(--inst-secondary) 12%, transparent);
+  color: var(--inst-text);
 }
 
 .role-menu li.active {
-  background: rgba(83, 187, 27, 0.2);
-  color: #6fd62c;
+  background: color-mix(in srgb, var(--inst-secondary) 20%, transparent);
+  color: var(--inst-secondary);
 }
 
 .role-menu .grado-item {
   padding-left: 28px;
   font-size: 12px;
-  color: #999;
+  color: var(--inst-muted);
 }
 
 .role-menu .grado-item:hover {
-  color: #fff;
+  color: var(--inst-text);
 }
 
 .registrar-box {
@@ -168,8 +168,8 @@
 }
 
 .btn-registrar {
-  background: #53bb1b;
-  color: #fff;
+  background: var(--inst-primary);
+  color: var(--inst-text);
   border: none;
   border-radius: 8px;
   padding: 10px 22px;
@@ -183,9 +183,9 @@
 }
 
 .btn-registrar:hover {
-  background: #6fd62c;
+  background: var(--inst-secondary);
   transform: translateY(-1px);
-  box-shadow: 0 4px 15px rgba(83, 187, 27, 0.3);
+  box-shadow: 0 4px 15px rgba(48, 97, 22, 0.3);
 }
 
 .btn-registrar:active {
@@ -197,8 +197,8 @@
   top: calc(100% + 6px);
   right: 0;
   min-width: 190px;
-  background: #1e1e1e;
-  border: 1px solid #333;
+  background: var(--inst-surface);
+  border: 1px solid var(--inst-border);
   border-radius: 10px;
   overflow: hidden;
   z-index: 50;
@@ -212,20 +212,20 @@
   cursor: pointer;
   transition: all 0.2s ease;
   font-size: 13px;
-  color: #bbb;
+  color: var(--inst-muted);
 }
 
 .registrar-menu li:hover {
-  background: rgba(83, 187, 27, 0.12);
-  color: #fff;
+  background: color-mix(in srgb, var(--inst-secondary) 12%, transparent);
+  color: var(--inst-text);
 }
 
 .search-bar {
   width: 100%;
   max-width: 520px;
   height: 44px;
-  background: #1a1a1a;
-  border: 1px solid #2a2a2a;
+  background: var(--inst-surface-alt);
+  border: 1px solid var(--inst-border);
   border-radius: 10px;
   display: flex;
   align-items: center;
@@ -235,7 +235,7 @@
 }
 
 .search-bar:focus-within {
-  border-color: rgba(83, 187, 27, 0.4);
+  border-color: color-mix(in srgb, var(--inst-secondary) 40%, transparent);
 }
 
 .search-icon {
@@ -250,20 +250,20 @@
   background: transparent;
   border: none;
   outline: none;
-  color: #fff;
+  color: var(--inst-text);
   font-size: 14px;
   padding: 10px 12px;
 }
 
 .search-bar input::placeholder {
-  color: #555;
+  color: var(--inst-muted);
 }
 
 .table-wrapper {
   width: 100%;
   overflow-x: auto;
   border-radius: 12px;
-  background: #151515;
+  background: var(--inst-surface);
   padding: 4px;
 }
 
@@ -276,14 +276,14 @@
 
 .usuarios-table thead th {
   background: transparent;
-  color: #888;
+  color: var(--inst-muted);
   padding: 14px 16px;
   text-align: left;
   font-weight: 600;
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  border-bottom: 1px solid #2a2a2a;
+  border-bottom: 1px solid var(--inst-border);
 }
 
 .usuarios-table thead th:first-child {
@@ -291,13 +291,13 @@
 }
 
 .usuarios-table tbody tr {
-  background: #222;
+  background: var(--inst-surface-alt);
   border-radius: 10px;
   transition: all 0.2s ease;
 }
 
 .usuarios-table tbody tr:hover {
-  background: #222;
+  background: var(--inst-surface-alt);
   transform: scale(1.002);
 }
 
@@ -305,7 +305,7 @@
   padding: 14px 16px;
   text-align: left;
   font-size: 14px;
-  color: #ddd;
+  color: var(--inst-text);
   border-top: 1px solid transparent;
 }
 
@@ -323,7 +323,7 @@
   height: 40px;
   border-radius: 50%;
   overflow: hidden;
-  background: #2a2a2a;
+  background: var(--inst-border);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -344,12 +344,11 @@
 }
 
 .estado.activo {
-  color: #6fd62c;
+  color: var(--inst-secondary);
 }
 
 .estado.inactivo {
   color: #e05656;
-  background: rgba(224, 86, 86, 0.12);
 }
 
 .acciones-cell {
@@ -370,12 +369,12 @@
 }
 
 .accion.editar {
-  color: #ffffff;
-  background: rgb(83, 187, 27);
+  color: var(--inst-text)fff;
+  background: var(--inst-secondary);
 }
 
 .accion.editar:hover {
-  background: rgba(83, 187, 27, 0.2);
+  background: color-mix(in srgb, var(--inst-secondary) 20%, transparent);
 }
 
 .accion.inactivar {
@@ -388,12 +387,12 @@
 }
 
 .accion.activar {
-  color: #6fd62c;
-  background: rgba(83, 187, 27, 0.08);
+  color: var(--inst-secondary);
+  background: color-mix(in srgb, var(--inst-secondary) 8%, transparent);
 }
 
 .accion.activar:hover {
-  background: rgba(83, 187, 27, 0.2);
+  background: color-mix(in srgb, var(--inst-secondary) 20%, transparent);
 }
 
 .accion.cambiar-rol {
@@ -407,7 +406,7 @@
 
 .empty {
   text-align: center;
-  color: #666;
+  color: var(--inst-muted);
   padding: 40px 20px;
   font-size: 14px;
 }
@@ -829,17 +828,17 @@
 }
 
 .table-wrapper::-webkit-scrollbar-track {
-  background: #1a1a1a;
+  background: var(--inst-surface-alt);
   border-radius: 4px;
 }
 
 .table-wrapper::-webkit-scrollbar-thumb {
-  background: #53bb1b;
+  background: var(--inst-primary);
   border-radius: 4px;
 }
 
 .table-wrapper::-webkit-scrollbar-thumb:hover {
-  background: #6fd62c;
+  background: var(--inst-secondary);
 }
 
 .usuarios-table tbody tr {

@@ -8,7 +8,7 @@
 
 header.navar {
   flex-shrink: 0;
-  background: #1B1C1C;
+  background: var(--inst-surface-alt);
 }
 
 .admin-container {
@@ -17,8 +17,8 @@ header.navar {
   display: flex;
   width: 100%;
   overflow: hidden;
-  background: #161616;
-  background-image: radial-gradient(rgba(255, 255, 255, .08) 1px, transparent 1px);
+  background: var(--inst-dark);
+  background-image: radial-gradient(color-mix(in srgb, var(--inst-text) 8%, transparent) 1px, transparent 1px);
   background-size: 18px 18px;
 }
 
@@ -42,7 +42,7 @@ main.admin-body {
 }
 
 footer {
-  background: #1B1C1C;
+  background: var(--inst-surface-alt);
   display: flex;
   justify-content: space-between;  
   align-items: center;
@@ -50,7 +50,7 @@ footer {
   
 
 .logo-footer img {
-  background: #1d1e1d;
+  background: var(--inst-surface-alt);
   height: 50px;
   display: block;
 }
@@ -85,9 +85,11 @@ footer {
 }
 
 .footer-version {
-  background-color: transparent;
-  color: #199d19;
+  background-color: var(--inst-primary);
+  color: var(--inst-secondary);
   font-size: 13px;
+  padding: 10px;
+  border-radius: 10px;
 }
 
 }

@@ -1,7 +1,7 @@
 :host {
   display: block;
   width: 100%;
-  background: #0d0d0d;
+  background: var(--inst-dark);
   min-height: 100vh;
   padding: 24px 30px 40px;
 }
@@ -12,26 +12,26 @@
   justify-content: space-between;
   margin-bottom: 28px;
   padding-bottom: 20px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid color-mix(in srgb, var(--inst-text) 6%, transparent);
 
   .header-left {
     h1 {
       font-size: 26px;
       font-weight: 700;
-      color: #ffffff;
+      color: var(--inst-text);
       margin: 0 0 4px;
     }
 
     .header-sub {
       font-size: 14px;
-      color: rgba(255, 255, 255, 0.4);
+      color: var(--inst-muted);
     }
   }
 }
 
 .status-badge {
-  background: rgba(83, 187, 27, 0.12);
-  color: #6fd62c;
+  background: color-mix(in srgb, var(--inst-primary) 12%, transparent);
+  color: var(--inst-secondary);
   padding: 8px 16px;
   border-radius: 50px;
   font-size: 13px;
@@ -57,14 +57,14 @@
 }
 
 .panel-card {
-  background: #161616;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--inst-surface);
+  border: 1px solid color-mix(in srgb, var(--inst-text) 6%, transparent);
   border-radius: 16px;
   padding: 24px 28px;
   transition: border-color 0.3s ease;
 
   &:hover {
-    border-color: rgba(255, 255, 255, 0.1);
+    border-color: color-mix(in srgb, var(--inst-text) 10%, transparent);
   }
 }
 
@@ -76,20 +76,20 @@
 
   .card-icon {
     flex-shrink: 0;
-    stroke: rgba(255, 255, 255, 0.5);
+    stroke: color-mix(in srgb, var(--inst-text) 50%, transparent);
   }
 
   h3 {
     font-size: 16px;
     font-weight: 600;
-    color: #ffffff;
+    color: var(--inst-text);
     margin: 0;
   }
 
   h4 {
     font-size: 13px;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.7);
+    color: color-mix(in srgb, var(--inst-text) 70%, transparent);
     margin: 0;
   }
 
@@ -101,8 +101,8 @@
     margin-left: auto;
     font-size: 10px;
     font-weight: 700;
-    color: rgba(255, 255, 255, 0.3);
-    background: rgba(255, 255, 255, 0.05);
+    color: var(--inst-muted);
+    background: color-mix(in srgb, var(--inst-text) 5%, transparent);
     padding: 2px 10px;
     border-radius: 50px;
   }
@@ -121,30 +121,30 @@
   label {
     font-size: 12px;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--inst-muted);
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
 
   input,
   textarea {
-    background: #0d0d0d;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--inst-dark);
+    border: 1px solid color-mix(in srgb, var(--inst-text) 8%, transparent);
     border-radius: 10px;
     padding: 12px 14px;
-    color: #ffffff;
+    color: var(--inst-text);
     font-family: inherit;
     font-size: 14px;
     transition: all 0.3s ease;
 
     &::placeholder {
-      color: rgba(255, 255, 255, 0.2);
+      color: color-mix(in srgb, var(--inst-text) 20%, transparent);
     }
 
     &:focus {
       outline: none;
-      border-color: rgba(83, 187, 27, 0.4);
-      box-shadow: 0 0 0 3px rgba(83, 187, 27, 0.06);
+      border-color: color-mix(in srgb, var(--inst-primary) 40%, transparent);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--inst-primary) 6%, transparent);
     }
   }
 
@@ -176,8 +176,8 @@
   flex-shrink: 0;
   width: 100px;
   height: 80px;
-  background: #0d0d0d;
-  border: 2px dashed rgba(255, 255, 255, 0.06);
+  background: var(--inst-dark);
+  border: 2px dashed color-mix(in srgb, var(--inst-text) 6%, transparent);
   border-radius: 12px;
   display: grid;
   place-items: center;
@@ -191,7 +191,7 @@
 }
 
 .empty-placeholder {
-  color: rgba(255, 255, 255, 0.15);
+  color: color-mix(in srgb, var(--inst-text) 15%, transparent);
   font-size: 11px;
 }
 
@@ -200,7 +200,7 @@
 
   p {
     font-size: 13px;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--inst-muted);
     margin: 0 0 12px;
     line-height: 1.6;
   }
@@ -210,11 +210,11 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: color-mix(in srgb, var(--inst-text) 5%, transparent);
+  border: 1px solid color-mix(in srgb, var(--inst-text) 8%, transparent);
   border-radius: 10px;
   padding: 10px 18px;
-  color: rgba(255, 255, 255, 0.7);
+  color: color-mix(in srgb, var(--inst-text) 70%, transparent);
   font-family: inherit;
   font-size: 13px;
   font-weight: 600;
@@ -222,9 +222,9 @@
   transition: all 0.3s ease;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.15);
-    color: #ffffff;
+    background: color-mix(in srgb, var(--inst-text) 8%, transparent);
+    border-color: color-mix(in srgb, var(--inst-text) 15%, transparent);
+    color: var(--inst-text);
   }
 
   &:disabled {
@@ -243,11 +243,11 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: linear-gradient(135deg, var(--inst-primary), #5a9e1f);
+  background: linear-gradient(135deg, var(--inst-primary), var(--inst-secondary));
   border: none;
   border-radius: 10px;
   padding: 12px 28px;
-  color: #ffffff;
+  color: var(--inst-text);
   font-family: inherit;
   font-size: 14px;
   font-weight: 700;
@@ -256,7 +256,7 @@
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(83, 187, 27, 0.3);
+    box-shadow: 0 8px 25px color-mix(in srgb, var(--inst-primary) 30%, transparent);
   }
 }
 
@@ -265,10 +265,10 @@
   align-items: center;
   gap: 8px;
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid color-mix(in srgb, var(--inst-text) 10%, transparent);
   border-radius: 10px;
   padding: 12px 24px;
-  color: rgba(255, 255, 255, 0.6);
+  color: color-mix(in srgb, var(--inst-text) 60%, transparent);
   font-family: inherit;
   font-size: 13px;
   font-weight: 600;
@@ -276,8 +276,8 @@
   transition: all 0.3s ease;
 
   &:hover {
-    border-color: rgba(255, 255, 255, 0.2);
-    color: #ffffff;
+    border-color: color-mix(in srgb, var(--inst-text) 20%, transparent);
+    color: var(--inst-text);
   }
 }
 
@@ -287,7 +287,7 @@
   gap: 6px;
   background: transparent;
   border: none;
-  color: #6fd62c;
+  color: var(--inst-secondary);
   font-family: inherit;
   font-size: 12px;
   font-weight: 600;
@@ -324,25 +324,25 @@
   gap: 8px;
 
   input {
-    background: #0d0d0d;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--inst-dark);
+    border: 1px solid color-mix(in srgb, var(--inst-text) 8%, transparent);
     border-radius: 8px;
     padding: 10px 12px;
-    color: #ffffff;
+    color: var(--inst-text);
     font-family: inherit;
     font-size: 13px;
 
     &:focus {
       outline: none;
-      border-color: rgba(83, 187, 27, 0.4);
+      border-color: color-mix(in srgb, var(--inst-primary) 40%, transparent);
     }
   }
 }
 
 .carousel-thumb {
   height: 100px;
-  background: #0d0d0d;
-  border: 1px dashed rgba(255, 255, 255, 0.06);
+  background: var(--inst-dark);
+  border: 1px dashed color-mix(in srgb, var(--inst-text) 6%, transparent);
   border-radius: 10px;
   display: grid;
   place-items: center;
@@ -377,7 +377,7 @@
   align-items: center;
   gap: 14px;
   padding: 12px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid color-mix(in srgb, var(--inst-text) 3%, transparent);
 
   &:last-child {
     border-bottom: none;
@@ -389,7 +389,7 @@
   width: 36px;
   height: 36px;
   border-radius: 10px;
-  border: 2px solid rgba(255, 255, 255, 0.06);
+  border: 2px solid color-mix(in srgb, var(--inst-text) 6%, transparent);
 }
 
 .swatch-info {
@@ -400,12 +400,12 @@
     display: block;
     font-size: 13px;
     font-weight: 600;
-    color: #ffffff;
+    color: var(--inst-text);
   }
 
   span {
     font-size: 11px;
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--inst-muted);
   }
 }
 
@@ -416,20 +416,20 @@
   height: 32px;
   display: grid;
   place-items: center;
-  background: rgba(255, 255, 255, 0.05);
+  background: color-mix(in srgb, var(--inst-text) 5%, transparent);
   border-radius: 8px;
   cursor: pointer;
   transition: background 0.2s ease;
 
   svg {
-    stroke: rgba(255, 255, 255, 0.3);
+    stroke: color-mix(in srgb, var(--inst-text) 30%, transparent);
   }
 
   &:hover {
-    background: rgba(255, 255, 255, 0.08);
+    background: color-mix(in srgb, var(--inst-text) 8%, transparent);
 
     svg {
-      stroke: rgba(255, 255, 255, 0.6);
+      stroke: color-mix(in srgb, var(--inst-text) 60%, transparent);
     }
   }
 
@@ -448,9 +448,9 @@
 .palette-note {
   margin-top: 16px;
   padding-top: 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  border-top: 1px solid color-mix(in srgb, var(--inst-text) 4%, transparent);
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.25);
+  color: color-mix(in srgb, var(--inst-text) 25%, transparent);
   line-height: 1.6;
 }
 
@@ -460,7 +460,7 @@
   justify-content: space-between;
   margin-top: 28px;
   padding-top: 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid color-mix(in srgb, var(--inst-text) 6%, transparent);
 }
 
 .footer-left {
@@ -469,7 +469,7 @@
     align-items: center;
     gap: 8px;
     font-size: 14px;
-    color: #6fd62c;
+    color: var(--inst-secondary);
     font-weight: 600;
 
     svg {

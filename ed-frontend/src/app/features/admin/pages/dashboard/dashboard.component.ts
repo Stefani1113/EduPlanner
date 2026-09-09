@@ -1,10 +1,24 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Observable, Subscription, interval } from 'rxjs';
-import { map } from 'rxjs/operators';
+import {
+  Component,
+  OnDestroy,
+  OnInit
+} from '@angular/core';
+
+import {
+  Observable,
+  Subscription,
+  interval
+} from 'rxjs';
+
+import {
+  map
+} from 'rxjs/operators';
+
 import {
   InstitutionInfo,
   InstitutionSettingsService
 } from '../../services/institution-settings.service';
+
 import {
   EstadisticasInstitucion,
   EstadisticasService
@@ -16,11 +30,16 @@ import {
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })
-export class DashboardComponent implements OnInit, OnDestroy {
+export class DashboardComponent
+  implements OnInit, OnDestroy {
 
   info$: Observable<InstitutionInfo>;
-  currentSlide: number = 0;
-  private slideInterval: Subscription | null = null;
+
+  currentSlide = 0;
+
+  private slideInterval:
+    Subscription | null = null;
+
   private readonly AUTOPLAY_DELAY = 5000;
 
   estadisticas: EstadisticasInstitucion = {
@@ -29,91 +48,157 @@ export class DashboardComponent implements OnInit, OnDestroy {
     cursos: 0
   };
 
-  private heroCarouselImages = [
-    '/assets/img/img-principal.png',
-    '/assets/img/carrucel.png',
-    '/assets/img/carrucel-libreria.png',
-  ];
-
   constructor(
-    private settingsService: InstitutionSettingsService,
-    private estadisticasService: EstadisticasService
+    private settingsService:
+      InstitutionSettingsService,
+
+    private estadisticasService:
+      EstadisticasService
   ) {
-    this.info$ = this.settingsService.settings$.pipe(
-      map(settings => {
-        const info = settings.info;
-        
-        info.carousel = this.heroCarouselImages.map(url => ({ url }));
-        
-        return info;
-      })
-    );
+
+    this.info$ =
+      this.settingsService.settings$.pipe(
+
+        map(settings =>
+          settings.info
+        )
+
+      );
   }
 
   ngOnInit(): void {
-    this.startAutoplay();
+
     this.cargarEstadisticas();
+
+    this.startAutoplay();
   }
 
   private cargarEstadisticas(): void {
-    this.estadisticasService.obtenerEstadisticasInstitucion().subscribe({
-      next: estadisticas => {
-        this.estadisticas = estadisticas;
-      },
-      error: err => {
-        console.error('Error cargando estadísticas de la institución:', err);
-      }
-    });
+
+    this.estadisticasService
+      .obtenerEstadisticasInstitucion()
+      .subscribe({
+
+        next: estadisticas => {
+
+          this.estadisticas =
+            estadisticas;
+        },
+
+        error: err => {
+
+          console.error(
+            'Error cargando estadísticas de la institución:',
+            err
+          );
+        }
+
+      });
   }
 
   ngOnDestroy(): void {
+
     this.stopAutoplay();
   }
 
-  carouselUrl(info: InstitutionInfo, index: number, fallback: string): string {
-    return info.carousel[index]?.url || fallback;
+  carouselUrl(
+    info: InstitutionInfo,
+    index: number,
+    fallback: string
+  ): string {
+
+    return (
+      info.carousel[index]?.url ||
+      fallback
+    );
   }
 
-  goToSlide(index: number, info: InstitutionInfo): void {
-    if (index >= 0 && index < info.carousel.length) {
+  goToSlide(
+    index: number,
+    info: InstitutionInfo
+  ): void {
+
+    if (
+      index >= 0 &&
+      index < info.carousel.length
+    ) {
+
       this.currentSlide = index;
+
       this.resetAutoplay();
     }
   }
 
-  nextSlide(info: InstitutionInfo): void {
+  nextSlide(
+    info: InstitutionInfo
+  ): void {
+
     if (info.carousel.length > 0) {
-      this.currentSlide = (this.currentSlide + 1) % info.carousel.length;
+
+      this.currentSlide =
+        (this.currentSlide + 1) %
+        info.carousel.length;
+
       this.resetAutoplay();
     }
   }
 
-  prevSlide(info: InstitutionInfo): void {
+  prevSlide(
+    info: InstitutionInfo
+  ): void {
+
     if (info.carousel.length > 0) {
-      this.currentSlide = (this.currentSlide - 1 + info.carousel.length) % info.carousel.length;
+
+      this.currentSlide =
+        (
+          this.currentSlide -
+          1 +
+          info.carousel.length
+        ) %
+        info.carousel.length;
+
       this.resetAutoplay();
     }
   }
 
   private startAutoplay(): void {
+
     this.stopAutoplay();
-    this.slideInterval = interval(this.AUTOPLAY_DELAY).subscribe(() => {
-      this.info$.subscribe(info => {
-        if (info.carousel.length > 0) {
-          this.currentSlide = (this.currentSlide + 1) % info.carousel.length;
+
+    this.slideInterval =
+      interval(
+        this.AUTOPLAY_DELAY
+      ).subscribe(() => {
+
+        const length =
+          this.settingsService
+            .current
+            .info
+            .carousel
+            .length;
+
+        if (length === 0) {
+
+          this.currentSlide = 0;
+
+          return;
         }
-      }).unsubscribe();
-    });
+
+        this.currentSlide =
+          (this.currentSlide + 1) %
+          length;
+      });
   }
 
   private stopAutoplay(): void {
-    if (this.slideInterval) {
-      this.slideInterval.unsubscribe();
-      this.slideInterval = null;
-    }
+
+    this.slideInterval?.unsubscribe();
+
+    this.slideInterval = null;
   }
 
   private resetAutoplay(): void {
+
     this.startAutoplay();
   }
 }
