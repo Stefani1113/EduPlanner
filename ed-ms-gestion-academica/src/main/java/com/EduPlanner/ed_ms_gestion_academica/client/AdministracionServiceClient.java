@@ -10,6 +10,6 @@ public interface AdministracionServiceClient {
     /**
      * Devuelve el nombre del rol del usuario, o null si no existe.
      */
-    @GetMapping("/internal/users/{idUser}/role")
+    @GetMapping("/eduplanner/internal/users/{idUser}/role")
     String getUserRole(@PathVariable("idUser") Integer idUser);
 }

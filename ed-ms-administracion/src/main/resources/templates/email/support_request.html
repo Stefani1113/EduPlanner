@@ -140,19 +140,19 @@ a[x-apple-data-detectors],
                       <td align="left" style="padding:0;Margin:0"><p style="Margin:0;mso-line-height-rule:exactly;font-family:arial, 'helvetica neue', helvetica, sans-serif;line-height:21px;letter-spacing:0;font-weight:normal;color:#333333;font-size:14px"><br></p></td>
                      </tr>
                      <tr>
-                      <td align="left" style="padding:0;Margin:0"><p style="Margin:0;mso-line-height-rule:exactly;font-family:arial, 'helvetica neue', helvetica, sans-serif;line-height:21px;letter-spacing:0;font-weight:normal;color:#333333;font-size:14px"><span style="text-transform:uppercase;color:#4c8d29"><strong style="font-weight:bolder !important">&nbsp; &nbsp; &nbsp; &nbsp; Nombre:</strong> {{senderName}} </span>Maria josé</p></td>
+                      <td align="left" style="padding:0;Margin:0"><p style="Margin:0;mso-line-height-rule:exactly;font-family:arial, 'helvetica neue', helvetica, sans-serif;line-height:21px;letter-spacing:0;font-weight:normal;color:#333333;font-size:14px"><span style="text-transform:uppercase;color:#4c8d29"><strong style="font-weight:bolder !important">&nbsp; &nbsp; &nbsp; &nbsp; Nombre:</strong></span><span th:text="${senderName}"></span></p></td>
                      </tr>
                      <tr>
                       <td align="left" style="padding:0;Margin:0"><p style="Margin:0;mso-line-height-rule:exactly;font-family:arial, 'helvetica neue', helvetica, sans-serif;line-height:21px;letter-spacing:0;font-weight:normal;color:#333333;font-size:14px"><br></p></td>
                      </tr>
                      <tr>
-                      <td align="left" style="padding:0;Margin:0"><p style="Margin:0;mso-line-height-rule:exactly;font-family:arial, 'helvetica neue', helvetica, sans-serif;line-height:21px;letter-spacing:0;font-weight:normal;color:#333333;font-size:14px"><strong style="font-weight:bolder !important;color:#25ba1d;text-transform:uppercase"> <strong style="font-weight:bolder !important">&nbsp; &nbsp; &nbsp;</strong> <span style="color:#4c8d29"> Correo:</span> </strong> {{senderEmail}} </p></td>
+                      <td align="left" style="padding:0;Margin:0"><p style="Margin:0;mso-line-height-rule:exactly;font-family:arial, 'helvetica neue', helvetica, sans-serif;line-height:21px;letter-spacing:0;font-weight:normal;color:#333333;font-size:14px"><strong style="font-weight:bolder !important;color:#25ba1d;text-transform:uppercase"> <strong style="font-weight:bolder !important">&nbsp; &nbsp; &nbsp;</strong> <span style="color:#4c8d29"> Correo:</span><span th:text="${senderEmail}"></span></strong></p></td>
                      </tr>
                      <tr>
                       <td align="left" style="padding:0;Margin:0"><p style="Margin:0;mso-line-height-rule:exactly;font-family:arial, 'helvetica neue', helvetica, sans-serif;line-height:21px;letter-spacing:0;font-weight:normal;color:#333333;font-size:14px"><br></p></td>
                      </tr>
                      <tr>
-                      <td align="left" style="padding:0;Margin:0"><p style="Margin:0;mso-line-height-rule:exactly;font-family:arial, 'helvetica neue', helvetica, sans-serif;line-height:21px;letter-spacing:0;font-weight:normal;color:#333333;font-size:14px"><span style="color:#25ba1d"><strong style="font-weight:bolder !important;text-transform:uppercase"> <strong style="font-weight:bolder !important">&nbsp;</strong></strong></span><span style="color:#4c8d29"><strong style="font-weight:bolder !important;text-transform:uppercase"><strong style="font-weight:bolder !important"> &nbsp; &nbsp;</strong> Asunto:</strong> </span> {{subject}} </p></td>
+                      <td align="left" style="padding:0;Margin:0"><p style="Margin:0;mso-line-height-rule:exactly;font-family:arial, 'helvetica neue', helvetica, sans-serif;line-height:21px;letter-spacing:0;font-weight:normal;color:#333333;font-size:14px"><span style="color:#25ba1d"><strong style="font-weight:bolder !important;text-transform:uppercase"> <strong style="font-weight:bolder !important">&nbsp;</strong></strong></span><span style="color:#4c8d29"><strong style="font-weight:bolder !important;text-transform:uppercase"><strong style="font-weight:bolder !important"> &nbsp; &nbsp;</strong> Asunto:</strong><span th:text="${subject}"></span></p></td>
                      </tr>
                      <tr>
                       <td align="left" style="padding:0;Margin:0"><p style="Margin:0;mso-line-height-rule:exactly;font-family:arial, 'helvetica neue', helvetica, sans-serif;line-height:21px;letter-spacing:0;font-weight:normal;color:#333333;font-size:14px"><br></p></td>
@@ -189,7 +189,7 @@ a[x-apple-data-detectors],
                       <td align="left" style="padding:0;Margin:0"><p style="Margin:0;mso-line-height-rule:exactly;font-family:arial, 'helvetica neue', helvetica, sans-serif;line-height:21px;letter-spacing:0;font-weight:normal;color:#333333;font-size:14px"><br></p></td>
                      </tr>
                      <tr>
-                      <td align="center" style="padding:0;Margin:0"><p style="Margin:0;mso-line-height-rule:exactly;font-family:arial, 'helvetica neue', helvetica, sans-serif;line-height:28px;letter-spacing:0;font-weight:normal;color:#93c47d;font-size:14px">No puedo iniciar session con mi cuenta de docente</p></td>
+                      <td align="center" style="padding:0;Margin:0"><p style="Margin:0;mso-line-height-rule:exactly;font-family:arial, 'helvetica neue', helvetica, sans-serif;line-height:28px;letter-spacing:0;font-weight:normal;color:#93c47d;font-size:14px" th:text="${message}"></p></td>
                      </tr>
                      <tr>
                       <td align="left" style="padding:0;Margin:0"><p style="Margin:0;mso-line-height-rule:exactly;font-family:arial, 'helvetica neue', helvetica, sans-serif;line-height:21px;letter-spacing:0;font-weight:normal;color:#333333;font-size:14px"><br></p></td>
