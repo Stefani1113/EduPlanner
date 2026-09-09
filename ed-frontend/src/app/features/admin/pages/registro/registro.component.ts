@@ -12,6 +12,7 @@ import {
   HorariosService,
   SubjectResponseDTO,
   AcademicTeacherResponseDTO,
+  AcademicLoadResponseDTO,
   CourseResponseDTO,
   CourseRequestDTO,
   AcademicPeriodResponseDTO,
@@ -24,7 +25,7 @@ import {
   TimeSlotRequestDTO,
   TeacherAvailabilityResponseDTO,
   TeacherAvailabilityRequestDTO
-} from '../../services/horarios.service';
+} from '../../services/registro.service';
 
 import { ModalService } from '../../../../core/services/modal.service';
 
