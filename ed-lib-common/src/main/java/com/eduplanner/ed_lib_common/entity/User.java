@@ -117,6 +117,9 @@ public class User {
     @Column(name = "id_institution", nullable = false)
     private Integer idInstitution;
 
+    @Column(name = "id_course", nullable = false)
+    private Integer idCourse;
+
     /**
      * Asignación de fecha de creación automatica
      */

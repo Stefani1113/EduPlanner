@@ -32,6 +32,8 @@ public class UpdateStudentDTO {
 
     private String eps;
 
+    private Integer idCourse;
+
     // Se actualiza junto con el estudiante
     private GuardianDTO guardian;
 }
