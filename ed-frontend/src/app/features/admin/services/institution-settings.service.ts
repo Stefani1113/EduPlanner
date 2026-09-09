@@ -1,13 +1,17 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
-
 export interface InstitutionPalette {
-  primary: string;  
-  secondary: string; 
-  accent: string;   
-  dark: string;  
-  light: string;    
+  primary: string;
+  secondary: string;
+  accent: string;
+  dark: string;
+  light: string;
+  surface: string;
+  surfaceAlt: string;
+  text: string;
+  muted: string;
+  border: string;
 }
 
 export interface CarouselImage {
@@ -32,14 +36,19 @@ export interface InstitutionSettings {
   info: InstitutionInfo;
 }
 
-const STORAGE_KEY = 'eduplanner.institution-settings';
+const STORAGE_KEY = 'eduplanner.institution-settings.v2';
 
 const DEFAULT_PALETTE: InstitutionPalette = {
-  primary: '#0b6f78',
-  secondary: '#168a94',
-  accent: '#b9dfe0',
-  dark: '#172126',
-  light: '#ffffff'
+  primary: '#0d790b',
+  secondary: '#4ed10b',
+  accent: '#b9e5b9',
+  dark: '#0d0d0d',
+  light: '#ffffff',
+  surface: '#161616',
+  surfaceAlt: '#1b1c1c',
+  text: '#ffffff',
+  muted: '#a5a5a5',
+  border: '#3a3a3a'
 };
 
 const DEFAULT_INFO: InstitutionInfo = {
@@ -61,15 +70,15 @@ const DEFAULT_INFO: InstitutionInfo = {
   construccionLegalUrl: ''
 };
 
-const DEFAULT_SETTINGS: InstitutionSettings = {
-  palette: { ...DEFAULT_PALETTE },
-  info: { ...DEFAULT_INFO }
-};
-
-@Injectable({ providedIn: 'root' })
+@Injectable({
+  providedIn: 'root'
+})
 export class InstitutionSettingsService {
 
-  private settingsSubject = new BehaviorSubject<InstitutionSettings>(this.load());
+  private settingsSubject = new BehaviorSubject<InstitutionSettings>(
+    this.load()
+  );
+
   settings$ = this.settingsSubject.asObservable();
 
   constructor() {
@@ -85,59 +94,219 @@ export class InstitutionSettingsService {
       ...this.settingsSubject.value,
       palette: { ...palette }
     };
+
     this.persist(next);
   }
 
   updateInfo(info: InstitutionInfo): void {
     const next: InstitutionSettings = {
       ...this.settingsSubject.value,
-      info: { ...info, carousel: [...info.carousel] }
+      info: {
+        ...info,
+        carousel: info.carousel.map(image => ({
+          ...image
+        }))
+      }
     };
+
+    this.persist(next);
+  }
+
+  updateSettings(
+    palette: InstitutionPalette,
+    info: InstitutionInfo
+  ): void {
+
+    const next: InstitutionSettings = {
+      palette: {
+        ...palette
+      },
+
+      info: {
+        ...info,
+
+        carousel: info.carousel.map(image => ({
+          ...image
+        }))
+      }
+    };
+
     this.persist(next);
   }
 
   resetToDefaults(): void {
-    this.persist({
-      palette: { ...DEFAULT_PALETTE },
-      info: { ...DEFAULT_INFO, carousel: DEFAULT_INFO.carousel.map(c => ({ ...c })) }
-    });
+
+    const next: InstitutionSettings = {
+      palette: {
+        ...DEFAULT_PALETTE
+      },
+
+      info: {
+        ...DEFAULT_INFO,
+
+        carousel: DEFAULT_INFO.carousel.map(image => ({
+          ...image
+        }))
+      }
+    };
+
+    this.persist(next);
   }
 
   private persist(settings: InstitutionSettings): void {
+
     this.settingsSubject.next(settings);
+
     this.applyPalette(settings.palette);
+
     try {
-      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
-    } catch {
+
+      const data = JSON.stringify(settings);
+
+      localStorage.setItem(STORAGE_KEY, data);
+      sessionStorage.setItem(STORAGE_KEY, data);
+
+    } catch (error) {
+
+      console.error(
+        'No se pudieron guardar las configuraciones:',
+        error
+      );
     }
   }
 
-  private applyPalette(palette: InstitutionPalette): void {
+  private applyPalette(
+    palette: InstitutionPalette
+  ): void {
+
     const root = document.documentElement.style;
-    root.setProperty('--inst-primary', palette.primary);
-    root.setProperty('--inst-secondary', palette.secondary);
-    root.setProperty('--inst-accent', palette.accent);
-    root.setProperty('--inst-dark', palette.dark);
-    root.setProperty('--inst-light', palette.light);
+
+    root.setProperty(
+      '--inst-primary',
+      palette.primary
+    );
+
+    root.setProperty(
+      '--inst-secondary',
+      palette.secondary
+    );
+
+    root.setProperty(
+      '--inst-accent',
+      palette.accent
+    );
+
+    root.setProperty(
+      '--inst-dark',
+      palette.dark
+    );
+
+    root.setProperty(
+      '--inst-light',
+      palette.light
+    );
+
+    root.setProperty(
+      '--inst-surface',
+      palette.surface
+    );
+
+    root.setProperty(
+      '--inst-surface-alt',
+      palette.surfaceAlt
+    );
+
+    root.setProperty(
+      '--inst-text',
+      palette.text
+    );
+
+    root.setProperty(
+      '--inst-muted',
+      palette.muted
+    );
+
+    root.setProperty(
+      '--inst-border',
+      palette.border
+    );
   }
 
   private load(): InstitutionSettings {
+
     try {
-      const raw = sessionStorage.getItem(STORAGE_KEY);
+
+      const raw =
+        localStorage.getItem(STORAGE_KEY) ||
+        sessionStorage.getItem(STORAGE_KEY);
+
       if (!raw) {
-        return { palette: { ...DEFAULT_PALETTE }, info: { ...DEFAULT_INFO } };
+
+        return {
+          palette: {
+            ...DEFAULT_PALETTE
+          },
+
+          info: {
+            ...DEFAULT_INFO,
+
+            carousel: DEFAULT_INFO.carousel.map(image => ({
+              ...image
+            }))
+          }
+        };
       }
-      const parsed = JSON.parse(raw) as Partial<InstitutionSettings>;
+
+      const parsed =
+        JSON.parse(raw) as Partial<InstitutionSettings>;
+
       return {
-        palette: { ...DEFAULT_PALETTE, ...parsed.palette },
+
+        palette: {
+          ...DEFAULT_PALETTE,
+          ...(parsed.palette || {})
+        },
+
         info: {
+
           ...DEFAULT_INFO,
-          ...parsed.info,
-          carousel: parsed.info?.carousel?.length ? parsed.info.carousel : DEFAULT_INFO.carousel
+
+          ...(parsed.info || {}),
+
+          carousel:
+            parsed.info?.carousel &&
+            parsed.info.carousel.length > 0
+
+              ? parsed.info.carousel.map(image => ({
+                  ...image
+                }))
+
+              : DEFAULT_INFO.carousel.map(image => ({
+                  ...image
+                }))
         }
       };
-    } catch {
-      return { palette: { ...DEFAULT_PALETTE }, info: { ...DEFAULT_INFO } };
+
+    } catch (error) {
+
+      console.error(
+        'Error cargando configuración institucional:',
+        error
+      );
+
+      return {
+        palette: {
+          ...DEFAULT_PALETTE
+        },
+
+        info: {
+          ...DEFAULT_INFO,
+
+          carousel: DEFAULT_INFO.carousel.map(image => ({
+            ...image
+          }))
+        }
+      };
     }
   }
 }

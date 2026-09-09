@@ -1,3 +1,15 @@
+:root {
+  --inst-primary: #0d790b;
+  --inst-secondary: #4ed10b;
+  --inst-accent: #b9e5b9;
+  --inst-dark: #0d0d0d;
+  --inst-light: #ffffff;
+  --inst-surface: #161616;
+  --inst-surface-alt: #1b1c1c;
+  --inst-text: #ffffff;
+  --inst-muted: #a5a5a5;
+  --inst-border: #3a3a3a;
+}
 *{
   margin: 0;
   padding: 0;
@@ -7,7 +19,7 @@
 
 html, body {   
   min-height: 100%; 
-  background-color: #161616;
+  background-color: var(--inst-dark);
 }
 
 ::-webkit-scrollbar {
@@ -16,22 +28,22 @@ html, body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #1B1C1C;
+  background: var(--inst-surface-alt);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #3a3a3a;
+  background: var(--inst-border);
   border-radius: 10px;
-  border: 2px solid #1B1C1C;
+  border: 2px solid var(--inst-surface-alt);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #4a4a4a;
+  background: var(--inst-secondary);
 }
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: #3a3a3a #1B1C1C;
+  scrollbar-color: var(--inst-border) var(--inst-surface-alt);
 }
 
 .body-login {
