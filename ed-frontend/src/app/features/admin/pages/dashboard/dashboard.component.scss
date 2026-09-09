@@ -5,10 +5,9 @@
 
 .institution-page {
   min-height: 100vh;
-  background:#70d62c00;
+  background: #70d62c00;
   color: var(--inst-light);
 }
-
 
 .hero-section {
   position: relative;
@@ -19,12 +18,26 @@
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
 }
 
-.hero-background {
+.hero-carousel {
   position: absolute;
   inset: 0;
+  overflow: hidden;
+}
+
+.carousel-track {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+
+.carousel-slide {
+  flex: 0 0 100%;
+  height: 100%;
   background-size: cover;
   background-position: center;
-  transform: scale(1.05);
+  position: relative;
 }
 
 .hero-overlay {
@@ -32,18 +45,70 @@
   inset: 0;
   background: linear-gradient(
     135deg,
-    rgba(0, 0, 0, 0.7) 0%,
+    rgba(0, 0, 0, 0.75) 0%,
     rgba(0, 0, 0, 0.4) 50%,
     rgba(0, 0, 0, 0.1) 100%
   );
 }
 
+.carousel-control {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #ffffff;
+  opacity: 0;
+  visibility: hidden;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-50%) scale(1.05);
+  }
+
+  &:active {
+    transform: translateY(-50%) scale(0.95);
+  }
+
+  &.prev {
+    left: 20px;
+  }
+
+  &.next {
+    right: 20px;
+  }
+
+  svg {
+    width: 24px;
+    height: 24px;
+    stroke: currentColor;
+  }
+}
+
+.hero-section:hover .carousel-control {
+  opacity: 1;
+  visibility: visible;
+}
+
 .hero-container {
   position: relative;
-  z-index: 2;
+  z-index: 5;
   max-width: 1200px;
   margin: 0 auto;
   padding: 80px 40px 60px;
+  min-height: 500px;
+  display: flex;
+  align-items: center;
 }
 
 .hero-content {
@@ -52,7 +117,8 @@
 
 .hero-badge {
   display: inline-block;
-  background: #1e1e1e;
+  background: rgba(30, 30, 30, 0.8);
+  backdrop-filter: blur(4px);
   color: var(--inst-primary);
   padding: 6px 16px;
   border-radius: 50px;
@@ -60,6 +126,7 @@
   font-weight: 700;
   letter-spacing: 1.5px;
   text-transform: uppercase;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .hero-title {
@@ -69,6 +136,7 @@
   letter-spacing: -2px;
   margin: 20px 0 16px;
   color: #ffffff;
+  text-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
 
   .highlight {
     color: var(--inst-primary);
@@ -82,9 +150,10 @@
 .hero-description {
   font-size: 16px;
   line-height: 1.7;
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(255, 255, 255, 0.85);
   max-width: 520px;
   margin-bottom: 28px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }
 
 .hero-actions {
@@ -130,7 +199,8 @@
   align-items: center;
   gap: 8px;
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.7);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 
   svg {
     flex-shrink: 0;
@@ -139,27 +209,34 @@
 
 .hero-indicators {
   position: absolute;
-  bottom: 20px;
+  bottom: 24px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 3;
+  z-index: 10;
   display: flex;
-  gap: 8px;
+  gap: 10px;
 
   span {
-    width: 10px;
-    height: 10px;
+    width: 12px;
+    height: 12px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.3);
     border: 2px solid rgba(255, 255, 255, 0.1);
     transition: all 0.3s ease;
     cursor: pointer;
 
+    &:hover {
+      background: rgba(255, 255, 255, 0.5);
+      transform: scale(1.2);
+    }
+
     &.active {
       background: var(--inst-primary);
       border-color: var(--inst-primary);
-      box-shadow: 0 0 20px rgba(83, 187, 27, 0.4);
+      box-shadow: 0 0 25px rgba(83, 187, 27, 0.5);
       transform: scale(1.2);
+      width: 32px;
+      border-radius: 6px;
     }
   }
 }
@@ -251,6 +328,7 @@
     margin-top: 6px;
   }
 }
+
 
 .cards-section {
   max-width: 1200px;
@@ -573,10 +651,27 @@
 @media (max-width: 820px) {
   .hero-container {
     padding: 50px 24px 40px;
+    min-height: 400px;
   }
 
   .hero-title {
     font-size: 36px;
+  }
+
+  .carousel-control {
+    width: 40px;
+    height: 40px;
+    opacity: 1;
+    visibility: visible;
+    background: rgba(0, 0, 0, 0.3);
+
+    &.prev {
+      left: 12px;
+    }
+
+    &.next {
+      right: 12px;
+    }
   }
 
   .cards-grid {
@@ -607,6 +702,7 @@
 
   .hero-container {
     padding: 40px 16px 30px;
+    min-height: 350px;
   }
 
   .hero-title {
@@ -620,6 +716,40 @@
   .btn-primary {
     padding: 12px 20px;
     font-size: 12px;
+  }
+
+  .carousel-control {
+    width: 36px;
+    height: 36px;
+    opacity: 1;
+    visibility: visible;
+
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    &.prev {
+      left: 8px;
+    }
+
+    &.next {
+      right: 8px;
+    }
+  }
+
+  .hero-indicators {
+    bottom: 16px;
+    gap: 8px;
+
+    span {
+      width: 10px;
+      height: 10px;
+
+      &.active {
+        width: 24px;
+      }
+    }
   }
 
   .stats-grid {

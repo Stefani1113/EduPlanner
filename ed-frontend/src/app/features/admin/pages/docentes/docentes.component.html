@@ -51,7 +51,10 @@
       </span>
 
       <div class="avatar-floating">
-        <img [src]="obtenerFoto(d) || '/assets/img/profile.png'" [alt]="d.name + ' ' + d.surnames" />
+        <img
+          [src]="obtenerFoto(d) || '/assets/img/profile.png'"
+          [alt]="d.name + ' ' + d.surnames"
+          (error)="$any($event.target).src = '/assets/img/profile.png'">
       </div>
 
       <div class="card-header-center">
@@ -94,13 +97,17 @@
           Ver perfil
         </button>
 
-        <button type="button" class="link-editar" (click)="abrirEdicion(d)">
-          Editar
-        </button>
+        <ng-container *ngIf="puedeGestionar">
 
-        <button type="button" class="link-eliminar" (click)="eliminarDocente(d)">
-          Eliminar
-        </button>
+          <button type="button" class="link-editar" (click)="abrirEdicion(d)">
+            Editar
+          </button>
+
+          <button type="button" class="link-eliminar" (click)="eliminarDocente(d)">
+            Eliminar
+          </button>
+
+        </ng-container>
 
       </div>
 
@@ -116,7 +123,8 @@
 
         <div class="perfil-avatar" *ngIf="docenteSeleccionado as d">
           <img [src]="obtenerFoto(d) || '/assets/img/profile.png'"
-               [alt]="d.name + ' ' + d.surnames" />
+               [alt]="d.name + ' ' + d.surnames"
+               (error)="$any($event.target).src = '/assets/img/profile.png'" />
         </div>
 
       </div>
@@ -186,7 +194,11 @@
           Cerrar
         </button>
 
-        <button type="button" class="btn-guardar" (click)="editarDesdePerfil()">
+        <button
+          type="button"
+          class="btn-guardar"
+          *ngIf="puedeGestionar"
+          (click)="editarDesdePerfil()">
           Editar perfil
         </button>
 

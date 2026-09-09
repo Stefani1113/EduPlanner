@@ -24,6 +24,7 @@
     <button
       type="button"
       class="footer-settings-btn"
+      *ngIf="esAdministrador"
       routerLink="/admin/sistema"
       title="Panel de control · Personalizar colores">
       <span class="footer-version">Sistema</span>

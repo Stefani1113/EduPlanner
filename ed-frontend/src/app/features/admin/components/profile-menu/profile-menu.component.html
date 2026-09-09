@@ -99,8 +99,8 @@
           </svg>
           <span class="info-label">Sobre</span>
         </div>
-        
-        <div class="sobre-item">
+
+        <div class="sobre-item" *ngIf="esEstudiante">
           <div class="sobre-left">
             <svg class="sobre-icono" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <rect x="3" y="4" width="18" height="17" rx="2" stroke="currentColor" stroke-width="1.6"/>
@@ -121,7 +121,7 @@
           <span class="sobre-value">{{ perfil.phoneNumber || 'No registrado' }}</span>
         </div>
 
-        <div class="sobre-item">
+        <div class="sobre-item" *ngIf="esEstudiante">
           <div class="sobre-left">
             <svg class="sobre-icono" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.6"/>
@@ -131,9 +131,20 @@
           </div>
           <span class="sobre-value">{{ acudiente }}</span>
         </div>
+
+        <div class="sobre-item" *ngIf="esDocente">
+          <div class="sobre-left">
+            <svg class="sobre-icono" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M22 10 12 5 2 10l10 5 10-5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+              <path d="M6 12v5c0 1.66 2.69 3 6 3s6-1.34 6-3v-5" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+            </svg>
+            <span class="sobre-label">ESPECIALIZACIÓN</span>
+          </div>
+          <span class="sobre-value">{{ especializacion }}</span>
+        </div>
       </div>
 
-      <div class="info-container seccion-asistencias">
+      <div class="info-container seccion-asistencias" *ngIf="esEstudiante">
         <div class="info-header">
           <svg class="info-icono" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M4 7h16M4 12h10M4 17h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
