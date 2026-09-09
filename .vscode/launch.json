@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-EdMsAutenticacionApplication<ed-ms-autenticacion>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.eduplanner.ed_ms_autenticacion.EdMsAutenticacionApplication",
+            "projectName": "ed-ms-autenticacion",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}
