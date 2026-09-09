@@ -55,18 +55,26 @@ const DEFAULT_INFO: InstitutionInfo = {
   logoUrl: '',
   nombreCorto: 'Nuevo Horizonte',
   nombreLargo: 'Institución Educativa Nuevo Horizonte',
+
   descripcion:
     'Liderando el futuro educativo a través de una formación integral, innovadora y humana.',
+
   carousel: [
     { url: 'assets/img/institucion-edificio.png' },
     { url: 'assets/img/estudiantes-institucion.png' }
   ],
+
   mision:
     'Formar líderes integrales con capacidad crítica, ética y creativa, capaces de transformar la sociedad mediante el conocimiento y la innovación.',
+
   vision:
     'Ser una institución reconocida por su innovación educativa, compromiso social y capacidad de transformar positivamente su entorno.',
-  contactoDireccion: 'Calle 10 # 8-25 · Barcelona, Quindío',
+
+  contactoDireccion:
+    'Calle 10 # 8-25 · Barcelona, Quindío',
+
   reglamentoUrl: '',
+
   construccionLegalUrl: ''
 };
 
@@ -75,49 +83,81 @@ const DEFAULT_INFO: InstitutionInfo = {
 })
 export class InstitutionSettingsService {
 
-  private settingsSubject = new BehaviorSubject<InstitutionSettings>(
-    this.load()
-  );
+  private settingsSubject =
+    new BehaviorSubject<InstitutionSettings>(
+      this.load()
+    );
 
-  settings$ = this.settingsSubject.asObservable();
+  readonly settings$ =
+    this.settingsSubject.asObservable();
 
   constructor() {
-    this.applyPalette(this.settingsSubject.value.palette);
+    this.applySettings(
+      this.settingsSubject.value
+    );
   }
 
+  /**
+   * Configuración actual
+   */
   get current(): InstitutionSettings {
     return this.settingsSubject.value;
   }
 
-  updatePalette(palette: InstitutionPalette): void {
+  /**
+   * Actualizar solamente la paleta
+   */
+  updatePalette(
+    palette: InstitutionPalette
+  ): void {
+
     const next: InstitutionSettings = {
       ...this.settingsSubject.value,
-      palette: { ...palette }
-    };
 
-    this.persist(next);
-  }
-
-  updateInfo(info: InstitutionInfo): void {
-    const next: InstitutionSettings = {
-      ...this.settingsSubject.value,
-      info: {
-        ...info,
-        carousel: info.carousel.map(image => ({
-          ...image
-        }))
+      palette: {
+        ...palette
       }
     };
 
     this.persist(next);
   }
 
+  /**
+   * Actualizar solamente la información
+   * de la institución.
+   */
+  updateInfo(
+    info: InstitutionInfo
+  ): void {
+
+    const next: InstitutionSettings = {
+
+      ...this.settingsSubject.value,
+
+      info: {
+        ...info,
+
+        carousel: info.carousel.map(
+          image => ({
+            ...image
+          })
+        )
+      }
+    };
+
+    this.persist(next);
+  }
+
+  /**
+   * Actualizar toda la configuración
+   */
   updateSettings(
     palette: InstitutionPalette,
     info: InstitutionInfo
   ): void {
 
     const next: InstitutionSettings = {
+
       palette: {
         ...palette
       },
@@ -125,61 +165,93 @@ export class InstitutionSettingsService {
       info: {
         ...info,
 
-        carousel: info.carousel.map(image => ({
-          ...image
-        }))
+        carousel: info.carousel.map(
+          image => ({
+            ...image
+          })
+        )
       }
     };
 
     this.persist(next);
   }
 
+  /**
+   * Restablecer únicamente cuando
+   * el administrador presiona "Restablecer".
+   */
   resetToDefaults(): void {
 
     const next: InstitutionSettings = {
+
       palette: {
         ...DEFAULT_PALETTE
       },
 
       info: {
+
         ...DEFAULT_INFO,
 
-        carousel: DEFAULT_INFO.carousel.map(image => ({
-          ...image
-        }))
+        carousel:
+          DEFAULT_INFO.carousel.map(
+            image => ({
+              ...image
+            })
+          )
       }
     };
 
     this.persist(next);
   }
 
-  private persist(settings: InstitutionSettings): void {
+  /**
+   * Guarda permanentemente la configuración.
+   */
+  private persist(
+    settings: InstitutionSettings
+  ): void {
 
     this.settingsSubject.next(settings);
 
-    this.applyPalette(settings.palette);
+    this.applySettings(settings);
 
     try {
 
-      const data = JSON.stringify(settings);
-
-      localStorage.setItem(STORAGE_KEY, data);
-      sessionStorage.setItem(STORAGE_KEY, data);
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(settings)
+      );
 
     } catch (error) {
 
       console.error(
-        'No se pudieron guardar las configuraciones:',
+        'No se pudieron guardar las configuraciones institucionales:',
         error
       );
     }
   }
 
+  /**
+   * Aplica toda la configuración visual.
+   */
+  private applySettings(
+    settings: InstitutionSettings
+  ): void {
+
+    this.applyPalette(
+      settings.palette
+    );
+  }
+
+  /**
+   * Aplica las variables CSS globales.
+   */
   private applyPalette(
     palette: InstitutionPalette
   ): void {
 
-    const root = document.documentElement.style;
+    const root =
+      document.documentElement.style;
 
     root.setProperty(
       '--inst-primary',
@@ -232,29 +304,25 @@ export class InstitutionSettingsService {
     );
   }
 
+  /**
+   * Carga la configuración guardada.
+   *
+   * IMPORTANTE:
+   * La configuración institucional NO depende
+   * de la sesión del usuario.
+   */
   private load(): InstitutionSettings {
 
     try {
 
       const raw =
-        localStorage.getItem(STORAGE_KEY) ||
-        sessionStorage.getItem(STORAGE_KEY);
+        localStorage.getItem(
+          STORAGE_KEY
+        );
 
       if (!raw) {
 
-        return {
-          palette: {
-            ...DEFAULT_PALETTE
-          },
-
-          info: {
-            ...DEFAULT_INFO,
-
-            carousel: DEFAULT_INFO.carousel.map(image => ({
-              ...image
-            }))
-          }
-        };
+        return this.cloneDefaults();
       }
 
       const parsed =
@@ -263,7 +331,9 @@ export class InstitutionSettingsService {
       return {
 
         palette: {
+
           ...DEFAULT_PALETTE,
+
           ...(parsed.palette || {})
         },
 
@@ -277,13 +347,17 @@ export class InstitutionSettingsService {
             parsed.info?.carousel &&
             parsed.info.carousel.length > 0
 
-              ? parsed.info.carousel.map(image => ({
-                  ...image
-                }))
+              ? parsed.info.carousel.map(
+                  image => ({
+                    ...image
+                  })
+                )
 
-              : DEFAULT_INFO.carousel.map(image => ({
-                  ...image
-                }))
+              : DEFAULT_INFO.carousel.map(
+                  image => ({
+                    ...image
+                  })
+                )
         }
       };
 
@@ -294,19 +368,32 @@ export class InstitutionSettingsService {
         error
       );
 
-      return {
-        palette: {
-          ...DEFAULT_PALETTE
-        },
-
-        info: {
-          ...DEFAULT_INFO,
-
-          carousel: DEFAULT_INFO.carousel.map(image => ({
-            ...image
-          }))
-        }
-      };
+      return this.cloneDefaults();
     }
+  }
+
+  /**
+   * Copia segura de los valores originales.
+   */
+  private cloneDefaults(): InstitutionSettings {
+
+    return {
+
+      palette: {
+        ...DEFAULT_PALETTE
+      },
+
+      info: {
+
+        ...DEFAULT_INFO,
+
+        carousel:
+          DEFAULT_INFO.carousel.map(
+            image => ({
+              ...image
+            })
+          )
+      }
+    };
   }
 }
