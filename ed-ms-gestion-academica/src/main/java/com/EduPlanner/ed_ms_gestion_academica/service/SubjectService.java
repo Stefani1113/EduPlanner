@@ -1,7 +1,6 @@
     package com.EduPlanner.ed_ms_gestion_academica.service;
 import com.eduplanner.ed_lib_common.dto.SubjectRequestDTO;
 import com.eduplanner.ed_lib_common.dto.SubjectResponseDTO;
-import com.eduplanner.ed_lib_common.entity.Course;
 import com.eduplanner.ed_lib_common.entity.Subject;
 import com.EduPlanner.ed_ms_gestion_academica.repository.SubjectRepository;
 import lombok.RequiredArgsConstructor;
