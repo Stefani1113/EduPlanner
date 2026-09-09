@@ -1,6 +1,7 @@
 package com.eduplanner.ed_ms_administracion.filter;
 
 import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -24,32 +25,31 @@ public class JwtValidationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws IOException {
-        String authHeader = request.getHeader("Authorization");
+                                HttpServletResponse response,
+                                FilterChain filterChain) throws IOException, ServletException {
+    String authHeader = request.getHeader("Authorization");
 
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            sendError(response, HttpServletResponse.SC_UNAUTHORIZED,
-                    "Header Authorization ausente o inválido");
+    if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        sendError(response, HttpServletResponse.SC_UNAUTHORIZED,
+                "Header Authorization ausente o inválido");
+        return;
+    }
+
+    String token = authHeader.substring(7);
+
+    try {
+        if (!jwtValidatorService.isTokenValid(token)) {
+            sendError(response, HttpServletResponse.SC_UNAUTHORIZED, "Token inválido o expirado");
             return;
         }
-
-        String token = authHeader.substring(7);
-
-        try {
-            if (jwtValidatorService.isTokenValid(token)) {
-                request.setAttribute("idUser", jwtValidatorService.extractIdUser(token));
-                request.setAttribute("role", jwtValidatorService.extractRole(token));
-                filterChain.doFilter(request, response);
-            } else {
-                sendError(response, HttpServletResponse.SC_UNAUTHORIZED,
-                        "Token inválido o expirado");
-            }
-        } catch (Exception e) {
-            log.error("Error validando token: {}", e.getMessage());
-            sendError(response, HttpServletResponse.SC_UNAUTHORIZED,
-                    "Error de validación del token");
-        }
+        request.setAttribute("idUser", jwtValidatorService.extractIdUser(token));
+        request.setAttribute("role", jwtValidatorService.extractRole(token));
+    } catch (Exception e) {
+        log.error("Error validando token: {}", e.getMessage());
+        sendError(response, HttpServletResponse.SC_UNAUTHORIZED, "Error de validación del token");
+        return;
+    }
+        filterChain.doFilter(request, response);
     }
 
     @Override
