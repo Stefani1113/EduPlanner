@@ -67,7 +67,7 @@
   justify-content: center;
   cursor: pointer;
   transition: all 0.3s ease;
-  color: #ffffff;
+  color: var(--inst-text);
   opacity: 0;
   visibility: hidden;
 
@@ -135,7 +135,7 @@
   line-height: 1.05;
   letter-spacing: -2px;
   margin: 20px 0 16px;
-  color: #ffffff;
+  color: var(--inst-text);
   text-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
 
   .highlight {
@@ -168,7 +168,7 @@
   align-items: center;
   gap: 10px;
   background: var(--inst-primary);
-  color: #ffffff;
+  color: var(--inst-text);
   border: none;
   padding: 14px 28px;
   border-radius: 12px;
@@ -274,7 +274,7 @@
     font-weight: 700;
     line-height: 1.15;
     letter-spacing: -1px;
-    color: #ffffff;
+    color: var(--inst-text);
     margin-bottom: 16px;
 
     .highlight {
@@ -394,8 +394,8 @@
   }
 
   h3 {
-    color: #ffffff;
-  }
+     color: var(--inst-text);
+    }
 
   p {
     color: rgba(255, 255, 255, 0.7);
@@ -474,7 +474,7 @@
   strong {
     display: block;
     font-size: 18px;
-    color: #ffffff;
+    color: var(--inst-text);
     margin-top: 4px;
   }
 }
@@ -501,7 +501,7 @@
   h2 {
     font-size: 32px;
     font-weight: 700;
-    color: #ffffff;
+    color: var(--inst-text);
 
     .highlight {
       color: var(--inst-primary);
@@ -536,7 +536,7 @@
   h3 {
     font-size: 22px;
     font-weight: 700;
-    color: #ffffff;
+    color: var(--inst-text);
     margin: 14px 0 8px;
   }
 
@@ -601,7 +601,7 @@
   h2 {
     font-size: 22px;
     font-weight: 700;
-    color: #ffffff;
+    color: var(--inst-text);
     margin-top: 4px;
 
     .highlight {
