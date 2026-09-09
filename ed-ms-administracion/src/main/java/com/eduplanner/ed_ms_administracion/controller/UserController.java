@@ -1,5 +1,6 @@
 package com.eduplanner.ed_ms_administracion.controller;
 
+import com.eduplanner.ed_lib_common.dto.AssignCourseDTO;
 import com.eduplanner.ed_lib_common.dto.HttpGlobalResponse;
 import com.eduplanner.ed_lib_common.dto.UpdateRoleDTO;
 import com.eduplanner.ed_lib_common.dto.UpdateStaffDTO;
@@ -41,6 +42,15 @@ public class UserController {
         response.setData(users);
         response.setMessage("Usuarios consultados correctamente");
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Actualizar curso de estudiante
+     */
+    @PutMapping("/{id}/course")
+    public ResponseEntity<HttpGlobalResponse<Void>> assignCourse(
+            @PathVariable Integer id, @RequestBody AssignCourseDTO dto) {
+        return handleUpdate(() -> userEditService.assignCourse(id, dto));
     }
 
 
