@@ -1,5 +1,6 @@
 spring:
   application:
+<<<<<<< HEAD
     name: ed_ms_notas 
 
   datasource:
@@ -27,3 +28,27 @@ services:
     base-url: http://localhost:8084/eduplanner
   gestion-academica:
     base-url: http://localhost:8083/eduplanner
+=======
+    name: ed_ms_notas
+
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+
+      discovery:
+        enabled: true
+        register: true
+        service-name: ${spring.application.name}
+        prefer-ip-address: true
+        health-check-path: /eduplanner/actuator/health
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+>>>>>>> 715aef99a56ab26ef7a2123ffffb8aab2560a81f
