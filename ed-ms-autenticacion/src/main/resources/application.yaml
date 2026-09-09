@@ -1,8 +1,23 @@
 spring:
+  application:
+    name: ed-ms-autenticacion
+
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+
+      discovery:
+        enabled: true
+        register: true
+        service-name: ${spring.application.name}
+        prefer-ip-address: true
+        health-check-path: /eduplanner/actuator/health
+
   datasource:
     url: jdbc:mysql://localhost:3306/auth_administration
     username: root
-    password: 
+    password: kari
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
@@ -26,3 +41,12 @@ security:
   jwt:
     secret-key: czyYSEj017tCB8M8mnOSvhgV4gSdI4P5Bql+3HrWZtM=
     token-expiration: 600000 # 10 min en ms
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never

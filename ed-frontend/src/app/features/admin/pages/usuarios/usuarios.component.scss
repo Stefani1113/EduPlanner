@@ -54,6 +54,31 @@
   flex-shrink: 0;
 }
 
+.btn-exportar {
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(83, 187, 27, 0.3);
+  background: rgba(83, 187, 27, 0.08);
+  color: #6fd62c;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .2s ease;
+  white-space: nowrap;
+}
+
+.btn-exportar:hover:not(:disabled) {
+  background: rgba(83, 187, 27, 0.16);
+  border-color: rgba(83, 187, 27, 0.5);
+  transform: translateY(-1px);
+}
+
+.btn-exportar:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
 .role-box {
   position: relative;
 }
@@ -320,7 +345,6 @@
 
 .estado.activo {
   color: #6fd62c;
-  background: rgba(83, 187, 27, 0.12);
 }
 
 .estado.inactivo {
@@ -343,6 +367,15 @@
   padding: 6px 14px;
   border-radius: 6px;
   transition: all 0.2s ease;
+}
+
+.accion.editar {
+  color: #ffffff;
+  background: rgb(83, 187, 27);
+}
+
+.accion.editar:hover {
+  background: rgba(83, 187, 27, 0.2);
 }
 
 .accion.inactivar {

@@ -69,7 +69,8 @@ public class JwtValidationFilter extends OncePerRequestFilter {
                         || path.startsWith("/eduplanner/auth/forgot-password")
                         || path.startsWith("/eduplanner/auth/reset-password")
                         || path.startsWith("/eduplanner/auth/activation-account") 
-                        || path.startsWith("/eduplanner/internal/tokens");
+                        || path.startsWith("/eduplanner/internal/tokens")
+                        || path.equals("/eduplanner/actuator/health");
     }
 
     private void sendError(HttpServletResponse response, int status, String message) throws IOException {
