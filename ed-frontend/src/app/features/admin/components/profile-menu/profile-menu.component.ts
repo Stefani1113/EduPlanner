@@ -31,7 +31,9 @@ export class ProfileMenuComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Cargar el perfil automáticamente al iniciar el componente
+    // Se pide una sola vez al montar el panel (reutiliza el perfil
+    // que ya quedó cacheado tras el login), así el avatar con la foto
+    // real se ve desde que entras al dashboard, sin abrir la tarjeta.
     this.cargarPerfil();
   }
 
@@ -124,7 +126,6 @@ export class ProfileMenuComponent implements OnInit {
   toggle(): void {
     this.abierto = !this.abierto;
 
-    // Si el perfil está vacío, recargar
     if (this.abierto && !this.perfil && !this.cargando) {
       this.cargarPerfil();
     }
@@ -190,6 +191,8 @@ export class ProfileMenuComponent implements OnInit {
         if (this.perfil) {
           this.perfil.photoUrl = respuesta.data;
         }
+
+        this.perfilService.actualizarFotoEnCache(respuesta.data);
 
         input.value = '';
       },

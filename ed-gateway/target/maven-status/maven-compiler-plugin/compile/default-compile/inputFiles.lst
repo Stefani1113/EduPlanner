@@ -1,5 +1,5 @@
-C:\Users\MARIA JOSE ROJAS\Desktop\EduPlanner\ed-gateway\src\main\java\com\eduplanner\gateway\config\JwtUtil.java
-C:\Users\MARIA JOSE ROJAS\Desktop\EduPlanner\ed-gateway\src\main\java\com\eduplanner\gateway\EdGatewayApplication.java
-C:\Users\MARIA JOSE ROJAS\Desktop\EduPlanner\ed-gateway\src\main\java\com\eduplanner\gateway\filter\LoggingFilter.java
-C:\Users\MARIA JOSE ROJAS\Desktop\EduPlanner\ed-gateway\src\main\java\com\eduplanner\gateway\filter\JwtAuthFilter.java
-C:\Users\MARIA JOSE ROJAS\Desktop\EduPlanner\ed-gateway\src\main\java\com\eduplanner\gateway\config\GatewayConfig.java
+C:\Users\MARIA JOSE ROJAS\Desktop\EduPlanner\EduPlanner\ed-gateway\src\main\java\com\eduplanner\gateway\config\GatewayConfig.java
+C:\Users\MARIA JOSE ROJAS\Desktop\EduPlanner\EduPlanner\ed-gateway\src\main\java\com\eduplanner\gateway\filter\LoggingFilter.java
+C:\Users\MARIA JOSE ROJAS\Desktop\EduPlanner\EduPlanner\ed-gateway\src\main\java\com\eduplanner\gateway\EdGatewayApplication.java
+C:\Users\MARIA JOSE ROJAS\Desktop\EduPlanner\EduPlanner\ed-gateway\src\main\java\com\eduplanner\gateway\config\JwtUtil.java
+C:\Users\MARIA JOSE ROJAS\Desktop\EduPlanner\EduPlanner\ed-gateway\src\main\java\com\eduplanner\gateway\filter\JwtAuthFilter.java

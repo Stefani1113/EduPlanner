@@ -1,5 +1,10 @@
 package eduPlanner.ed_ms_notas.filter;
 
+import java.io.IOException;
+
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
 import eduPlanner.ed_ms_notas.service.JwtValidatorService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -7,10 +12,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
-
-import java.io.IOException;
 
 @Component
 @RequiredArgsConstructor
@@ -52,12 +53,11 @@ public class JwtValidationFilter extends OncePerRequestFilter {
         // sale como el error real y no se disfraza de 401.
         chain.doFilter(req, res);
     }
-
-    @Override
+@Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return request.getRequestURI().contains("/internal/");
-    }
-
+    String path = request.getRequestURI();
+    return path.startsWith("/eduplanner/internal/");
+}
     private void sendError(HttpServletResponse res, int status, String msg) throws IOException {
         res.setStatus(status);
         res.setContentType("application/json");

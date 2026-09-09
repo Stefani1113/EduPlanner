@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { PerfilService } from '../../../admin/services/perfil.service';
 
 @Component({
   selector: 'app-login-page',
@@ -27,7 +28,8 @@ export class LoginPageComponent implements OnInit {
   constructor(
     private router: Router,
     private route: ActivatedRoute,
-    private authService: AuthService
+    private authService: AuthService,
+    private perfilService: PerfilService
   ) {}
 
   ngOnInit(): void {
@@ -56,13 +58,26 @@ export class LoginPageComponent implements OnInit {
 
       next: (response: any) => {
 
-        this.loading = false;
-
+        // Solo guardamos el token. El resto del perfil (nombre, rol,
+        // foto, teléfono...) se pide una única vez a /users/me aquí
+        // mismo y queda cacheado (PerfilService), así el avatar ya
+        // sale correcto apenas se ve el dashboard y no se repite la
+        // llamada al abrir la tarjeta de perfil.
         localStorage.setItem('token', response.data.token);
-        localStorage.setItem('usuario', JSON.stringify(response.data));
         this.authService.iniciarRenovacionAutomatica();
 
-        this.router.navigate(['/admin/dashboard']);
+        this.perfilService.obtenerMiPerfil(true).subscribe({
+          next: () => {
+            this.loading = false;
+            this.router.navigate(['/admin/dashboard']);
+          },
+          error: () => {
+            // Si /me falla, igual dejamos entrar: el token es válido
+            // y el perfil se reintentará desde el menú de usuario.
+            this.loading = false;
+            this.router.navigate(['/admin/dashboard']);
+          }
+        });
 
       },
 
