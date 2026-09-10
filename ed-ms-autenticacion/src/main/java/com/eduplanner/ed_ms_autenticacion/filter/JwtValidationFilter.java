@@ -59,10 +59,6 @@ public class JwtValidationFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        System.out.println("URI: " + request.getRequestURI());
-        System.out.println("CONTEXT PATH: " + request.getContextPath());
-        System.out.println("SERVLET PATH: " + request.getServletPath());
-
         String path = request.getRequestURI();
 
         return path.startsWith("/eduplanner/auth/login")
