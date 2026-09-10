@@ -91,22 +91,35 @@ export class InstitutionSettingsService {
   readonly settings$ =
     this.settingsSubject.asObservable();
 
-  constructor() {
-    this.applySettings(
-      this.settingsSubject.value
-    );
-  }
+  constructor() {}
 
-  /**
-   * Configuración actual
-   */
+
   get current(): InstitutionSettings {
     return this.settingsSubject.value;
   }
 
-  /**
-   * Actualizar solamente la paleta
-   */
+
+  activarTemaSesion(): void {
+    this.applyPalette(this.settingsSubject.value.palette);
+  }
+
+
+  restaurarTemaPorDefecto(): void {
+    const root = document.documentElement.style;
+
+    root.removeProperty('--inst-primary');
+    root.removeProperty('--inst-secondary');
+    root.removeProperty('--inst-accent');
+    root.removeProperty('--inst-dark');
+    root.removeProperty('--inst-light');
+    root.removeProperty('--inst-surface');
+    root.removeProperty('--inst-surface-alt');
+    root.removeProperty('--inst-text');
+    root.removeProperty('--inst-muted');
+    root.removeProperty('--inst-border');
+  }
+
+
   updatePalette(
     palette: InstitutionPalette
   ): void {
@@ -122,10 +135,7 @@ export class InstitutionSettingsService {
     this.persist(next);
   }
 
-  /**
-   * Actualizar solamente la información
-   * de la institución.
-   */
+
   updateInfo(
     info: InstitutionInfo
   ): void {
@@ -148,9 +158,7 @@ export class InstitutionSettingsService {
     this.persist(next);
   }
 
-  /**
-   * Actualizar toda la configuración
-   */
+
   updateSettings(
     palette: InstitutionPalette,
     info: InstitutionInfo
@@ -176,10 +184,7 @@ export class InstitutionSettingsService {
     this.persist(next);
   }
 
-  /**
-   * Restablecer únicamente cuando
-   * el administrador presiona "Restablecer".
-   */
+
   resetToDefaults(): void {
 
     const next: InstitutionSettings = {
@@ -204,9 +209,7 @@ export class InstitutionSettingsService {
     this.persist(next);
   }
 
-  /**
-   * Guarda permanentemente la configuración.
-   */
+
   private persist(
     settings: InstitutionSettings
   ): void {
@@ -231,9 +234,7 @@ export class InstitutionSettingsService {
     }
   }
 
-  /**
-   * Aplica toda la configuración visual.
-   */
+
   private applySettings(
     settings: InstitutionSettings
   ): void {
@@ -243,9 +244,7 @@ export class InstitutionSettingsService {
     );
   }
 
-  /**
-   * Aplica las variables CSS globales.
-   */
+
   private applyPalette(
     palette: InstitutionPalette
   ): void {
@@ -304,13 +303,7 @@ export class InstitutionSettingsService {
     );
   }
 
-  /**
-   * Carga la configuración guardada.
-   *
-   * IMPORTANTE:
-   * La configuración institucional NO depende
-   * de la sesión del usuario.
-   */
+
   private load(): InstitutionSettings {
 
     try {
@@ -372,9 +365,7 @@ export class InstitutionSettingsService {
     }
   }
 
-  /**
-   * Copia segura de los valores originales.
-   */
+
   private cloneDefaults(): InstitutionSettings {
 
     return {
