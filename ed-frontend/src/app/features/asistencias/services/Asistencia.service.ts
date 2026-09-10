@@ -170,7 +170,8 @@ export class AsistenciaService {
         `${this.base}/courses`
       )
       .pipe(
-        map(r => r.data ?? [])
+        map(r => r.data ?? []),
+        catchError(() => of([]))
       );
   }
 
@@ -180,7 +181,8 @@ export class AsistenciaService {
         `${this.base}/academic-levels`
       )
       .pipe(
-        map(r => r.data ?? [])
+        map(r => r.data ?? []),
+        catchError(() => of([]))
       );
   }
 
@@ -190,7 +192,8 @@ export class AsistenciaService {
         `${this.base}/academic-teachers`
       )
       .pipe(
-        map(r => r.data ?? [])
+        map(r => r.data ?? []),
+        catchError(() => of([]))
       );
   }
 

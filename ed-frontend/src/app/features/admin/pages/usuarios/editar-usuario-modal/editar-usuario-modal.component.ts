@@ -1,7 +1,14 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { UserResponseDTO, TeachingRequestDTO, UpdateStudentDTO, UpdateStaffDTO } from '../../../services/usuarios.service';
+import {
+  UserResponseDTO,
+  TeachingRequestDTO,
+  UpdateStudentDTO,
+  UpdateStaffDTO,
+  CourseBasicoDTO,
+  UsuariosService
+} from '../../../services/usuarios.service';
 
 export type TipoEdicion = 'Docente' | 'Estudiante' | 'Staff';
 
@@ -9,6 +16,7 @@ export interface UsuarioEditado {
   tipo: TipoEdicion;
   id: number;
   payload: TeachingRequestDTO | UpdateStudentDTO | UpdateStaffDTO;
+  idCourse?: number | null;
 }
 
 @Component({
@@ -34,7 +42,10 @@ export class EditarUsuarioModalComponent implements OnInit {
   tiposSangre = ['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'];
   estratos = [1, 2, 3, 4, 5, 6];
 
-  constructor(private fb: FormBuilder) {}
+  cursosDisponibles: CourseBasicoDTO[] = [];
+  cargandoCursos = false;
+
+  constructor(private fb: FormBuilder, private usuariosService: UsuariosService) {}
 
   ngOnInit(): void {
     const u = this.usuario;
@@ -58,7 +69,8 @@ export class EditarUsuarioModalComponent implements OnInit {
       eps: [u?.eps ?? ''],
       position: [u?.position ?? '', Validators.required],
       professionalDegrees: [u?.professionalDegrees ?? ''],
-      qualificationsDesc: [u?.qualificationsDesc ?? '']
+      qualificationsDesc: [u?.qualificationsDesc ?? ''],
+      idCourse: [u?.idCourse ?? '']
     });
 
     if (this.tipo !== 'Docente') {
@@ -71,6 +83,28 @@ export class EditarUsuarioModalComponent implements OnInit {
       this.form.get('professionalDegrees')?.setValidators(Validators.required);
       this.form.get('professionalDegrees')?.updateValueAndValidity();
     }
+
+    if (this.tipo === 'Estudiante') {
+      this.form.get('idCourse')?.setValidators(Validators.required);
+      this.form.get('idCourse')?.updateValueAndValidity();
+      this.cargarCursos();
+    }
+  }
+
+
+  private cargarCursos(): void {
+    this.cargandoCursos = true;
+
+    this.usuariosService.listarCursos().subscribe({
+      next: res => {
+        this.cursosDisponibles = (res.data ?? []).filter(c => c.status);
+        this.cargandoCursos = false;
+      },
+      error: () => {
+        this.cursosDisponibles = [];
+        this.cargandoCursos = false;
+      }
+    });
   }
 
   get titulo(): string {
@@ -136,7 +170,10 @@ export class EditarUsuarioModalComponent implements OnInit {
 
     if (this.tipo === 'Estudiante') {
       const payload: UpdateStudentDTO = this.basePayload(v) as UpdateStudentDTO;
-      this.guardar.emit({ tipo: 'Estudiante', id: this.usuario.idUser, payload });
+      const idCourse = v.idCourse === '' || v.idCourse === null || v.idCourse === undefined
+        ? null
+        : Number(v.idCourse);
+      this.guardar.emit({ tipo: 'Estudiante', id: this.usuario.idUser, payload, idCourse });
       return;
     }
 
