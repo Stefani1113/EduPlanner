@@ -6,11 +6,6 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import org.springframework.stereotype.Repository;
-
-import com.eduplanner.ed_lib_common.entity.User;
-
-
 
 public interface UserRepository extends JpaRepository<User, Integer> {
     boolean existsByEmail(String email);
@@ -33,6 +28,8 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     // RF 5.4 - buscar por títulos profesionales
     List<User> findByRoleIdRoleAndStatusTrueAndProfessionalDegreesContainingIgnoreCase(Integer idRole, String degrees);
 
+    //Buscar por curso
+    List<User> findByIdCourse(Integer idCourse);
 
     boolean existsByPhoneNumber(String phoneNumber);
     boolean existsByPhoneNumberAndIdUserNot(String phoneNumber, Integer idUser);
