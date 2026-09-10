@@ -240,8 +240,18 @@ export class UsuariosComponent implements OnInit, OnDestroy {
     this.actualizarBreadcrumb();
   }
 
- toggleEstado(usuario: Usuario): void {
+ async toggleEstado(usuario: Usuario): Promise<void> {
   const nuevoEstado = usuario.estado !== 'Activo';
+  const accion = nuevoEstado ? 'activar' : 'inactivar';
+
+  const confirmado = await this.modalService.confirm(
+    `¿Seguro que quieres ${accion} a ${usuario.nombre}?`,
+    nuevoEstado ? 'Activar usuario' : 'Inactivar usuario',
+    nuevoEstado ? 'Sí, activar' : 'Sí, inactivar',
+    'Cancelar'
+  );
+
+  if (!confirmado) return;
 
   this.usuariosService.actualizarEstado(usuario.id, nuevoEstado).subscribe({
     next: () => {
