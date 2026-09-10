@@ -206,11 +206,9 @@ export class UsuariosComponent implements OnInit, OnDestroy {
 
   this.usuariosService.actualizarEstado(usuario.id, nuevoEstado).subscribe({
     next: () => {
-      // Actualizar el estado visual
       usuario.estado = nuevoEstado ? 'Activo' : 'Inactivo';
       usuario.detalle.status = nuevoEstado;
 
-      // Mostrar mensaje de éxito
       if (nuevoEstado) {
         this.modalService.success('El usuario fue activado exitosamente.');
       } else {

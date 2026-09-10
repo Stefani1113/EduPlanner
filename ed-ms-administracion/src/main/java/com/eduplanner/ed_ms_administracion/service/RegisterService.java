@@ -9,6 +9,7 @@ import com.eduplanner.ed_lib_common.entity.User;
 import com.eduplanner.ed_lib_common.enums.RolEnum;
 import com.eduplanner.ed_lib_common.notifications.NotificationType;
 import com.eduplanner.ed_ms_administracion.client.AuthServiceClient;
+import com.eduplanner.ed_ms_administracion.client.GestionAcademicaServiceClient;
 import com.eduplanner.ed_ms_administracion.notifications.EmailTemplateService;
 import com.eduplanner.ed_ms_administracion.notifications.NotifierFactory;
 import com.eduplanner.ed_ms_administracion.repository.GuardianRepository;
@@ -17,6 +18,8 @@ import com.eduplanner.ed_ms_administracion.repository.RoleRepository;
 import com.eduplanner.ed_ms_administracion.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import com.eduplanner.ed_lib_common.dto.ActivationTokenRequestDTO;
+import com.eduplanner.ed_lib_common.dto.ActivationTokenResponseDTO;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -36,6 +39,7 @@ public class RegisterService {
     private final NotifierFactory notifierFactory;
     private final ImportRepository importRepository;
     private final EmailTemplateService emailTemplateService;
+    private final GestionAcademicaServiceClient gestionAcademicaServiceClient;
 
     @Value("${institution.id}")
     private Integer institutionId;
@@ -50,7 +54,7 @@ public class RegisterService {
     }
 
     @Transactional
-    public void registerStudentInternal(RegisterStudentDTO dto, Integer idImport) {
+        public void registerStudentInternal(RegisterStudentDTO dto, Integer idImport) {
         validateNotDuplicated(dto.getEmail(), dto.getDocument(), dto.getPhoneNumber());
 
         Role role = getRoleOrThrow(RolEnum.ESTUDIANTE.getId());
@@ -64,16 +68,17 @@ public class RegisterService {
         );
         user.setPosition("Estudiante");
         user.setRole(role);
-        
-        //Si viene de una importación, se asocia el resgistro Import correspondiente;
-        //Se el resgitro es manual queda null
+        user.setIdCourse(dto.getIdCourse()); //se asigna el curso al registrar
+
         if (idImport != null) {
             user.setImportEntity(importRepository.getReferenceById(idImport));
         }
 
         userRepository.save(user);
 
-        // Guardar el acudiente asociado, solo aplica para estudiantes
+        //sincroniza el contador de estudiantes del curso
+        gestionAcademicaServiceClient.adjustCourseStudentCount(dto.getIdCourse(), 1);
+
         Guardian guardian = new Guardian();
         guardian.setGuardianName(dto.getGuardian().getGuardianName());
         guardian.setGuardianPhone(dto.getGuardian().getGuardianPhone());
@@ -81,7 +86,7 @@ public class RegisterService {
         guardianRepository.save(guardian);
 
         sendActivationEmail(user);
-    }
+}
 
     // REGISTRO DE DOCENTE
     @Transactional
@@ -190,11 +195,19 @@ public class RegisterService {
     }
 
     /**
-     * Pide el token de activación a ed-ms-autenticacion (vía HTTP)
+     * Pide el token de activación a ed-ms-autenticacion (vía Feign)
      * y envía el correo con el enlace de activación.
      */
     private void sendActivationEmail(User user) {
-        String activationToken = authServiceClient.requestActivationToken(user.getEmail());
+
+        ActivationTokenRequestDTO request = new ActivationTokenRequestDTO();
+        request.setEmail(user.getEmail());
+
+        ActivationTokenResponseDTO response =
+                authServiceClient.requestActivationToken(request);
+
+        String activationToken = response.getToken();
+
         String activationLink = activationUrlBase + "?token=" + activationToken;
 
         Map<String, Object> variables = Map.of(
@@ -202,8 +215,16 @@ public class RegisterService {
                 "activationLink", activationLink
         );
 
-        String htmlContent = emailTemplateService.render("email/activation-account", variables);
+        String htmlContent = emailTemplateService.render(
+                "email/activation-account",
+                variables
+        );
+
         notifierFactory.create(NotificationType.EMAIL)
-                .send(user.getEmail(), "Activa tu cuenta en EduPlanner", htmlContent);
+                .send(
+                        user.getEmail(),
+                        "Activa tu cuenta en EduPlanner",
+                        htmlContent
+                );
     }
 }
