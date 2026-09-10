@@ -48,4 +48,10 @@ public class UserQueryService {
                 .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado con id: " + idUser));
         return UserResponseDTO.fromEntity(user);
     }
+
+    public List<UserResponseDTO> findByCourse(Integer idCourse) {
+    return userRepository.findByIdCourse(idCourse).stream()
+            .map(UserResponseDTO::fromEntity)
+            .toList();
+    }
 }
