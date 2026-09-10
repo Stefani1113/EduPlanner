@@ -117,7 +117,7 @@ public class User {
     @Column(name = "id_institution", nullable = false)
     private Integer idInstitution;
 
-    @Column(name = "id_course", nullable = false)
+    @Column(name = "id_course")
     private Integer idCourse;
 
     /**
