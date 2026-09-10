@@ -24,6 +24,7 @@ import {
   UpdateStudentDTO,
   UpdateStaffDTO
 } from '../../services/usuarios.service';
+import { catchError, of } from 'rxjs';
 import { ModalService } from '../../../../core/services/modal.service';
 
 type Rol = 'Administrador' | 'Docente' | 'Estudiante' | 'Directivo';
@@ -81,10 +82,16 @@ export class UsuariosComponent implements OnInit, OnDestroy {
   activeTab: Tab = 'listado';
 
   roles: Rol[] = ['Administrador', 'Docente', 'Estudiante', 'Directivo'];
-  grados: string[] = ['Todos los grados', '1° A Bachillerato', '2° A Bachillerato', '3° A Bachillerato'];
+
+  /** Se llena con los cursos reales de la institución (ver cargarCursos()). */
+  grados: string[] = ['Todos los cursos'];
+  cargandoCursos = false;
+
+  /** idCourse -> nombre del curso, para mostrar el "Grado" del estudiante en el listado. */
+  private cursoPorId = new Map<number, string>();
 
   rolSeleccionado: Rol = 'Docente';
-  gradoSeleccionado = 'Todos los grados';
+  gradoSeleccionado = 'Todos los cursos';
   mostrarFiltroRol = false;
 
   mostrarMenuRegistrar = false;
@@ -120,6 +127,38 @@ export class UsuariosComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.actualizarBreadcrumb();
     this.cargarUsuarios();
+    this.cargarCursos();
+  }
+
+  /**
+   * Trae los cursos reales configurados en la institución
+   * y los usa para poblar el desplegable de búsqueda por curso
+   * (antes tenía una lista de grados fija/ficticia).
+   */
+  private cargarCursos(): void {
+    this.cargandoCursos = true;
+
+    this.usuariosService.listarCursos().pipe(
+      catchError(() => of({ data: [], message: '' }))
+    ).subscribe(res => {
+      const cursos = (res.data ?? []).filter(c => c.status);
+
+      this.cursoPorId = new Map(cursos.map(c => [c.idCourse, c.name]));
+      this.grados = ['Todos los cursos', ...cursos.map(c => c.name)];
+      this.cargandoCursos = false;
+
+      // Si el listado de usuarios ya se había cargado antes que los cursos,
+      // recalcula el "Grado" que se muestra ahora que ya tenemos los nombres.
+      this.usuarios = this.usuarios.map(u => ({
+        ...u,
+        grado: this.obtenerNombreCurso(u.detalle.idCourse)
+      }));
+    });
+  }
+
+  private obtenerNombreCurso(idCourse?: number | null): string | null {
+    if (idCourse === null || idCourse === undefined) return null;
+    return this.cursoPorId.get(idCourse) ?? null;
   }
 
   ngOnDestroy(): void {
@@ -152,7 +191,7 @@ export class UsuariosComponent implements OnInit, OnDestroy {
       correo: dto.email,
       telefono: dto.phoneNumber,
       rol: ID_A_ROL[dto.idRole] ?? 'Docente',
-      grado: null,
+      grado: this.obtenerNombreCurso(dto.idCourse),
       estado: dto.status ? 'Activo' : 'Inactivo',
       detalle: dto
     };
@@ -182,7 +221,7 @@ export class UsuariosComponent implements OnInit, OnDestroy {
 
   seleccionarRol(rol: Rol): void {
     this.rolSeleccionado = rol;
-    this.gradoSeleccionado = 'Todos los grados';
+    this.gradoSeleccionado = 'Todos los cursos';
     this.mostrarFiltroRol = false;
     this.actualizarBreadcrumb();
     this.cargarUsuarios();
@@ -311,7 +350,17 @@ export class UsuariosComponent implements OnInit, OnDestroy {
 
     if (evento.tipo === 'Estudiante') {
       this.usuariosService.actualizarEstudiante(evento.id, evento.payload as UpdateStudentDTO).subscribe({
-        next: res => this.finalizarEdicion(res.message ?? 'Estudiante actualizado correctamente.'),
+        next: () => {
+          if (evento.idCourse === undefined) {
+            this.finalizarEdicion('Estudiante actualizado correctamente.');
+            return;
+          }
+
+          this.usuariosService.asignarCurso(evento.id, evento.idCourse).subscribe({
+            next: () => this.finalizarEdicion('Estudiante actualizado correctamente.'),
+            error: err => this.errorEdicion(err)
+          });
+        },
         error: err => this.errorEdicion(err)
       });
       return;
@@ -408,7 +457,7 @@ export class UsuariosComponent implements OnInit, OnDestroy {
     const tabLabel = this.tabs.find(t => t.key === this.activeTab)?.label ?? '';
     const partes = [tabLabel, this.rolSeleccionado];
 
-    if (this.rolSeleccionado === 'Estudiante' && this.gradoSeleccionado !== 'Todos los grados') {
+    if (this.rolSeleccionado === 'Estudiante' && this.gradoSeleccionado !== 'Todos los cursos') {
       partes.push(this.gradoSeleccionado);
     }
 

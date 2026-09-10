@@ -13,7 +13,9 @@ import {
   RegisterStudentDTO,
   RegisterStaffDTO,
   ID_ROL_ADMINISTRADOR,
-  ID_ROL_DIRECTIVO
+  ID_ROL_DIRECTIVO,
+  UsuariosService,
+  CourseBasicoDTO
 } from '../../../services/usuarios.service';
 
 import { ModalService } from '../../../../../core/services/modal.service';
@@ -96,16 +98,22 @@ export class RegistroUsuarioModalComponent implements OnInit {
   titulosProfesionales: string[] = [];
   tituloNuevo = '';
 
+  cursosDisponibles: CourseBasicoDTO[] = [];
+  cargandoCursos = false;
+
   formDocente!: FormGroup;
   formEstudiante!: FormGroup;
   formStaff!: FormGroup;
 
   constructor(
     private fb: FormBuilder,
-    private modalService: ModalService
+    private modalService: ModalService,
+    private usuariosService: UsuariosService
   ) {}
 
   ngOnInit(): void {
+    this.cargarCursos();
+
     this.formDocente = this.fb.group({
       name: ['', Validators.required],
       surnames: ['', Validators.required],
@@ -146,7 +154,8 @@ export class RegistroUsuarioModalComponent implements OnInit {
       healthRegime: [''],
       eps: [''],
       guardianName: ['', Validators.required],
-      guardianPhone: ['', Validators.required]
+      guardianPhone: ['', Validators.required],
+      idCourse: ['', Validators.required]
     });
 
     this.formStaff = this.fb.group({
@@ -168,6 +177,25 @@ export class RegistroUsuarioModalComponent implements OnInit {
       eps: [''],
       position: ['', Validators.required],
       idRole: [ID_ROL_ADMINISTRADOR, Validators.required]
+    });
+  }
+
+  /**
+   * Trae los cursos reales de la institución para el select
+   * "Curso" del formulario de Estudiante.
+   */
+  private cargarCursos(): void {
+    this.cargandoCursos = true;
+
+    this.usuariosService.listarCursos().subscribe({
+      next: res => {
+        this.cursosDisponibles = (res.data ?? []).filter(c => c.status);
+        this.cargandoCursos = false;
+      },
+      error: () => {
+        this.cursosDisponibles = [];
+        this.cargandoCursos = false;
+      }
     });
   }
 
@@ -417,7 +445,9 @@ export class RegistroUsuarioModalComponent implements OnInit {
           v.guardianName,
         guardianPhone:
           v.guardianPhone
-      }
+      },
+      idCourse:
+        Number(v.idCourse)
     };
 
     this.guardar.emit({
