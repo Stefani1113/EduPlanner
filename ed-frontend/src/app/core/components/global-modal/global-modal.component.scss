@@ -16,7 +16,7 @@
 }
 
 .global-modal {
-  --modal-color: #55b82c;
+  --modal-color: var(--inst-secondary);
 
   position: relative;
 
@@ -27,7 +27,7 @@
 
   text-align: center;
 
-  background: #202121;
+  background: var(--inst-surface);
   border: 1px solid var(--modal-color);
   border-radius: 20px;
 
@@ -44,7 +44,7 @@
 
 .global-modal.success,
 .global-modal.confirm {
-  --modal-color: #55b82c;
+  --modal-color: var(--inst-secondary);
 }
 
 .global-modal.error {
@@ -71,7 +71,7 @@
   border: none;
   background: transparent;
 
-  color: #a7aaad;
+  color: var(--inst-muted);
 
   font-size: 30px;
   font-weight: 300;
@@ -82,7 +82,7 @@
 }
 
 .modal-close:hover {
-  color: #ffffff;
+  color: var(--inst-text);
   transform: scale(1.1);
 }
 
@@ -114,7 +114,7 @@
 .global-modal h2 {
   margin-bottom: 14px;
 
-  color: #f2f4f5;
+  color: var(--inst-text);
 
   font-size: 22px;
   font-weight: 700;
@@ -125,7 +125,7 @@
 
   max-width: 360px;
 
-  color: #afb2b5;
+  color: var(--inst-muted);
 
   font-size: 15px;
   line-height: 1.6;
@@ -164,14 +164,14 @@
 }
 
 .btn-cancel {
-  background: #2b2d2e;
-  color: #e0e2e4;
+  background: var(--inst-surface-alt);
+  color: var(--inst-text);
 }
 
 .btn-success,
 .btn-confirm {
-  background: #347d1c;
-  color: #ffffff;
+  background: var(--inst-secondary);
+  color: var(--inst-light);
 }
 
 .btn-error {

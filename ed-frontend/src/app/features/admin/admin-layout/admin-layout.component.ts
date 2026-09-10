@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { PerfilService } from '../services/perfil.service';
+import { InstitutionSettingsService } from '../services/institution-settings.service';
 
 @Component({
   selector: 'app-admin-layout',
@@ -7,13 +8,19 @@ import { PerfilService } from '../services/perfil.service';
   templateUrl: './admin-layout.component.html',
   styleUrls: ['./admin-layout.component.scss']
 })
-export class AdminLayoutComponent implements OnInit {
+export class AdminLayoutComponent implements OnInit, OnDestroy {
 
   esAdministrador = false;
 
-  constructor(private perfilService: PerfilService) {}
+  constructor(
+    private perfilService: PerfilService,
+    private institutionSettingsService: InstitutionSettingsService
+  ) {}
 
   ngOnInit(): void {
+ 
+    this.institutionSettingsService.activarTemaSesion();
+
     this.perfilService.obtenerMiPerfil().subscribe({
       next: respuesta => {
         const rol = (respuesta.data?.roleName || '').toLowerCase();
@@ -23,5 +30,10 @@ export class AdminLayoutComponent implements OnInit {
         this.esAdministrador = false;
       }
     });
+  }
+
+  ngOnDestroy(): void {
+
+    this.institutionSettingsService.restaurarTemaPorDefecto();
   }
 }
