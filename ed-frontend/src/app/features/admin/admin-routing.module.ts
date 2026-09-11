@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-
+import { HorariosComponent } from './pages/horarios/horarios.component';
 import { AdminLayoutComponent } from './admin-layout/admin-layout.component';
 import { DashboardComponent } from './pages/dashboard/dashboard.component';
 import { authGuard } from '../auth/services/auth.guard';
@@ -85,7 +85,15 @@ const routes: Routes = [
         data: {
           breadcrumb: ['sistema']
         }
-      }
+      },
+
+      {
+        path: 'horarios',
+        component: HorariosComponent,
+        data: {
+          breadcrumb: ['Horarios']
+        }
+      },
 
     ]
   }

@@ -273,8 +273,7 @@ export class AuthService {
     this.detenerRenovacionAutomatica();
 
     localStorage.removeItem('token');
-    // Se limpia por compatibilidad con sesiones antiguas que aún
-    // guardaban este dato; el flujo actual ya no lo usa.
+  
     localStorage.removeItem('usuario');
     sessionStorage.removeItem('ultimaActividad');
 
