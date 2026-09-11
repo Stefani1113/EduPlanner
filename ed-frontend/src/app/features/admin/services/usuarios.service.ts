@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
-import { catchError, timeout } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 
 export interface HttpGlobalResponse<T> {
   data: T;
@@ -36,7 +35,6 @@ export interface UserResponseDTO {
   lastAccess?: string | null;
   roleName: string;
   idRole: number;
-  idCourse?: number | null;
   idInstitution?: number | null;
 }
 
@@ -159,10 +157,6 @@ export interface CourseBasicoDTO {
   status: boolean;
 }
 
-export interface AssignCourseDTO {
-  idCourse: number | null;
-}
-
 export interface UpdateStudentDTO {
   name: string;
   surnames: string;
@@ -177,6 +171,7 @@ export interface UpdateStudentDTO {
   populationType?: string;
   healthRegime?: string;
   eps?: string;
+  idCourse?: number;
 }
 
 export interface UpdateStaffDTO extends Omit<UpdateStudentDTO, 'name' | 'surnames'> {
@@ -198,23 +193,6 @@ export class UsuariosService {
   private api = '/administracion/eduplanner';
 
   constructor(private http: HttpClient) {}
-
-
-  private conTimeout<T>(obs$: Observable<T>, ms: number = 20000): Observable<T> {
-    return obs$.pipe(
-      timeout(ms),
-      catchError(err => {
-        if (err?.name === 'TimeoutError') {
-          return throwError(() => ({
-            error: {
-              message: 'El servidor tardó demasiado en responder (posiblemente el envío de correo u otro servicio no está disponible). Intenta de nuevo más tarde.'
-            }
-          }));
-        }
-        return throwError(() => err);
-      })
-    );
-  }
 
   listar(idRole?: number): Observable<HttpGlobalResponse<UserResponseDTO[]>> {
     const params: Record<string, string> = {};
@@ -240,22 +218,22 @@ export class UsuariosService {
   }
 
   registrarPersonal(dto: RegisterStaffDTO): Observable<HttpGlobalResponse<void>> {
-    console.log('DTO enviado:', dto);
-    return this.conTimeout(
-      this.http.post<HttpGlobalResponse<void>>(`${this.api}/users/register/staff`, dto)
-    );
-  }
+  console.log('DTO enviado:', dto);
+  return this.http.post<HttpGlobalResponse<void>>(
+    `${this.api}/users/register/staff`,
+    dto
+  );
+}
 
   registrarDocente(dto: RegisterTeacherDTO): Observable<HttpGlobalResponse<void>> {
-    return this.conTimeout(
-      this.http.post<HttpGlobalResponse<void>>(`${this.api}/users/register/teacher`, dto)
-    );
-  }
+  return this.http.post<HttpGlobalResponse<void>>(
+    `${this.api}/users/register/teacher`,
+    dto
+  );
+}
 
   registrarEstudiante(dto: RegisterStudentDTO): Observable<HttpGlobalResponse<void>> {
-    return this.conTimeout(
-      this.http.post<HttpGlobalResponse<void>>(`${this.api}/users/register/student`, dto)
-    );
+    return this.http.post<HttpGlobalResponse<void>>(`${this.api}/users/register/student`, dto);
   }
 
   obtenerPorId(idUser: number): Observable<HttpGlobalResponse<UserResponseDTO>> {
@@ -263,23 +241,11 @@ export class UsuariosService {
   }
 
   actualizarDocente(idUser: number, dto: TeachingRequestDTO): Observable<HttpGlobalResponse<TeachingResponseDTO>> {
-    return this.conTimeout(
-      this.http.put<HttpGlobalResponse<TeachingResponseDTO>>(`/administracion/eduplanner/teacher/${idUser}`, dto)
-    );
+    return this.http.put<HttpGlobalResponse<TeachingResponseDTO>>(`/administracion/eduplanner/teacher/${idUser}`, dto);
   }
 
   actualizarEstudiante(idUser: number, dto: UpdateStudentDTO): Observable<HttpGlobalResponse<void>> {
-    return this.conTimeout(
-      this.http.put<HttpGlobalResponse<void>>(`${this.api}/users/${idUser}/student`, dto)
-    );
-  }
-
-
-  asignarCurso(idUser: number, idCourse: number | null): Observable<HttpGlobalResponse<void>> {
-    const dto: AssignCourseDTO = { idCourse };
-    return this.conTimeout(
-      this.http.put<HttpGlobalResponse<void>>(`${this.api}/users/${idUser}/course`, dto)
-    );
+    return this.http.put<HttpGlobalResponse<void>>(`${this.api}/users/${idUser}/student`, dto);
   }
 
   actualizarStaff(idUser: number, dto: UpdateStaffDTO): Observable<HttpGlobalResponse<void>> {
@@ -290,7 +256,12 @@ export class UsuariosService {
     return this.http.put<HttpGlobalResponse<void>>(`${this.api}/users/${idUser}/role`, dto);
   }
 
-
+  /**
+   * Lista los cursos reales configurados en la institución
+   * (mismo endpoint que usa el módulo de Asistencia), para
+   * poblar el filtro de "Curso" con datos reales en vez de
+   * una lista fija.
+   */
   listarCursos(): Observable<HttpGlobalResponse<CourseBasicoDTO[]>> {
     return this.http.get<HttpGlobalResponse<CourseBasicoDTO[]>>(
       '/gestion-academica/eduplanner/courses'

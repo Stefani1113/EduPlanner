@@ -6,8 +6,8 @@ import {
   TeachingRequestDTO,
   UpdateStudentDTO,
   UpdateStaffDTO,
-  CourseBasicoDTO,
-  UsuariosService
+  UsuariosService,
+  CourseBasicoDTO
 } from '../../../services/usuarios.service';
 
 export type TipoEdicion = 'Docente' | 'Estudiante' | 'Staff';
@@ -16,7 +16,6 @@ export interface UsuarioEditado {
   tipo: TipoEdicion;
   id: number;
   payload: TeachingRequestDTO | UpdateStudentDTO | UpdateStaffDTO;
-  idCourse?: number | null;
 }
 
 @Component({
@@ -45,10 +44,17 @@ export class EditarUsuarioModalComponent implements OnInit {
   cursosDisponibles: CourseBasicoDTO[] = [];
   cargandoCursos = false;
 
-  constructor(private fb: FormBuilder, private usuariosService: UsuariosService) {}
+  constructor(
+    private fb: FormBuilder,
+    private usuariosService: UsuariosService
+  ) {}
 
   ngOnInit(): void {
     const u = this.usuario;
+
+    if (this.tipo === 'Estudiante') {
+      this.cargarCursos();
+    }
 
     this.form = this.fb.group({
       name: [u?.name ?? '', Validators.required],
@@ -60,6 +66,7 @@ export class EditarUsuarioModalComponent implements OnInit {
       gender: [u?.gender ?? '', Validators.required],
       email: [u?.email ?? '', [Validators.required, Validators.email]],
       phoneNumber: [u?.phoneNumber ?? '', Validators.required],
+      idCourse: [''],
       address: [u?.address ?? '', Validators.required],
       bloodType: [u?.bloodType ?? '', Validators.required],
       stratum: [u?.stratum ?? '', Validators.required],
@@ -69,8 +76,7 @@ export class EditarUsuarioModalComponent implements OnInit {
       eps: [u?.eps ?? ''],
       position: [u?.position ?? '', Validators.required],
       professionalDegrees: [u?.professionalDegrees ?? ''],
-      qualificationsDesc: [u?.qualificationsDesc ?? ''],
-      idCourse: [u?.idCourse ?? '']
+      qualificationsDesc: [u?.qualificationsDesc ?? '']
     });
 
     if (this.tipo !== 'Docente') {
@@ -83,15 +89,12 @@ export class EditarUsuarioModalComponent implements OnInit {
       this.form.get('professionalDegrees')?.setValidators(Validators.required);
       this.form.get('professionalDegrees')?.updateValueAndValidity();
     }
-
-    if (this.tipo === 'Estudiante') {
-      this.form.get('idCourse')?.setValidators(Validators.required);
-      this.form.get('idCourse')?.updateValueAndValidity();
-      this.cargarCursos();
-    }
   }
 
-
+  /**
+   * Trae los cursos reales de la institución para poder
+   * (re)asignar el curso del estudiante al editarlo.
+   */
   private cargarCursos(): void {
     this.cargandoCursos = true;
 
@@ -170,10 +173,7 @@ export class EditarUsuarioModalComponent implements OnInit {
 
     if (this.tipo === 'Estudiante') {
       const payload: UpdateStudentDTO = this.basePayload(v) as UpdateStudentDTO;
-      const idCourse = v.idCourse === '' || v.idCourse === null || v.idCourse === undefined
-        ? null
-        : Number(v.idCourse);
-      this.guardar.emit({ tipo: 'Estudiante', id: this.usuario.idUser, payload, idCourse });
+      this.guardar.emit({ tipo: 'Estudiante', id: this.usuario.idUser, payload });
       return;
     }
 
@@ -198,7 +198,8 @@ export class EditarUsuarioModalComponent implements OnInit {
       stratum: v.stratum ? Number(v.stratum) : undefined,
       populationType: v.populationType || undefined,
       healthRegime: v.healthRegime || undefined,
-      eps: v.eps || undefined
+      eps: v.eps || undefined,
+      idCourse: v.idCourse ? Number(v.idCourse) : undefined
     };
   }
 

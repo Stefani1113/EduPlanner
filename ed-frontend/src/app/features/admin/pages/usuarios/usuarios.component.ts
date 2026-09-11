@@ -87,9 +87,6 @@ export class UsuariosComponent implements OnInit, OnDestroy {
   grados: string[] = ['Todos los cursos'];
   cargandoCursos = false;
 
-  /** idCourse -> nombre del curso, para mostrar el "Grado" del estudiante en el listado. */
-  private cursoPorId = new Map<number, string>();
-
   rolSeleccionado: Rol = 'Docente';
   gradoSeleccionado = 'Todos los cursos';
   mostrarFiltroRol = false;
@@ -141,24 +138,13 @@ export class UsuariosComponent implements OnInit, OnDestroy {
     this.usuariosService.listarCursos().pipe(
       catchError(() => of({ data: [], message: '' }))
     ).subscribe(res => {
-      const cursos = (res.data ?? []).filter(c => c.status);
+      const nombresCursos = (res.data ?? [])
+        .filter(c => c.status)
+        .map(c => c.name);
 
-      this.cursoPorId = new Map(cursos.map(c => [c.idCourse, c.name]));
-      this.grados = ['Todos los cursos', ...cursos.map(c => c.name)];
+      this.grados = ['Todos los cursos', ...nombresCursos];
       this.cargandoCursos = false;
-
-      // Si el listado de usuarios ya se había cargado antes que los cursos,
-      // recalcula el "Grado" que se muestra ahora que ya tenemos los nombres.
-      this.usuarios = this.usuarios.map(u => ({
-        ...u,
-        grado: this.obtenerNombreCurso(u.detalle.idCourse)
-      }));
     });
-  }
-
-  private obtenerNombreCurso(idCourse?: number | null): string | null {
-    if (idCourse === null || idCourse === undefined) return null;
-    return this.cursoPorId.get(idCourse) ?? null;
   }
 
   ngOnDestroy(): void {
@@ -191,7 +177,7 @@ export class UsuariosComponent implements OnInit, OnDestroy {
       correo: dto.email,
       telefono: dto.phoneNumber,
       rol: ID_A_ROL[dto.idRole] ?? 'Docente',
-      grado: this.obtenerNombreCurso(dto.idCourse),
+      grado: null,
       estado: dto.status ? 'Activo' : 'Inactivo',
       detalle: dto
     };
@@ -240,18 +226,8 @@ export class UsuariosComponent implements OnInit, OnDestroy {
     this.actualizarBreadcrumb();
   }
 
- async toggleEstado(usuario: Usuario): Promise<void> {
+ toggleEstado(usuario: Usuario): void {
   const nuevoEstado = usuario.estado !== 'Activo';
-  const accion = nuevoEstado ? 'activar' : 'inactivar';
-
-  const confirmado = await this.modalService.confirm(
-    `¿Seguro que quieres ${accion} a ${usuario.nombre}?`,
-    nuevoEstado ? 'Activar usuario' : 'Inactivar usuario',
-    nuevoEstado ? 'Sí, activar' : 'Sí, inactivar',
-    'Cancelar'
-  );
-
-  if (!confirmado) return;
 
   this.usuariosService.actualizarEstado(usuario.id, nuevoEstado).subscribe({
     next: () => {
@@ -360,17 +336,7 @@ export class UsuariosComponent implements OnInit, OnDestroy {
 
     if (evento.tipo === 'Estudiante') {
       this.usuariosService.actualizarEstudiante(evento.id, evento.payload as UpdateStudentDTO).subscribe({
-        next: () => {
-          if (evento.idCourse === undefined) {
-            this.finalizarEdicion('Estudiante actualizado correctamente.');
-            return;
-          }
-
-          this.usuariosService.asignarCurso(evento.id, evento.idCourse).subscribe({
-            next: () => this.finalizarEdicion('Estudiante actualizado correctamente.'),
-            error: err => this.errorEdicion(err)
-          });
-        },
+        next: res => this.finalizarEdicion(res.message ?? 'Estudiante actualizado correctamente.'),
         error: err => this.errorEdicion(err)
       });
       return;
