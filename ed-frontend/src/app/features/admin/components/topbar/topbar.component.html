@@ -12,7 +12,7 @@
   </button>
 
   <div class="logo">
-    <img src="assets/img/Logo-nav.png" alt="Edu Planner">
+    <img [src]="logoUrl$ | async" [alt]="nombreInstitucion$ | async">
   </div>
 
   <nav class="breadcrumb" aria-label="breadcrumb">

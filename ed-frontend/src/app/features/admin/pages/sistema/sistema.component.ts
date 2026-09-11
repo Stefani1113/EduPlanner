@@ -67,7 +67,7 @@ export class PanelControlComponent implements OnInit, OnDestroy {
   }
 
   onColorChange(): void {
-    this.settingsService.updatePalette(this.palette);
+    this.settingsService.updateSettings(this.palette, this.info);
   }
 
   onLogoSelected(event: Event): void {
@@ -108,8 +108,7 @@ export class PanelControlComponent implements OnInit, OnDestroy {
   }
 
   guardar(): void {
-    this.settingsService.updatePalette(this.palette);
-    this.settingsService.updateInfo(this.info);
+    this.settingsService.updateSettings(this.palette, this.info);
     this.flashSaved('Cambios guardados');
   }
 
