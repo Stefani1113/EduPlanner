@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
  * Endpoints internos: solo deben ser llamados por otros microservicios, 
  * en este caso por gestion academica
  */
-@RestController
+
 @RequestMapping("/internal/users")
 @RequiredArgsConstructor
 public class InternalUserController {
