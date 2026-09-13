@@ -16,6 +16,19 @@ public class AdministracionServiceClient {
     @Value("${services.administracion.base-url}")
     private String administracionBaseUrl;
 
+    /**
+     * Devuelve el nombre del rol del usuario, o null si no existe.
+     */
+    public String getUserRole(Integer idUser) {
+        try {
+            return restTemplate.getForObject(
+                    administracionBaseUrl + "/internal/users/" + idUser + "/role",
+                    String.class
+            );
+        } catch (HttpClientErrorException.NotFound e) {
+            return null;
+        }
+    }
 
     /**
      * Devuelve el nombre completo del usuario (estudiante, docente, etc.), o null si no existe.
