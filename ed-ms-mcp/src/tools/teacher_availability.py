@@ -10,7 +10,7 @@ def create_teacher_availability_tool(server, client):
             name="list_teacher_availability",
             description="Por medio del endpoint http://localhost:8080/eduplanner/teacher-availability?idTeacher=id consultar y devolver la disponibilidad de dicho docente al que pertenece ese id"
     )
-    def list_techer_avalaibility(idTeacher: int) -> dict[str, Any]:
+    def list_techer_availability(idTeacher: int) -> dict[str, Any]:
         print(f"👉 [MCP Tool] Ejecutando listar disponibilidad de dicho docente")
         try :
             academic_teacher = client.get(
