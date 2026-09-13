@@ -352,7 +352,7 @@ def valid_space(schedule, load, teacher, course, space, day_of_week) :
     return True
 
 # Genera un horario
-def generate_schedule() : 
+def generate_schedule(teachers, courses, time_slots, academic_loads, teacher_availability) : 
     schedule = []
 
     # Filtrar datos por estado
@@ -522,7 +522,7 @@ def validate_schedule(schedule, teachers, courses, time_slots, academic_loads, t
     return errors
 
 # Genera el horario y lo valida antes de devolverlo.
-def generate_and_validate_schedule():
+def generate_and_validate_schedule(teachers, courses, time_slots, academic_loads, teacher_availability):
     schedule = generate_schedule()
 
     if schedule is None:
