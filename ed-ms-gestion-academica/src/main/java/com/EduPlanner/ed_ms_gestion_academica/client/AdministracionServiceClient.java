@@ -28,4 +28,19 @@ public class AdministracionServiceClient {
             return null;
         }
     }
+
+    /**
+     * Devuelve el nombre completo del usuario (estudiante, docente, etc.), o null si no existe.
+     */
+    public String getUserFullName(Integer idUser) {
+        if (idUser == null) return null;
+        try {
+            return restTemplate.getForObject(
+                    administracionBaseUrl + "/internal/users/" + idUser + "/full-name",
+                    String.class
+            );
+        } catch (HttpClientErrorException.NotFound e) {
+            return null;
+        }
+    }
 }
