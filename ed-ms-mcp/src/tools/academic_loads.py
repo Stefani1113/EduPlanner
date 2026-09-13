@@ -44,7 +44,7 @@ def create_academic_load_tool(server, client) :
         name="List_academic_loads_course",
         description="Por medio del endpoint http://localhost:8080/gestion-academica/eduplanner/academic-loads/filter?course=id consultar y devolver la lista de las cargar académicas de el curso al que pertenece ese Id",
     )
-    def list_academic_loads_teacher(id_course: int) -> dict[str, Any]:
+    def list_academic_loads_course(id_course: int) -> dict[str, Any]:
         print(f"👉 [MCP Tool] Ejecutando listar cargas académicas por Curso")
         try :
             academic_loads_course = client.get(
