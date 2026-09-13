@@ -6,6 +6,7 @@ import com.eduplanner.ed_lib_common.dto.HttpGlobalResponse;
 import com.EduPlanner.ed_ms_gestion_academica.service.AcademicTeacherService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +22,7 @@ public class AcademicTeacherController {
         HttpGlobalResponse<AcademicTeacherResponseDTO> r = new HttpGlobalResponse<>();
         try { r.setData(service.registerTeacher(req)); r.setMessage("Profesor académico registrado correctamente"); return ResponseEntity.status(HttpStatus.CREATED).body(r); }
         catch (IllegalArgumentException e) { r.setMessage(e.getMessage()); return ResponseEntity.status(HttpStatus.CONFLICT).body(r); }
+        catch (DataIntegrityViolationException e) { throw e; }
         catch (Exception e) { r.setMessage("Error registrando profesor académico"); return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(r); }
     }
 
@@ -29,6 +31,7 @@ public class AcademicTeacherController {
         HttpGlobalResponse<AcademicTeacherResponseDTO> r = new HttpGlobalResponse<>();
         try { r.setData(service.updateTeacher(id, req)); r.setMessage("Profesor académico actualizado correctamente"); return ResponseEntity.ok(r); }
         catch (IllegalArgumentException e) { r.setMessage(e.getMessage()); return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(r); }
+        catch (DataIntegrityViolationException e) { throw e; }
         catch (RuntimeException e) { r.setMessage(e.getMessage()); return ResponseEntity.status(HttpStatus.NOT_FOUND).body(r); }
     }
 
@@ -42,6 +45,7 @@ public class AcademicTeacherController {
     public ResponseEntity<HttpGlobalResponse<AcademicTeacherResponseDTO>> getTeacherById(@PathVariable Integer id) {
         HttpGlobalResponse<AcademicTeacherResponseDTO> r = new HttpGlobalResponse<>();
         try { r.setData(service.getTeacherById(id)); r.setMessage("Profesor académico encontrado"); return ResponseEntity.ok(r); }
+        catch (DataIntegrityViolationException e) { throw e; }
         catch (RuntimeException e) { r.setMessage(e.getMessage()); return ResponseEntity.status(HttpStatus.NOT_FOUND).body(r); }
     }
 
@@ -49,6 +53,7 @@ public class AcademicTeacherController {
     public ResponseEntity<HttpGlobalResponse<Void>> deleteTeacher(@PathVariable Integer id) {
         HttpGlobalResponse<Void> r = new HttpGlobalResponse<>();
         try { service.deleteTeacher(id); r.setMessage("Profesor académico eliminado correctamente"); return ResponseEntity.ok(r); }
+        catch (DataIntegrityViolationException e) { throw e; }
         catch (RuntimeException e) { r.setMessage(e.getMessage()); return ResponseEntity.status(HttpStatus.NOT_FOUND).body(r); }
     }
 }
