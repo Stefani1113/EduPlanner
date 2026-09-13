@@ -1,8 +1,23 @@
 spring:
+  application:
+    name: ed-ms-administracion
+
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+
+      discovery:
+        enabled: true
+        register: true
+        service-name: ${spring.application.name}
+        prefer-ip-address: true
+        health-check-path: /eduplanner/actuator/health
+
   datasource:
     url: jdbc:mysql://localhost:3306/auth_administration
     username: root
-    password: kari
+    password: root
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
@@ -13,7 +28,7 @@ spring:
     port: 587
     username: eduplannerr@gmail.com
     password: xoguovkhuxdbbgll
-    properties:
+    properties: 
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
 
@@ -28,10 +43,6 @@ server:
   servlet:
     context-path: /eduplanner/
 
-service:
-  auth:
-    base-url: http://localhost:8081/eduplanner
-
 security:
   jwt:
     secret-key: czyYSEj017tCB8M8mnOSvhgV4gSdI4P5Bql+3HrWZtM=
@@ -40,6 +51,7 @@ security:
 app:
   mail:
     from: eduplannerr@gmail.com
+    support-team: eduplannerr@gmail.com
   csv:
     export-path: ./exports/
     max-rows-import: 5000  
@@ -54,3 +66,12 @@ cloudinary:
   cloud-name: f0qiiq22
   api-key: 588271412933438
   api-secret: _pVZj_anQw5kn-Hkj2RLwSt0C8k
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never

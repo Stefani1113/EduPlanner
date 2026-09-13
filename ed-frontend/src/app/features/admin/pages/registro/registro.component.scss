@@ -1,0 +1,583 @@
+.datos-inline {
+  display: flex;
+  justify-content: center;
+  animation: datosInlineEntrada .25s ease;
+}
+
+
+.panel-datos {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 900px;
+  padding: 25px;
+  background: var(--inst-surface);
+  border: 1px solid rgba(255, 255, 255, .04);
+  border-radius: 16px;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, .35);
+}
+
+
+.panel-datos-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 25px;
+}
+
+.panel-subtitulo {
+  color: var(--inst-primary);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+.panel-datos-header h2 {
+  margin: 5px 0 0;
+  color: var(--inst-text);
+  font-size: 25px;
+  font-weight: 600;
+}
+
+.btn-cerrar-panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 7px;
+  background: var(--inst-surface-alt);
+  color: var(--inst-muted);
+  font-size: 25px;
+  line-height: 1;
+  cursor: pointer;
+  transition: .2s ease;
+}
+
+.btn-cerrar-panel:hover {
+  background: color-mix(in srgb, var(--inst-secondary) 19%, transparent);
+  color: var(--inst-primary);
+}
+
+
+.panel-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 22px;
+  padding: 4px;
+  background: var(--inst-dark);
+  border-radius: 10px;
+}
+
+.panel-tab {
+  flex: 1;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--inst-muted);
+  font-family: 'Poppins', sans-serif;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: .18s ease;
+}
+
+.panel-tab:hover {
+  color: var(--inst-muted);
+}
+
+.panel-tab.activo {
+  background: var(--inst-surface-alt);
+  color: var(--inst-primary);
+  font-weight: 600;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--inst-primary) 35%, transparent);
+}
+
+.panel-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  animation: panelGrupoEntrada .18s ease;
+}
+
+
+.datos-card {
+  padding: 18px;
+  background: var(--inst-surface-alt);
+  border: 1px solid rgba(255, 255, 255, .02);
+  border-radius: 12px;
+}
+
+.datos-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.datos-card-header h3 {
+  margin: 0;
+  color: var(--inst-text);
+  font-size: 14.5px;
+  font-weight: 600;
+  letter-spacing: .2px;
+}
+
+
+.btn-agregar {
+  border: 0;
+  padding: 7px 11px;
+  border-radius: 10px;
+  background: var(--inst-primary);
+  color: var(--inst-text);
+  font-family: 'Poppins', sans-serif;
+  font-size: 12px;
+  cursor: pointer;
+  transition: .2s ease;
+}
+
+.btn-agregar:hover {
+  background: var(--inst-primary);
+  color: var(--inst-dark);
+}
+
+
+.tabla-scroll {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.tabla-datos {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.tabla-datos th {
+  padding: 9px 7px;
+  background: transparent;
+  border-bottom: 1px solid color-mix(in srgb, var(--inst-primary) 35%, transparent);
+  color: var(--inst-primary);
+  text-align: left;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: .4px;
+  white-space: nowrap;
+}
+
+.tabla-datos td {
+  padding: 10px 7px;
+  color: var(--inst-muted);
+  border-bottom: 1px solid color-mix(in srgb, var(--inst-primary) 20%, transparent);
+}
+
+.tabla-datos tbody tr {
+  cursor: pointer;
+  transition: background .2s ease;
+}
+
+.tabla-datos tbody tr:hover {
+  background: color-mix(in srgb, var(--inst-primary) 8%, transparent);
+}
+
+.tabla-datos tbody tr.fila-seleccionada {
+  background: color-mix(in srgb, var(--inst-primary) 18%, transparent);
+}
+
+
+.docente-nombre {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.docente-avatar {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--inst-primary);
+  color: var(--inst-text);
+  font-size: 10px;
+  font-weight: 600;
+
+  background-size: cover;
+  background-position: center;
+}
+
+.docente-avatar-foto {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.sin-registros {
+  padding: 28px 12px;
+  text-align: center;
+  color: var(--inst-muted);
+  font-size: 12.5px;
+  cursor: default;
+}
+
+.mensaje-carga {
+  padding: 10px 4px;
+  color: var(--inst-muted);
+  font-size: 13px;
+}
+
+.mensaje-error {
+  margin: 0 0 12px 0;
+  padding: 10px 12px;
+  background: #5a2323;
+  color: #ffb4b4;
+  border-radius: 5px;
+  font-size: 13px;
+}
+
+.mensaje-aviso {
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  background: #4a3d17;
+  color: #ffd980;
+  border-radius: 5px;
+  font-size: 13px;
+}
+
+.punto-color {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 6px;
+  vertical-align: middle;
+  border-radius: 50%;
+}
+
+
+
+.acciones-datos {
+  display: flex;
+  gap: 8px;
+  margin-top: 13px;
+}
+
+.acciones-datos button {
+  border: 0;
+  padding: 8px 13px;
+  border-radius: 6px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 12px;
+  cursor: pointer;
+  transition: .2s ease;
+}
+
+.btn-editar {
+  background: var(--inst-primary);
+  color: var(--inst-text);
+}
+.btn-editar:not(:disabled):hover {
+  background: var(--inst-primary);
+  color: var(--inst-dark);
+}
+
+.btn-eliminar {
+  background: #79504a;
+  color: #efb1a6;
+}
+.btn-eliminar:not(:disabled):hover {
+  background: #9b4037;
+  color: var(--inst-text);
+}
+
+.acciones-datos button:disabled {
+  opacity: .35;
+  cursor: not-allowed;
+}
+
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  box-sizing: border-box;
+  background: rgba(0, 0, 0, .78);
+}
+
+.modal-datos {
+  width: 650px;
+  max-width: 95vw;
+  max-height: 90vh;
+  box-sizing: border-box;
+  overflow-y: auto;
+  padding: 25px;
+  background: var(--inst-surface);
+  border: 1px solid var(--inst-border);
+  border-radius: 15px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, .7);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 22px;
+}
+
+.modal-header span {
+  color: var(--inst-primary);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .4px;
+}
+
+.modal-header h2 {
+  margin: 5px 0 0;
+  color: var(--inst-text);
+  font-size: 19px;
+  font-weight: 600;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 13px;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.campo-completo {
+  grid-column: 1 / -1;
+}
+
+.campo-checkbox label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-direction: row;
+}
+
+.campo-checkbox input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--inst-primary);
+}
+
+.campo label {
+  margin-bottom: 6px;
+  color: var(--inst-primary);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.campo input,
+.campo select {
+  width: 100%;
+  box-sizing: border-box;
+
+  padding: 10px;
+
+  outline: none;
+  border: 1px solid var(--inst-border);
+  border-radius: 6px;
+
+  background: var(--inst-dark);
+  color: var(--inst-text);
+
+  font-family: 'Poppins', sans-serif;
+  font-size: 13px;
+
+  transition: border-color .2s ease;
+}
+
+.campo input::placeholder {
+  color: var(--inst-muted);
+}
+
+.campo input:focus,
+.campo select:focus {
+  border-color: var(--inst-primary);
+}
+
+.campo select {
+  cursor: pointer;
+}
+
+.campo select option {
+  background: var(--inst-dark);
+  color: var(--inst-text);
+}
+
+
+.modal-acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+
+  margin-top: 22px;
+}
+
+.modal-acciones button {
+  border: 0;
+  padding: 10px 17px;
+  border-radius: 7px;
+
+  font-family: 'Poppins', sans-serif;
+  font-size: 12px;
+
+  cursor: pointer;
+  transition: .2s ease;
+}
+
+.btn-cancelar {
+  background: var(--inst-surface-alt);
+  color: var(--inst-muted);
+}
+
+.btn-cancelar:not(:disabled):hover {
+  background: var(--inst-border);
+  color: var(--inst-text);
+}
+
+.btn-guardar {
+  background: var(--inst-primary);
+  color: var(--inst-dark);
+  font-weight: 600;
+}
+
+.btn-guardar:not(:disabled):hover {
+  background: var(--inst-secondary);
+  transform: translateY(-1px);
+}
+
+.modal-acciones button:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
+.foto-docente {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 15px;
+  margin-bottom: 18px;
+  background: var(--inst-surface);
+  border-radius: 9px;
+  flex-wrap: wrap;
+}
+
+.foto-preview {
+  width: 70px;
+  height: 70px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--inst-primary);
+  color: var(--inst-text);
+  font-size: 24px;
+  background-size: cover;
+  background-position: center;
+}
+
+.campo-imagen {
+  flex: 1;
+  min-width: 150px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.campo-imagen label {
+  color: var(--inst-primary);
+  font-size: 13px;
+}
+
+.campo-imagen input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px;
+  outline: none;
+  border: 1px solid var(--inst-border);
+  border-radius: 6px;
+  background: var(--inst-dark);
+  color: var(--inst-text);
+  font-family: 'Poppins', sans-serif;
+  font-size: 13px;
+}
+
+.campo-imagen input:focus {
+  border-color: var(--inst-primary);
+}
+
+.btn-preview-imagen {
+  align-self: flex-start;
+  background: var(--inst-primary);
+  color: var(--inst-text);
+  border: 0;
+  padding: 7px 12px;
+  border-radius: 6px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.btn-preview-imagen:hover {
+  background: var(--inst-primary);
+  color: var(--inst-dark);
+}
+
+
+
+@media (max-width: 600px) {
+
+  .panel-datos {
+    width: 100%;
+    max-width: 100%;
+    padding: 18px;
+  }
+
+  .modal-datos {
+    width: 100%;
+    padding: 20px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .campo-completo {
+    grid-column: auto;
+  }
+
+}
+
+@media (max-width: 420px) {
+
+  .modal-acciones {
+    flex-direction: column-reverse;
+  }
+
+  .modal-acciones button {
+    width: 100%;
+  }
+
+  .datos-card {
+    padding: 13px;
+  }
+
+}

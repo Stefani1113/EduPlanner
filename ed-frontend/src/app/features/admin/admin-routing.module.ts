@@ -38,22 +38,12 @@ const routes: Routes = [
       },
 
       {
-        path: 'horarios',
+        path: 'registro',
         loadComponent: () =>
-          import('./pages/horarios/horarios.component')
-            .then(m => m.HorariosComponent),
+          import('./pages/registro/registro.component')
+            .then(m => m.RegistroComponent),
         data: {
-          breadcrumb: ['Horarios']
-        }
-      },
-
-      {
-        path: 'emergencia',
-        loadComponent: () =>
-          import('./pages/emergencia/emergencia.component')
-            .then(m => m.EmergenciaComponent),
-        data: {
-          breadcrumb: ['Emergencia']
+          breadcrumb: ['Registro']
         }
       },
 
@@ -70,25 +60,15 @@ const routes: Routes = [
       {
         path: 'asistencia',
         loadComponent: () =>
-          import('./pages/asistencia/asistencia.component')
+          import('../asistencias/pages/asistencias/asistencias.component')
             .then(m => m.AsistenciaComponent),
         data: {
           breadcrumb: ['Asistencia']
         }
       },
 
-      {
-        path: 'notas',
-        loadComponent: () =>
-          import('./pages/notas/notas.component')
-            .then(m => m.NotasComponent),
-        data: {
-          breadcrumb: ['Notas']
-        }
-      },
-
-      {
-        path: 'importacion',
+      { 
+        path: 'importacion', 
         loadComponent: () =>
           import('./pages/importacion/importacion.component')
             .then(m => m.ImportacionComponent),

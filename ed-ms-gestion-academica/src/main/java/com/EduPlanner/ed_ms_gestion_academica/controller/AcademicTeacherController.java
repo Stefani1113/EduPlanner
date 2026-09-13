@@ -7,12 +7,14 @@ import com.EduPlanner.ed_ms_gestion_academica.service.AcademicTeacherService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /** RF 8.1 - Base: /eduplanner/academic-teachers */
+@Log4j2
 @RestController @RequestMapping("/academic-teachers") @RequiredArgsConstructor
 public class AcademicTeacherController {
     private final AcademicTeacherService service;
@@ -22,8 +24,16 @@ public class AcademicTeacherController {
         HttpGlobalResponse<AcademicTeacherResponseDTO> r = new HttpGlobalResponse<>();
         try { r.setData(service.registerTeacher(req)); r.setMessage("Profesor académico registrado correctamente"); return ResponseEntity.status(HttpStatus.CREATED).body(r); }
         catch (IllegalArgumentException e) { r.setMessage(e.getMessage()); return ResponseEntity.status(HttpStatus.CONFLICT).body(r); }
+
         catch (DataIntegrityViolationException e) { throw e; }
         catch (Exception e) { r.setMessage("Error registrando profesor académico"); return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(r); }
+
+        catch (Exception e) {
+    log.error("Error registrando profesor académico", e);
+    r.setMessage("Error registrando profesor académico: " + e.getMessage());
+    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(r);
+}
+
     }
 
     @PutMapping("/{id}")

@@ -18,8 +18,13 @@ const SWATCHES: ColorSwatch[] = [
   { key: 'primary', label: 'Color primario', hint: 'Botones y acentos principales' },
   { key: 'secondary', label: 'Color secundario', hint: 'Títulos y tarjeta de visión' },
   { key: 'accent', label: 'Color de acento', hint: 'Fondos suaves y bordes' },
-  { key: 'dark', label: 'Texto oscuro', hint: 'Texto principal de la página' },
-  { key: 'light', label: 'Blanco institucional', hint: 'Texto sobre fondos de color' }
+  { key: 'dark', label: 'Fondo general', hint: 'Fondo principal de todo el sistema' },
+  { key: 'light', label: 'Blanco institucional', hint: 'Texto sobre fondos de color' },
+  { key: 'surface', label: 'Fondo de tarjetas', hint: 'Paneles, tarjetas y bloques' },
+  { key: 'surfaceAlt', label: 'Fondo secundario', hint: 'Campos, menús y elementos secundarios' },
+  { key: 'text', label: 'Texto principal', hint: 'Títulos y contenido principal' },
+  { key: 'muted', label: 'Texto secundario', hint: 'Descripciones y textos suaves' },
+  { key: 'border', label: 'Bordes', hint: 'Líneas, separadores y contornos' }
 ];
 
 @Component({

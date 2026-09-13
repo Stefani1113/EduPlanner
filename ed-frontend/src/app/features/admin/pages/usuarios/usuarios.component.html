@@ -87,6 +87,16 @@
 
       </div>
 
+      <button
+        type="button"
+        class="btn-exportar"
+        (click)="exportarCSV()"
+        [disabled]="exportando || cargando || usuarios.length === 0"
+        title="Exportar el rol seleccionado a CSV"
+      >
+        {{ exportando ? 'Exportando...' : '↓ Exportar CSV' }}
+      </button>
+
       <div class="registrar-box">
 
         <button
@@ -169,6 +179,13 @@
                   <td class="acciones-cell">
                     <button
                       type="button"
+                      class="accion editar"
+                      (click)="editar(usuario)"
+                    >
+                      Editar
+                    </button>
+                    <button
+                      type="button"
                       class="accion"
                       [class.inactivar]="usuario.estado === 'Activo'"
                       [class.activar]="usuario.estado === 'Inactivo'"
@@ -203,5 +220,14 @@
     (cerrar)="cerrarModal()"
     (guardar)="guardarUsuario($event)">
   </app-registro-usuario-modal>
+
+  <app-editar-usuario-modal
+    *ngIf="usuarioEnEdicion && tipoEdicion"
+    [usuario]="usuarioEnEdicion"
+    [tipo]="tipoEdicion"
+    [guardando]="guardandoEdicion"
+    (cerrar)="cerrarEdicion()"
+    (guardar)="guardarEdicion($event)">
+  </app-editar-usuario-modal>
 
 </div>
