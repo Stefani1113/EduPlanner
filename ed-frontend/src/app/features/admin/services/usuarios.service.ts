@@ -207,6 +207,12 @@ export class UsuariosService {
     );
   }
 
+  listarPorCurso(idCourse: number): Observable<HttpGlobalResponse<UserResponseDTO[]>> {
+    return this.http.get<HttpGlobalResponse<UserResponseDTO[]>>(
+      `${this.api}/users/course/${idCourse}`
+    );
+  }
+
   buscarPorNombre(name: string): Observable<HttpGlobalResponse<UserResponseDTO[]>> {
     return this.http.get<HttpGlobalResponse<UserResponseDTO[]>>(`${this.api}/users/search`, {
       params: { name }
@@ -218,12 +224,11 @@ export class UsuariosService {
   }
 
   registrarPersonal(dto: RegisterStaffDTO): Observable<HttpGlobalResponse<void>> {
-  console.log('DTO enviado:', dto);
-  return this.http.post<HttpGlobalResponse<void>>(
-    `${this.api}/users/register/staff`,
-    dto
-  );
-}
+    return this.http.post<HttpGlobalResponse<void>>(
+      `${this.api}/users/register/staff`,
+      dto
+    );
+  }
 
   registrarDocente(dto: RegisterTeacherDTO): Observable<HttpGlobalResponse<void>> {
   return this.http.post<HttpGlobalResponse<void>>(

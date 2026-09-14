@@ -1,42 +1,46 @@
 <div class="importacion-container" *ngIf="vista === 'formulario'">
-
   <div class="importacion-card">
-
-    <div class="card-header">
-      IMPORTACIÓN MASIVA
-    </div>
+    <div class="card-header">IMPORTACIÓN MASIVA</div>
 
     <div class="card-body">
-
       <div class="descripcion">
-        Importa la lista de estudiantes que quieras ingresar al sistema.
+        Importa estudiantes mediante un archivo CSV con la estructura definida por el sistema.
       </div>
 
-      <label class="drop-zone">
-
-        <img src="assets/img/archive.png" alt="Subir archivo">
+      <label
+        class="drop-zone"
+        [class.arrastrando]="arrastrando"
+        [class.disabled]="cargando"
+        (dragover)="onDragOver($event)"
+        (dragleave)="onDragLeave($event)"
+        (drop)="onDrop($event)"
+      >
+        <img src="assets/img/archive.png" alt="Seleccionar archivo">
 
         <div class="upload-text">
-          <p>
-            Arrastra tu archivo aquí
-          </p>
-
-          <span>
-            o haz clic para seleccionarlo
-          </span>
+          <p>{{ archivo ? 'Archivo seleccionado' : 'Arrastra tu archivo aquí' }}</p>
+          <span>o haz clic para seleccionar un CSV</span>
         </div>
 
         <input
           type="file"
-          accept=".xlsx,.xls,.csv"
+          accept=".csv,text/csv"
+          [disabled]="cargando"
           (change)="seleccionarArchivo($event)"
         >
-
       </label>
 
+      <div class="formato-ayuda">
+        Formato permitido: <strong>CSV</strong> · Tamaño máximo: <strong>{{ tamanoMaximoMB }} MB</strong>
+      </div>
+
       <div class="archivo" *ngIf="archivo">
-        <i class="fa-solid fa-file"></i>
-        {{ archivo.name }}
+        <i class="fa-solid fa-file-csv"></i>
+        <div class="archivo-info">
+          <strong>{{ archivo.name }}</strong>
+          <span>{{ (archivo.size / 1024 / 1024) | number:'1.2-2' }} MB</span>
+        </div>
+        <button type="button" class="btn-quitar" [disabled]="cargando" (click)="quitarArchivo()">×</button>
       </div>
 
       <div class="error-general" *ngIf="errorGeneral">
@@ -44,194 +48,85 @@
       </div>
 
       <button
+        type="button"
         class="btn-importar"
-        [disabled]="cargando"
+        [disabled]="cargando || !archivo"
         (click)="importar()"
       >
-        {{ cargando ? 'IMPORTANDO...' : 'IMPORTAR ARCHIVO' }}
+        {{ cargando ? 'PROCESANDO...' : 'IMPORTAR ARCHIVO' }}
       </button>
-
     </div>
-
   </div>
-
 </div>
 
-
-<div
-  class="reporte-container"
-  *ngIf="vista === 'reporte' && reporte"
->
-
+<div class="reporte-container" *ngIf="vista === 'reporte' && reporte">
   <div class="reporte-card">
-
-    <button
-      type="button"
-      class="btn-volver"
-      (click)="volver()"
-    >
+    <button type="button" class="btn-volver" (click)="volver()">
       <i class="fa-solid fa-arrow-left"></i>
       Volver
     </button>
 
-
-    <div class="reporte-titulo">
-      Reporte de importación
-    </div>
-
-    <div class="reporte-subtitulo">
-      Consulta el resultado detallado del proceso de importación.
-    </div>
-
+    <div class="reporte-titulo">Reporte de importación</div>
+    <div class="reporte-subtitulo">Consulta el resultado detallado del proceso de importación.</div>
 
     <div class="reporte-meta">
-
-      <span>
-        <strong>Archivo:</strong>
-        {{ reporte.fileName }}
-      </span>
-
-      <span>
-        <strong>Fecha:</strong>
-        {{ reporte.importDate | date:'dd/MM/yyyy HH:mm' }}
-      </span>
-
-      <span>
-        <strong>ID de importación:</strong>
-        #{{ reporte.idImport }}
-      </span>
-
+      <span><strong>Archivo:</strong> {{ reporte.fileName }}</span>
+      <span><strong>Fecha:</strong> {{ reporte.importDate | date:'dd/MM/yyyy HH:mm' }}</span>
+      <span><strong>ID de importación:</strong> #{{ reporte.idImport }}</span>
     </div>
-
 
     <div class="resumen-cards">
-
       <div class="resumen-card total">
-
-        <span class="resumen-label">
-          Total
-        </span>
-
-        <span class="resumen-valor">
-          {{ reporte.totalRows }}
-        </span>
-
+        <span class="resumen-label">Total</span>
+        <span class="resumen-valor">{{ reporte.totalRows }}</span>
       </div>
-
-
       <div class="resumen-card exitosos">
-
-        <span class="resumen-label">
-          Exitosos
-        </span>
-
-        <span class="resumen-valor">
-          {{ reporte.successRows }}
-        </span>
-
+        <span class="resumen-label">Exitosos</span>
+        <span class="resumen-valor">{{ reporte.successRows }}</span>
       </div>
-
-
       <div class="resumen-card errores">
-
-        <span class="resumen-label">
-          Con errores
-        </span>
-
-        <span class="resumen-valor">
-          {{ reporte.failedRows }}
-        </span>
-
+        <span class="resumen-label">Con errores</span>
+        <span class="resumen-valor">{{ reporte.failedRows }}</span>
       </div>
-
+      <div class="resumen-card porcentaje">
+        <span class="resumen-label">Éxito</span>
+        <span class="resumen-valor">{{ porcentajeExito() }}%</span>
+      </div>
     </div>
 
+    <div class="tabla-errores-titulo" *ngIf="reporte.errors?.length">Tabla de errores</div>
 
-    <div
-      class="tabla-errores-titulo"
-      *ngIf="reporte.errors?.length"
-    >
-      Tabla de errores
-    </div>
-
-
-    <div
-      class="table-wrapper"
-      *ngIf="reporte.errors?.length"
-    >
-
+    <div class="table-wrapper" *ngIf="reporte.errors?.length">
       <table class="errores-table">
-
         <thead>
-
           <tr>
             <th>Fila</th>
             <th>Tipo de error</th>
             <th>Casilla</th>
             <th>Detalle</th>
           </tr>
-
         </thead>
-
-
         <tbody>
-
           <tr *ngFor="let err of reporte.errors">
-
+            <td>{{ err.rowNumber }}</td>
             <td>
-              {{ err.rowNumber }}
-            </td>
-
-
-            <td>
-
-              <span
-                class="badge"
-                [ngClass]="claseTipoError(err.error)"
-              >
+              <span class="badge" [ngClass]="claseTipoError(err.error)">
                 {{ etiquetaTipoError(err.error) }}
               </span>
-
             </td>
-
-
-            <td>
-              {{ campoAfectado(err.error) }}
-            </td>
-
-
-            <td class="detalle-cell">
-              {{ mensajeAmigable(err.error) }}
-            </td>
-
+            <td>{{ campoAfectado(err.error) }}</td>
+            <td class="detalle-cell">{{ mensajeAmigable(err.error) }}</td>
           </tr>
-
         </tbody>
-
       </table>
-
     </div>
 
-
-    <div
-      class="sin-errores"
-      *ngIf="!reporte.errors?.length"
-    >
-
-      Todos los registros se importaron correctamente,
-      sin errores.
-
+    <div class="sin-errores" *ngIf="!reporte.errors?.length">
+      Todos los registros se procesaron correctamente, sin errores.
     </div>
 
-
-    <button
-      type="button"
-      class="btn-nueva-importacion"
-      (click)="volver()"
-    >
+    <button type="button" class="btn-nueva-importacion" (click)="volver()">
       REALIZAR OTRA IMPORTACIÓN
     </button>
-
   </div>
-
 </div>

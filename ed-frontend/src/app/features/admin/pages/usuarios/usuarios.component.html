@@ -26,7 +26,7 @@
           <span>
             {{
               rolSeleccionado === 'Estudiante' &&
-              gradoSeleccionado !== 'Todos los grados'
+              gradoSeleccionado !== 'Todos los cursos'
                 ? gradoSeleccionado
                 : rolSeleccionado
             }}
@@ -68,7 +68,7 @@
 
           <li
             class="rol-item"
-            [class.active]="rolSeleccionado === 'Estudiante' && gradoSeleccionado === 'Todos los grados'"
+            [class.active]="rolSeleccionado === 'Estudiante' && gradoSeleccionado === 'Todos los cursos'"
             (click)="seleccionarRol('Estudiante')"
           >
             Estudiante
@@ -91,7 +91,7 @@
         type="button"
         class="btn-exportar"
         (click)="exportarCSV()"
-        [disabled]="exportando || cargando || usuarios.length === 0"
+        [disabled]="exportando || cargando || usuariosFiltrados.length === 0"
         title="Exportar el rol seleccionado a CSV"
       >
         {{ exportando ? 'Exportando...' : '↓ Exportar CSV' }}
@@ -130,7 +130,7 @@
           <img class="search-icon" src="assets/img/magnifying_glass.png" alt="">
         <input
           type="text"
-          placeholder="Buscar por nombre..."
+          placeholder="Buscar por nombre, correo, documento o ID..."
           [(ngModel)]="busqueda"
         >
       </div>
@@ -138,6 +138,7 @@
       <div class="table-wrapper">
 
         <div class="loading" *ngIf="cargando">Cargando usuarios...</div>
+        <div class="loading" *ngIf="cargandoEdicion">Preparando edición...</div>
         <div class="error" *ngIf="errorCarga && !cargando">{{ errorCarga }}</div>
         <table class="usuarios-table" *ngIf="!cargando && !errorCarga">
               <thead>
@@ -190,8 +191,9 @@
                       [class.inactivar]="usuario.estado === 'Activo'"
                       [class.activar]="usuario.estado === 'Inactivo'"
                       (click)="toggleEstado(usuario)"
+                      [disabled]="estaCambiandoEstado(usuario.id)"
                     >
-                      {{ usuario.estado === 'Activo' ? 'Inactivar' : 'Activar' }}
+                      {{ estaCambiandoEstado(usuario.id) ? 'Procesando...' : (usuario.estado === 'Activo' ? 'Inactivar' : 'Activar') }}
                     </button>
                   </td>
                 </tr>
