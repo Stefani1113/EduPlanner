@@ -85,7 +85,7 @@ public class AttendancePdfService {
     private static final float MARGIN = 40f;
     private static final float ROW_HEIGHT = 20f;
     // fecha, estado, curso, observación, justificación, revisión
-    private static final float[] COL_WIDTHS = {62, 78, 35, 110, 110, 75};
+    private static final float[] COL_WIDTHS = {62, 78, 55, 95, 100, 75};
 
     private final PDFont fontRegular = new PDType1Font(Standard14Fonts.FontName.HELVETICA);
     private final PDFont fontBold = new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD);
@@ -179,13 +179,13 @@ public class AttendancePdfService {
                 x += COL_WIDTHS[1];
 
                 content.setNonStrokingColor(COLOR_TEXT_DARK);
-                text(content, fontRegular, 8, x, baseline, r.getIdCourse() != null ? String.valueOf(r.getIdCourse()) : "");
+                text(content, fontRegular, 8, x, baseline, truncate(r.getCourseName(), 10));
                 x += COL_WIDTHS[2];
 
-                text(content, fontRegular, 8, x, baseline, truncate(r.getObservation(), 22));
+                text(content, fontRegular, 8, x, baseline, truncate(r.getObservation(), 18));
                 x += COL_WIDTHS[3];
 
-                text(content, fontRegular, 8, x, baseline, truncate(r.getJustificationText(), 22));
+                text(content, fontRegular, 8, x, baseline, truncate(r.getJustificationText(), 20));
                 x += COL_WIDTHS[4];
 
                 Color justColor = JUSTIFICATION_COLORS.getOrDefault(r.getJustificationStatus(), COLOR_TEXT_MUTED);

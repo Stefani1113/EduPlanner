@@ -1,0 +1,811 @@
+<div class="asistencia-container">
+
+  <div class="page-header">
+    <h1>Asistencia</h1>
+    <p>Estadísticas y control de asistencia por curso</p>
+  </div>
+
+  <div class="loading" *ngIf="cargandoBase">
+    Cargando información base...
+  </div>
+
+  <div
+    class="error"
+    *ngIf="errorBase && !cargandoBase"
+  >
+    {{ errorBase }}
+  </div>
+
+  <ng-container *ngIf="!cargandoBase && !errorBase">
+
+    <div class="tabs">
+
+      <button
+        type="button"
+        class="tab"
+        [class.active]="tabActiva === 'resumen'"
+        (click)="cambiarTab('resumen')"
+      >
+        Resumen
+      </button>
+
+      <button
+        type="button"
+        class="tab"
+        [class.active]="tabActiva === 'historial'"
+        (click)="cambiarTab('historial')"
+      >
+        Historial
+      </button>
+
+      <button
+        type="button"
+        class="tab"
+        [class.active]="tabActiva === 'listado'"
+        (click)="cambiarTab('listado')"
+      >
+        Listado
+      </button>
+
+      <button
+        type="button"
+        class="tab"
+        [class.active]="tabActiva === 'conflictos'"
+        (click)="cambiarTab('conflictos')"
+      >
+        Justificaciones
+      </button>
+
+    </div>
+
+    <ng-container [ngSwitch]="tabActiva">
+
+
+      <ng-container *ngSwitchCase="'resumen'">
+
+        <div class="filtros-bar">
+
+          <label>
+            Curso
+
+            <select
+              [(ngModel)]="filtroSesionesCurso"
+              (ngModelChange)="buscarSesiones()"
+            >
+              <option [ngValue]="null">
+                Todos
+              </option>
+
+              <option
+                *ngFor="let c of cursos"
+                [ngValue]="c.idCourse"
+              >
+                {{ c.name }}
+              </option>
+            </select>
+          </label>
+
+          <label>
+            Desde
+
+            <input
+              type="date"
+              [(ngModel)]="fechaInicioSesiones"
+              (change)="buscarSesiones()"
+            >
+          </label>
+
+          <label>
+            Hasta
+
+            <input
+              type="date"
+              [(ngModel)]="fechaFinSesiones"
+              (change)="buscarSesiones()"
+            >
+          </label>
+
+        </div>
+
+        <div
+          class="loading"
+          *ngIf="cargandoSesiones"
+        >
+          Cargando sesiones...
+        </div>
+
+        <div
+          class="error"
+          *ngIf="errorSesiones && !cargandoSesiones"
+        >
+          {{ errorSesiones }}
+        </div>
+
+        <div
+          class="tabla-wrap"
+          *ngIf="!cargandoSesiones && !errorSesiones"
+        >
+
+          <table
+            class="tabla"
+            *ngIf="sesiones.length; else sinSesiones"
+          >
+
+            <thead>
+              <tr>
+                <th>Curso</th>
+                <th>Docente</th>
+                <th>Fecha</th>
+                <th>Presentes</th>
+                <th>Ausentes</th>
+                <th>Tardanzas</th>
+                <th></th>
+              </tr>
+            </thead>
+
+            <tbody>
+
+              <tr
+                *ngFor="let sesion of sesiones"
+              >
+
+                <td>
+                  {{ sesion.nombreCurso }}
+                </td>
+
+                <td>
+                  {{ sesion.docente }}
+                </td>
+
+                <td>
+                  {{ sesion.fecha }}
+                </td>
+
+                <td>
+                  {{ sesion.presentes }}
+                </td>
+
+                <td>
+                  {{ sesion.ausentes }}
+                </td>
+
+                <td>
+                  {{ sesion.tardanzas }}
+                </td>
+
+                <td>
+
+                  <button
+                    type="button"
+                    class="btn-link"
+                    (click)="verSesion(sesion)"
+                  >
+                    Ver
+                  </button>
+
+                </td>
+
+              </tr>
+
+            </tbody>
+
+          </table>
+
+          <ng-template #sinSesiones>
+            <div class="sin-datos">
+              No hay sesiones registradas en este periodo.
+            </div>
+          </ng-template>
+
+        </div>
+
+      </ng-container>
+
+
+      <ng-container *ngSwitchCase="'historial'">
+
+        <div
+          class="loading"
+          *ngIf="cargandoHistorialGrafico"
+        >
+          Calculando historial de asistencia...
+        </div>
+
+        <div
+          class="error"
+          *ngIf="errorHistorialGrafico && !cargandoHistorialGrafico"
+        >
+          {{ errorHistorialGrafico }}
+        </div>
+
+        <div
+          class="resumen-grid"
+          *ngIf="!cargandoHistorialGrafico && !errorHistorialGrafico"
+        >
+
+          <section class="panel panel-global">
+
+            <h3>Global</h3>
+
+            <div
+              class="barras-scroll"
+              *ngIf="barras.length > 0; else sinBarras"
+            >
+
+              <div
+                class="barra-item"
+                *ngFor="let barra of barras; let i = index"
+                (click)="seleccionarCurso(resumenPorCurso[i].idCourse)"
+              >
+
+                <div class="barra-pista">
+
+                  <div
+                    class="barra-relleno"
+                    [style.background]="barra.color"
+                    [style.height.%]="barra.porcentaje"
+                  ></div>
+
+                </div>
+
+                <span
+                  class="barra-punto"
+                  [style.background]="barra.color"
+                ></span>
+
+                <span class="barra-porcentaje">
+                  {{ barra.porcentaje }}%
+                </span>
+
+                <span class="barra-nombre">
+                  {{ barra.nombre }}
+                </span>
+
+              </div>
+
+            </div>
+
+            <ng-template #sinBarras>
+              <div class="sin-datos">
+                No hay cursos con registros de asistencia en este periodo.
+              </div>
+            </ng-template>
+
+          </section>
+
+          <section class="panel panel-total">
+
+            <h3>Porcentaje Total</h3>
+
+            <svg
+              class="dona dona-grande"
+              viewBox="0 0 110 110"
+            >
+
+              <circle
+                class="dona-fondo"
+                cx="55"
+                cy="55"
+                [attr.r]="radioDonaGrande"
+              ></circle>
+
+              <circle
+                class="dona-progreso"
+                cx="55"
+                cy="55"
+                [attr.r]="radioDonaGrande"
+                stroke="#8e44ec"
+                [attr.stroke-dasharray]="circunferenciaGrande"
+                [attr.stroke-dashoffset]="dashOffset(
+                  porcentajeTotal,
+                  circunferenciaGrande
+                )"
+              ></circle>
+
+            </svg>
+
+            <span class="dona-valor dona-valor-grande">
+              {{ porcentajeTotal }}%
+            </span>
+
+            <div class="mini-donas">
+
+              <div class="mini-dona-item">
+
+                <svg
+                  class="dona"
+                  viewBox="0 0 90 90"
+                >
+
+                  <circle
+                    class="dona-fondo"
+                    cx="45"
+                    cy="45"
+                    [attr.r]="radioDonaPequena"
+                  ></circle>
+
+                  <circle
+                    class="dona-progreso"
+                    cx="45"
+                    cy="45"
+                    [attr.r]="radioDonaPequena"
+                    stroke="#e0a83a"
+                    [attr.stroke-dasharray]="circunferenciaPequena"
+                    [attr.stroke-dashoffset]="dashOffset(
+                      porcentajeNoJustificadas,
+                      circunferenciaPequena
+                    )"
+                  ></circle>
+
+                </svg>
+
+                <span class="dona-valor">
+                  {{ totalTardanzas }}
+                </span>
+
+                <span class="mini-dona-label">
+                  Tardanzas
+                </span>
+
+              </div>
+
+              <div class="mini-dona-item">
+
+                <svg
+                  class="dona"
+                  viewBox="0 0 90 90"
+                >
+
+                  <circle
+                    class="dona-fondo"
+                    cx="45"
+                    cy="45"
+                    [attr.r]="radioDonaPequena"
+                  ></circle>
+
+                  <circle
+                    class="dona-progreso"
+                    cx="45"
+                    cy="45"
+                    [attr.r]="radioDonaPequena"
+                    stroke="#2bbfa0"
+                    [attr.stroke-dasharray]="circunferenciaPequena"
+                    [attr.stroke-dashoffset]="dashOffset(
+                      porcentajeJustificadas,
+                      circunferenciaPequena
+                    )"
+                  ></circle>
+
+                </svg>
+
+                <span class="dona-valor">
+                  {{ totalFaltas }}
+                </span>
+
+                <span class="mini-dona-label">
+                  Faltas
+                </span>
+
+              </div>
+
+            </div>
+
+            <button
+              type="button"
+              class="btn-secundario"
+              (click)="descargarPdfHistorial()"
+              [disabled]="idCursoSeleccionado === null"
+            >
+              Descargar PDF
+            </button>
+
+          </section>
+
+          <section class="panel panel-barras-horizontales">
+
+            <div class="barra-h-item">
+
+              <div class="barra-h-pista">
+
+                <div
+                  class="barra-h-relleno barra-h-justificadas"
+                  [style.width.%]="porcentajeJustificadas"
+                >
+                  <span>
+                    {{ porcentajeJustificadas }}%
+                  </span>
+                </div>
+
+              </div>
+
+              <span class="barra-h-label">
+                Ausencias justificadas
+              </span>
+
+            </div>
+
+            <div class="barra-h-item">
+
+              <div class="barra-h-pista">
+
+                <div
+                  class="barra-h-relleno barra-h-no-justificadas"
+                  [style.width.%]="porcentajeNoJustificadas"
+                >
+                  <span>
+                    {{ porcentajeNoJustificadas }}%
+                  </span>
+                </div>
+
+              </div>
+
+              <span class="barra-h-label">
+                Ausencias no justificadas
+              </span>
+
+            </div>
+
+          </section>
+
+        </div>
+
+      </ng-container>
+
+
+      <ng-container *ngSwitchCase="'listado'">
+
+        <div class="filtros-bar">
+
+          <label>
+            Curso
+
+            <select
+              [(ngModel)]="filtroListadoCurso"
+              (ngModelChange)="buscarListado()"
+            >
+
+              <option
+                *ngFor="let c of cursos"
+                [ngValue]="c.idCourse"
+              >
+                {{ c.name }}
+              </option>
+
+            </select>
+          </label>
+
+          <label>
+            Desde
+
+            <input
+              type="date"
+              [(ngModel)]="filtroListadoInicio"
+              (change)="buscarListado()"
+            >
+          </label>
+
+          <label>
+            Hasta
+
+            <input
+              type="date"
+              [(ngModel)]="filtroListadoFin"
+              (change)="buscarListado()"
+            >
+          </label>
+
+          <button
+            type="button"
+            class="btn-secundario"
+            (click)="descargarPdfListado()"
+            [disabled]="filtroListadoCurso === null"
+          >
+            Descargar PDF
+          </button>
+
+        </div>
+
+        <div
+          class="loading"
+          *ngIf="cargandoListado"
+        >
+          Cargando listado...
+        </div>
+
+        <div
+          class="error"
+          *ngIf="errorListado && !cargandoListado"
+        >
+          {{ errorListado }}
+        </div>
+
+        <div
+          class="tabla-wrap tabla-wrap-scroll"
+          *ngIf="!cargandoListado && !errorListado"
+        >
+
+          <table
+            class="tabla"
+            *ngIf="filasListado.length > 0; else sinListado"
+          >
+
+            <thead>
+
+              <tr>
+
+                <th>
+                  Estudiante
+                </th>
+
+                <th
+                  *ngFor="let fecha of columnasListado"
+                >
+                  {{ fecha }}
+                </th>
+
+              </tr>
+
+            </thead>
+
+            <tbody>
+
+              <tr
+                *ngFor="let fila of filasListado"
+              >
+
+                <td>
+                  {{ fila.primerNombre }}
+                  {{ fila.segundoNombre }}
+                  {{ fila.primerApellido }}
+                  {{ fila.segundoApellido }}
+                </td>
+
+                <td
+                  *ngFor="let fecha of columnasListado"
+                >
+
+                  <ng-container
+                    *ngIf="
+                      fila.porFecha.get(fecha) as registro;
+                      else sinRegistro
+                    "
+                  >
+
+                    <button
+                      type="button"
+                      class="celda-asistencia"
+                      [class]="claseEstado(
+                        registro.attendanceStatus
+                      )"
+                      [disabled]="
+                        guardandoCelda ===
+                        (fila.idStudent + '-' + fecha)
+                      "
+                      (click)="alternarCelda(
+                        fila,
+                        fecha
+                      )"
+                      [title]="
+                        etiquetaEstado(
+                          registro.attendanceStatus
+                        )
+                      "
+                    >
+                      {{ etiquetaEstado(
+                        registro.attendanceStatus
+                      ) }}
+                    </button>
+
+                  </ng-container>
+
+                  <ng-template #sinRegistro>
+                    <span class="celda-sin-registro">
+                      —
+                    </span>
+                  </ng-template>
+
+                </td>
+
+              </tr>
+
+            </tbody>
+
+          </table>
+
+          <ng-template #sinListado>
+
+            <div class="sin-datos listado-vacio">
+
+              <strong>
+                No hay registros de asistencia.
+              </strong>
+
+              <span>
+                No existen registros para el curso
+                seleccionado en el periodo indicado.
+              </span>
+
+            </div>
+
+          </ng-template>
+
+        </div>
+
+      </ng-container>
+
+
+      <ng-container *ngSwitchCase="'conflictos'">
+
+        <div class="filtros-bar">
+
+          <label>
+            Curso
+
+            <select
+              [(ngModel)]="filtroExcusasCurso"
+              (ngModelChange)="buscarExcusas()"
+            >
+
+              <option [ngValue]="null">
+                Todos
+              </option>
+
+              <option
+                *ngFor="let c of cursos"
+                [ngValue]="c.idCourse"
+              >
+                {{ c.name }}
+              </option>
+
+            </select>
+
+          </label>
+
+          <label>
+            Desde
+
+            <input
+              type="date"
+              [(ngModel)]="filtroExcusasInicio"
+              (change)="buscarExcusas()"
+            >
+          </label>
+
+          <label>
+            Hasta
+
+            <input
+              type="date"
+              [(ngModel)]="filtroExcusasFin"
+              (change)="buscarExcusas()"
+            >
+          </label>
+
+        </div>
+
+        <div
+          class="loading"
+          *ngIf="cargandoExcusas"
+        >
+          Cargando justificaciones...
+        </div>
+
+        <div
+          class="error"
+          *ngIf="errorExcusas && !cargandoExcusas"
+        >
+          {{ errorExcusas }}
+        </div>
+
+        <div
+          class="lista-excusas"
+          *ngIf="!cargandoExcusas && !errorExcusas"
+        >
+
+          <div
+            class="excusa-card"
+            *ngFor="let excusa of excusas"
+          >
+
+            <div class="excusa-info">
+
+              <strong>
+                {{ nombreEstudiante(excusa.idStudent) }}
+              </strong>
+
+              <span>
+                {{ nombreCurso(excusa.idCourse) }}
+                ·
+                {{ excusa.attendanceDate }}
+              </span>
+
+              <span
+                class="badge"
+                [class]="claseEstado(
+                  excusa.attendanceStatus
+                )"
+              >
+                {{ etiquetaEstado(
+                  excusa.attendanceStatus
+                ) }}
+              </span>
+
+              <span
+                class="badge"
+                [class]="claseJustificacion(
+                  excusa.justificationStatus || 'NONE'
+                )"
+              >
+                {{ etiquetaJustificacion(
+                  excusa.justificationStatus || 'NONE'
+                ) }}
+              </span>
+
+              <p
+                *ngIf="excusa.justificationText"
+                class="excusa-texto"
+              >
+                {{ excusa.justificationText }}
+              </p>
+
+            </div>
+
+            <div
+              class="excusa-acciones"
+              *ngIf="
+                excusa.justificationStatus === 'PENDING'
+              "
+            >
+
+              <button
+                type="button"
+                class="btn-aprobar"
+                [disabled]="
+                  revisandoId === excusa.idAttendance
+                "
+                (click)="
+                  revisarJustificacion(
+                    excusa,
+                    true
+                  )
+                "
+              >
+                Aprobar
+              </button>
+
+              <button
+                type="button"
+                class="btn-rechazar"
+                [disabled]="
+                  revisandoId === excusa.idAttendance
+                "
+                (click)="
+                  revisarJustificacion(
+                    excusa,
+                    false
+                  )
+                "
+              >
+                Rechazar
+              </button>
+
+            </div>
+
+          </div>
+
+          <div
+            class="sin-datos"
+            *ngIf="!excusas.length"
+          >
+            No hay justificaciones registradas en este periodo.
+          </div>
+
+        </div>
+
+      </ng-container>
+
+    </ng-container>
+
+  </ng-container>
+
+</div>

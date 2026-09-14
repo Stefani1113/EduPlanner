@@ -5,8 +5,39 @@
 
 .institution-page {
   min-height: 100vh;
-  background: #70d62c00;
+  background: transparent;
   color: var(--inst-light);
+}
+
+// Los textos institucionales vienen de un formulario editable por el
+// usuario. Aunque hay límites de caracteres, estas reglas evitan que
+// cualquier texto largo (incluso sin espacios) se desborde o choque
+// con elementos vecinos: siempre se envuelve y se recorta con "…"
+// después de cierto número de líneas.
+.hero-badge,
+.hero-title,
+.hero-description,
+.hero-location,
+.intro-text p,
+.card-mission p,
+.card-vision p,
+.card-image-overlay span,
+.card-image-overlay strong,
+.pillar-card p,
+.contact-info span,
+h2,
+h3,
+h4 {
+  overflow-wrap: break-word;
+  word-break: break-word;
+  hyphens: auto;
+}
+
+@mixin line-clamp($lines) {
+  display: -webkit-box;
+  -webkit-line-clamp: $lines;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .hero-section {
@@ -14,7 +45,6 @@
   min-height: 500px;
   border-radius: 30px;
   overflow: hidden;
-  background: var(--inst-accent);
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
 }
 
@@ -24,7 +54,7 @@
   overflow: hidden;
 }
 
-.carousel-track {
+.carousel-track { 
   display: flex;
   height: 100%;
   width: 100%;
@@ -67,7 +97,7 @@
   justify-content: center;
   cursor: pointer;
   transition: all 0.3s ease;
-  color: #ffffff;
+  color: var(--inst-text);
   opacity: 0;
   visibility: hidden;
 
@@ -135,8 +165,9 @@
   line-height: 1.05;
   letter-spacing: -2px;
   margin: 20px 0 16px;
-  color: #ffffff;
+  color: var(--inst-text);
   text-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+  @include line-clamp(3);
 
   .highlight {
     color: var(--inst-primary);
@@ -154,6 +185,7 @@
   max-width: 520px;
   margin-bottom: 28px;
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  @include line-clamp(4);
 }
 
 .hero-actions {
@@ -168,7 +200,7 @@
   align-items: center;
   gap: 10px;
   background: var(--inst-primary);
-  color: #ffffff;
+  color: var(--inst-text);
   border: none;
   padding: 14px 28px;
   border-radius: 12px;
@@ -252,12 +284,14 @@
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 40px;
   padding: 10px 0;
 }
 
 .intro-text {
-  flex: 1;
+  flex: 1 1 320px;
+  min-width: 0;
 
   .section-tag {
     display: inline-block;
@@ -274,7 +308,7 @@
     font-weight: 700;
     line-height: 1.15;
     letter-spacing: -1px;
-    color: #ffffff;
+    color: var(--inst-text);
     margin-bottom: 16px;
 
     .highlight {
@@ -287,6 +321,7 @@
     line-height: 1.8;
     color: rgba(255, 255, 255, 0.7);
     max-width: 600px;
+    @include line-clamp(3);
   }
 }
 
@@ -394,8 +429,8 @@
   }
 
   h3 {
-    color: #ffffff;
-  }
+     color: var(--inst-text);
+    }
 
   p {
     color: rgba(255, 255, 255, 0.7);
@@ -427,6 +462,7 @@
   font-weight: 700;
   margin: 6px 0 10px;
   letter-spacing: -0.5px;
+  @include line-clamp(2);
 }
 
 .card-mission p,
@@ -434,6 +470,7 @@
   font-size: 15px;
   line-height: 1.7;
   max-width: 400px;
+  @include line-clamp(5);
 }
 
 .card-image {
@@ -474,8 +511,9 @@
   strong {
     display: block;
     font-size: 18px;
-    color: #ffffff;
+    color: var(--inst-text);
     margin-top: 4px;
+    @include line-clamp(2);
   }
 }
 
@@ -501,7 +539,7 @@
   h2 {
     font-size: 32px;
     font-weight: 700;
-    color: #ffffff;
+    color: var(--inst-text);
 
     .highlight {
       color: var(--inst-primary);
@@ -536,14 +574,16 @@
   h3 {
     font-size: 22px;
     font-weight: 700;
-    color: #ffffff;
+    color: var(--inst-text);
     margin: 14px 0 8px;
+    @include line-clamp(2);
   }
 
   p {
     font-size: 15px;
     line-height: 1.6;
     color: rgba(255, 255, 255, 0.6);
+    @include line-clamp(4);
   }
 
   &.featured {
@@ -601,7 +641,7 @@
   h2 {
     font-size: 22px;
     font-weight: 700;
-    color: #ffffff;
+    color: var(--inst-text);
     margin-top: 4px;
 
     .highlight {
@@ -620,13 +660,15 @@
     color: rgba(255, 255, 255, 0.6);
     font-weight: 500;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 8px;
+    max-width: 320px;
 
     &::before {
       content: '•';
       color: var(--inst-primary);
       font-size: 18px;
+      flex-shrink: 0;
     }
   }
 }

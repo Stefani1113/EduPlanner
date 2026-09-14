@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-
+import { HorariosComponent } from './pages/horarios/horarios.component';
 import { AdminLayoutComponent } from './admin-layout/admin-layout.component';
 import { DashboardComponent } from './pages/dashboard/dashboard.component';
 import { authGuard } from '../auth/services/auth.guard';
@@ -38,16 +38,6 @@ const routes: Routes = [
       },
 
       {
-        path: 'horarios',
-        loadComponent: () =>
-          import('./pages/horarios/horarios.component')
-            .then(m => m.HorariosComponent),
-        data: {
-          breadcrumb: ['Horarios']
-        }
-      },
-
-      {
         path: 'registro',
         loadComponent: () =>
           import('./pages/registro/registro.component')
@@ -70,25 +60,15 @@ const routes: Routes = [
       {
         path: 'asistencia',
         loadComponent: () =>
-          import('./pages/asistencia/asistencia.component')
+          import('../asistencias/pages/asistencias/asistencias.component')
             .then(m => m.AsistenciaComponent),
         data: {
           breadcrumb: ['Asistencia']
         }
       },
 
-      {
-        path: 'notas',
-        loadComponent: () =>
-          import('./pages/notas/notas.component')
-            .then(m => m.NotasComponent),
-        data: {
-          breadcrumb: ['Notas']
-        }
-      },
-
-      {
-        path: 'importacion',
+      { 
+        path: 'importacion', 
         loadComponent: () =>
           import('./pages/importacion/importacion.component')
             .then(m => m.ImportacionComponent),
@@ -105,7 +85,15 @@ const routes: Routes = [
         data: {
           breadcrumb: ['sistema']
         }
-      }
+      },
+
+      {
+        path: 'horarios',
+        component: HorariosComponent,
+        data: {
+          breadcrumb: ['Horarios']
+        }
+      },
 
     ]
   }

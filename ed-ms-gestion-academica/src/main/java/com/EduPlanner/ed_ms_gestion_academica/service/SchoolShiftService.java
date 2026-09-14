@@ -1,6 +1,5 @@
 package com.EduPlanner.ed_ms_gestion_academica.service;
 
-import com.eduplanner.ed_lib_common.dto.AcademicPeriodResponseDTO;
 import com.eduplanner.ed_lib_common.dto.SchoolShiftRequestDTO;
 import com.eduplanner.ed_lib_common.dto.SchoolShiftResponseDTO;
 import com.eduplanner.ed_lib_common.entity.SchoolShift;

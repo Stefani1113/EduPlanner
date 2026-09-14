@@ -64,7 +64,10 @@ public class UserResponseDTO {
 
     private Integer idRole;
 
+    private Integer idCourse;
+
     private Integer idInstitution;
+
 
     /**
      * Metodo estático 
@@ -99,6 +102,8 @@ public class UserResponseDTO {
         dto.setLastAccess(user.getLastAccess());
         dto.setRoleName(user.getRole().getName());
         dto.setIdRole(user.getRole().getIdRole());
+        dto.setIdCourse(user.getIdCourse());
+        dto.setIdInstitution(user.getIdInstitution());
         return dto;
     }
 }

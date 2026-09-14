@@ -12,11 +12,30 @@ export interface UserResponseDTO {
   email: string;
   name: string;
   surnames: string;
+  documentType: string;
+  document: string;
+  documentIssuePlace: string;
+  birthdate: string | null;
   phoneNumber: string;
   status: boolean;
   photoUrl: string | null;
+  professionalDegrees: string | null;
+  qualificationsDesc: string | null;
+  gender: string | null;
+  address: string | null;
+  bloodType: string | null;
+  disabilities: string | null;
+  stratum: number | null;
+  populationType: string | null;
+  healthRegime: string | null;
+  eps: string | null;
+  position: string | null;
+  creationDate?: string | null;
+  updateDate?: string | null;
+  lastAccess?: string | null;
   roleName: string;
   idRole: number;
+  idInstitution?: number | null;
 }
 
 export interface RegisterStaffDTO {
@@ -63,6 +82,7 @@ export interface RegisterStudentDTO {
   healthRegime?: string;
   eps?: string;
   guardian: GuardianDTO;
+  idCourse: number;
 }
 
 export interface TeachingRequestDTO {
@@ -131,6 +151,35 @@ export interface UpdateRoleDTO {
   position?: string;
 }
 
+export interface CourseBasicoDTO {
+  idCourse: number;
+  name: string;
+  status: boolean;
+}
+
+export interface UpdateStudentDTO {
+  name: string;
+  surnames: string;
+  phoneNumber?: string;
+  documentIssuePlace?: string;
+  gender?: string;
+  birthdate?: string | null;
+  address?: string;
+  bloodType?: string;
+  disabilities?: string;
+  stratum?: number;
+  populationType?: string;
+  healthRegime?: string;
+  eps?: string;
+  idCourse?: number;
+}
+
+export interface UpdateStaffDTO extends Omit<UpdateStudentDTO, 'name' | 'surnames'> {
+  name: string;
+  surnames: string;
+  position: string;
+}
+
 export const ID_ROL_ADMINISTRADOR = 1;
 export const ID_ROL_DOCENTE = 2;
 export const ID_ROL_ESTUDIANTE = 3;
@@ -187,7 +236,35 @@ export class UsuariosService {
     return this.http.post<HttpGlobalResponse<void>>(`${this.api}/users/register/student`, dto);
   }
 
+  obtenerPorId(idUser: number): Observable<HttpGlobalResponse<UserResponseDTO>> {
+    return this.http.get<HttpGlobalResponse<UserResponseDTO>>(`${this.api}/users/${idUser}`);
+  }
+
+  actualizarDocente(idUser: number, dto: TeachingRequestDTO): Observable<HttpGlobalResponse<TeachingResponseDTO>> {
+    return this.http.put<HttpGlobalResponse<TeachingResponseDTO>>(`/administracion/eduplanner/teacher/${idUser}`, dto);
+  }
+
+  actualizarEstudiante(idUser: number, dto: UpdateStudentDTO): Observable<HttpGlobalResponse<void>> {
+    return this.http.put<HttpGlobalResponse<void>>(`${this.api}/users/${idUser}/student`, dto);
+  }
+
+  actualizarStaff(idUser: number, dto: UpdateStaffDTO): Observable<HttpGlobalResponse<void>> {
+    return this.http.put<HttpGlobalResponse<void>>(`${this.api}/users/${idUser}/staff`, dto);
+  }
+
   actualizarRol(idUser: number, dto: UpdateRoleDTO): Observable<HttpGlobalResponse<void>> {
     return this.http.put<HttpGlobalResponse<void>>(`${this.api}/users/${idUser}/role`, dto);
+  }
+
+  /**
+   * Lista los cursos reales configurados en la institución
+   * (mismo endpoint que usa el módulo de Asistencia), para
+   * poblar el filtro de "Curso" con datos reales en vez de
+   * una lista fija.
+   */
+  listarCursos(): Observable<HttpGlobalResponse<CourseBasicoDTO[]>> {
+    return this.http.get<HttpGlobalResponse<CourseBasicoDTO[]>>(
+      '/gestion-academica/eduplanner/courses'
+    );
   }
 }
