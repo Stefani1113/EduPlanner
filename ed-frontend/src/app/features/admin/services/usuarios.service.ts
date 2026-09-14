@@ -82,6 +82,7 @@ export interface RegisterStudentDTO {
   healthRegime?: string;
   eps?: string;
   guardian: GuardianDTO;
+  idCourse: number;
 }
 
 export interface TeachingRequestDTO {
@@ -150,6 +151,12 @@ export interface UpdateRoleDTO {
   position?: string;
 }
 
+export interface CourseBasicoDTO {
+  idCourse: number;
+  name: string;
+  status: boolean;
+}
+
 export interface UpdateStudentDTO {
   name: string;
   surnames: string;
@@ -164,6 +171,7 @@ export interface UpdateStudentDTO {
   populationType?: string;
   healthRegime?: string;
   eps?: string;
+  idCourse?: number;
 }
 
 export interface UpdateStaffDTO extends Omit<UpdateStudentDTO, 'name' | 'surnames'> {
@@ -246,5 +254,17 @@ export class UsuariosService {
 
   actualizarRol(idUser: number, dto: UpdateRoleDTO): Observable<HttpGlobalResponse<void>> {
     return this.http.put<HttpGlobalResponse<void>>(`${this.api}/users/${idUser}/role`, dto);
+  }
+
+  /**
+   * Lista los cursos reales configurados en la institución
+   * (mismo endpoint que usa el módulo de Asistencia), para
+   * poblar el filtro de "Curso" con datos reales en vez de
+   * una lista fija.
+   */
+  listarCursos(): Observable<HttpGlobalResponse<CourseBasicoDTO[]>> {
+    return this.http.get<HttpGlobalResponse<CourseBasicoDTO[]>>(
+      '/gestion-academica/eduplanner/courses'
+    );
   }
 }

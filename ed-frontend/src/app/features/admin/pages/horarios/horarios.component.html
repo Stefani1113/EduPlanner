@@ -1,0 +1,416 @@
+<main class="horarios-content">
+
+  <div class="horario-toolbar">
+
+    <div class="toolbar-left">
+
+      <button
+        type="button"
+        class="toolbar-item active"
+      >
+        Ver Horarios
+      </button>
+
+      <button
+        type="button"
+        class="toolbar-item"
+      >
+        Asignaturas
+      </button>
+
+      <button
+        type="button"
+        class="toolbar-item conflict"
+      >
+        Conflictos
+        <span class="conflict-dot"></span>
+      </button>
+
+    </div>
+
+    <div class="toolbar-right">
+
+      <div class="course-selector">
+
+        <span class="course-label">
+          3° A Bachillerato
+        </span>
+
+        <button
+          type="button"
+          class="preview-button"
+        >
+          <span class="eye-icon">◉</span>
+          Previsualizar
+        </button>
+
+        <button
+          type="button"
+          class="pdf-button"
+        >
+          PDF
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="publication-alert">
+
+    <div class="alert-icon">
+      ✿
+    </div>
+
+    <div class="alert-content">
+
+      <strong>
+        Horario 2° periodo publicado el 5 Marzo.
+      </strong>
+
+      <span>
+        Puedes revisar los Conflictos
+      </span>
+
+    </div>
+
+    <button
+      type="button"
+      class="history-button"
+    >
+      Ver historial
+    </button>
+
+  </div>
+
+  <section class="schedule-wrapper">
+
+    <div class="schedule-header">
+
+      <div class="time-title">
+        Hora/Día
+      </div>
+
+      <button
+        type="button"
+        class="day-button"
+        [class.selected]="diaSeleccionado === 'Lunes'"
+        (click)="seleccionarDia('Lunes')"
+      >
+        Lunes
+      </button>
+
+      <button
+        type="button"
+        class="day-button"
+        [class.selected]="diaSeleccionado === 'Martes'"
+        (click)="seleccionarDia('Martes')"
+      >
+        Martes
+      </button>
+
+      <button
+        type="button"
+        class="day-button"
+        [class.selected]="diaSeleccionado === 'Miércoles'"
+        (click)="seleccionarDia('Miércoles')"
+      >
+        Miércoles
+      </button>
+
+      <button
+        type="button"
+        class="day-button"
+        [class.selected]="diaSeleccionado === 'Jueves'"
+        (click)="seleccionarDia('Jueves')"
+      >
+        Jueves
+      </button>
+
+      <button
+        type="button"
+        class="day-button"
+        [class.selected]="diaSeleccionado === 'Viernes'"
+        (click)="seleccionarDia('Viernes')"
+      >
+        Viernes
+      </button>
+
+    </div>
+
+    <div
+      class="schedule-row"
+      *ngFor="let horario of horarios; let i = index"
+      [class.break-row]="horario.descanso"
+    >
+
+      <div
+        *ngIf="!horario.descanso"
+        class="time-cell"
+      >
+
+        <strong>
+          {{ horario.hora }}
+        </strong>
+
+        <span>
+          {{ horario.horaFin }}
+        </span>
+
+      </div>
+
+      <div
+        *ngIf="horario.descanso"
+        class="break-cell"
+      >
+
+        <span class="break-line"></span>
+
+        <strong>
+          Descanso
+        </strong>
+
+        <span class="break-line"></span>
+
+      </div>
+
+      <div
+        *ngIf="!horario.descanso"
+        class="subject-cell"
+        [class.selected-day]="diaSeleccionado === 'Lunes'"
+      >
+
+        <div
+          class="subject-card"
+          [class.green]="i === 2"
+        >
+          <strong>{{ horario.lunes }}</strong>
+          <span>3° A Grupo</span>
+        </div>
+
+      </div>
+
+      <div
+        *ngIf="!horario.descanso"
+        class="subject-cell"
+        [class.selected-day]="diaSeleccionado === 'Martes'"
+      >
+
+        <div
+          class="subject-card"
+          [class.green]="i === 2"
+        >
+          <strong>{{ horario.martes }}</strong>
+          <span>3° A Grupo</span>
+        </div>
+
+      </div>
+
+      <div
+        *ngIf="!horario.descanso"
+        class="subject-cell"
+        [class.selected-day]="diaSeleccionado === 'Miércoles'"
+      >
+
+        <div
+          class="subject-card"
+          [class.green]="i === 2"
+        >
+          <strong>{{ horario.miercoles }}</strong>
+          <span>3° A Grupo</span>
+        </div>
+
+      </div>
+
+      <div
+        *ngIf="!horario.descanso"
+        class="subject-cell"
+        [class.selected-day]="diaSeleccionado === 'Jueves'"
+      >
+
+        <div
+          class="subject-card"
+          [class.green]="i === 2"
+        >
+          <strong>{{ horario.jueves }}</strong>
+          <span>3° A Grupo</span>
+        </div>
+
+      </div>
+
+      <div
+        *ngIf="!horario.descanso"
+        class="subject-cell"
+        [class.selected-day]="diaSeleccionado === 'Viernes'"
+      >
+
+        <div
+          class="subject-card"
+          [class.green]="i === 2"
+        >
+          <strong>{{ horario.viernes }}</strong>
+          <span>3° A Grupo</span>
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+  <button
+    type="button"
+    class="floating-ia"
+    (click)="abrirChat()"
+    aria-label="Abrir asistente IA"
+  >
+
+    <img
+      [src]="obtenerImagenIA()"
+      alt="Asistente IA"
+    >
+
+  </button>
+
+</main>
+
+<div
+  class="chat-overlay"
+  *ngIf="chatAbierto"
+  (click)="cerrarChat()"
+></div>
+
+<aside
+  class="chat-panel"
+  [class.abierto]="chatAbierto"
+>
+
+  <div class="chat-header">
+
+    <div class="ia-profile">
+
+      <div class="ia-avatar">
+
+        <img
+          [src]="obtenerImagenIA()"
+          alt="EduPlanner IA"
+        >
+
+      </div>
+
+      <div>
+
+        <h3>
+          EduPlanner IA
+        </h3>
+
+        <span>
+          <i></i>
+          Asistente académico
+        </span>
+
+      </div>
+
+    </div>
+
+    <button
+      type="button"
+      class="close-chat"
+      (click)="cerrarChat()"
+    >
+      ×
+    </button>
+
+  </div>
+
+  <div class="chat-body">
+
+    <div
+      *ngFor="let mensaje of mensajes"
+      class="message-row"
+      [class.usuario]="mensaje.tipo === 'usuario'"
+      [class.ia]="mensaje.tipo === 'ia'"
+    >
+
+      <div
+        class="message"
+        [class.user-message]="mensaje.tipo === 'usuario'"
+        [class.ia-message]="mensaje.tipo === 'ia'"
+      >
+        {{ mensaje.texto }}
+      </div>
+
+    </div>
+
+    <div
+      class="typing"
+      *ngIf="cargando"
+    >
+
+      <span></span>
+      <span></span>
+      <span></span>
+
+      <label>
+        La IA está pensando...
+      </label>
+
+    </div>
+
+    <div
+      class="quick-questions"
+      *ngIf="mensajes.length <= 1 && !cargando"
+    >
+
+      <p>
+        También puedes preguntarme:
+      </p>
+
+      <button
+        type="button"
+        (click)="usarPregunta('¿Hay algún conflicto en el horario?')"
+      >
+        ¿Hay conflictos en el horario?
+      </button>
+
+      <button
+        type="button"
+        (click)="usarPregunta('Ayúdame a organizar un horario')"
+      >
+        Ayúdame a organizar un horario
+      </button>
+
+      <button
+        type="button"
+        (click)="usarPregunta('¿Qué profesores tienen horario ocupado?')"
+      >
+        ¿Qué profesores tienen horario ocupado?
+      </button>
+
+    </div>
+
+  </div>
+
+  <div class="chat-input">
+
+    <input
+      type="text"
+      [(ngModel)]="mensaje"
+      (keyup.enter)="enviarMensaje()"
+      placeholder="Escribe tu pregunta..."
+      [disabled]="cargando"
+    >
+
+    <button
+      type="button"
+      (click)="enviarMensaje()"
+      [disabled]="!mensaje.trim() || cargando"
+      aria-label="Enviar mensaje"
+    >
+      ➤
+    </button>
+
+  </div>
+
+</aside>

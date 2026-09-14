@@ -24,6 +24,7 @@ import {
   UpdateStudentDTO,
   UpdateStaffDTO
 } from '../../services/usuarios.service';
+import { catchError, of } from 'rxjs';
 import { ModalService } from '../../../../core/services/modal.service';
 
 type Rol = 'Administrador' | 'Docente' | 'Estudiante' | 'Directivo';
@@ -81,10 +82,13 @@ export class UsuariosComponent implements OnInit, OnDestroy {
   activeTab: Tab = 'listado';
 
   roles: Rol[] = ['Administrador', 'Docente', 'Estudiante', 'Directivo'];
-  grados: string[] = ['Todos los grados', '1° A Bachillerato', '2° A Bachillerato', '3° A Bachillerato'];
+
+  /** Se llena con los cursos reales de la institución (ver cargarCursos()). */
+  grados: string[] = ['Todos los cursos'];
+  cargandoCursos = false;
 
   rolSeleccionado: Rol = 'Docente';
-  gradoSeleccionado = 'Todos los grados';
+  gradoSeleccionado = 'Todos los cursos';
   mostrarFiltroRol = false;
 
   mostrarMenuRegistrar = false;
@@ -120,6 +124,27 @@ export class UsuariosComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.actualizarBreadcrumb();
     this.cargarUsuarios();
+    this.cargarCursos();
+  }
+
+  /**
+   * Trae los cursos reales configurados en la institución
+   * y los usa para poblar el desplegable de búsqueda por curso
+   * (antes tenía una lista de grados fija/ficticia).
+   */
+  private cargarCursos(): void {
+    this.cargandoCursos = true;
+
+    this.usuariosService.listarCursos().pipe(
+      catchError(() => of({ data: [], message: '' }))
+    ).subscribe(res => {
+      const nombresCursos = (res.data ?? [])
+        .filter(c => c.status)
+        .map(c => c.name);
+
+      this.grados = ['Todos los cursos', ...nombresCursos];
+      this.cargandoCursos = false;
+    });
   }
 
   ngOnDestroy(): void {
@@ -182,7 +207,7 @@ export class UsuariosComponent implements OnInit, OnDestroy {
 
   seleccionarRol(rol: Rol): void {
     this.rolSeleccionado = rol;
-    this.gradoSeleccionado = 'Todos los grados';
+    this.gradoSeleccionado = 'Todos los cursos';
     this.mostrarFiltroRol = false;
     this.actualizarBreadcrumb();
     this.cargarUsuarios();
@@ -345,10 +370,6 @@ export class UsuariosComponent implements OnInit, OnDestroy {
         : 'Staff';
   }
 
-  /**
-   * Exporta exactamente el rol seleccionado. No depende del texto de búsqueda:
-   * si el filtro dice Docente, el CSV contiene todos los docentes cargados.
-   */
   exportarCSV(): void {
     if (this.exportando || this.cargando || this.usuarios.length === 0) return;
 
@@ -408,7 +429,7 @@ export class UsuariosComponent implements OnInit, OnDestroy {
     const tabLabel = this.tabs.find(t => t.key === this.activeTab)?.label ?? '';
     const partes = [tabLabel, this.rolSeleccionado];
 
-    if (this.rolSeleccionado === 'Estudiante' && this.gradoSeleccionado !== 'Todos los grados') {
+    if (this.rolSeleccionado === 'Estudiante' && this.gradoSeleccionado !== 'Todos los cursos') {
       partes.push(this.gradoSeleccionado);
     }
 

@@ -99,7 +99,7 @@
       <div class="hero-content">
 
         <span class="hero-badge">
-          ✦ EXCELENCIA ACADÉMICA
+          {{ info.heroBadge }}
         </span>
 
 
@@ -321,7 +321,7 @@
       <article class="card-image">
 
         <img
-          src="assets/img/estudiantes-institucion.png"
+          [src]="info.comunidadImagenUrl || 'assets/img/estudiantes-institucion.png'"
           alt="Estudiantes"
         >
 
@@ -332,7 +332,7 @@
           </span>
 
           <strong>
-            {{ info.nombreCorto }}
+            {{ info.comunidadTitulo }}
           </strong>
 
         </div>
@@ -368,7 +368,7 @@
       <article class="card-image">
 
         <img
-          src="assets/img/carrucel-libreria.png"
+          [src]="info.espaciosImagenUrl || 'assets/img/carrucel-libreria.png'"
           alt="Campus"
         >
 
@@ -379,7 +379,7 @@
           </span>
 
           <strong>
-            {{ info.nombreLargo }}
+            {{ info.espaciosTitulo }}
           </strong>
 
         </div>
@@ -415,55 +415,23 @@
 
     <div class="pillars-grid">
 
-      <article class="pillar-card">
+      <article
+        class="pillar-card"
+        *ngFor="let pilar of info.pilares; let i = index"
+        [class.featured]="i === 1"
+        [class.dark]="i === 2"
+      >
 
         <span class="pillar-number">
-          01
+          {{ (i + 1) < 10 ? '0' + (i + 1) : (i + 1) }}
         </span>
 
         <h3>
-          Integralidad
+          {{ pilar.titulo }}
         </h3>
 
         <p>
-          Desarrollamos competencias académicas,
-          sociales y personales.
-        </p>
-
-      </article>
-
-
-      <article class="pillar-card featured">
-
-        <span class="pillar-number">
-          02
-        </span>
-
-        <h3>
-          Innovación
-        </h3>
-
-        <p>
-          Integramos tecnología y nuevas
-          metodologías al aprendizaje.
-        </p>
-
-      </article>
-
-
-      <article class="pillar-card dark">
-
-        <span class="pillar-number">
-          03
-        </span>
-
-        <h3>
-          Comunidad
-        </h3>
-
-        <p>
-          Construimos una comunidad educativa
-          basada en respeto y colaboración.
+          {{ pilar.descripcion }}
         </p>
 
       </article>
