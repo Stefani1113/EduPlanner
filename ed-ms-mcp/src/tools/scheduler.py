@@ -25,14 +25,14 @@ def create_scheduler_tool(server, client):
         try:
             data = load_scheduler_data(client)
 
-            scheduler_module.teachers = data["teachers"]
-            scheduler_module.courses = data["courses"]
-            scheduler_module.time_slots = data["time_slots"]
-            scheduler_module.academic_loads = data["academic_loads"]
-            scheduler_module.teacher_availability = data["teacher_availability"]
-
-            schedule, errors = generate_and_validate_schedule()
-
+            schedule, errors = generate_and_validate_schedule(
+                data["teachers"],
+                data["courses"],
+                data["time_slots"],
+                data["academic_loads"],
+                data["teacher_availability"]
+            )
+            
             if errors:
                 return {"success": False, "errors": errors}
 
