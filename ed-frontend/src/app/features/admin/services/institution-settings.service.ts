@@ -18,17 +18,28 @@ export interface CarouselImage {
   url: string;
 }
 
+export interface PilarInstitucional {
+  titulo: string;
+  descripcion: string;
+}
+
 export interface InstitutionInfo {
   logoUrl: string;
   nombreCorto: string;
   nombreLargo: string;
   descripcion: string;
   carousel: CarouselImage[];
+  heroBadge: string;
   mision: string;
   vision: string;
   contactoDireccion: string;
   reglamentoUrl: string;
   construccionLegalUrl: string;
+  pilares: PilarInstitucional[];
+  comunidadImagenUrl: string;
+  comunidadTitulo: string;
+  espaciosImagenUrl: string;
+  espaciosTitulo: string;
 }
 
 export interface InstitutionSettings {
@@ -36,7 +47,28 @@ export interface InstitutionSettings {
   info: InstitutionInfo;
 }
 
-const STORAGE_KEY = 'eduplanner.institution-settings.v2';
+
+export const INFO_TEXT_LIMITS = {
+  nombreCorto: 40,
+  nombreLargo: 70,
+  descripcion: 200,
+  heroBadge: 40,
+  mision: 260,
+  vision: 260,
+  contactoDireccion: 90,
+  pilarTitulo: 30,
+  pilarDescripcion: 130,
+  comunidadTitulo: 45,
+  espaciosTitulo: 45
+};
+
+
+const LEGACY_STORAGE_KEYS = [
+  'eduplanner.institution-settings',
+  'eduplanner.institution-settings.v2',
+  'asignaturas',
+  'docentes'
+];
 
 const DEFAULT_PALETTE: InstitutionPalette = {
   primary: '#0d790b',
@@ -64,6 +96,8 @@ const DEFAULT_INFO: InstitutionInfo = {
     { url: 'assets/img/estudiantes-institucion.png' }
   ],
 
+  heroBadge: '✦ Excelencia académica',
+
   mision:
     'Formar líderes integrales con capacidad crítica, ética y creativa, capaces de transformar la sociedad mediante el conocimiento y la innovación.',
 
@@ -75,7 +109,28 @@ const DEFAULT_INFO: InstitutionInfo = {
 
   reglamentoUrl: '',
 
-  construccionLegalUrl: ''
+  construccionLegalUrl: '',
+
+  pilares: [
+    {
+      titulo: 'Integralidad',
+      descripcion: 'Desarrollamos competencias académicas, sociales y personales.'
+    },
+    {
+      titulo: 'Innovación',
+      descripcion: 'Integramos tecnología y nuevas metodologías al aprendizaje.'
+    },
+    {
+      titulo: 'Comunidad',
+      descripcion: 'Construimos una comunidad educativa basada en respeto y colaboración.'
+    }
+  ],
+
+  comunidadImagenUrl: 'assets/img/estudiantes-institucion.png',
+  comunidadTitulo: 'Comunidad educativa',
+
+  espaciosImagenUrl: 'assets/img/carrucel-libreria.png',
+  espaciosTitulo: 'Espacios educativos'
 };
 
 @Injectable({
@@ -144,15 +199,7 @@ export class InstitutionSettingsService {
 
       ...this.settingsSubject.value,
 
-      info: {
-        ...info,
-
-        carousel: info.carousel.map(
-          image => ({
-            ...image
-          })
-        )
-      }
+      info: this.sanitizeInfo(info)
     };
 
     this.persist(next);
@@ -170,15 +217,7 @@ export class InstitutionSettingsService {
         ...palette
       },
 
-      info: {
-        ...info,
-
-        carousel: info.carousel.map(
-          image => ({
-            ...image
-          })
-        )
-      }
+      info: this.sanitizeInfo(info)
     };
 
     this.persist(next);
@@ -193,17 +232,7 @@ export class InstitutionSettingsService {
         ...DEFAULT_PALETTE
       },
 
-      info: {
-
-        ...DEFAULT_INFO,
-
-        carousel:
-          DEFAULT_INFO.carousel.map(
-            image => ({
-              ...image
-            })
-          )
-      }
+      info: this.sanitizeInfo(DEFAULT_INFO)
     };
 
     this.persist(next);
@@ -217,21 +246,51 @@ export class InstitutionSettingsService {
     this.settingsSubject.next(settings);
 
     this.applySettings(settings);
+  }
 
-    try {
 
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify(settings)
-      );
+  private sanitizeInfo(
+    info: InstitutionInfo
+  ): InstitutionInfo {
 
-    } catch (error) {
+    const clip = (value: string, max: number): string =>
+      (value || '').slice(0, max);
 
-      console.error(
-        'No se pudieron guardar las configuraciones institucionales:',
-        error
-      );
-    }
+    const pilaresBase =
+      info.pilares && info.pilares.length > 0
+        ? info.pilares
+        : DEFAULT_INFO.pilares;
+
+    const pilares = DEFAULT_INFO.pilares.map((defaultPilar, index) => {
+      const pilar = pilaresBase[index] || defaultPilar;
+
+      return {
+        titulo: clip(pilar.titulo, INFO_TEXT_LIMITS.pilarTitulo),
+        descripcion: clip(pilar.descripcion, INFO_TEXT_LIMITS.pilarDescripcion)
+      };
+    });
+
+    return {
+      ...info,
+
+      nombreCorto: clip(info.nombreCorto, INFO_TEXT_LIMITS.nombreCorto),
+      nombreLargo: clip(info.nombreLargo, INFO_TEXT_LIMITS.nombreLargo),
+      descripcion: clip(info.descripcion, INFO_TEXT_LIMITS.descripcion),
+      heroBadge: clip(info.heroBadge, INFO_TEXT_LIMITS.heroBadge),
+      mision: clip(info.mision, INFO_TEXT_LIMITS.mision),
+      vision: clip(info.vision, INFO_TEXT_LIMITS.vision),
+      contactoDireccion: clip(info.contactoDireccion, INFO_TEXT_LIMITS.contactoDireccion),
+      comunidadTitulo: clip(info.comunidadTitulo, INFO_TEXT_LIMITS.comunidadTitulo),
+      espaciosTitulo: clip(info.espaciosTitulo, INFO_TEXT_LIMITS.espaciosTitulo),
+
+      carousel: info.carousel.map(
+        image => ({
+          ...image
+        })
+      ),
+
+      pilares
+    };
   }
 
 
@@ -306,62 +365,28 @@ export class InstitutionSettingsService {
 
   private load(): InstitutionSettings {
 
+
+
+    this.limpiarStorageLegado();
+
+    return this.cloneDefaults();
+  }
+
+
+  private limpiarStorageLegado(): void {
+
     try {
 
-      const raw =
-        localStorage.getItem(
-          STORAGE_KEY
-        );
-
-      if (!raw) {
-
-        return this.cloneDefaults();
-      }
-
-      const parsed =
-        JSON.parse(raw) as Partial<InstitutionSettings>;
-
-      return {
-
-        palette: {
-
-          ...DEFAULT_PALETTE,
-
-          ...(parsed.palette || {})
-        },
-
-        info: {
-
-          ...DEFAULT_INFO,
-
-          ...(parsed.info || {}),
-
-          carousel:
-            parsed.info?.carousel &&
-            parsed.info.carousel.length > 0
-
-              ? parsed.info.carousel.map(
-                  image => ({
-                    ...image
-                  })
-                )
-
-              : DEFAULT_INFO.carousel.map(
-                  image => ({
-                    ...image
-                  })
-                )
-        }
-      };
+      LEGACY_STORAGE_KEYS.forEach(key => {
+        localStorage.removeItem(key);
+      });
 
     } catch (error) {
 
       console.error(
-        'Error cargando configuración institucional:',
+        'No se pudo limpiar el almacenamiento local heredado:',
         error
       );
-
-      return this.cloneDefaults();
     }
   }
 
@@ -374,17 +399,7 @@ export class InstitutionSettingsService {
         ...DEFAULT_PALETTE
       },
 
-      info: {
-
-        ...DEFAULT_INFO,
-
-        carousel:
-          DEFAULT_INFO.carousel.map(
-            image => ({
-              ...image
-            })
-          )
-      }
+      info: this.sanitizeInfo(DEFAULT_INFO)
     };
   }
 }

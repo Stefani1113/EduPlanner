@@ -370,10 +370,6 @@ export class UsuariosComponent implements OnInit, OnDestroy {
         : 'Staff';
   }
 
-  /**
-   * Exporta exactamente el rol seleccionado. No depende del texto de búsqueda:
-   * si el filtro dice Docente, el CSV contiene todos los docentes cargados.
-   */
   exportarCSV(): void {
     if (this.exportando || this.cargando || this.usuarios.length === 0) return;
 
