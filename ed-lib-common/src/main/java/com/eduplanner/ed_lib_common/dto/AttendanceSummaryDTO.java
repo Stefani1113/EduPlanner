@@ -12,6 +12,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 public class AttendanceSummaryDTO {
     private Integer idStudent;
+    private String studentName;
     private LocalDate startDate;
     private LocalDate endDate;
     private long totalRecords;
