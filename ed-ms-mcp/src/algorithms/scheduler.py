@@ -221,10 +221,9 @@ def validate_schedule(schedule, teachers, courses, time_slots, academic_loads, t
     errors = []
 
     # Diccionarios de apoyo
-    teachers_by_id = {t["id_academic_teacher"]: t for t in teachers}
-    courses_by_id = {c["id_course"] for c in courses}
-    slots_by_id = {s["id_time_slot"]: s for s in time_slots}
-    loads_by_id = {l["id_academic_load"]: l for l in academic_loads}
+    teachers_by_id = {teacher["id_academic_teacher"]: teacher for t in teachers}
+    slots_by_id = {slot["id_time_slot"]: slot for slot in time_slots}
+    loads_by_id = {load["id_academic_load"]: load for load in academic_loads}
 
     # Ningún docente puede tener dos clases en el mismo día
     seen_teacher_slots = set()
