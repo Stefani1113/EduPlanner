@@ -3,9 +3,13 @@ package com.eduplanner.ed_ms_administracion.controller;
 import com.eduplanner.ed_lib_common.entity.User;
 import com.eduplanner.ed_ms_administracion.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import com.eduplanner.ed_lib_common.dto.UserResponseDTO
+;
 /**
  * Endpoints internos: solo deben ser llamados por otros microservicios, 
  * en este caso por gestion academica
@@ -28,5 +32,16 @@ public class InternalUserController {
                 .map(User::getRole)
                 .map(role -> ResponseEntity.ok(role.getName()))
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    /**
+     * lista de estudiantes de un curso
+     */
+    @GetMapping("/course/{idCourse}")
+    public ResponseEntity<List<UserResponseDTO>> getUsersByCourse(@PathVariable Integer idCourse) {
+        List<UserResponseDTO> users = userRepository.findByIdCourse(idCourse).stream()
+                .map(UserResponseDTO::fromEntity)
+                .toList();
+        return ResponseEntity.ok(users);
     }
 }

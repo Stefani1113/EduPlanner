@@ -1,4 +1,4 @@
-package eduPlanner.ed_ms_notas.config;
+package EduPlanner.ed_ms_notas.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

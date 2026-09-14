@@ -45,6 +45,22 @@ public class UserController {
     }
 
     /**
+     * Buscar usuarios por curso
+     * @param idRole
+     * @param idCourse
+     * @return
+     */
+    @RequireRole(RolEnum.ADMINISTRADOR)
+    @GetMapping("/course/{idCourse}")
+    public ResponseEntity<HttpGlobalResponse<List<UserResponseDTO>>> getUsersByCourse(
+            @PathVariable Integer idCourse) {
+        HttpGlobalResponse<List<UserResponseDTO>> response = new HttpGlobalResponse<>();
+        response.setData(userQueryService.findByCourse(idCourse));
+        response.setMessage("Estudiantes del curso consultados correctamente");
+        return ResponseEntity.ok(response);
+    }
+
+    /**
      * Actualizar curso de estudiante
      */
     @PutMapping("/{id}/course")
