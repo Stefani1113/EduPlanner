@@ -14,17 +14,13 @@ import {
   FilaGridListado,
   JustificationStatus,
   ResumenCurso,
-  SesionResumen,
   UsuarioBasico
 } from '../../services/Asistencia.service';
 
 import { PerfilService } from '../../../admin/services/perfil.service';
 
-type Tab =
-  | 'resumen'
-  | 'historial'
-  | 'listado'
-  | 'conflictos';
+type Tab = 'resumen' | 'listado' | 'conflictos';
+type ModoHistorial = 'estudiante' | 'curso';
 
 const PALETA_BARRAS = [
   '#7B2FF7',
@@ -53,18 +49,13 @@ const ETIQUETA_JUSTIFICACION: Record<JustificationStatus, string> = {
 @Component({
   selector: 'app-asistencia',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule
-  ],
+  imports: [CommonModule, FormsModule],
   templateUrl: './asistencias.component.html',
   styleUrl: './asistencias.component.scss'
 })
 export class AsistenciaComponent implements OnInit {
 
   tabActiva: Tab = 'resumen';
-
-  // ================= DATOS DE APOYO =================
 
   cursos: CourseResponseDTO[] = [];
   niveles: AcademicLevelResponseDTO[] = [];
@@ -79,20 +70,7 @@ export class AsistenciaComponent implements OnInit {
   cargandoBase = true;
   errorBase: string | null = null;
 
-  // ================= RESUMEN =================
-
-  fechaInicioSesiones = this.primerDiaMesISO();
-  fechaFinSesiones = this.hoyISO();
-
-  filtroSesionesCurso: number | null = null;
-
-  sesiones: SesionResumen[] = [];
-
-  cargandoSesiones = false;
-  errorSesiones: string | null = null;
-  sesionesConsultadas = false;
-
-  // ================= HISTORIAL =================
+  cursoContexto: number | null = null;
 
   fechaInicioHistorial = this.primerDiaMesISO();
   fechaFinHistorial = this.hoyISO();
@@ -103,11 +81,9 @@ export class AsistenciaComponent implements OnInit {
 
   cargandoHistorialGrafico = false;
   errorHistorialGrafico: string | null = null;
-
-  // ================= LISTADO =================
+  resumenConsultado = false;
 
   filtroListadoCurso: number | null = null;
-
   filtroListadoInicio = this.primerDiaMesISO();
   filtroListadoFin = this.hoyISO();
 
@@ -116,15 +92,11 @@ export class AsistenciaComponent implements OnInit {
 
   cargandoListado = false;
   errorListado: string | null = null;
-
   listadoConsultado = false;
 
   guardandoCelda: string | null = null;
 
-  // ================= EXCUSAS =================
-
   filtroExcusasCurso: number | null = null;
-
   filtroExcusasInicio = this.primerDiaMesISO();
   filtroExcusasFin = this.hoyISO();
 
@@ -132,10 +104,19 @@ export class AsistenciaComponent implements OnInit {
 
   cargandoExcusas = false;
   errorExcusas: string | null = null;
-
   excusasConsultadas = false;
 
   revisandoId: number | null = null;
+  excusasExpandidas = new Set<number>();
+
+  mostrarDrawerHistorial = false;
+  modoHistorial: ModoHistorial = 'estudiante';
+  busquedaHistorial = '';
+  filtroNivelHistorial: number | null = null;
+  estudiantesSeleccionadosHistorial = new Set<number>();
+  cursosSeleccionadosHistorial = new Set<number>();
+  generandoHistorial = false;
+  errorHistorial: string | null = null;
 
   constructor(
     private asistenciaService: AsistenciaService,
@@ -149,423 +130,152 @@ export class AsistenciaComponent implements OnInit {
 
     forkJoin({
       cursos: this.asistenciaService.listarCursos(),
-
       niveles: this.asistenciaService.listarNiveles(),
-
-      estudiantes:
-        this.asistenciaService.listarEstudiantes(),
-
-      docentes:
-        this.asistenciaService.listarDocentes(),
-
-      perfil:
-        this.perfilService.obtenerMiPerfil().pipe(
-          map(r => r.data),
-          catchError(() => of(null))
-        )
+      estudiantes: this.asistenciaService.listarEstudiantes(),
+      docentes: this.asistenciaService.listarDocentes(),
+      perfil: this.perfilService.obtenerMiPerfil().pipe(
+        map(r => r.data),
+        catchError(() => of(null))
+      )
     }).subscribe({
 
-      next: ({
-        cursos,
-        niveles,
-        estudiantes,
-        docentes,
-        perfil
-      }) => {
+      next: ({ cursos, niveles, estudiantes, docentes, perfil }) => {
 
-        this.cursos = cursos.filter(
-          c => c.status
-        );
-
+        this.cursos = cursos.filter(c => c.status);
         this.niveles = niveles;
         this.estudiantes = estudiantes;
         this.docentes = docentes;
 
         this.mapaEstudiantes = new Map(
-          estudiantes.map(e => [
-            e.idUser,
-            `${e.name} ${e.surnames}`.trim()
-          ])
+          estudiantes.map(e => [e.idUser, `${e.name} ${e.surnames}`.trim()])
         );
 
         this.mapaDocentes = new Map(
-          docentes.map(d => [
-            d.idUser,
-            `${d.name} ${d.surnames}`.trim()
-          ])
+          docentes.map(d => [d.idUser, `${d.name} ${d.surnames}`.trim()])
         );
 
-        this.idAdminActual =
-          perfil?.idUser ?? null;
+        this.idAdminActual = perfil?.idUser ?? null;
 
         if (this.cursos.length > 0) {
-
-          const primerCurso =
-            this.cursos[0].idCourse;
-
-          this.idCursoSeleccionado =
-            primerCurso;
-
-          this.filtroListadoCurso =
-            primerCurso;
-
-          this.filtroExcusasCurso =
-            primerCurso;
+          const primerCurso = this.cursos[0].idCourse;
+          this.cursoContexto = primerCurso;
+          this.idCursoSeleccionado = primerCurso;
+          this.filtroListadoCurso = primerCurso;
+          this.filtroExcusasCurso = primerCurso;
         }
 
         this.cargandoBase = false;
-
-        this.buscarSesiones();
+        this.cargarGraficoHistorial();
       },
 
       error: () => {
-
-        this.errorBase =
-          'No se pudo cargar la información base (cursos, niveles, docentes o estudiantes).';
-
+        this.errorBase = 'No se pudo cargar la información base (cursos, niveles, docentes o estudiantes).';
         this.cargandoBase = false;
       }
     });
   }
-
-  // ================= NAVEGACIÓN =================
 
   cambiarTab(tab: Tab): void {
 
     this.tabActiva = tab;
 
-    if (
-      tab === 'historial' &&
-      !this.resumenPorCurso.length
-    ) {
+    if (tab === 'resumen' && !this.resumenConsultado) {
       this.cargarGraficoHistorial();
     }
 
-    if (
-      tab === 'listado' &&
-      !this.listadoConsultado
-    ) {
+    if (tab === 'listado' && !this.listadoConsultado) {
       this.buscarListado();
     }
 
-    if (
-      tab === 'conflictos' &&
-      !this.excusasConsultadas
-    ) {
+    if (tab === 'conflictos' && !this.excusasConsultadas) {
       this.buscarExcusas();
     }
   }
 
-  // ================= RESUMEN =================
+  onCambioCursoContexto(): void {
 
-  buscarSesiones(): void {
-
-    this.cargandoSesiones = true;
-    this.errorSesiones = null;
-    this.sesionesConsultadas = true;
-
-    if (
-      !this.fechaInicioSesiones ||
-      !this.fechaFinSesiones
-    ) {
-      this.sesiones = [];
-      this.errorSesiones =
-        'Selecciona las fechas de inicio y fin.';
-      this.cargandoSesiones = false;
+    if (this.cursoContexto === null) {
       return;
     }
 
-    if (
-      this.fechaInicioSesiones >
-      this.fechaFinSesiones
-    ) {
-      this.sesiones = [];
-      this.errorSesiones =
-        'La fecha inicial no puede ser posterior a la fecha final.';
-      this.cargandoSesiones = false;
-      return;
+    this.seleccionarCurso(this.cursoContexto);
+
+    if (this.tabActiva === 'listado') {
+      this.filtroListadoCurso = this.cursoContexto;
+      this.listadoConsultado = false;
+      this.buscarListado();
     }
-
-    const cursosAConsultar =
-      this.filtroSesionesCurso !== null
-        ? this.cursos.filter(
-            c =>
-              c.idCourse ===
-              this.filtroSesionesCurso
-          )
-        : this.cursos;
-
-    if (!cursosAConsultar.length) {
-
-      this.sesiones = [];
-      this.cargandoSesiones = false;
-      return;
-    }
-
-    const llamadas =
-      cursosAConsultar.map(curso =>
-        this.asistenciaService
-          .obtenerHistorialPorCurso(
-            curso.idCourse,
-            this.fechaInicioSesiones,
-            this.fechaFinSesiones
-          )
-          .pipe(
-            map(registros => ({
-              curso,
-              registros
-            })),
-            catchError(() =>
-              of({
-                curso,
-                registros:
-                  [] as AttendanceResponseDTO[]
-              })
-            )
-          )
-      );
-
-    forkJoin(llamadas).subscribe({
-
-      next: resultados => {
-
-        const sesiones: SesionResumen[] = [];
-
-        resultados.forEach(
-          ({ curso, registros }) => {
-
-            const porFecha =
-              new Map<
-                string,
-                AttendanceResponseDTO[]
-              >();
-
-            registros.forEach(registro => {
-
-              const lista =
-                porFecha.get(
-                  registro.attendanceDate
-                ) ?? [];
-
-              lista.push(registro);
-
-              porFecha.set(
-                registro.attendanceDate,
-                lista
-              );
-            });
-
-            porFecha.forEach(
-              (lista, fecha) => {
-
-                sesiones.push({
-                  idCourse: curso.idCourse,
-
-                  nombreCurso: curso.name,
-
-                  docente:
-                    curso.homeroomTeacher != null
-                      ? (
-                          this.mapaDocentes.get(
-                            curso.homeroomTeacher
-                          ) ?? '—'
-                        )
-                      : '—',
-
-                  fecha,
-
-                  presentes:
-                    lista.filter(
-                      r =>
-                        r.attendanceStatus ===
-                          'PRESENT' ||
-                        r.attendanceStatus ===
-                          'JUSTIFIED'
-                    ).length,
-
-                  ausentes:
-                    lista.filter(
-                      r =>
-                        r.attendanceStatus ===
-                        'ABSENT'
-                    ).length,
-
-                  tardanzas:
-                    lista.filter(
-                      r =>
-                        r.attendanceStatus ===
-                        'LATE'
-                    ).length
-                });
-              }
-            );
-          }
-        );
-
-        this.sesiones =
-          sesiones.sort(
-            (a, b) =>
-              b.fecha.localeCompare(a.fecha)
-          );
-
-        this.cargandoSesiones = false;
-      },
-
-      error: () => {
-
-        this.errorSesiones =
-          'No se pudo cargar el resumen de sesiones.';
-
-        this.cargandoSesiones = false;
-      }
-    });
   }
-
-  verSesion(sesion: SesionResumen): void {
-
-    this.filtroListadoCurso =
-      sesion.idCourse;
-
-    this.filtroListadoInicio =
-      sesion.fecha;
-
-    this.filtroListadoFin =
-      sesion.fecha;
-
-    this.listadoConsultado = false;
-
-    this.cambiarTab('listado');
-  }
-
-  // ================= HISTORIAL =================
 
   cargarGraficoHistorial(): void {
 
     if (!this.cursos.length) {
-
       this.resumenPorCurso = [];
       return;
     }
 
-    if (
-      !this.fechaInicioHistorial ||
-      !this.fechaFinHistorial
-    ) {
-      this.errorHistorialGrafico =
-        'Selecciona las fechas del historial.';
+    if (!this.fechaInicioHistorial || !this.fechaFinHistorial) {
+      this.errorHistorialGrafico = 'Selecciona las fechas del historial.';
       return;
     }
 
-    if (
-      this.fechaInicioHistorial >
-      this.fechaFinHistorial
-    ) {
-      this.errorHistorialGrafico =
-        'La fecha inicial no puede ser posterior a la fecha final.';
+    if (this.fechaInicioHistorial > this.fechaFinHistorial) {
+      this.errorHistorialGrafico = 'La fecha inicial no puede ser posterior a la fecha final.';
       return;
     }
 
     this.cargandoHistorialGrafico = true;
     this.errorHistorialGrafico = null;
+    this.resumenConsultado = true;
 
-    const llamadas =
-      this.cursos.map(curso =>
-        this.asistenciaService
-          .obtenerHistorialPorCurso(
-            curso.idCourse,
-            this.fechaInicioHistorial,
-            this.fechaFinHistorial
-          )
-          .pipe(
+    const llamadas = this.cursos.map(curso =>
+      this.asistenciaService
+        .obtenerHistorialPorCurso(curso.idCourse, this.fechaInicioHistorial, this.fechaFinHistorial)
+        .pipe(
+          map(registros => {
 
-            map(registros => {
+            const calculo = this.asistenciaService.calcularResumen(registros);
 
-              const calculo =
-                this.asistenciaService.calcularResumen(
-                  registros
-                );
+            const nivel = this.niveles.find(n => n.idLevel === curso.idLevel);
 
-              const nivel =
-                this.niveles.find(
-                  n =>
-                    n.idLevel ===
-                    curso.idLevel
-                );
+            const resumen: ResumenCurso = {
+              idCourse: curso.idCourse,
+              nombreCurso: curso.name,
+              nombreNivel: nivel?.name ?? '',
+              ...calculo
+            };
 
-              const resumen: ResumenCurso = {
-
-                idCourse:
-                  curso.idCourse,
-
-                nombreCurso:
-                  curso.name,
-
-                nombreNivel:
-                  nivel?.name ?? '',
-
-                ...calculo
-              };
-
-              return resumen;
-            }),
-
-            catchError(() =>
-              of(null)
-            )
-          )
-      );
+            return resumen;
+          }),
+          catchError(() => of(null))
+        )
+    );
 
     forkJoin(llamadas).subscribe({
 
       next: resultados => {
 
-        this.resumenPorCurso =
-          resultados.filter(
-            (
-              r
-            ): r is ResumenCurso =>
-              r !== null
-          );
+        this.resumenPorCurso = resultados.filter((r): r is ResumenCurso => r !== null);
 
         if (
-          this.idCursoSeleccionado ===
-            null ||
-          !this.resumenPorCurso.some(
-            r =>
-              r.idCourse ===
-              this.idCursoSeleccionado
-          )
+          this.idCursoSeleccionado === null ||
+          !this.resumenPorCurso.some(r => r.idCourse === this.idCursoSeleccionado)
         ) {
-          this.idCursoSeleccionado =
-            this.resumenPorCurso[0]
-              ?.idCourse ?? null;
+          this.idCursoSeleccionado = this.resumenPorCurso[0]?.idCourse ?? null;
         }
 
-        this.cargandoHistorialGrafico =
-          false;
+        this.cargandoHistorialGrafico = false;
       },
 
       error: () => {
-
-        this.errorHistorialGrafico =
-          'No se pudo cargar el historial de asistencia.';
-
-        this.cargandoHistorialGrafico =
-          false;
+        this.errorHistorialGrafico = 'No se pudo cargar el historial de asistencia.';
+        this.cargandoHistorialGrafico = false;
       }
     });
   }
 
-  get resumenSeleccionado():
-    ResumenCurso | null {
-
-    return (
-      this.resumenPorCurso.find(
-        r =>
-          r.idCourse ===
-          this.idCursoSeleccionado
-      ) ?? null
-    );
+  get resumenSeleccionado(): ResumenCurso | null {
+    return this.resumenPorCurso.find(r => r.idCourse === this.idCursoSeleccionado) ?? null;
   }
 
   get promedioGlobal(): number {
@@ -574,144 +284,55 @@ export class AsistenciaComponent implements OnInit {
       return 0;
     }
 
-    const suma =
-      this.resumenPorCurso.reduce(
-        (acc, r) =>
-          acc + r.porcentajeAsistencia,
-        0
-      );
+    const suma = this.resumenPorCurso.reduce((acc, r) => acc + r.porcentajeAsistencia, 0);
 
-    return Math.round(
-      (suma /
-        this.resumenPorCurso.length) *
-        100
-    ) / 100;
+    return Math.round((suma / this.resumenPorCurso.length) * 100) / 100;
   }
 
   get totalTardanzasGlobal(): number {
-
-    return this.resumenPorCurso.reduce(
-      (acc, r) =>
-        acc + r.lateCount,
-      0
-    );
+    return this.resumenPorCurso.reduce((acc, r) => acc + r.lateCount, 0);
   }
 
   get totalFaltasGlobal(): number {
-
-    return this.resumenPorCurso.reduce(
-      (acc, r) =>
-        acc + r.unjustifiedCount,
-      0
-    );
+    return this.resumenPorCurso.reduce((acc, r) => acc + r.unjustifiedCount, 0);
   }
 
   get porcentajeJustificadoGlobal(): number {
 
-    const total =
-      this.resumenPorCurso.reduce(
-        (acc, r) =>
-          acc + r.totalRecords,
-        0
-      );
+    const total = this.resumenPorCurso.reduce((acc, r) => acc + r.totalRecords, 0);
+    const justificadas = this.resumenPorCurso.reduce((acc, r) => acc + r.justifiedCount, 0);
 
-    const justificadas =
-      this.resumenPorCurso.reduce(
-        (acc, r) =>
-          acc + r.justifiedCount,
-        0
-      );
-
-    return total === 0
-      ? 0
-      : Math.round(
-          (justificadas * 100 /
-            total) *
-            100
-        ) / 100;
+    return total === 0 ? 0 : Math.round((justificadas * 100 / total) * 100) / 100;
   }
 
   get porcentajeNoJustificadoGlobal(): number {
 
-    const total =
-      this.resumenPorCurso.reduce(
-        (acc, r) =>
-          acc + r.totalRecords,
-        0
-      );
+    const total = this.resumenPorCurso.reduce((acc, r) => acc + r.totalRecords, 0);
+    const noJustificadas = this.resumenPorCurso.reduce((acc, r) => acc + r.unjustifiedCount, 0);
 
-    const noJustificadas =
-      this.resumenPorCurso.reduce(
-        (acc, r) =>
-          acc + r.unjustifiedCount,
-        0
-      );
-
-    return total === 0
-      ? 0
-      : Math.round(
-          (noJustificadas * 100 /
-            total) *
-            100
-        ) / 100;
+    return total === 0 ? 0 : Math.round((noJustificadas * 100 / total) * 100) / 100;
   }
 
   colorBarra(index: number): string {
-
-    return PALETA_BARRAS[
-      index % PALETA_BARRAS.length
-    ];
+    return PALETA_BARRAS[index % PALETA_BARRAS.length];
   }
 
-  get barras():
-    {
-      nombre: string;
-      porcentaje: number;
-      color: string;
-    }[] {
-
-    return this.resumenPorCurso.map(
-      (r, i) => ({
-        nombre: r.nombreCurso,
-        porcentaje:
-          r.porcentajeAsistencia,
-        color: this.colorBarra(i)
-      })
-    );
+  get barras(): { nombre: string; porcentaje: number; color: string }[] {
+    return this.resumenPorCurso.map((r, i) => ({
+      nombre: r.nombreCurso,
+      porcentaje: r.porcentajeAsistencia,
+      color: this.colorBarra(i)
+    }));
   }
 
   readonly radioDonaGrande = 45;
   readonly radioDonaPequena = 40;
+  readonly circunferenciaGrande = 2 * Math.PI * this.radioDonaGrande;
+  readonly circunferenciaPequena = 2 * Math.PI * this.radioDonaPequena;
 
-  readonly circunferenciaGrande =
-    2 *
-    Math.PI *
-    this.radioDonaGrande;
-
-  readonly circunferenciaPequena =
-    2 *
-    Math.PI *
-    this.radioDonaPequena;
-
-  dashOffset(
-    porcentaje: number,
-    circunferencia: number
-  ): number {
-
-    const pct =
-      Math.max(
-        0,
-        Math.min(
-          100,
-          porcentaje ?? 0
-        )
-      );
-
-    return (
-      circunferencia -
-      (pct / 100) *
-        circunferencia
-    );
+  dashOffset(porcentaje: number, circunferencia: number): number {
+    const pct = Math.max(0, Math.min(100, porcentaje ?? 0));
+    return circunferencia - (pct / 100) * circunferencia;
   }
 
   get porcentajeTotal(): number {
@@ -734,77 +355,31 @@ export class AsistenciaComponent implements OnInit {
     return this.porcentajeNoJustificadoGlobal;
   }
 
-  seleccionarCurso(
-    idCourse: number
-  ): void {
-
-    this.idCursoSeleccionado =
-      idCourse;
+  seleccionarCurso(idCourse: number): void {
+    this.idCursoSeleccionado = idCourse;
   }
-
-  descargarPdfHistorial(): void {
-
-    if (
-      this.idCursoSeleccionado ===
-      null
-    ) {
-      return;
-    }
-
-    this.descargar(
-      this.asistenciaService.descargarPdf({
-        course:
-          this.idCursoSeleccionado,
-        startDate:
-          this.fechaInicioHistorial,
-        endDate:
-          this.fechaFinHistorial
-      }),
-      `asistencia-historial-curso-${this.idCursoSeleccionado}.pdf`
-    );
-  }
-
-  // ================= LISTADO =================
 
   buscarListado(): void {
 
     this.errorListado = null;
-
-    // Limpiar los resultados anteriores
-    // antes de realizar una nueva consulta.
     this.columnasListado = [];
     this.filasListado = [];
 
-    if (
-      this.filtroListadoCurso ===
-      null
-    ) {
-
+    if (this.filtroListadoCurso === null) {
       this.listadoConsultado = true;
-      this.errorListado =
-        'Selecciona un curso.';
+      this.errorListado = 'Selecciona un curso.';
       return;
     }
 
-    if (
-      !this.filtroListadoInicio ||
-      !this.filtroListadoFin
-    ) {
-
+    if (!this.filtroListadoInicio || !this.filtroListadoFin) {
       this.listadoConsultado = true;
-      this.errorListado =
-        'Selecciona las fechas de inicio y fin.';
+      this.errorListado = 'Selecciona las fechas de inicio y fin.';
       return;
     }
 
-    if (
-      this.filtroListadoInicio >
-      this.filtroListadoFin
-    ) {
-
+    if (this.filtroListadoInicio > this.filtroListadoFin) {
       this.listadoConsultado = true;
-      this.errorListado =
-        'La fecha inicial no puede ser posterior a la fecha final.';
+      this.errorListado = 'La fecha inicial no puede ser posterior a la fecha final.';
       return;
     }
 
@@ -812,22 +387,11 @@ export class AsistenciaComponent implements OnInit {
     this.listadoConsultado = true;
 
     this.asistenciaService
-      .obtenerHistorialPorCurso(
-        this.filtroListadoCurso,
-        this.filtroListadoInicio,
-        this.filtroListadoFin
-      )
+      .obtenerHistorialPorCurso(this.filtroListadoCurso, this.filtroListadoInicio, this.filtroListadoFin)
       .subscribe({
 
         next: registros => {
-
-          // El servicio convierte 404 en [].
-          // Por eso aquí un [] significa
-          // simplemente "sin registros".
-          this.construirGrid(
-            registros ?? []
-          );
-
+          this.construirGrid(registros ?? []);
           this.cargandoListado = false;
         },
 
@@ -837,13 +401,9 @@ export class AsistenciaComponent implements OnInit {
           this.filasListado = [];
 
           if (error?.status === 404) {
-
             this.errorListado = null;
-
           } else {
-
-            this.errorListado =
-              'No se pudo cargar el listado de asistencia.';
+            this.errorListado = 'No se pudo cargar el listado de asistencia.';
           }
 
           this.cargandoListado = false;
@@ -851,260 +411,124 @@ export class AsistenciaComponent implements OnInit {
       });
   }
 
-  private construirGrid(
-    registros: AttendanceResponseDTO[]
-  ): void {
+  private construirGrid(registros: AttendanceResponseDTO[]): void {
 
     if (!registros.length) {
-
       this.columnasListado = [];
       this.filasListado = [];
       return;
     }
 
-    const fechas =
-      Array.from(
-        new Set(
-          registros
-            .map(
-              r =>
-                r.attendanceDate
-            )
-            .filter(Boolean)
-        )
-      ).sort();
+    const fechas = Array.from(
+      new Set(registros.map(r => r.attendanceDate).filter(Boolean))
+    ).sort();
 
-    this.columnasListado =
-      fechas;
+    this.columnasListado = fechas;
 
-    const porEstudiante =
-      new Map<
-        number,
-        Map<
-          string,
-          AttendanceResponseDTO
-        >
-      >();
+    const porEstudiante = new Map<number, Map<string, AttendanceResponseDTO>>();
 
     registros.forEach(registro => {
 
-      const mapaFechas =
-        porEstudiante.get(
-          registro.idStudent
-        ) ??
-        new Map<
-          string,
-          AttendanceResponseDTO
-        >();
+      const mapaFechas = porEstudiante.get(registro.idStudent) ?? new Map<string, AttendanceResponseDTO>();
 
-      mapaFechas.set(
-        registro.attendanceDate,
-        registro
-      );
-
-      porEstudiante.set(
-        registro.idStudent,
-        mapaFechas
-      );
+      mapaFechas.set(registro.attendanceDate, registro);
+      porEstudiante.set(registro.idStudent, mapaFechas);
     });
 
-    const filas:
-      FilaGridListado[] = [];
+    const filas: FilaGridListado[] = [];
 
-    porEstudiante.forEach(
-      (mapaFechas, idStudent) => {
+    porEstudiante.forEach((mapaFechas, idStudent) => {
 
-        const usuario =
-          this.estudiantes.find(
-            e =>
-              e.idUser ===
-              idStudent
-          );
+      const usuario = this.estudiantes.find(e => e.idUser === idStudent);
 
-        const nombreCompleto =
-          this.mapaEstudiantes.get(
-            idStudent
-          ) ??
-          `Estudiante ${idStudent}`;
+      const nombreCompleto = this.mapaEstudiantes.get(idStudent) ?? `Estudiante ${idStudent}`;
 
-        const nombre =
-          usuario?.name ??
-          nombreCompleto;
+      const nombre = usuario?.name ?? nombreCompleto;
+      const apellidos = usuario?.surnames ?? '';
 
-        const apellidos =
-          usuario?.surnames ??
-          '';
+      const partesNombre = nombre.trim().split(/\s+/).filter(Boolean);
+      const partesApellido = apellidos.trim().split(/\s+/).filter(Boolean);
 
-        const partesNombre =
-          nombre
-            .trim()
-            .split(/\s+/)
-            .filter(Boolean);
+      const porFecha = new Map<string, AttendanceResponseDTO | null>();
 
-        const partesApellido =
-          apellidos
-            .trim()
-            .split(/\s+/)
-            .filter(Boolean);
+      fechas.forEach(fecha => {
+        porFecha.set(fecha, mapaFechas.get(fecha) ?? null);
+      });
 
-        const porFecha =
-          new Map<
-            string,
-            AttendanceResponseDTO | null
-          >();
+      filas.push({
+        idStudent,
+        primerNombre: partesNombre[0] ?? '',
+        segundoNombre: partesNombre.slice(1).join(' '),
+        primerApellido: partesApellido[0] ?? '',
+        segundoApellido: partesApellido.slice(1).join(' '),
+        porFecha
+      });
+    });
 
-        fechas.forEach(fecha => {
-
-          porFecha.set(
-            fecha,
-            mapaFechas.get(
-              fecha
-            ) ?? null
-          );
-        });
-
-        filas.push({
-
-          idStudent,
-
-          primerNombre:
-            partesNombre[0] ?? '',
-
-          segundoNombre:
-            partesNombre.slice(1).join(' '),
-
-          primerApellido:
-            partesApellido[0] ?? '',
-
-          segundoApellido:
-            partesApellido
-              .slice(1)
-              .join(' '),
-
-          porFecha
-        });
-      }
-    );
-
-    this.filasListado =
-      filas.sort(
-        (a, b) => {
-
-          const nombreA =
-            `${a.primerNombre} ${a.primerApellido}`;
-
-          const nombreB =
-            `${b.primerNombre} ${b.primerApellido}`;
-
-          return nombreA.localeCompare(
-            nombreB
-          );
-        }
-      );
+    this.filasListado = filas.sort((a, b) => {
+      const nombreA = `${a.primerNombre} ${a.primerApellido}`;
+      const nombreB = `${b.primerNombre} ${b.primerApellido}`;
+      return nombreA.localeCompare(nombreB);
+    });
   }
 
-  alternarCelda(
-    fila: FilaGridListado,
-    fecha: string
-  ): void {
+  esPresente(estado: AttendanceStatus): boolean {
+    return estado !== 'ABSENT';
+  }
 
-    const registro =
-      fila.porFecha.get(
-        fecha
-      );
+  alternarCelda(fila: FilaGridListado, fecha: string): void {
+
+    const registro = fila.porFecha.get(fecha);
 
     if (!registro) {
       return;
     }
 
-    const claveCelda =
-      `${fila.idStudent}-${fecha}`;
+    const claveCelda = `${fila.idStudent}-${fecha}`;
 
-    const nuevoEstado:
-      AttendanceStatus =
-        registro.attendanceStatus ===
-        'PRESENT'
-          ? 'ABSENT'
-          : 'PRESENT';
+    const nuevoEstado: AttendanceStatus =
+      registro.attendanceStatus === 'PRESENT' ? 'ABSENT' : 'PRESENT';
 
-    const dto:
-      AttendanceRequestDTO = {
-
-      idSchedule:
-        registro.idSchedule,
-
-      idStudent:
-        registro.idStudent,
-
-      idCourse:
-        registro.idCourse,
-
-      attendanceDate:
-        registro.attendanceDate,
-
-      attendanceStatus:
-        nuevoEstado,
-
-      observation:
-        registro.observation ??
-        undefined
+    const dto: AttendanceRequestDTO = {
+      idSchedule: registro.idSchedule,
+      idStudent: registro.idStudent,
+      idCourse: registro.idCourse,
+      attendanceDate: registro.attendanceDate,
+      attendanceStatus: nuevoEstado,
+      observation: registro.observation ?? undefined
     };
 
-    this.guardandoCelda =
-      claveCelda;
+    this.guardandoCelda = claveCelda;
 
-    this.asistenciaService
-      .actualizarAsistencia(
-        registro.idAttendance,
-        dto
-      )
-      .subscribe({
+    this.asistenciaService.actualizarAsistencia(registro.idAttendance, dto).subscribe({
 
-        next: actualizado => {
+      next: actualizado => {
+        fila.porFecha.set(fecha, actualizado);
+        this.guardandoCelda = null;
+      },
 
-          fila.porFecha.set(
-            fecha,
-            actualizado
-          );
-
-          this.guardandoCelda =
-            null;
-        },
-
-        error: () => {
-
-          this.errorListado =
-            'No se pudo actualizar ese registro.';
-
-          this.guardandoCelda =
-            null;
-        }
-      });
+      error: () => {
+        this.errorListado = 'No se pudo actualizar ese registro.';
+        this.guardandoCelda = null;
+      }
+    });
   }
 
   descargarPdfListado(): void {
 
-    if (
-      this.filtroListadoCurso ===
-      null
-    ) {
+    if (this.filtroListadoCurso === null) {
       return;
     }
 
     this.descargar(
       this.asistenciaService.descargarPdf({
-        course:
-          this.filtroListadoCurso,
-        startDate:
-          this.filtroListadoInicio,
-        endDate:
-          this.filtroListadoFin
+        course: this.filtroListadoCurso,
+        startDate: this.filtroListadoInicio,
+        endDate: this.filtroListadoFin
       }),
       `asistencia-listado-curso-${this.filtroListadoCurso}.pdf`
     );
   }
-
-  // ================= EXCUSAS =================
 
   buscarExcusas(): void {
 
@@ -1112,266 +536,290 @@ export class AsistenciaComponent implements OnInit {
     this.errorExcusas = null;
     this.excusasConsultadas = true;
 
-    if (
-      !this.filtroExcusasInicio ||
-      !this.filtroExcusasFin
-    ) {
-
+    if (!this.filtroExcusasInicio || !this.filtroExcusasFin) {
       this.excusas = [];
-
-      this.errorExcusas =
-        'Selecciona las fechas de inicio y fin.';
-
+      this.errorExcusas = 'Selecciona las fechas de inicio y fin.';
       this.cargandoExcusas = false;
       return;
     }
 
-    if (
-      this.filtroExcusasInicio >
-      this.filtroExcusasFin
-    ) {
-
+    if (this.filtroExcusasInicio > this.filtroExcusasFin) {
       this.excusas = [];
-
-      this.errorExcusas =
-        'La fecha inicial no puede ser posterior a la fecha final.';
-
+      this.errorExcusas = 'La fecha inicial no puede ser posterior a la fecha final.';
       this.cargandoExcusas = false;
       return;
     }
 
-    const cursosAConsultar =
-      this.filtroExcusasCurso !== null
-        ? this.cursos.filter(
-            c =>
-              c.idCourse ===
-              this.filtroExcusasCurso
-          )
-        : this.cursos;
+    const cursosAConsultar = this.filtroExcusasCurso !== null
+      ? this.cursos.filter(c => c.idCourse === this.filtroExcusasCurso)
+      : this.cursos;
 
     if (!cursosAConsultar.length) {
-
       this.excusas = [];
       this.cargandoExcusas = false;
       return;
     }
 
-    const llamadas =
-      cursosAConsultar.map(curso =>
-        this.asistenciaService
-          .obtenerHistorialPorCurso(
-            curso.idCourse,
-            this.filtroExcusasInicio,
-            this.filtroExcusasFin
-          )
-          .pipe(
-            catchError(() =>
-              of(
-                [] as AttendanceResponseDTO[]
-              )
-            )
-          )
-      );
+    const llamadas = cursosAConsultar.map(curso =>
+      this.asistenciaService
+        .obtenerHistorialPorCurso(curso.idCourse, this.filtroExcusasInicio, this.filtroExcusasFin)
+        .pipe(catchError(() => of([] as AttendanceResponseDTO[])))
+    );
 
     forkJoin(llamadas).subscribe({
 
       next: resultados => {
 
-        this.excusas =
-          resultados
-            .flat()
-            .filter(
-              r =>
-                r.justificationStatus !==
-                'NONE'
-            )
-            .sort(
-              (a, b) =>
-                b.attendanceDate.localeCompare(
-                  a.attendanceDate
-                )
-            );
+        this.excusas = resultados
+          .flat()
+          .filter(r => r.justificationStatus !== 'NONE')
+          .sort((a, b) => b.attendanceDate.localeCompare(a.attendanceDate));
 
-        this.cargandoExcusas =
-          false;
+        this.cargandoExcusas = false;
       },
 
       error: () => {
-
-        this.errorExcusas =
-          'No se pudieron cargar las justificaciones.';
-
-        this.cargandoExcusas =
-          false;
+        this.errorExcusas = 'No se pudieron cargar las justificaciones.';
+        this.cargandoExcusas = false;
       }
     });
   }
 
-  revisarJustificacion(
-    registro: AttendanceResponseDTO,
-    aprobar: boolean
-  ): void {
+  toggleExcusaExpandida(idAttendance: number): void {
 
-    if (
-      this.idAdminActual ===
-      null
-    ) {
+    if (this.excusasExpandidas.has(idAttendance)) {
+      this.excusasExpandidas.delete(idAttendance);
+    } else {
+      this.excusasExpandidas.add(idAttendance);
+    }
+  }
 
-      this.errorExcusas =
-        'No se pudo identificar al administrador que revisa.';
+  excusaExpandida(idAttendance: number): boolean {
+    return this.excusasExpandidas.has(idAttendance);
+  }
+
+  revisarJustificacion(registro: AttendanceResponseDTO, aprobar: boolean): void {
+
+    if (this.idAdminActual === null) {
+      this.errorExcusas = 'No se pudo identificar al administrador que revisa.';
+      return;
+    }
+
+    this.revisandoId = registro.idAttendance;
+
+    this.asistenciaService.revisarJustificacion(registro.idAttendance, aprobar, this.idAdminActual).subscribe({
+
+      next: actualizado => {
+
+        const idx = this.excusas.findIndex(r => r.idAttendance === actualizado.idAttendance);
+
+        if (idx !== -1) {
+          this.excusas[idx] = actualizado;
+        }
+
+        this.revisandoId = null;
+      },
+
+      error: () => {
+        this.errorExcusas = 'No se pudo registrar la revisión de la justificación.';
+        this.revisandoId = null;
+      }
+    });
+  }
+
+  abrirHistorial(): void {
+    this.mostrarDrawerHistorial = true;
+    this.errorHistorial = null;
+  }
+
+  cerrarHistorial(): void {
+    this.mostrarDrawerHistorial = false;
+  }
+
+  cambiarModoHistorial(modo: ModoHistorial): void {
+    this.modoHistorial = modo;
+    this.errorHistorial = null;
+  }
+
+  get estudiantesFiltradosHistorial(): UsuarioBasico[] {
+
+    const texto = this.busquedaHistorial.trim().toLowerCase();
+
+    if (!texto) {
+      return this.estudiantes;
+    }
+
+    return this.estudiantes.filter(e =>
+      `${e.name} ${e.surnames}`.toLowerCase().includes(texto)
+    );
+  }
+
+  get cursosFiltradosHistorial(): CourseResponseDTO[] {
+
+    if (this.filtroNivelHistorial === null) {
+      return this.cursos;
+    }
+
+    return this.cursos.filter(c => c.idLevel === this.filtroNivelHistorial);
+  }
+
+  filtrarNivelHistorial(idLevel: number | null): void {
+    this.filtroNivelHistorial = idLevel;
+  }
+
+  toggleEstudianteHistorial(idUser: number): void {
+
+    if (this.estudiantesSeleccionadosHistorial.has(idUser)) {
+      this.estudiantesSeleccionadosHistorial.delete(idUser);
+    } else {
+      this.estudiantesSeleccionadosHistorial.add(idUser);
+    }
+  }
+
+  toggleCursoHistorial(idCourse: number): void {
+
+    if (this.cursosSeleccionadosHistorial.has(idCourse)) {
+      this.cursosSeleccionadosHistorial.delete(idCourse);
+    } else {
+      this.cursosSeleccionadosHistorial.add(idCourse);
+    }
+  }
+
+  get todosSeleccionadosHistorial(): boolean {
+
+    if (this.modoHistorial === 'estudiante') {
+      const lista = this.estudiantesFiltradosHistorial;
+      return lista.length > 0 && lista.every(e => this.estudiantesSeleccionadosHistorial.has(e.idUser));
+    }
+
+    const lista = this.cursosFiltradosHistorial;
+    return lista.length > 0 && lista.every(c => this.cursosSeleccionadosHistorial.has(c.idCourse));
+  }
+
+  toggleTodosHistorial(): void {
+
+    if (this.modoHistorial === 'estudiante') {
+
+      const lista = this.estudiantesFiltradosHistorial;
+
+      if (this.todosSeleccionadosHistorial) {
+        lista.forEach(e => this.estudiantesSeleccionadosHistorial.delete(e.idUser));
+      } else {
+        lista.forEach(e => this.estudiantesSeleccionadosHistorial.add(e.idUser));
+      }
 
       return;
     }
 
-    this.revisandoId =
-      registro.idAttendance;
+    const lista = this.cursosFiltradosHistorial;
 
-    this.asistenciaService
-      .revisarJustificacion(
-        registro.idAttendance,
-        aprobar,
-        this.idAdminActual
-      )
-      .subscribe({
-
-        next: actualizado => {
-
-          const idx =
-            this.excusas.findIndex(
-              r =>
-                r.idAttendance ===
-                actualizado.idAttendance
-            );
-
-          if (idx !== -1) {
-
-            this.excusas[idx] =
-              actualizado;
-          }
-
-          this.revisandoId =
-            null;
-        },
-
-        error: () => {
-
-          this.errorExcusas =
-            'No se pudo registrar la revisión de la justificación.';
-
-          this.revisandoId =
-            null;
-        }
-      });
+    if (this.todosSeleccionadosHistorial) {
+      lista.forEach(c => this.cursosSeleccionadosHistorial.delete(c.idCourse));
+    } else {
+      lista.forEach(c => this.cursosSeleccionadosHistorial.add(c.idCourse));
+    }
   }
 
-  // ================= HELPERS =================
+  get totalSeleccionadosHistorial(): number {
+    return this.modoHistorial === 'estudiante'
+      ? this.estudiantesSeleccionadosHistorial.size
+      : this.cursosSeleccionadosHistorial.size;
+  }
 
-  nombreCurso(
-    idCourse: number | null
-  ): string {
+  generarReporteHistorial(): void {
+
+    const cola: { id: number; tipo: 'student' | 'course' }[] =
+      this.modoHistorial === 'estudiante'
+        ? Array.from(this.estudiantesSeleccionadosHistorial).map(id => ({ id, tipo: 'student' as const }))
+        : Array.from(this.cursosSeleccionadosHistorial).map(id => ({ id, tipo: 'course' as const }));
+
+    if (!cola.length) {
+      this.errorHistorial = 'Selecciona al menos un elemento para generar el reporte.';
+      return;
+    }
+
+    this.errorHistorial = null;
+    this.generandoHistorial = true;
+
+    this.procesarColaHistorial(cola);
+  }
+
+  private procesarColaHistorial(cola: { id: number; tipo: 'student' | 'course' }[]): void {
+
+    if (!cola.length) {
+      this.generandoHistorial = false;
+      return;
+    }
+
+    const [actual, ...resto] = cola;
+
+    const params = actual.tipo === 'student'
+      ? { student: actual.id, startDate: this.fechaInicioHistorial, endDate: this.fechaFinHistorial }
+      : { course: actual.id, startDate: this.fechaInicioHistorial, endDate: this.fechaFinHistorial };
+
+    this.asistenciaService.descargarPdf(params).subscribe({
+
+      next: blob => {
+        this.dispararDescarga(blob, `asistencia-historial-${actual.tipo}-${actual.id}.pdf`);
+        this.procesarColaHistorial(resto);
+      },
+
+      error: () => {
+        this.errorHistorial = 'No se pudo generar uno de los reportes de historial.';
+        this.procesarColaHistorial(resto);
+      }
+    });
+  }
+
+  private dispararDescarga(blob: Blob, nombreArchivo: string): void {
+
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+
+    a.href = url;
+    a.download = nombreArchivo;
+    a.click();
+
+    window.URL.revokeObjectURL(url);
+  }
+
+  nombreCurso(idCourse: number | null): string {
 
     if (idCourse === null) {
       return '';
     }
 
-    return (
-      this.cursos.find(
-        c =>
-          c.idCourse ===
-          idCourse
-      )?.name ??
-      `Curso ${idCourse}`
-    );
+    return this.cursos.find(c => c.idCourse === idCourse)?.name ?? `Curso ${idCourse}`;
   }
 
-  nombreEstudiante(
-    idStudent: number
-  ): string {
-
-    return (
-      this.mapaEstudiantes.get(
-        idStudent
-      ) ??
-      `Estudiante ${idStudent}`
-    );
+  nombreEstudiante(idStudent: number): string {
+    return this.mapaEstudiantes.get(idStudent) ?? `Estudiante ${idStudent}`;
   }
 
-  etiquetaEstado(
-    estado: AttendanceStatus
-  ): string {
-
-    return ETIQUETA_ESTADO[
-      estado
-    ];
+  etiquetaEstado(estado: AttendanceStatus): string {
+    return ETIQUETA_ESTADO[estado];
   }
 
-  etiquetaJustificacion(
-    estado: JustificationStatus
-  ): string {
-
-    return ETIQUETA_JUSTIFICACION[
-      estado
-    ];
+  etiquetaJustificacion(estado: JustificationStatus): string {
+    return ETIQUETA_JUSTIFICACION[estado];
   }
 
-  claseEstado(
-    estado: AttendanceStatus
-  ): string {
-
-    return (
-      'badge-' +
-      estado
-        .toLowerCase()
-        .replace(/_/g, '-')
-    );
+  claseEstado(estado: AttendanceStatus): string {
+    return 'badge-' + estado.toLowerCase().replace(/_/g, '-');
   }
 
-  claseJustificacion(
-    estado: JustificationStatus
-  ): string {
-
-    return (
-      'estado-just-' +
-      estado.toLowerCase()
-    );
+  claseJustificacion(estado: JustificationStatus): string {
+    return 'estado-just-' + estado.toLowerCase();
   }
 
-  private descargar(
-    obs: ReturnType<
-      AsistenciaService['descargarPdf']
-    >,
-    nombreArchivo: string
-  ): void {
+  private descargar(obs: ReturnType<AsistenciaService['descargarPdf']>, nombreArchivo: string): void {
 
     obs.subscribe({
 
-      next: blob => {
-
-        const url =
-          window.URL.createObjectURL(
-            blob
-          );
-
-        const a =
-          document.createElement(
-            'a'
-          );
-
-        a.href = url;
-        a.download =
-          nombreArchivo;
-
-        a.click();
-
-        window.URL.revokeObjectURL(
-          url
-        );
-      },
+      next: blob => this.dispararDescarga(blob, nombreArchivo),
 
       error: () => {
-
-        this.errorHistorialGrafico =
-          'No se pudo generar el PDF.';
+        this.errorListado = 'No se pudo generar el PDF.';
       }
     });
   }
@@ -1380,27 +828,13 @@ export class AsistenciaComponent implements OnInit {
 
     const d = new Date();
 
-    return [
-      d.getFullYear(),
-      String(
-        d.getMonth() + 1
-      ).padStart(2, '0'),
-      String(
-        d.getDate()
-      ).padStart(2, '0')
-    ].join('-');
+    return [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-');
   }
 
   private primerDiaMesISO(): string {
 
     const d = new Date();
 
-    return [
-      d.getFullYear(),
-      String(
-        d.getMonth() + 1
-      ).padStart(2, '0'),
-      '01'
-    ].join('-');
+    return [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), '01'].join('-');
   }
 }
