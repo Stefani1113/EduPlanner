@@ -1,4 +1,4 @@
-package com.EduPlanner.ed_ms_gestion_academica.controller;
+/*package com.EduPlanner.ed_ms_gestion_academica.controller;
 
 import com.eduplanner.ed_lib_common.dto.AcademicTeacherRequestDTO;
 import com.eduplanner.ed_lib_common.dto.AcademicTeacherResponseDTO;
@@ -13,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
-/** RF 8.1 - Base: /eduplanner/academic-teachers */
 @Log4j2
 @RestController @RequestMapping("/academic-teachers") @RequiredArgsConstructor
 public class AcademicTeacherController {
@@ -66,4 +65,5 @@ public class AcademicTeacherController {
         catch (DataIntegrityViolationException e) { throw e; }
         catch (RuntimeException e) { r.setMessage(e.getMessage()); return ResponseEntity.status(HttpStatus.NOT_FOUND).body(r); }
     }
-}
+} 
+*/
