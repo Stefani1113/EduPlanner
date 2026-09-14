@@ -1,9 +1,9 @@
-package eduPlanner.ed_ms_notas.controller;
+package EduPlanner.ed_ms_notas.controller;
 
 import com.eduplanner.ed_lib_common.dto.EvaluativeActivityRequestDTO;
 import com.eduplanner.ed_lib_common.dto.EvaluativeActivityResponseDTO;
 import com.eduplanner.ed_lib_common.dto.HttpGlobalResponse;
-import eduPlanner.ed_ms_notas.service.EvaluativeActivityService;
+import EduPlanner.ed_ms_notas.service.EvaluativeActivityService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

@@ -1,11 +1,11 @@
-package eduPlanner.ed_ms_notas.filter;
+package EduPlanner.ed_ms_notas.filter;
 
 import java.io.IOException;
 
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import eduPlanner.ed_ms_notas.service.JwtValidatorService;
+import EduPlanner.ed_ms_notas.service.JwtValidatorService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

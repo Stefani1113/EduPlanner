@@ -1,4 +1,4 @@
-package eduPlanner.ed_ms_notas.client;
+package EduPlanner.ed_ms_notas.client;
 
 import com.eduplanner.ed_lib_common.dto.UserResponseDTO;
 import org.springframework.cloud.openfeign.FeignClient;

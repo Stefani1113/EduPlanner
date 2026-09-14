@@ -1,9 +1,9 @@
-package eduPlanner.ed_ms_notas.service;
+package EduPlanner.ed_ms_notas.service;
 
 import com.eduplanner.ed_lib_common.dto.EvaluationTypeRequestDTO;
 import com.eduplanner.ed_lib_common.dto.EvaluationTypeResponseDTO;
 import com.eduplanner.ed_lib_common.entity.EvaluationType;
-import eduPlanner.ed_ms_notas.repository.EvaluationTypeRepository;
+import EduPlanner.ed_ms_notas.repository.EvaluationTypeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

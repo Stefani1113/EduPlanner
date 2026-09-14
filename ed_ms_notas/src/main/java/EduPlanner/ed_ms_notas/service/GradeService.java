@@ -1,16 +1,16 @@
-package eduPlanner.ed_ms_notas.service;
+package EduPlanner.ed_ms_notas.service;
 
-import eduPlanner.ed_ms_notas.client.AdministracionServiceClient;
-import eduPlanner.ed_ms_notas.client.GestionAcademicaServiceClient;
+import EduPlanner.ed_ms_notas.client.AdministracionServiceClient;
+import EduPlanner.ed_ms_notas.client.GestionAcademicaServiceClient;
 import com.eduplanner.ed_lib_common.dto.GradeRequestDTO;
 import com.eduplanner.ed_lib_common.entity.EvaluationType;
 import com.eduplanner.ed_lib_common.entity.EvaluativeActivity;
 import com.eduplanner.ed_lib_common.entity.Grade;
 import com.eduplanner.ed_lib_common.entity.GradingScale;
-import eduPlanner.ed_ms_notas.dto.GradeDetailResponseDTO;
-import eduPlanner.ed_ms_notas.repository.EvaluationTypeRepository;
-import eduPlanner.ed_ms_notas.repository.EvaluativeActivityRepository;
-import eduPlanner.ed_ms_notas.repository.GradeRepository;
+import com.eduplanner.ed_lib_common.dto.GradeDetailResponseDTO;
+import EduPlanner.ed_ms_notas.repository.EvaluationTypeRepository;
+import EduPlanner.ed_ms_notas.repository.EvaluativeActivityRepository;
+import EduPlanner.ed_ms_notas.repository.GradeRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;

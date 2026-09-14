@@ -1,4 +1,4 @@
-package eduPlanner.ed_ms_notas.service;
+package EduPlanner.ed_ms_notas.service;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;

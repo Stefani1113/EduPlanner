@@ -1,4 +1,4 @@
-package eduPlanner.ed_ms_notas;
+package EduPlanner.ed_ms_notas;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
