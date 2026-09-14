@@ -180,10 +180,7 @@ export class RegistroUsuarioModalComponent implements OnInit {
     });
   }
 
-  /**
-   * Trae los cursos reales de la institución para el select
-   * "Curso" del formulario de Estudiante.
-   */
+
   private cargarCursos(): void {
     this.cargandoCursos = true;
 

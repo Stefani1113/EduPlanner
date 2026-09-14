@@ -68,8 +68,6 @@ export class TopbarComponent implements OnInit {
 
   private cargarUsuario(): void {
 
-    // Reutiliza el perfil ya cacheado por PerfilService (pedido una
-    // sola vez justo tras el login); no dispara una llamada nueva.
     this.perfilService.obtenerMiPerfil().subscribe({
       next: (respuesta) => {
 
@@ -88,7 +86,7 @@ export class TopbarComponent implements OnInit {
         }
       },
       error: () => {
-        // Si falla, se deja el valor por defecto ('Administrador').
+
       }
     });
   }

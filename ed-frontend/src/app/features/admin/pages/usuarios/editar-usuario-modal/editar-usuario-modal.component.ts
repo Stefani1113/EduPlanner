@@ -91,10 +91,7 @@ export class EditarUsuarioModalComponent implements OnInit {
     }
   }
 
-  /**
-   * Trae los cursos reales de la institución para poder
-   * (re)asignar el curso del estudiante al editarlo.
-   */
+
   private cargarCursos(): void {
     this.cargandoCursos = true;
 
