@@ -1,237 +1,9 @@
 import random
 
-# ==========================================
-# DATOS DE PRUEBA
-# ==========================================
-
-teachers = [
-    {
-        "id_academic_teacher": 5,
-        "max_daily_hours": 5,
-        "max_weekly_hours": 20,
-        "status": True
-    },
-    {
-        "id_academic_teacher": 6,
-        "max_daily_hours": 5,
-        "max_weekly_hours": 20,
-        "status": True
-    }
-]
-
-
-courses = [
-    {
-        "id_course": 10,
-        "id_shift": 1,
-        "status": True
-    },
-    {
-        "id_course": 11,
-        "id_shift": 1,
-        "status": True
-    }
-]
-
-
-time_slots = [
-    {
-        "id_time_slot": 1,
-        "id_shift": 1,
-        "slot_order": 1,
-        "start_time": "07:00",
-        "end_time": "08:00",
-        "break": False,
-        "status": True
-    },
-    {
-        "id_time_slot": 2,
-        "id_shift": 1,
-        "slot_order": 2,
-        "start_time": "08:00",
-        "end_time": "09:00",
-        "break": False,
-        "status": True
-    },
-    {
-        "id_time_slot": 3,
-        "id_shift": 1,
-        "slot_order": 3,
-        "start_time": "09:00",
-        "end_time": "10:00",
-        "break": True,
-        "status": True
-    },
-    {
-        "id_time_slot": 4,
-        "id_shift": 1,
-        "slot_order": 4,
-        "start_time": "10:00",
-        "end_time": "11:00",
-        "break": False,
-        "status": True
-    },
-    {
-        "id_time_slot": 5,
-        "id_shift": 1,
-        "slot_order": 5,
-        "start_time": "11:00",
-        "end_time": "12:00",
-        "break": False,
-        "status": True
-    }
-]
-
-
-academic_loads = [
-    {
-        "id_academic_load": 1,
-        "id_teacher": 5,
-        "id_course": 10,
-        "id_subject": 3,
-        "weekly_hours": 5,
-        "priority": 1,
-        "status": True
-    },
-    {
-        "id_academic_load": 2,
-        "id_teacher": 6,
-        "id_course": 10,
-        "id_subject": 4,
-        "weekly_hours": 3,
-        "priority": 1,
-        "status": True
-    },
-    {
-        "id_academic_load": 3,
-        "id_teacher": 5,
-        "id_course": 11,
-        "id_subject": 5,
-        "weekly_hours": 4,
-        "priority": 1,
-        "status": True
-    }
-]
-
-teacher_availability = [
-    {
-        "id_teacher": 5,
-        "id_time_slot": 1,
-        "day_of_week": 1,
-        "available": True
-    },
-    {
-        "id_teacher": 5,
-        "id_time_slot": 2,
-        "day_of_week": 1,
-        "available": True
-    },
-    {
-        "id_teacher": 5,
-        "id_time_slot": 4,
-        "day_of_week": 1,
-        "available": True
-    },
-    {
-        "id_teacher": 5,
-        "id_time_slot": 5,
-        "day_of_week": 1,
-        "available": True
-    },
-
-    {
-        "id_teacher": 5,
-        "id_time_slot": 1,
-        "day_of_week": 2,
-        "available": True
-    },
-    {
-        "id_teacher": 5,
-        "id_time_slot": 2,
-        "day_of_week": 2,
-        "available": True
-    },
-    {
-        "id_teacher": 5,
-        "id_time_slot": 4,
-        "day_of_week": 2,
-        "available": True
-    },
-    {
-        "id_teacher": 5,
-        "id_time_slot": 5,
-        "day_of_week": 2,
-        "available": True
-    },
-
-        {
-        "id_teacher": 5,
-        "id_time_slot": 1,
-        "day_of_week": 3,
-        "available": True
-    },
-    {
-        "id_teacher": 5,
-        "id_time_slot": 2,
-        "day_of_week": 3,
-        "available": True
-    },
-    {
-        "id_teacher": 5,
-        "id_time_slot": 4,
-        "day_of_week": 3,
-        "available": True
-    },
-    {
-        "id_teacher": 5,
-        "id_time_slot": 5,
-        "day_of_week": 3,
-        "available": True
-    },
-
-    {
-        "id_teacher": 6,
-        "id_time_slot": 1,
-        "day_of_week": 1,
-        "available": True
-    },
-    {
-        "id_teacher": 6,
-        "id_time_slot": 2,
-        "day_of_week": 1,
-        "available": True
-    },
-    {
-        "id_teacher": 6,
-        "id_time_slot": 4,
-        "day_of_week": 1,
-        "available": True
-    },
-
-    {
-        "id_teacher": 6,
-        "id_time_slot": 1,
-        "day_of_week": 2,
-        "available": True
-    },
-    {
-        "id_teacher": 6,
-        "id_time_slot": 2,
-        "day_of_week": 2,
-        "available": True
-    },
-    {
-        "id_teacher": 6,
-        "id_time_slot": 4,
-        "day_of_week": 2,
-        "available": True
-    }
-]
-
 # Restricciones 
 
 # Verifica dsiponibilidad horaria del docente 
-def teacher_is_available(id_teacher, id_time_slot, day_of_week) :
+def teacher_is_available(id_teacher, id_time_slot, day_of_week, teacher_availability) :
     for availability in teacher_availability :
         if (
             availability["id_teacher"] == id_teacher
@@ -307,7 +79,7 @@ def availability_subject_of_day(schadule, id_course, id_subject, day_of_week) :
     return count < MAX_SUBJECT_DAY
 
 # Verifica que todos los requisitos sean validos 
-def valid_space(schedule, load, teacher, course, space, day_of_week) :
+def valid_space(schedule, load, teacher, course, space, day_of_week, teacher_availability) :
 
     id_teacher = load["id_teacher"]
     id_course = load["id_course"]
@@ -326,7 +98,7 @@ def valid_space(schedule, load, teacher, course, space, day_of_week) :
         return False
 
     # El docente debe estar disponible
-    if not teacher_is_available(id_teacher, space["id_time_slot"], day_of_week) :
+    if not teacher_is_available(id_teacher, space["id_time_slot"], day_of_week, teacher_availability) :
         return False
 
     # El docente no puede tener otra clase ahí
@@ -523,7 +295,7 @@ def validate_schedule(schedule, teachers, courses, time_slots, academic_loads, t
 
 # Genera el horario y lo valida antes de devolverlo.
 def generate_and_validate_schedule(teachers, courses, time_slots, academic_loads, teacher_availability):
-    schedule = generate_schedule()
+    schedule = generate_schedule(teachers, courses, time_slots, academic_loads, teacher_availability)
 
     if schedule is None:
         return None, ["No fue posible generar un horario con las restricciones actuales"]
