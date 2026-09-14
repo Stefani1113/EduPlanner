@@ -1,6 +1,6 @@
 package EduPlanner.ed_ms_notas.service;
 
-import EduPlanner.ed_ms_notas.dto.GradeResponseDTO;
+import com.eduplanner.ed_lib_common.dto.GradeResponseDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -9,7 +9,6 @@ import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
-import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
 import org.springframework.stereotype.Service;
 
 import java.awt.*;
@@ -176,3 +175,4 @@ public class GradePdfService {
         return prefix + "_" + id + "_periodo" + period + "_" + LocalDate.now() + ".pdf";
     }
 }
+
