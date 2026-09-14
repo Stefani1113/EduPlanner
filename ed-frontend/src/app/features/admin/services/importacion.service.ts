@@ -13,13 +13,19 @@ export interface HttpImportResponse<T> {
 })
 export class ImportacionService {
 
-  private readonly api = '/administracion/eduplanner/users/import';
+  private readonly api =
+    '/administracion/eduplanner/users/import';
+
   private readonly TIMEOUT_MS = 60000;
 
   constructor(private http: HttpClient) {}
 
-  importarEstudiantes(file: File): Observable<HttpImportResponse<number>> {
+  importarEstudiantes(
+    file: File
+  ): Observable<HttpImportResponse<number>> {
+
     const formData = new FormData();
+
     formData.append('file', file, file.name);
 
     return this.http.post<HttpImportResponse<number>>(
@@ -28,10 +34,12 @@ export class ImportacionService {
     ).pipe(
       timeout(this.TIMEOUT_MS),
       catchError(err => {
+
         if (err?.name === 'TimeoutError') {
           return throwError(() => ({
             error: {
-              message: 'El servidor está tardando demasiado en responder. Verifica el reporte antes de volver a importar el mismo archivo.'
+              message:
+                'El servidor está tardando demasiado en responder. Verifica el reporte antes de volver a importar el mismo archivo.'
             }
           }));
         }
@@ -41,7 +49,10 @@ export class ImportacionService {
     );
   }
 
-  obtenerReporte(idImport: number): Observable<HttpImportResponse<ImportReport>> {
+  obtenerReporte(
+    idImport: number
+  ): Observable<HttpImportResponse<ImportReport>> {
+
     return this.http.get<HttpImportResponse<ImportReport>>(
       `${this.api}/${idImport}/report`
     );

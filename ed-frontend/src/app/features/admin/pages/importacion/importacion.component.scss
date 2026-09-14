@@ -35,6 +35,38 @@
   margin-bottom: 20px;
 }
 
+.campo-curso {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+
+.campo-curso label {
+  color: #cfcfcf;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.campo-curso select {
+  background: #1e1e1e;
+  border: 1px solid #333;
+  border-radius: 6px;
+  padding: 10px 12px;
+  color: #ffffff;
+  font-size: 13px;
+}
+
+.campo-curso select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.campo-ayuda {
+  color: #7c7c7c;
+  font-size: 11.5px;
+}
+
 .drop-zone {
   background: #2e4f2171;
   border: 2px dashed #6ed83d40;
@@ -342,6 +374,11 @@ input[type="file"] {
 .badge-otro {
   background: rgba(153, 153, 153, 0.18);
   color: #bbbbbb;
+}
+
+.badge-restriccion {
+  background: rgba(255, 87, 87, 0.18);
+  color: #ff8f8f;
 }
 
 .sin-errores {

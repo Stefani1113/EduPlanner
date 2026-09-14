@@ -18,8 +18,13 @@
         <img src="assets/img/archive.png" alt="Seleccionar archivo">
 
         <div class="upload-text">
-          <p>{{ archivo ? 'Archivo seleccionado' : 'Arrastra tu archivo aquí' }}</p>
-          <span>o haz clic para seleccionar un CSV</span>
+          <p>
+            {{ archivo ? 'Archivo seleccionado' : 'Arrastra tu archivo aquí' }}
+          </p>
+
+          <span>
+            o haz clic para seleccionar un CSV
+          </span>
         </div>
 
         <input
@@ -31,19 +36,37 @@
       </label>
 
       <div class="formato-ayuda">
-        Formato permitido: <strong>CSV</strong> · Tamaño máximo: <strong>{{ tamanoMaximoMB }} MB</strong>
+        Formato permitido:
+        <strong>CSV</strong>
+        · Tamaño máximo:
+        <strong>{{ tamanoMaximoMB }} MB</strong>
       </div>
 
       <div class="archivo" *ngIf="archivo">
         <i class="fa-solid fa-file-csv"></i>
+
         <div class="archivo-info">
           <strong>{{ archivo.name }}</strong>
-          <span>{{ (archivo.size / 1024 / 1024) | number:'1.2-2' }} MB</span>
+
+          <span>
+            {{ (archivo.size / 1024 / 1024) | number:'1.2-2' }} MB
+          </span>
         </div>
-        <button type="button" class="btn-quitar" [disabled]="cargando" (click)="quitarArchivo()">×</button>
+
+        <button
+          type="button"
+          class="btn-quitar"
+          [disabled]="cargando"
+          (click)="quitarArchivo()"
+        >
+          ×
+        </button>
       </div>
 
-      <div class="error-general" *ngIf="errorGeneral">
+      <div
+        class="error-general"
+        *ngIf="errorGeneral"
+      >
         {{ errorGeneral }}
       </div>
 
@@ -59,45 +82,103 @@
   </div>
 </div>
 
-<div class="reporte-container" *ngIf="vista === 'reporte' && reporte">
+<div
+  class="reporte-container"
+  *ngIf="vista === 'reporte' && reporte"
+>
   <div class="reporte-card">
-    <button type="button" class="btn-volver" (click)="volver()">
+
+    <button
+      type="button"
+      class="btn-volver"
+      (click)="volver()"
+    >
       <i class="fa-solid fa-arrow-left"></i>
       Volver
     </button>
 
-    <div class="reporte-titulo">Reporte de importación</div>
-    <div class="reporte-subtitulo">Consulta el resultado detallado del proceso de importación.</div>
+    <div class="reporte-titulo">
+      Reporte de importación
+    </div>
+
+    <div class="reporte-subtitulo">
+      Consulta el resultado detallado del proceso de importación.
+    </div>
 
     <div class="reporte-meta">
-      <span><strong>Archivo:</strong> {{ reporte.fileName }}</span>
-      <span><strong>Fecha:</strong> {{ reporte.importDate | date:'dd/MM/yyyy HH:mm' }}</span>
-      <span><strong>ID de importación:</strong> #{{ reporte.idImport }}</span>
+      <span>
+        <strong>Archivo:</strong>
+        {{ reporte.fileName }}
+      </span>
+
+      <span>
+        <strong>Fecha:</strong>
+        {{ reporte.importDate | date:'dd/MM/yyyy HH:mm' }}
+      </span>
+
+      <span>
+        <strong>ID de importación:</strong>
+        #{{ reporte.idImport }}
+      </span>
     </div>
 
     <div class="resumen-cards">
+
       <div class="resumen-card total">
-        <span class="resumen-label">Total</span>
-        <span class="resumen-valor">{{ reporte.totalRows }}</span>
+        <span class="resumen-label">
+          Total
+        </span>
+
+        <span class="resumen-valor">
+          {{ reporte.totalRows }}
+        </span>
       </div>
+
       <div class="resumen-card exitosos">
-        <span class="resumen-label">Exitosos</span>
-        <span class="resumen-valor">{{ reporte.successRows }}</span>
+        <span class="resumen-label">
+          Exitosos
+        </span>
+
+        <span class="resumen-valor">
+          {{ reporte.successRows }}
+        </span>
       </div>
+
       <div class="resumen-card errores">
-        <span class="resumen-label">Con errores</span>
-        <span class="resumen-valor">{{ reporte.failedRows }}</span>
+        <span class="resumen-label">
+          Con errores
+        </span>
+
+        <span class="resumen-valor">
+          {{ reporte.failedRows }}
+        </span>
       </div>
+
       <div class="resumen-card porcentaje">
-        <span class="resumen-label">Éxito</span>
-        <span class="resumen-valor">{{ porcentajeExito() }}%</span>
+        <span class="resumen-label">
+          Éxito
+        </span>
+
+        <span class="resumen-valor">
+          {{ porcentajeExito() }}%
+        </span>
       </div>
+
     </div>
 
-    <div class="tabla-errores-titulo" *ngIf="reporte.errors?.length">Tabla de errores</div>
+    <div
+      class="tabla-errores-titulo"
+      *ngIf="reporte.errors?.length"
+    >
+      Tabla de errores
+    </div>
 
-    <div class="table-wrapper" *ngIf="reporte.errors?.length">
+    <div
+      class="table-wrapper"
+      *ngIf="reporte.errors?.length"
+    >
       <table class="errores-table">
+
         <thead>
           <tr>
             <th>Fila</th>
@@ -106,27 +187,51 @@
             <th>Detalle</th>
           </tr>
         </thead>
+
         <tbody>
           <tr *ngFor="let err of reporte.errors">
-            <td>{{ err.rowNumber }}</td>
+
             <td>
-              <span class="badge" [ngClass]="claseTipoError(err.error)">
+              {{ err.rowNumber }}
+            </td>
+
+            <td>
+              <span
+                class="badge"
+                [ngClass]="claseTipoError(err.error)"
+              >
                 {{ etiquetaTipoError(err.error) }}
               </span>
             </td>
-            <td>{{ campoAfectado(err.error) }}</td>
-            <td class="detalle-cell">{{ mensajeAmigable(err.error) }}</td>
+
+            <td>
+              {{ campoAfectado(err.error) }}
+            </td>
+
+            <td class="detalle-cell">
+              {{ mensajeAmigable(err.error) }}
+            </td>
+
           </tr>
         </tbody>
+
       </table>
     </div>
 
-    <div class="sin-errores" *ngIf="!reporte.errors?.length">
+    <div
+      class="sin-errores"
+      *ngIf="!reporte.errors?.length"
+    >
       Todos los registros se procesaron correctamente, sin errores.
     </div>
 
-    <button type="button" class="btn-nueva-importacion" (click)="volver()">
+    <button
+      type="button"
+      class="btn-nueva-importacion"
+      (click)="volver()"
+    >
       REALIZAR OTRA IMPORTACIÓN
     </button>
+
   </div>
 </div>
