@@ -175,7 +175,7 @@ def generate_schedule(teachers, courses, time_slots, academic_loads, teacher_ava
 
             # Probar espacios
             for space in slots:
-                if valid_space(schedule, load, teacher, course, space, day_of_week) :
+                if valid_space(schedule, load, teacher, course, space, day_of_week, teacher_availability) :
 
                     clas = {
                         "id_academic_load" :
@@ -221,72 +221,71 @@ def validate_schedule(schedule, teachers, courses, time_slots, academic_loads, t
     errors = []
 
     # Diccionarios de apoyo
-    teachers_by_id = {teacher["id_academic_teacher"]: teacher for t in teachers}
+    teachers_by_id = {teacher["id_academic_teacher"]: teacher for teacher in teachers}
     slots_by_id = {slot["id_time_slot"]: slot for slot in time_slots}
-    loads_by_id = {load["id_academic_load"]: load for load in academic_loads}
 
     # Ningún docente puede tener dos clases en el mismo día
     seen_teacher_slots = set()
-    for clase in schedule:
-        key = (clase["id_teacher"], clase["day_of_week"], clase["id_time_slot"])
+    for clas in schedule:
+        key = (clas["id_teacher"], clas["day_of_week"], clas["id_time_slot"])
         if key in seen_teacher_slots:
-            errors.append(f"Docente {clase['id_teacher']} tiene 2 clases el mismo día {clase['day_of_week']}, bloque {clase['id_time_slot']}")
+            errors.append(f"Docente {clas['id_teacher']} tiene 2 clases el mismo día {clas['day_of_week']}, bloque {clas['id_time_slot']}")
         seen_teacher_slots.add(key)
 
     # Ningún curso puede tener dos clases en el mismo día
     seen_course_slots = set()
-    for clase in schedule:
-        key = (clase["id_course"], clase["day_of_week"], clase["id_time_slot"])
+    for clas in schedule:
+        key = (clas["id_course"], clas["day_of_week"], clas["id_time_slot"])
         if key in seen_course_slots:
-            errors.append(f"Curso {clase['id_course']} tiene 2 clases el mismo día {clase['day_of_week']}, bloque {clase['id_time_slot']}")
+            errors.append(f"Curso {clas['id_course']} tiene 2 clases el mismo día {clas['day_of_week']}, bloque {clas['id_time_slot']}")
         seen_course_slots.add(key)
 
     # Ningún bloque usado puede ser un descanso
-    for clase in schedule:
-        slot = slots_by_id[clase["id_time_slot"]]
+    for clas in schedule:
+        slot = slots_by_id[clas["id_time_slot"]]
         if slot["break"]:
-            errors.append(f"Se asignó una clase en un bloque de descanso: {clase}")
+            errors.append(f"Se asignó una clas en un bloque de descanso: {clas}")
 
     # El bloque debe pertenecer a la jornada del curso
     courses_by_id_full = {c["id_course"]: c for c in courses}
-    for clase in schedule:
-        slot = slots_by_id[clase["id_time_slot"]]
-        course = courses_by_id_full[clase["id_course"]]
+    for clas in schedule:
+        slot = slots_by_id[clas["id_time_slot"]]
+        course = courses_by_id_full[clas["id_course"]]
         if slot["id_shift"] != course["id_shift"]:
-            errors.append(f"Bloque de jornada equivocada para el curso {clase['id_course']}: {clase}")
+            errors.append(f"Bloque de jornada equivocada para el curso {clas['id_course']}: {clas}")
 
     # La disponibilidad del docente debe respetarse
     availability_set = {
         (a["id_teacher"], a["id_time_slot"], a["day_of_week"])
         for a in teacher_availability if a["available"]
     }
-    for clase in schedule:
-        key = (clase["id_teacher"], clase["id_time_slot"], clase["day_of_week"])
+    for clas in schedule:
+        key = (clas["id_teacher"], clas["id_time_slot"], clas["day_of_week"])
         if key not in availability_set:
-            errors.append(f"Docente {clase['id_teacher']} no estaba disponible en: {clase}")
+            errors.append(f"Docente {clas['id_teacher']} no estaba disponible en: {clas}")
 
     # Horas diarias y semanales máximas por docente
     for teacher_id, teacher in teachers_by_id.items():
-        clases_docente = [c for c in schedule if c["id_teacher"] == teacher_id]
+        teacher_class = [course for course in schedule if course["id_teacher"] == teacher_id]
 
         # Semanales
-        if len(clases_docente) > teacher["max_weekly_hours"]:
-            errors.append(f"Docente {teacher_id} excede sus horas semanales máximas ({len(clases_docente)} > {teacher['max_weekly_hours']})")
+        if len(teacher_class) > teacher["max_weekly_hours"]:
+            errors.append(f"Docente {teacher_id} excede sus horas semanales máximas ({len(teacher_class)} > {teacher['max_weekly_hours']})")
 
         # Diarias
         for day in range(1, 6):
-            clases_dia = [c for c in clases_docente if c["day_of_week"] == day]
-            if len(clases_dia) > teacher["max_daily_hours"]:
-                errors.append(f"Docente {teacher_id} excede sus horas diarias máximas el día {day} ({len(clases_dia)} > {teacher['max_daily_hours']})")
+            day_class = [c for c in teacher_class if c["day_of_week"] == day]
+            if len(day_class) > teacher["max_daily_hours"]:
+                errors.append(f"Docente {teacher_id} excede sus horas diarias máximas el día {day} ({len(day_class)} > {teacher['max_daily_hours']})")
 
     # Cada carga académica debe cumplir las horas semanales requeridas
     for load in academic_loads:
         if not load["status"]:
             continue
-        clases_load = [c for c in schedule if c["id_academic_load"] == load["id_academic_load"]]
-        if len(clases_load) != load["weekly_hours"]:
+        load_class = [c for c in schedule if c["id_academic_load"] == load["id_academic_load"]]
+        if len(load_class) != load["weekly_hours"]:
             errors.append(
-                f"La carga {load['id_academic_load']} tiene {len(clases_load)} horas asignadas, "
+                f"La carga {load['id_academic_load']} tiene {len(load_class)} horas asignadas, "
                 f"pero necesita exactamente {load['weekly_hours']}"
             )
 
@@ -315,5 +314,5 @@ if __name__ == "__main__":
             print(" -", error)
     else:
         print("Horario generado y validado correctamente:")
-        for clase in schedule:
-            print(clase)
+        for clas in schedule:
+            print(clas)
