@@ -1,7 +1,7 @@
 package com.eduplanner.ed_lib_common.dto;
 
 
-import com.eduplanner.ed_lib_common.entity.ScheduleType;
+import com.eduplanner.ed_lib_common.entity.ScheduleGenerationType;
 
 import jakarta.persistence.GenerationType;
 import jakarta.validation.Valid;
@@ -26,7 +26,7 @@ public class ScheduleGenerationRequestDTO {
 
     private String observations;
 
-    private ScheduleType scheduleType = ScheduleType.REGULAR;
+    private ScheduleGenerationType scheduleType = ScheduleGenerationType.REGULAR;
 
     @NotEmpty
     @Valid

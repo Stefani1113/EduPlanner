@@ -2,6 +2,7 @@ package com.eduplanner.ed_lib_common.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -19,11 +20,11 @@ public class ScheduleGeneration {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "generation_type", nullable = false)
-    private ScheduleGeneration scheduleGenerationType;
+    private SchedulerGenerationType generationType;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private GenerationStatus status = GenerationStatus.PROCESSING;
+    @Column(name = "status", nullable = false)
+    private SchedulerGenerationStatus status = SchedulerGenerationStatus.PROCESSING;
 
     @Column(name = "generated_by", nullable = false)
     private Integer generatedBy;
@@ -44,8 +45,12 @@ public class ScheduleGeneration {
     private LocalDateTime updatedAt;
 
     @PrePersist
-    public void prePersist() { createdAt = updatedAt = LocalDateTime.now(); }
+    public void prePersist() {
+        createdAt = updatedAt = LocalDateTime.now();
+    }
 
     @PreUpdate
-    public void preUpdate() { updatedAt = LocalDateTime.now(); }
+    public void preUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
 }
