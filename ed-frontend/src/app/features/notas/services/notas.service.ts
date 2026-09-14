@@ -283,4 +283,20 @@ export class NotasService {
       })
       .pipe(map(r => r.data ?? []), catchError(() => of([])));
   }
+
+
+  descargarPdfEstudiante(idStudent: number, idPeriod: number): Observable<Blob> {
+    return this.http.get(`${this.baseNotas}/grades/pdf`, {
+      params: { student: idStudent, period: idPeriod },
+      responseType: 'blob'
+    });
+  }
+
+
+  descargarPdfCurso(idCourse: number, idSubject: number, idPeriod: number): Observable<Blob> {
+    return this.http.get(`${this.baseNotas}/grades/pdf`, {
+      params: { course: idCourse, subject: idSubject, period: idPeriod },
+      responseType: 'blob'
+    });
+  }
 }
