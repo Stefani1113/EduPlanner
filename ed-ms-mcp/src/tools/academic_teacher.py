@@ -4,7 +4,7 @@ def create_academic_teacher_tool(server, client) :
     """Crea herramientas  para consultar datos del docente desde el microservicio de gestión académica de EduPlanner."""
 
     # -------------------------------------------------------------
-    # 1. HERRAMIENTA: Listar Franjas por Jornada
+    # 1. HERRAMIENTA: Listar docente académico
     # -------------------------------------------------------------
     @server.tool(
         name="list_academic_teacher",
