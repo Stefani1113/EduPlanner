@@ -89,6 +89,9 @@ def load_scheduler_data(client):
         "/courses"
     )
 
+    print("\nRESPUESTA DE CURSOS:")
+    print(courses_response)
+
     courses_data = courses_response["data"]
 
     courses = adapt_courses(
@@ -133,7 +136,7 @@ def load_scheduler_data(client):
 
     # Franjas horarias
     shift_ids = {
-        course["idShift"]
+        course["id_shift"]
         for course in courses
         if course["status"]
     }

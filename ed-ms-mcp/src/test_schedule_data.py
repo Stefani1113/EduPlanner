@@ -2,7 +2,7 @@ from auth.jwt_manager import JWTManager
 from config.settings import settings
 from services.eduplanner_client import EduPlannerClient
 
-from algorithms.scheduler_data import adapt_academic_loads
+from algorithms.scheduler_data import load_scheduler_data
 
 
 def main():
@@ -16,17 +16,27 @@ def main():
         jwt_manager
     )
 
-    print("Consultando cargas académicas...")
+    print("Cargando datos para generar horario...\n")
 
-    response = client.get("/academic-loads")
+    data = load_scheduler_data(client)
 
-    # Tomamos únicamente la lista de cargas
-    academic_loads = adapt_academic_loads(response["data"])
+    print("================================")
+    print("DATOS CARGADOS")
+    print("================================")
 
-    print("\nCargas adaptadas:")
-    
-    for load in academic_loads:
-        print(load)
+    print("Docentes:", len(data["teachers"]))
+    print("Cursos:", len(data["courses"]))
+    print("Bloques horarios:", len(data["time_slots"]))
+    print("Cargas académicas:", len(data["academic_loads"]))
+    print("Disponibilidades:", len(data["teacher_availability"]))
+
+    print("\nDocentes:")
+    for teacher in data["teachers"]:
+        print(teacher)
+
+    print("\nCursos:")
+    for course in data["courses"]:
+        print(course)
 
 
 if __name__ == "__main__":
