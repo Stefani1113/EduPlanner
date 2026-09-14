@@ -1,16 +1,19 @@
 package EduPlanner.ed_ms_notas.service;
 
-import EduPlanner.ed_ms_notas.client.AdministracionServiceClient;
-import EduPlanner.ed_ms_notas.client.GestionAcademicaServiceClient;
-import com.eduplanner.ed_lib_common.dto.GradeRequestDTO;
-import com.eduplanner.ed_lib_common.entity.EvaluationType;
-import com.eduplanner.ed_lib_common.entity.EvaluativeActivity;
-import com.eduplanner.ed_lib_common.entity.Grade;
-import com.eduplanner.ed_lib_common.entity.GradingScale;
-import com.eduplanner.ed_lib_common.dto.GradeDetailResponseDTO;
+import EduPlanner.ed_ms_notas.client.AdministracionFeignClient;
+import EduPlanner.ed_ms_notas.client.GestionAcademicaFeignClient;
+import EduPlanner.ed_ms_notas.dto.GradeRequestDTO;
+import EduPlanner.ed_ms_notas.dto.GradeResponseDTO;
+import EduPlanner.ed_ms_notas.dto.HttpGlobalResponse;
+import EduPlanner.ed_ms_notas.dto.UserInfoDTO;
+import EduPlanner.ed_ms_notas.entity.EvaluationType;
+import EduPlanner.ed_ms_notas.entity.EvaluativeActivity;
+import EduPlanner.ed_ms_notas.entity.Grade;
+import EduPlanner.ed_ms_notas.entity.GradingScale;
 import EduPlanner.ed_ms_notas.repository.EvaluationTypeRepository;
 import EduPlanner.ed_ms_notas.repository.EvaluativeActivityRepository;
 import EduPlanner.ed_ms_notas.repository.GradeRepository;
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
@@ -30,13 +33,12 @@ public class GradeService {
     private final EvaluationTypeRepository evaluationTypeRepository;
     private final EvaluativeActivityRepository evaluativeActivityRepository;
     private final GradingScaleService gradingScaleService;
-    private final AdministracionServiceClient administracionServiceClient;
-    private final GestionAcademicaServiceClient gestionAcademicaServiceClient;
+    private final AdministracionFeignClient administracionFeignClient;
+    private final GestionAcademicaFeignClient gestionAcademicaFeignClient;
 
-    public GradeDetailResponseDTO registerGrade(GradeRequestDTO req) {
+    public GradeResponseDTO registerGrade(GradeRequestDTO req) {
         validateIsRole(req.getIdStudent(), "ESTUDIANTE", "estudiante");
         validateIsRole(req.getIdTeacher(), "DOCENTE", "docente");
-        validateAcademicReferences(req);
 
         EvaluativeActivity activity = evaluativeActivityRepository.findById(req.getIdEvaluative())
                 .orElseThrow(() -> new IllegalArgumentException("Actividad evaluativa no encontrada: " + req.getIdEvaluative()));
@@ -47,7 +49,6 @@ public class GradeService {
         EvaluationType evaluationType = evaluationTypeRepository.findById(req.getIdEvaluationType())
                 .orElseThrow(() -> new IllegalArgumentException("Tipo de evaluación no encontrado: " + req.getIdEvaluationType()));
 
-        // RF 9.1 - Validar que la nota esté dentro del rango de la escala configurada
         GradingScale scale = gradingScaleService.getOrThrow(evaluationType.getIdScale());
         if (req.getGradeValue().compareTo(scale.getMinimumValue()) < 0
                 || req.getGradeValue().compareTo(scale.getMaximumValue()) > 0) {
@@ -70,12 +71,11 @@ public class GradeService {
         log.info("Nota registrada: estudiante={}, asignatura={}, valor={}",
                 req.getIdStudent(), req.getIdSubject(), req.getGradeValue());
 
-        return toDetailResponse(repository.save(grade));
+        return toResponse(repository.save(grade));
     }
 
-    public GradeDetailResponseDTO updateGrade(Integer id, GradeRequestDTO req) {
+    public GradeResponseDTO updateGrade(Integer id, GradeRequestDTO req) {
         Grade grade = getOrThrow(id);
-        validateAcademicReferences(req);
 
         EvaluationType evaluationType = evaluationTypeRepository.findById(req.getIdEvaluationType())
                 .orElseThrow(() -> new IllegalArgumentException("Tipo de evaluación no encontrado: " + req.getIdEvaluationType()));
@@ -89,43 +89,72 @@ public class GradeService {
 
         map(req, grade);
         grade.setStatus("MODIFIED");
-        return toDetailResponse(repository.save(grade));
+        return toResponse(repository.save(grade));
     }
 
-    public GradeDetailResponseDTO getById(Integer id) {
-        return toDetailResponse(getOrThrow(id));
+    public GradeResponseDTO getById(Integer id) {
+        return toResponse(getOrThrow(id));
     }
 
-    /** RF 9.3 (parcial) - Consultar notas de un estudiante en un periodo */
-    public List<GradeDetailResponseDTO> getByStudentAndPeriod(Integer idStudent, Integer idPeriod) {
-        return repository.findByIdStudentAndIdPeriod(idStudent, idPeriod).stream().map(this::toDetailResponse).toList();
+    public List<GradeResponseDTO> getByStudentAndPeriod(Integer idStudent, Integer idPeriod) {
+        return repository.findByIdStudentAndIdPeriod(idStudent, idPeriod).stream().map(this::toResponse).toList();
     }
 
-    /** RF 9.3 (parcial) - Consultar notas de un curso completo en una asignatura y periodo */
-    public List<GradeDetailResponseDTO> getByCourseAndSubjectAndPeriod(Integer idCourse, Integer idSubject, Integer idPeriod) {
-        return repository.findByIdCourseAndIdSubjectAndIdPeriod(idCourse, idSubject, idPeriod).stream().map(this::toDetailResponse).toList();
-    }
-
-    /** Valida que el curso, la asignatura y el periodo existan en ed-ms-gestion-academica */
-    private void validateAcademicReferences(GradeRequestDTO req) {
-        if (!gestionAcademicaServiceClient.courseExists(req.getIdCourse())) {
-            throw new IllegalArgumentException("El curso " + req.getIdCourse() + " no existe en gestión académica");
-        }
-        if (!gestionAcademicaServiceClient.subjectExists(req.getIdSubject())) {
-            throw new IllegalArgumentException("La asignatura " + req.getIdSubject() + " no existe en gestión académica");
-        }
-        if (!gestionAcademicaServiceClient.academicPeriodExists(req.getIdPeriod())) {
-            throw new IllegalArgumentException("El periodo " + req.getIdPeriod() + " no existe en gestión académica");
-        }
+    public List<GradeResponseDTO> getByCourseAndSubjectAndPeriod(Integer idCourse, Integer idSubject, Integer idPeriod) {
+        return repository.findByIdCourseAndIdSubjectAndIdPeriod(idCourse, idSubject, idPeriod).stream().map(this::toResponse).toList();
     }
 
     private void validateIsRole(Integer idUser, String expectedRole, String label) {
-        String role = administracionServiceClient.getUserRole(idUser);
+        String role;
+        try {
+            role = administracionFeignClient.getUserRole(idUser);
+        } catch (FeignException.NotFound e) {
+            throw new IllegalArgumentException("El " + label + " " + idUser + " no existe en administración");
+        }
         if (role == null) {
             throw new IllegalArgumentException("El " + label + " " + idUser + " no existe en administración");
         }
         if (!expectedRole.equals(role)) {
             throw new IllegalArgumentException("El usuario " + idUser + " no tiene rol " + expectedRole);
+        }
+    }
+
+    private String fetchUserName(Integer idUser) {
+        try {
+            HttpGlobalResponse<UserInfoDTO> resp = administracionFeignClient.getUserById(idUser);
+            UserInfoDTO u = resp != null ? resp.getData() : null;
+            if (u == null) return null;
+            return (u.getName() != null ? u.getName() : "") + " " + (u.getSurnames() != null ? u.getSurnames() : "");
+        } catch (FeignException e) {
+            log.warn("No se pudo obtener el nombre del usuario {} en administración: {}", idUser, e.getMessage());
+            return null;
+        }
+    }
+
+    private String fetchCourseName(Integer idCourse) {
+        try {
+            return gestionAcademicaFeignClient.getCourseName(idCourse);
+        } catch (FeignException e) {
+            log.warn("No se pudo obtener el nombre del curso {}: {}", idCourse, e.getMessage());
+            return null;
+        }
+    }
+
+    private String fetchSubjectName(Integer idSubject) {
+        try {
+            return gestionAcademicaFeignClient.getSubjectName(idSubject);
+        } catch (FeignException e) {
+            log.warn("No se pudo obtener el nombre de la asignatura {}: {}", idSubject, e.getMessage());
+            return null;
+        }
+    }
+
+    private String fetchPeriodName(Integer idPeriod) {
+        try {
+            return gestionAcademicaFeignClient.getPeriodName(idPeriod);
+        } catch (FeignException e) {
+            log.warn("No se pudo obtener el nombre del periodo {}: {}", idPeriod, e.getMessage());
+            return null;
         }
     }
 
@@ -145,38 +174,30 @@ public class GradeService {
         g.setGradeValue(r.getGradeValue());
     }
 
-    /**
-     * Construye la respuesta mostrando nombres en lugar de ids.
-     * Estudiante/docente vienen de ed-ms-administracion y curso/asignatura/periodo
-     * de ed-ms-gestion-academica, ambos consultados vía Feign. La actividad
-     * evaluativa y el tipo de evaluación son datos propios de este microservicio.
-     */
-    private GradeDetailResponseDTO toDetailResponse(Grade g) {
-        String studentName = administracionServiceClient.getUserName(g.getIdStudent());
-        String teacherName = administracionServiceClient.getUserName(g.getIdTeacher());
-        String courseName = gestionAcademicaServiceClient.getCourseName(g.getIdCourse());
-        String subjectName = gestionAcademicaServiceClient.getSubjectName(g.getIdSubject());
-        String periodName = gestionAcademicaServiceClient.getAcademicPeriodName(g.getIdPeriod());
+    private GradeResponseDTO toResponse(Grade g) {
+        GradeResponseDTO r = new GradeResponseDTO();
+        r.setIdGrade(g.getIdGrade());
 
-        String evaluativeActivityName = evaluativeActivityRepository.findById(g.getIdEvaluative())
-                .map(EvaluativeActivity::getEvaluationName)
-                .orElse(null);
-        String evaluationTypeName = evaluationTypeRepository.findById(g.getIdEvaluationType())
-                .map(EvaluationType::getLetterGrade)
-                .orElse(null);
+        r.setIdStudent(g.getIdStudent());
+        r.setStudentName(fetchUserName(g.getIdStudent()));
 
-        return new GradeDetailResponseDTO(
-                g.getIdGrade(),
-                studentName,
-                teacherName,
-                courseName,
-                subjectName,
-                periodName,
-                evaluativeActivityName,
-                evaluationTypeName,
-                g.getGradeValue(),
-                g.getStatus(),
-                g.getRegistrationDate()
-        );
+        r.setIdCourse(g.getIdCourse());
+        r.setCourseName(fetchCourseName(g.getIdCourse()));
+
+        r.setIdTeacher(g.getIdTeacher());
+        r.setTeacherName(fetchUserName(g.getIdTeacher()));
+
+        r.setIdPeriod(g.getIdPeriod());
+        r.setPeriodName(fetchPeriodName(g.getIdPeriod()));
+
+        r.setIdSubject(g.getIdSubject());
+        r.setSubjectName(fetchSubjectName(g.getIdSubject()));
+
+        r.setIdEvaluative(g.getIdEvaluative());
+        r.setIdEvaluationType(g.getIdEvaluationType());
+        r.setGradeValue(g.getGradeValue());
+        r.setStatus(g.getStatus());
+        r.setRegistrationDate(g.getRegistrationDate());
+        return r;
     }
 }

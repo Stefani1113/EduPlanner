@@ -1,17 +1,11 @@
 package com.eduplanner.ed_lib_common.entity;
 
+import jakarta.persistence.*;
+import lombok.Data;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.Data;
-
-/** RF 9 - Registrar notas: la calificación de un estudiante en una actividad evaluativa */
 @Entity
 @Data
 @Table(name = "grades")
@@ -46,7 +40,6 @@ public class Grade {
     @Column(name = "grade_value", nullable = false, precision = 5, scale = 2)
     private BigDecimal gradeValue;
 
-    /** REGISTERED (por defecto), MODIFIED, ANNULLED */
     @Column(name = "status", nullable = false, length = 50)
     private String status;
 
