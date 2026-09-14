@@ -1,15 +1,15 @@
 package EduPlanner.ed_ms_notas.service;
 
-import com.eduplanner.ed_lib_common.dto.GradingScaleRequestDTO;
-import com.eduplanner.ed_lib_common.dto.GradingScaleResponseDTO;
-import com.eduplanner.ed_lib_common.entity.GradingScale;
+import EduPlanner.ed_ms_notas.dto.GradingScaleRequestDTO;
+import EduPlanner.ed_ms_notas.dto.GradingScaleResponseDTO;
+import EduPlanner.ed_ms_notas.entity.GradingScale;
 import EduPlanner.ed_ms_notas.repository.GradingScaleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 
-/** RF 9.1 - Configurar escala de calificación */
 @Service
 @RequiredArgsConstructor
 public class GradingScaleService {
@@ -18,23 +18,19 @@ public class GradingScaleService {
 
     public GradingScaleResponseDTO register(GradingScaleRequestDTO req) {
         validateRange(req.getMinimumValue(), req.getMaximumValue(), req.getMinimumPassGrade());
-
         GradingScale scale = new GradingScale();
         scale.setMinimumValue(req.getMinimumValue());
         scale.setMaximumValue(req.getMaximumValue());
         scale.setMinimumPassGrade(req.getMinimumPassGrade());
-
         return toResponse(repository.save(scale));
     }
 
     public GradingScaleResponseDTO update(Integer id, GradingScaleRequestDTO req) {
         validateRange(req.getMinimumValue(), req.getMaximumValue(), req.getMinimumPassGrade());
-
         GradingScale scale = getOrThrow(id);
         scale.setMinimumValue(req.getMinimumValue());
         scale.setMaximumValue(req.getMaximumValue());
         scale.setMinimumPassGrade(req.getMinimumPassGrade());
-
         return toResponse(repository.save(scale));
     }
 
@@ -46,7 +42,7 @@ public class GradingScaleService {
         return repository.findAll().stream().map(this::toResponse).toList();
     }
 
-    private void validateRange(java.math.BigDecimal min, java.math.BigDecimal max, java.math.BigDecimal pass) {
+    private void validateRange(BigDecimal min, BigDecimal max, BigDecimal pass) {
         if (min.compareTo(max) >= 0) {
             throw new IllegalArgumentException("El valor mínimo debe ser menor que el valor máximo");
         }

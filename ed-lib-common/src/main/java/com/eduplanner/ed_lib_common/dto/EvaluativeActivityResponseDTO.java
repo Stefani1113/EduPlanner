@@ -1,9 +1,8 @@
 package com.eduplanner.ed_lib_common.dto;
 
+import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-
-import lombok.Data;
 
 @Data
 public class EvaluativeActivityResponseDTO {
