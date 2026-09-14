@@ -60,7 +60,6 @@ public class JwtValidationFilter extends OncePerRequestFilter {
                         path.startsWith("/eduplanner/support")
                         || path.equals("/eduplanner/actuator/health");
     }
-
     private void sendError(HttpServletResponse response, int status, String message) throws IOException {
         response.setStatus(status);
         response.setContentType("application/json");
