@@ -18,23 +18,27 @@ import java.util.List;
 public class AcademicTeacherController {
     private final AcademicTeacherService service;
 
-    @PostMapping
-    public ResponseEntity<HttpGlobalResponse<AcademicTeacherResponseDTO>> registerTeacher(@Valid @RequestBody AcademicTeacherRequestDTO req) {
-        HttpGlobalResponse<AcademicTeacherResponseDTO> r = new HttpGlobalResponse<>();
-        try { r.setData(service.registerTeacher(req)); r.setMessage("Profesor académico registrado correctamente"); return ResponseEntity.status(HttpStatus.CREATED).body(r); }
-        catch (IllegalArgumentException e) { r.setMessage(e.getMessage()); return ResponseEntity.status(HttpStatus.CONFLICT).body(r); }
-
-        catch (DataIntegrityViolationException e) { throw e; }
-        catch (Exception e) { r.setMessage("Error registrando profesor académico"); return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(r); }
-
-        catch (Exception e) {
-    log.error("Error registrando profesor académico", e);
-    r.setMessage("Error registrando profesor académico: " + e.getMessage());
-    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(r);
-}
-
+   @PostMapping
+public ResponseEntity<HttpGlobalResponse<AcademicTeacherResponseDTO>> registerTeacher(@Valid @RequestBody AcademicTeacherRequestDTO req) {
+    HttpGlobalResponse<AcademicTeacherResponseDTO> r = new HttpGlobalResponse<>();
+    try {
+        r.setData(service.registerTeacher(req));
+        r.setMessage("Profesor académico registrado correctamente");
+        return ResponseEntity.status(HttpStatus.CREATED).body(r);
     }
-
+    catch (IllegalArgumentException e) {
+        r.setMessage(e.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(r);
+    }
+    catch (DataIntegrityViolationException e) {
+        throw e;
+    }
+    catch (Exception e) {
+        log.error("Error registrando profesor académico", e);
+        r.setMessage("Error registrando profesor académico: " + e.getMessage());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(r);
+    }
+}
     @PutMapping("/{id}")
     public ResponseEntity<HttpGlobalResponse<AcademicTeacherResponseDTO>> updateTeacher(@PathVariable Integer id, @Valid @RequestBody AcademicTeacherRequestDTO req) {
         HttpGlobalResponse<AcademicTeacherResponseDTO> r = new HttpGlobalResponse<>();
