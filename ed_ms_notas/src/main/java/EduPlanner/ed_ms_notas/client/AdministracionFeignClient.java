@@ -1,18 +1,22 @@
 package EduPlanner.ed_ms_notas.client;
 
-import com.eduplanner.ed_lib_common.dto.UserResponseDTO;
+import com.eduplanner.ed_lib_common.dto.HttpGlobalResponse;
+import com.eduplanner.ed_lib_common.dto.UserInfoDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
 /**
- * Cliente Feign declarativo hacia ed-ms-administracion.
- * Reemplaza las llamadas manuales por RestTemplate por una interfaz de Feign.
+ * Comunicación con ed-ms-administracion vía Feign.
+ * "name" debe coincidir EXACTO con spring.application.name de administracion,
+ * que es el nombre con el que se registra en Consul. Sin "url": Consul resuelve la IP:puerto.
  */
-@FeignClient(name = "administracion-service", url = "${services.administracion.base-url}")
+@FeignClient(name = "ed-ms-administracion")
 public interface AdministracionFeignClient {
 
-    /** Devuelve el usuario completo (incluye name, surnames y roleName). 404 si no existe. */
-    @GetMapping("/internal/users/{idUser}")
-    UserResponseDTO getUser(@PathVariable("idUser") Integer idUser);
+    @GetMapping("/eduplanner/internal/users/{id}/role")
+    String getUserRole(@PathVariable("id") Integer id);
+
+    @GetMapping("/eduplanner/internal/users/{id}")
+    HttpGlobalResponse<UserInfoDTO> getUserById(@PathVariable("id") Integer id);
 }
