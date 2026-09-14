@@ -30,11 +30,11 @@ public class Schedule {
     private Integer idTimeSlot;
 
     @Column(name = "day_of_week", nullable = false)
-    private Short dayOfWeek;
+    private Byte dayOfWeek;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "schedule_type", nullable = false)
-    private ScheduleType scheduleType = ScheduleType.REGULAR;
+    private ScheduleGenerationType scheduleType = ScheduleGenerationType.REGULAR;
 
     @Column(nullable = false)
     private Boolean status = true;
