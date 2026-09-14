@@ -12,18 +12,32 @@ import com.eduplanner.ed_lib_common.dto.UserResponseDTO;
 public interface AdministracionServiceClient {
 
     /**
-     * Devuelve el nombre del rol del usuario, o null si no existe.
-     * @param idUser
-     * @return
+     * Devuelve el nombre del rol del usuario.
+     *
+     * @param idUser ID del usuario
+     * @return nombre del rol
      */
     @GetMapping("/eduplanner/internal/users/{idUser}/role")
     String getUserRole(@PathVariable("idUser") Integer idUser);
 
     /**
-     *Devuelve usuarios de dicho curso
-     * @param idCourse
-     * @return
+     * Devuelve los usuarios de un curso.
+     *
+     * @param idCourse ID del curso
+     * @return lista de usuarios
      */
     @GetMapping("/eduplanner/internal/user/courses/{idCourse}")
-    List<UserResponseDTO> getUsersByCourse(@PathVariable("idCourse") Integer idCourse);
+    List<UserResponseDTO> getUsersByCourse(
+            @PathVariable("idCourse") Integer idCourse
+    );
+
+    /**
+     * Devuelve el nombre completo del usuario.
+     *
+     * @param idUser ID del usuario
+     * @return nombre completo del usuario
+     */
+    @GetMapping("/eduplanner/internal/users/{idUser}/full-name")
+    String getUserFullName(@PathVariable("idUser") Integer idUser);
+    
 }
