@@ -1,29 +1,36 @@
 package eduPlanner.ed_ms_notas.client;
 
+import com.eduplanner.ed_lib_common.dto.UserResponseDTO;
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.RestTemplate;
 
-/** Le pregunta a ed-ms-administracion si un idUser existe y qué rol tiene */
+/** Le pregunta a ed-ms-administracion (vía Feign) si un idUser existe, qué rol tiene y su nombre. */
 @Component
 @RequiredArgsConstructor
 public class AdministracionServiceClient {
 
-    private final RestTemplate restTemplate;
-
-    @Value("${services.administracion.base-url}")
-    private String administracionBaseUrl;
+    private final AdministracionFeignClient feignClient;
 
     /** Devuelve el nombre del rol del usuario, o null si no existe. */
     public String getUserRole(Integer idUser) {
+        UserResponseDTO user = getUser(idUser);
+        return user != null ? user.getRoleName() : null;
+    }
+
+    /** Devuelve el nombre completo (nombre + apellidos) del usuario, o null si no existe. */
+    public String getUserName(Integer idUser) {
+        UserResponseDTO user = getUser(idUser);
+        if (user == null) {
+            return null;
+        }
+        return (user.getName() + " " + user.getSurnames()).trim();
+    }
+
+    private UserResponseDTO getUser(Integer idUser) {
         try {
-            return restTemplate.getForObject(
-                    administracionBaseUrl + "/internal/users/" + idUser + "/role",
-                    String.class
-            );
-        } catch (HttpClientErrorException.NotFound e) {
+            return feignClient.getUser(idUser);
+        } catch (FeignException.NotFound e) {
             return null;
         }
     }
