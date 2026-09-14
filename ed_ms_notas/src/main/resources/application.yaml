@@ -2,6 +2,17 @@ spring:
   application:
     name: ed_ms_notas
 
+  datasource:
+    url: jdbc:mysql://localhost:3306/microNotes
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
   cloud:
     consul:
       host: localhost
@@ -13,6 +24,21 @@ spring:
         service-name: ${spring.application.name}
         prefer-ip-address: true
         health-check-path: /eduplanner/actuator/health
+
+server:
+  port: 8084
+  servlet:
+    context-path: /eduplanner/
+
+security:
+  jwt:
+    secret-key: czyYSEj017tCB8M8mnOSvhgV4gSdI4P5Bql+3HrWZtM=
+
+services:
+  administracion:
+    base-url: http://localhost:8081/eduplanner
+  gestion-academica:
+    base-url: http://localhost:8083/eduplanner
 
 management:
   endpoints:
