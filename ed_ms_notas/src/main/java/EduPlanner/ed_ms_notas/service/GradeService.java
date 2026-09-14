@@ -2,14 +2,14 @@ package EduPlanner.ed_ms_notas.service;
 
 import EduPlanner.ed_ms_notas.client.AdministracionFeignClient;
 import EduPlanner.ed_ms_notas.client.GestionAcademicaFeignClient;
-import EduPlanner.ed_ms_notas.dto.GradeRequestDTO;
-import EduPlanner.ed_ms_notas.dto.GradeResponseDTO;
-import EduPlanner.ed_ms_notas.dto.HttpGlobalResponse;
-import EduPlanner.ed_ms_notas.dto.UserInfoDTO;
-import EduPlanner.ed_ms_notas.entity.EvaluationType;
-import EduPlanner.ed_ms_notas.entity.EvaluativeActivity;
-import EduPlanner.ed_ms_notas.entity.Grade;
-import EduPlanner.ed_ms_notas.entity.GradingScale;
+import com.eduplanner.ed_lib_common.dto.GradeRequestDTO;
+import com.eduplanner.ed_lib_common.dto.GradeResponseDTO;
+import com.eduplanner.ed_lib_common.dto.HttpGlobalResponse;
+import com.eduplanner.ed_lib_common.dto.UserInfoDTO;
+import com.eduplanner.ed_lib_common.entity.EvaluationType;
+import com.eduplanner.ed_lib_common.entity.EvaluativeActivity;
+import com.eduplanner.ed_lib_common.entity.Grade;
+import com.eduplanner.ed_lib_common.entity.GradingScale;
 import EduPlanner.ed_ms_notas.repository.EvaluationTypeRepository;
 import EduPlanner.ed_ms_notas.repository.EvaluativeActivityRepository;
 import EduPlanner.ed_ms_notas.repository.GradeRepository;
@@ -201,3 +201,4 @@ public class GradeService {
         return r;
     }
 }
+
