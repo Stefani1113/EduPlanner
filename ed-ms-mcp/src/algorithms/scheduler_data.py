@@ -89,9 +89,6 @@ def load_scheduler_data(client):
         "/courses"
     )
 
-    print("\nRESPUESTA DE CURSOS:")
-    print(courses_response)
-
     courses_data = courses_response["data"]
 
     courses = adapt_courses(
