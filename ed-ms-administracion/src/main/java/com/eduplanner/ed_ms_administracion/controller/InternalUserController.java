@@ -35,13 +35,24 @@ public class InternalUserController {
     }
 
     /**
-     * lista de estudiantes de un curso
+
+     * Devuelve el nombre completo (nombre + apellidos) de un usuario.
+     * Usado por gestion-academica para mostrar nombres en vez de ids
+     * (por ejemplo, en el historial y PDF de asistencia).
      */
+    @GetMapping("/{id}/full-name")
+    public ResponseEntity<String> getUserFullName(@PathVariable Integer id) {
+        return userRepository.findById(id)
+                .map(user -> ResponseEntity.ok(user.getName() + " " + user.getSurnames()))
+                .orElse(ResponseEntity.notFound().build());
+    }
+     
     @GetMapping("/course/{idCourse}")
     public ResponseEntity<List<UserResponseDTO>> getUsersByCourse(@PathVariable Integer idCourse) {
         List<UserResponseDTO> users = userRepository.findByIdCourse(idCourse).stream()
                 .map(UserResponseDTO::fromEntity)
                 .toList();
         return ResponseEntity.ok(users);
+
     }
 }

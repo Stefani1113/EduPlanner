@@ -2,6 +2,7 @@ package com.EduPlanner.ed_ms_gestion_academica.controller;
 
 import java.util.List;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -32,6 +33,7 @@ public class CourseController {
         HttpGlobalResponse<CourseResponseDTO> r = new HttpGlobalResponse<>();
         try { r.setData(service.registerCourse(req)); r.setMessage("Curso registrado correctamente"); return ResponseEntity.status(HttpStatus.CREATED).body(r); }
         catch (IllegalArgumentException e) { r.setMessage(e.getMessage()); return ResponseEntity.status(HttpStatus.CONFLICT).body(r); }
+        catch (DataIntegrityViolationException e) { throw e; }
         catch (Exception e) { r.setMessage("Error registrando curso"); return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(r); }
     }
 
@@ -40,6 +42,7 @@ public class CourseController {
         HttpGlobalResponse<CourseResponseDTO> r = new HttpGlobalResponse<>();
         try { r.setData(service.updateCourse(id, req)); r.setMessage("Curso actualizado correctamente"); return ResponseEntity.ok(r); }
         catch (IllegalArgumentException e) { r.setMessage(e.getMessage()); return ResponseEntity.status(HttpStatus.CONFLICT).body(r); }
+        catch (DataIntegrityViolationException e) { throw e; }
         catch (RuntimeException e) { r.setMessage(e.getMessage()); return ResponseEntity.status(HttpStatus.NOT_FOUND).body(r); }
     }
 
@@ -53,6 +56,7 @@ public class CourseController {
     public ResponseEntity<HttpGlobalResponse<CourseResponseDTO>> getCourseById(@PathVariable Integer id) {
         HttpGlobalResponse<CourseResponseDTO> r = new HttpGlobalResponse<>();
         try { r.setData(service.getCourseById(id)); r.setMessage("Curso encontrado"); return ResponseEntity.ok(r); }
+        catch (DataIntegrityViolationException e) { throw e; }
         catch (RuntimeException e) { r.setMessage(e.getMessage()); return ResponseEntity.status(HttpStatus.NOT_FOUND).body(r); }
     }
 
@@ -75,6 +79,7 @@ public class CourseController {
     public ResponseEntity<HttpGlobalResponse<Void>> deleteCourse(@PathVariable Integer id) {
         HttpGlobalResponse<Void> r = new HttpGlobalResponse<>();
         try { service.deleteCourse(id); r.setMessage("Curso eliminado correctamente"); return ResponseEntity.ok(r); }
+        catch (DataIntegrityViolationException e) { throw e; }
         catch (RuntimeException e) { r.setMessage(e.getMessage()); return ResponseEntity.status(HttpStatus.NOT_FOUND).body(r); }
     }
 }

@@ -6,6 +6,7 @@ import com.eduplanner.ed_lib_common.dto.HttpGlobalResponse;
 import com.EduPlanner.ed_ms_gestion_academica.service.SubjectService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,6 +29,7 @@ public class SubjectController {
         HttpGlobalResponse<SubjectResponseDTO> r = new HttpGlobalResponse<>();
         try { r.setData(service.updateSubject(id, req)); r.setMessage("Asignatura actualizada correctamente"); return ResponseEntity.ok(r); }
         catch (IllegalArgumentException e) { r.setMessage(e.getMessage()); return ResponseEntity.status(HttpStatus.CONFLICT).body(r); }
+        catch (DataIntegrityViolationException e) { throw e; }
         catch (RuntimeException e) { r.setMessage(e.getMessage()); return ResponseEntity.status(HttpStatus.NOT_FOUND).body(r); }
     }
 
@@ -41,6 +43,7 @@ public class SubjectController {
     public ResponseEntity<HttpGlobalResponse<SubjectResponseDTO>> getSubjectById(@PathVariable Integer id) {
         HttpGlobalResponse<SubjectResponseDTO> r = new HttpGlobalResponse<>();
         try { r.setData(service.getSubjectById(id)); r.setMessage("Asignatura encontrada"); return ResponseEntity.ok(r); }
+        catch (DataIntegrityViolationException e) { throw e; }
         catch (RuntimeException e) { r.setMessage(e.getMessage()); return ResponseEntity.status(HttpStatus.NOT_FOUND).body(r); }
     }
 
@@ -56,6 +59,7 @@ public class SubjectController {
     public ResponseEntity<HttpGlobalResponse<Void>> deleteSubject(@PathVariable Integer id) {
         HttpGlobalResponse<Void> r = new HttpGlobalResponse<>();
         try { service.deleteSubject(id); r.setMessage("Asignatura eliminada correctamente"); return ResponseEntity.ok(r); }
+        catch (DataIntegrityViolationException e) { throw e; }
         catch (RuntimeException e) { r.setMessage(e.getMessage()); return ResponseEntity.status(HttpStatus.NOT_FOUND).body(r); }
     }
 }

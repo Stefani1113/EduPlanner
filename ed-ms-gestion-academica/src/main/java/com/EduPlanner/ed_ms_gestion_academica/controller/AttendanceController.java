@@ -10,6 +10,7 @@ import com.EduPlanner.ed_ms_gestion_academica.service.AttendancePdfService;
 import com.EduPlanner.ed_ms_gestion_academica.service.AttendanceService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -51,6 +52,8 @@ public class AttendanceController {
             r.setData(service.updateAttendance(id, req));
             r.setMessage("Asistencia actualizada con éxito");
             return ResponseEntity.ok(r);
+        } catch (DataIntegrityViolationException e) {
+            throw e; // deja que GlobalExceptionHandler arme el mensaje específico (id inexistente, etc.)
         } catch (RuntimeException e) {
             r.setMessage(e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(r);
@@ -118,6 +121,8 @@ public class AttendanceController {
         } catch (IllegalArgumentException e) {
             r.setMessage(e.getMessage());
             return ResponseEntity.status(HttpStatus.CONFLICT).body(r);
+        } catch (DataIntegrityViolationException e) {
+            throw e;
         } catch (RuntimeException e) {
             r.setMessage(e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(r);
@@ -139,6 +144,8 @@ public class AttendanceController {
         } catch (IllegalArgumentException e) {
             r.setMessage(e.getMessage());
             return ResponseEntity.status(HttpStatus.CONFLICT).body(r);
+        } catch (DataIntegrityViolationException e) {
+            throw e;
         } catch (RuntimeException e) {
             r.setMessage(e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(r);
@@ -187,11 +194,11 @@ public class AttendanceController {
             if (student != null) {
                 records = service.getHistoryByStudent(student, startDate, endDate);
                 summary = service.getSummaryByStudent(student, startDate, endDate);
-                title = "Historial de asistencia - Estudiante " + student;
+                title = "Historial de asistencia - " + service.resolveStudentName(student);
                 fileName = pdfService.buildFileName("asistencia_estudiante", student, startDate, endDate);
             } else if (course != null) {
                 records = service.getHistoryByCourse(course, startDate, endDate);
-                title = "Historial de asistencia - Curso " + course;
+                title = "Historial de asistencia - Curso " + service.resolveCourseName(course);
                 fileName = pdfService.buildFileName("asistencia_curso", course, startDate, endDate);
             } else {
                 return ResponseEntity.badRequest().build();
