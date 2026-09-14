@@ -54,16 +54,28 @@
         <div class="form-grid-2">
           <div class="form-group">
             <label>Nombre corto</label>
-            <input type="text" [(ngModel)]="info.nombreCorto" placeholder="Ej: Nuevo Horizonte">
+            <input type="text" [(ngModel)]="info.nombreCorto" [maxlength]="limits.nombreCorto" placeholder="Ej: Nuevo Horizonte" [class.limit-reached]="atLimit(info.nombreCorto, limits.nombreCorto)">
+            <span class="char-count" [class.limit-reached]="atLimit(info.nombreCorto, limits.nombreCorto)">{{ info.nombreCorto.length }}/{{ limits.nombreCorto }}</span>
+            <span class="field-error" *ngIf="atLimit(info.nombreCorto, limits.nombreCorto)">Límite de caracteres alcanzado</span>
           </div>
           <div class="form-group">
             <label>Nombre largo</label>
-            <input type="text" [(ngModel)]="info.nombreLargo" placeholder="Ej: Institución Educativa Nuevo Horizonte">
+            <input type="text" [(ngModel)]="info.nombreLargo" [maxlength]="limits.nombreLargo" placeholder="Ej: Institución Educativa Nuevo Horizonte" [class.limit-reached]="atLimit(info.nombreLargo, limits.nombreLargo)">
+            <span class="char-count" [class.limit-reached]="atLimit(info.nombreLargo, limits.nombreLargo)">{{ info.nombreLargo.length }}/{{ limits.nombreLargo }}</span>
+            <span class="field-error" *ngIf="atLimit(info.nombreLargo, limits.nombreLargo)">Límite de caracteres alcanzado</span>
           </div>
         </div>
         <div class="form-group">
+          <label>Insignia de portada</label>
+          <input type="text" [(ngModel)]="info.heroBadge" [maxlength]="limits.heroBadge" placeholder="Ej: ✦ Excelencia académica" [class.limit-reached]="atLimit(info.heroBadge, limits.heroBadge)">
+          <span class="char-count" [class.limit-reached]="atLimit(info.heroBadge, limits.heroBadge)">{{ info.heroBadge.length }}/{{ limits.heroBadge }}</span>
+          <span class="field-error" *ngIf="atLimit(info.heroBadge, limits.heroBadge)">Límite de caracteres alcanzado</span>
+        </div>
+        <div class="form-group">
           <label>Descripción</label>
-          <textarea rows="3" [(ngModel)]="info.descripcion" placeholder="Frase que aparece en la portada"></textarea>
+          <textarea rows="3" [(ngModel)]="info.descripcion" [maxlength]="limits.descripcion" placeholder="Frase que aparece en la portada" [class.limit-reached]="atLimit(info.descripcion, limits.descripcion)"></textarea>
+          <span class="char-count" [class.limit-reached]="atLimit(info.descripcion, limits.descripcion)">{{ info.descripcion.length }}/{{ limits.descripcion }}</span>
+          <span class="field-error" *ngIf="atLimit(info.descripcion, limits.descripcion)">Límite de caracteres alcanzado</span>
         </div>
       </section>
 
@@ -117,6 +129,92 @@
         </button>
       </section>
 
+      <section class="panel-card">
+        <div class="card-header">
+          <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <polyline points="21 15 16 10 5 21"/>
+          </svg>
+          <h3>Fotos institucionales</h3>
+        </div>
+        <div class="carousel-grid">
+          <div class="carousel-item">
+            <div class="carousel-thumb">
+              <img *ngIf="info.comunidadImagenUrl" [src]="info.comunidadImagenUrl" alt="Comunidad educativa">
+              <span *ngIf="!info.comunidadImagenUrl" class="empty-placeholder">Sin imagen</span>
+            </div>
+            <input type="text" [(ngModel)]="info.comunidadImagenUrl" placeholder="URL de la imagen">
+            <div class="form-group">
+              <label>Texto sobre la foto</label>
+              <input type="text" [(ngModel)]="info.comunidadTitulo" [maxlength]="limits.comunidadTitulo" placeholder="Ej: Comunidad educativa" [class.limit-reached]="atLimit(info.comunidadTitulo, limits.comunidadTitulo)">
+              <span class="char-count" [class.limit-reached]="atLimit(info.comunidadTitulo, limits.comunidadTitulo)">{{ info.comunidadTitulo.length }}/{{ limits.comunidadTitulo }}</span>
+              <span class="field-error" *ngIf="atLimit(info.comunidadTitulo, limits.comunidadTitulo)">Límite de caracteres alcanzado</span>
+            </div>
+            <div class="carousel-actions">
+              <input #comunidadInput type="file" accept="image/*" hidden (change)="onComunidadFileSelected($event)">
+              <button class="btn-link" (click)="comunidadInput.click()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="17 8 12 3 7 8"/>
+                  <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                Subir
+              </button>
+            </div>
+          </div>
+          <div class="carousel-item">
+            <div class="carousel-thumb">
+              <img *ngIf="info.espaciosImagenUrl" [src]="info.espaciosImagenUrl" alt="Espacios educativos">
+              <span *ngIf="!info.espaciosImagenUrl" class="empty-placeholder">Sin imagen</span>
+            </div>
+            <input type="text" [(ngModel)]="info.espaciosImagenUrl" placeholder="URL de la imagen">
+            <div class="form-group">
+              <label>Texto sobre la foto</label>
+              <input type="text" [(ngModel)]="info.espaciosTitulo" [maxlength]="limits.espaciosTitulo" placeholder="Ej: Espacios educativos" [class.limit-reached]="atLimit(info.espaciosTitulo, limits.espaciosTitulo)">
+              <span class="char-count" [class.limit-reached]="atLimit(info.espaciosTitulo, limits.espaciosTitulo)">{{ info.espaciosTitulo.length }}/{{ limits.espaciosTitulo }}</span>
+              <span class="field-error" *ngIf="atLimit(info.espaciosTitulo, limits.espaciosTitulo)">Límite de caracteres alcanzado</span>
+            </div>
+            <div class="carousel-actions">
+              <input #espaciosInput type="file" accept="image/*" hidden (change)="onEspaciosFileSelected($event)">
+              <button class="btn-link" (click)="espaciosInput.click()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="17 8 12 3 7 8"/>
+                  <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                Subir
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel-card">
+        <div class="card-header">
+          <svg class="card-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="2" width="20" height="20" rx="2.18"/>
+            <line x1="8" y1="2" x2="8" y2="22"/>
+            <line x1="16" y1="2" x2="16" y2="22"/>
+            <line x1="2" y1="8" x2="22" y2="8"/>
+            <line x1="2" y1="16" x2="22" y2="16"/>
+          </svg>
+          <h3>Pilares institucionales</h3>
+          <span class="card-badge">3 tarjetas</span>
+        </div>
+        <div class="form-grid-3">
+          <div class="form-group" *ngFor="let pilar of info.pilares; let i = index">
+            <label>Título {{ i + 1 }}</label>
+            <input type="text" [(ngModel)]="pilar.titulo" [maxlength]="limits.pilarTitulo" placeholder="Ej: Innovación" [class.limit-reached]="atLimit(pilar.titulo, limits.pilarTitulo)">
+            <span class="char-count" [class.limit-reached]="atLimit(pilar.titulo, limits.pilarTitulo)">{{ pilar.titulo.length }}/{{ limits.pilarTitulo }}</span>
+            <span class="field-error" *ngIf="atLimit(pilar.titulo, limits.pilarTitulo)">Límite de caracteres alcanzado</span>
+            <textarea rows="3" [(ngModel)]="pilar.descripcion" [maxlength]="limits.pilarDescripcion" placeholder="Descripción breve" [class.limit-reached]="atLimit(pilar.descripcion, limits.pilarDescripcion)"></textarea>
+            <span class="char-count" [class.limit-reached]="atLimit(pilar.descripcion, limits.pilarDescripcion)">{{ pilar.descripcion.length }}/{{ limits.pilarDescripcion }}</span>
+            <span class="field-error" *ngIf="atLimit(pilar.descripcion, limits.pilarDescripcion)">Límite de caracteres alcanzado</span>
+          </div>
+        </div>
+      </section>
+
       <div class="form-grid-2">
         <section class="panel-card">
           <div class="card-header">
@@ -128,7 +226,9 @@
             <h3>Misión</h3>
           </div>
           <div class="form-group">
-            <textarea rows="4" [(ngModel)]="info.mision" placeholder="Describe la misión de la institución"></textarea>
+            <textarea rows="4" [(ngModel)]="info.mision" [maxlength]="limits.mision" placeholder="Describe la misión de la institución" [class.limit-reached]="atLimit(info.mision, limits.mision)"></textarea>
+            <span class="char-count" [class.limit-reached]="atLimit(info.mision, limits.mision)">{{ info.mision.length }}/{{ limits.mision }}</span>
+            <span class="field-error" *ngIf="atLimit(info.mision, limits.mision)">Límite de caracteres alcanzado</span>
           </div>
         </section>
         <section class="panel-card">
@@ -141,7 +241,9 @@
             <h3>Visión</h3>
           </div>
           <div class="form-group">
-            <textarea rows="4" [(ngModel)]="info.vision" placeholder="Describe la visión de la institución"></textarea>
+            <textarea rows="4" [(ngModel)]="info.vision" [maxlength]="limits.vision" placeholder="Describe la visión de la institución" [class.limit-reached]="atLimit(info.vision, limits.vision)"></textarea>
+            <span class="char-count" [class.limit-reached]="atLimit(info.vision, limits.vision)">{{ info.vision.length }}/{{ limits.vision }}</span>
+            <span class="field-error" *ngIf="atLimit(info.vision, limits.vision)">Límite de caracteres alcanzado</span>
           </div>
         </section>
       </div>
@@ -156,7 +258,9 @@
             <h4>Dirección / contacto</h4>
           </div>
           <div class="form-group">
-            <textarea rows="2" [(ngModel)]="info.contactoDireccion" placeholder="Dirección de la institución"></textarea>
+            <textarea rows="2" [(ngModel)]="info.contactoDireccion" [maxlength]="limits.contactoDireccion" placeholder="Dirección de la institución" [class.limit-reached]="atLimit(info.contactoDireccion, limits.contactoDireccion)"></textarea>
+            <span class="char-count" [class.limit-reached]="atLimit(info.contactoDireccion, limits.contactoDireccion)">{{ info.contactoDireccion.length }}/{{ limits.contactoDireccion }}</span>
+            <span class="field-error" *ngIf="atLimit(info.contactoDireccion, limits.contactoDireccion)">Límite de caracteres alcanzado</span>
           </div>
         </section>
         <section class="panel-card">
@@ -200,6 +304,14 @@
           </svg>
           <h3>Paleta de colores</h3>
         </div>
+        <div class="palette-error" *ngIf="colorError">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          <span>{{ colorError }}</span>
+        </div>
         <div class="swatch-list">
           <div class="swatch-item" *ngFor="let sw of swatches">
             <div class="swatch-color" [style.background]="palette[sw.key]"></div>
@@ -208,7 +320,7 @@
               <span>{{ sw.hint }}</span>
             </div>
             <label class="swatch-picker">
-              <input type="color" [(ngModel)]="palette[sw.key]" (ngModelChange)="onColorChange()">
+              <input type="color" [(ngModel)]="palette[sw.key]" (ngModelChange)="onColorChange(sw.key)">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M12 20h9"/>
                 <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
@@ -216,7 +328,7 @@
             </label>
           </div>
         </div>
-        <p class="palette-note">Los cambios se aplican en tiempo real en la vista previa de "Mi institución".</p>
+        <p class="palette-note">Los cambios se aplican en tiempo real en todo el sistema: navegación, menú lateral, contenido, tarjetas, botones y pestañas.</p>
       </section>
     </aside>
   </div>

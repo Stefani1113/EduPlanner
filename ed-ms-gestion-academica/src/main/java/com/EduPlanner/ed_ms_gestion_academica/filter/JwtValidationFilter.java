@@ -25,16 +25,16 @@ public class JwtValidationFilter extends OncePerRequestFilter {
                                     FilterChain chain)
             throws ServletException, IOException {
 
+        String auth = req.getHeader("Authorization");
+
+        if (auth == null || !auth.startsWith("Bearer ")) {
+            sendError(res, 401, "Se requiere el encabezado Authorization");
+            return;
+        }
+
+        String token = auth.substring(7);
+
         try {
-            String auth = req.getHeader("Authorization");
-
-            if (auth == null || !auth.startsWith("Bearer ")) {
-                sendError(res, 401, "Se requiere el encabezado Authorization");
-                return;
-            }
-
-            String token = auth.substring(7);
-
             if (!jwtValidatorService.isTokenValid(token)) {
                 sendError(res, 401, "Token inválido o expirado");
                 return;
@@ -42,18 +42,24 @@ public class JwtValidationFilter extends OncePerRequestFilter {
 
             req.setAttribute("idUser", jwtValidatorService.extractIdUser(token));
             req.setAttribute("role", jwtValidatorService.extractRole(token));
-
-            chain.doFilter(req, res);
-
         } catch (Exception e) {
             log.error("JWT filter error", e);
             sendError(res, 401, "Error de autenticación");
+            return;
         }
+
+        // A partir de aquí el token ya es válido: cualquier error posterior (validación,
+        // base de datos, etc.) pertenece al controlador/servicio y NO debe reportarse
+        // como un error de autenticación.
+        chain.doFilter(req, res);
     }
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return false;
+        String path = request.getRequestURI();
+        // Rutas internas: llamadas entre microservicios, sin token de usuario
+        return path.startsWith("/eduplanner/actuator/health")
+                || path.startsWith("/eduplanner/internal/");
     }
 
     private void sendError(HttpServletResponse res, int status, String msg) throws IOException {

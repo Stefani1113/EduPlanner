@@ -6,17 +6,21 @@ import com.eduplanner.ed_lib_common.dto.AttendanceSummaryDTO;
 import com.eduplanner.ed_lib_common.dto.JustificationRequestDTO;
 import com.eduplanner.ed_lib_common.dto.JustificationReviewDTO;
 import com.eduplanner.ed_lib_common.entity.Attendance;
+import com.eduplanner.ed_lib_common.entity.Course;
 import com.eduplanner.ed_lib_common.enums.AttendanceStatus;
 import com.eduplanner.ed_lib_common.enums.JustificationStatus;
 import com.EduPlanner.ed_ms_gestion_academica.client.AdministracionServiceClient;
 import com.EduPlanner.ed_ms_gestion_academica.repository.AttendanceRepository;
+import com.EduPlanner.ed_ms_gestion_academica.repository.CourseRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**Registrar tardanzas y salidas anticipadas (y asistencia en general) */
 @Service
@@ -26,6 +30,7 @@ public class AttendanceService {
 
     private final AttendanceRepository repository;
     private final AdministracionServiceClient administracionServiceClient;
+    private final CourseRepository courseRepository;
 
     public AttendanceResponseDTO registerAttendance(AttendanceRequestDTO req) {
         if (repository.existsByIdScheduleAndIdStudentAndAttendanceDate(
@@ -36,7 +41,7 @@ public class AttendanceService {
         validateIsActiveStudent(req.getIdStudent());
         Attendance a = new Attendance();
         map(req, a);
-        return toResponse(repository.save(a));
+        return toResponseWithNames(repository.save(a));
     }
 
     /** Confirma en ed-ms-administracion que el idStudent existe y tiene rol ESTUDIANTE */
@@ -53,25 +58,55 @@ public class AttendanceService {
     public AttendanceResponseDTO updateAttendance(Integer id, AttendanceRequestDTO req) {
         Attendance a = getOrThrow(id);
         map(req, a);
-        return toResponse(repository.save(a));
+        return toResponseWithNames(repository.save(a));
     }
 
     public AttendanceResponseDTO getAttendanceById(Integer id) {
-        return toResponse(getOrThrow(id));
+        return toResponseWithNames(getOrThrow(id));
     }
 
     /**Consultar historial de asistencia de un estudiante en un periodo */
     public List<AttendanceResponseDTO> getHistoryByStudent(Integer idStudent, LocalDate startDate, LocalDate endDate) {
         validateRange(startDate, endDate);
+        String studentName = resolveStudentName(idStudent);
+        Map<Integer, String> courseNameCache = new HashMap<>();
         return repository.findByIdStudentAndAttendanceDateBetweenOrderByAttendanceDateAsc(idStudent, startDate, endDate)
-                .stream().map(this::toResponse).toList();
+                .stream()
+                .map(a -> {
+                    AttendanceResponseDTO dto = toResponse(a);
+                    dto.setStudentName(studentName);
+                    dto.setCourseName(courseNameCache.computeIfAbsent(a.getIdCourse(), this::resolveCourseName));
+                    return dto;
+                })
+                .toList();
     }
 
     /**Consultar historial de asistencia de un curso/grupo en un periodo */
     public List<AttendanceResponseDTO> getHistoryByCourse(Integer idCourse, LocalDate startDate, LocalDate endDate) {
         validateRange(startDate, endDate);
+        String courseName = resolveCourseName(idCourse);
+        Map<Integer, String> studentNameCache = new HashMap<>();
         return repository.findByIdCourseAndAttendanceDateBetweenOrderByAttendanceDateAsc(idCourse, startDate, endDate)
-                .stream().map(this::toResponse).toList();
+                .stream()
+                .map(a -> {
+                    AttendanceResponseDTO dto = toResponse(a);
+                    dto.setCourseName(courseName);
+                    dto.setStudentName(studentNameCache.computeIfAbsent(a.getIdStudent(), this::resolveStudentName));
+                    return dto;
+                })
+                .toList();
+    }
+
+    /** Nombre completo del estudiante/usuario; si no se puede resolver, se usa un valor de respaldo legible */
+    public String resolveStudentName(Integer idStudent) {
+        String name = administracionServiceClient.getUserFullName(idStudent);
+        return name != null ? name : "Estudiante " + idStudent;
+    }
+
+    /** Nombre del curso (p. ej. "10-B"); si no se puede resolver, se usa un valor de respaldo legible */
+    public String resolveCourseName(Integer idCourse) {
+        if (idCourse == null) return null;
+        return courseRepository.findById(idCourse).map(Course::getName).orElse("Curso " + idCourse);
     }
 
     /**Resumen/estadísticas de asistencia de un estudiante en un periodo */
@@ -90,7 +125,7 @@ public class AttendanceService {
         // Cuenta como "asistencia" todo lo que no sea una falta sin justificar
         double percentage = total == 0 ? 0.0 : ((total - unjustifiedAbsence) * 100.0) / total;
 
-        return new AttendanceSummaryDTO(idStudent, startDate, endDate, total, present, late,
+        return new AttendanceSummaryDTO(idStudent, resolveStudentName(idStudent), startDate, endDate, total, present, late,
                 earlyDeparture, justified, unjustifiedAbsence, Math.round(percentage * 100.0) / 100.0);
     }
 
@@ -125,7 +160,7 @@ public class AttendanceService {
         a.setReviewedBy(null);
         a.setReviewedAt(null);
 
-        return toResponse(repository.save(a));
+        return toResponseWithNames(repository.save(a));
     }
 
     /**Un directivo/docente aprueba o rechaza la justificación */
@@ -145,7 +180,7 @@ public class AttendanceService {
             a.setAttendanceStatus(AttendanceStatus.JUSTIFIED);
         }
 
-        return toResponse(repository.save(a));
+        return toResponseWithNames(repository.save(a));
     }
 
     private Attendance getOrThrow(Integer id) {
@@ -162,6 +197,7 @@ public class AttendanceService {
         a.setObservation(r.getObservation());
     }
 
+    /** Mapea la entidad al DTO sin resolver nombres (usado cuando el llamador ya resuelve/cachea los nombres) */
     private AttendanceResponseDTO toResponse(Attendance a) {
         AttendanceResponseDTO r = new AttendanceResponseDTO();
         r.setIdAttendance(a.getIdAttendance());
@@ -177,6 +213,14 @@ public class AttendanceService {
         r.setReviewedAt(a.getReviewedAt());
         r.setCreatedAt(a.getCreatedAt());
         r.setUpdatedAt(a.getUpdatedAt());
+        return r;
+    }
+
+    /** Igual que toResponse, pero además resuelve el nombre del estudiante y del curso */
+    private AttendanceResponseDTO toResponseWithNames(Attendance a) {
+        AttendanceResponseDTO r = toResponse(a);
+        r.setStudentName(resolveStudentName(a.getIdStudent()));
+        r.setCourseName(resolveCourseName(a.getIdCourse()));
         return r;
     }
 }

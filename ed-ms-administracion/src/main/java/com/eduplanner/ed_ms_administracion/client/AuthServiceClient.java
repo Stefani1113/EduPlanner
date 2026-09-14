@@ -1,37 +1,22 @@
 package com.eduplanner.ed_ms_administracion.client;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import com.eduplanner.ed_lib_common.dto.ActivationTokenRequestDTO;
 import com.eduplanner.ed_lib_common.dto.ActivationTokenResponseDTO;
 
-import lombok.RequiredArgsConstructor;
-
 /**
- * cliente HTTp que habla con el ms de autenticación
+ * cliente HTTP que habla con el ms de autenticación
  * para pedir token de activación
  * AuthServiceClient
  */
-@Component
-@RequiredArgsConstructor
-public class AuthServiceClient {
-    
-    private final RestTemplate restTemplate;
+@FeignClient(name = "ed-ms-autenticacion")
+public interface AuthServiceClient {
 
-    @Value("${service.auth.base-url}")
-    private String authServiceBaseUrl;
-
-    public String requestActivationToken(String email) {
-        ActivationTokenRequestDTO request = new ActivationTokenRequestDTO();
-        request.setEmail(email);
-
-        ActivationTokenResponseDTO response = restTemplate.postForObject(
-            authServiceBaseUrl + "/internal/tokens/activation",
-            request,
-            ActivationTokenResponseDTO.class);
-
-        return response.getToken();
-    }
+    @PostMapping("/eduplanner/internal/tokens/activation")
+    ActivationTokenResponseDTO requestActivationToken(
+            @RequestBody ActivationTokenRequestDTO request
+    );
 }
