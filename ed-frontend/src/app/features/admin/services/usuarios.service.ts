@@ -261,12 +261,6 @@ export class UsuariosService {
     return this.http.put<HttpGlobalResponse<void>>(`${this.api}/users/${idUser}/role`, dto);
   }
 
-  /**
-   * Lista los cursos reales configurados en la institución
-   * (mismo endpoint que usa el módulo de Asistencia), para
-   * poblar el filtro de "Curso" con datos reales en vez de
-   * una lista fija.
-   */
   listarCursos(): Observable<HttpGlobalResponse<CourseBasicoDTO[]>> {
     return this.http.get<HttpGlobalResponse<CourseBasicoDTO[]>>(
       '/gestion-academica/eduplanner/courses'
