@@ -1,43 +1,37 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { timeout, catchError } from 'rxjs/operators';
+import { catchError, timeout } from 'rxjs/operators';
+
+export interface HttpImportResponse<T> {
+  data: T;
+  message: string;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class ImportacionService {
 
-  private readonly api =
-    '/administracion/eduplanner/users/import';
-
+  private readonly api = '/administracion/eduplanner/users/import';
   private readonly TIMEOUT_MS = 60000;
 
   constructor(private http: HttpClient) {}
 
-
-  obtenerReporte(idImport: number): Observable<any> {
-    return this.http.get<any>(`${this.api}/${idImport}/report`);
-  }
-
-
-  importarExcel(file: File): Observable<any> {
+  importarEstudiantes(file: File): Observable<HttpImportResponse<number>> {
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('file', file, file.name);
 
-    return this.http.post<any>(
+    return this.http.post<HttpImportResponse<number>>(
       `${this.api}/students`,
       formData
     ).pipe(
       timeout(this.TIMEOUT_MS),
-
       catchError(err => {
         if (err?.name === 'TimeoutError') {
           return throwError(() => ({
             error: {
-              message:
-                'El servidor está tardando demasiado en responder. ' +
-                'Verifica en unos minutos si los usuarios quedaron importados antes de reintentar.'
+              message: 'El servidor está tardando demasiado en responder. Verifica el reporte antes de volver a importar el mismo archivo.'
             }
           }));
         }
@@ -46,4 +40,26 @@ export class ImportacionService {
       })
     );
   }
+
+  obtenerReporte(idImport: number): Observable<HttpImportResponse<ImportReport>> {
+    return this.http.get<HttpImportResponse<ImportReport>>(
+      `${this.api}/${idImport}/report`
+    );
+  }
+}
+
+export interface ImportErrorDetail {
+  rowNumber: number;
+  rowData: string;
+  error: string;
+}
+
+export interface ImportReport {
+  idImport: number;
+  fileName: string;
+  importDate: string;
+  totalRows: number;
+  successRows: number;
+  failedRows: number;
+  errors: ImportErrorDetail[];
 }

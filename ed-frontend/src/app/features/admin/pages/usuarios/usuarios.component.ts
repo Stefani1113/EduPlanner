@@ -1,6 +1,7 @@
-import { Component, OnDestroy, OnInit, HostListener, ViewChild } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { catchError, finalize, of } from 'rxjs';
 import { BreadcrumbService } from '../../services/breadcrumb.service';
 import {
   RegistroUsuarioModalComponent,
@@ -24,7 +25,6 @@ import {
   UpdateStudentDTO,
   UpdateStaffDTO
 } from '../../services/usuarios.service';
-import { catchError, of } from 'rxjs';
 import { ModalService } from '../../../../core/services/modal.service';
 
 type Rol = 'Administrador' | 'Docente' | 'Estudiante' | 'Directivo';
@@ -44,6 +44,12 @@ const ID_A_ROL: Record<number, Rol> = {
   [ID_ROL_ESTUDIANTE]: 'Estudiante',
   [ID_ROL_DIRECTIVO]: 'Directivo'
 };
+
+interface Curso {
+  idCourse: number;
+  name: string;
+  status: boolean;
+}
 
 interface Usuario {
   id: number;
@@ -73,38 +79,39 @@ interface Usuario {
 })
 export class UsuariosComponent implements OnInit, OnDestroy {
 
-  @ViewChild(RegistroUsuarioModalComponent) modalRegistro!: RegistroUsuarioModalComponent;
+  @ViewChild(RegistroUsuarioModalComponent) modalRegistro?: RegistroUsuarioModalComponent;
 
   tabs: { key: Tab; label: string }[] = [
     { key: 'listado', label: 'Listado' },
     { key: 'importacion', label: 'Importación' }
   ];
-  activeTab: Tab = 'listado';
 
+  activeTab: Tab = 'listado';
   roles: Rol[] = ['Administrador', 'Docente', 'Estudiante', 'Directivo'];
 
-  /** Se llena con los cursos reales de la institución (ver cargarCursos()). */
   grados: string[] = ['Todos los cursos'];
+  cursos: Curso[] = [];
   cargandoCursos = false;
 
   rolSeleccionado: Rol = 'Docente';
   gradoSeleccionado = 'Todos los cursos';
   mostrarFiltroRol = false;
-
   mostrarMenuRegistrar = false;
+
   tipoRegistro: TipoRegistro | null = null;
   guardandoUsuario = false;
 
   usuarioEnEdicion: UserResponseDTO | null = null;
   tipoEdicion: TipoEdicion | null = null;
   guardandoEdicion = false;
+  cargandoEdicion = false;
 
   busqueda = '';
-
   usuarios: Usuario[] = [];
   cargando = false;
   exportando = false;
   errorCarga = '';
+  cambiandoEstado = new Set<number>();
 
   constructor(
     private breadcrumbService: BreadcrumbService,
@@ -127,45 +134,58 @@ export class UsuariosComponent implements OnInit, OnDestroy {
     this.cargarCursos();
   }
 
-  /**
-   * Trae los cursos reales configurados en la institución
-   * y los usa para poblar el desplegable de búsqueda por curso
-   * (antes tenía una lista de grados fija/ficticia).
-   */
+  ngOnDestroy(): void {
+    this.breadcrumbService.setExtra(null);
+  }
+
   private cargarCursos(): void {
     this.cargandoCursos = true;
 
     this.usuariosService.listarCursos().pipe(
-      catchError(() => of({ data: [], message: '' }))
+      catchError(err => {
+        console.error(err);
+        return of({ data: [], message: '' });
+      }),
+      finalize(() => this.cargandoCursos = false)
     ).subscribe(res => {
-      const nombresCursos = (res.data ?? [])
+      this.cursos = (res.data ?? [])
         .filter(c => c.status)
-        .map(c => c.name);
+        .sort((a, b) => a.name.localeCompare(b.name, 'es'));
 
-      this.grados = ['Todos los cursos', ...nombresCursos];
-      this.cargandoCursos = false;
+      this.grados = ['Todos los cursos', ...this.cursos.map(c => c.name)];
     });
-  }
-
-  ngOnDestroy(): void {
-    this.breadcrumbService.setExtra(null);
   }
 
   private cargarUsuarios(): void {
     this.cargando = true;
     this.errorCarga = '';
 
-    this.usuariosService.listar(ROL_A_ID[this.rolSeleccionado]).subscribe({
-      next: res => {
-        this.usuarios = (res.data ?? []).map(u => this.mapearUsuario(u));
-        this.cargando = false;
-      },
-      error: err => {
+    const idCurso = this.obtenerIdCursoSeleccionado();
+    const solicitud = idCurso !== null
+      ? this.usuariosService.listarPorCurso(idCurso)
+      : this.usuariosService.listar(ROL_A_ID[this.rolSeleccionado]);
+
+    solicitud.pipe(
+      catchError(err => {
         console.error(err);
-        this.errorCarga = 'No se pudo cargar el listado de usuarios. Verifica tu conexión con el servidor.';
-        this.cargando = false;
-      }
+        this.errorCarga = this.obtenerMensajeError(
+          err,
+          'No se pudo cargar el listado de usuarios. Verifica tu conexión con el servidor.'
+        );
+        return of({ data: [], message: '' });
+      }),
+      finalize(() => this.cargando = false)
+    ).subscribe(res => {
+      this.usuarios = (res.data ?? []).map(u => this.mapearUsuario(u));
     });
+  }
+
+  private obtenerIdCursoSeleccionado(): number | null {
+    if (this.rolSeleccionado !== 'Estudiante' || this.gradoSeleccionado === 'Todos los cursos') {
+      return null;
+    }
+
+    return this.cursos.find(c => c.name === this.gradoSeleccionado)?.idCourse ?? null;
   }
 
   private mapearUsuario(dto: UserResponseDTO): Usuario {
@@ -173,11 +193,13 @@ export class UsuariosComponent implements OnInit, OnDestroy {
       id: dto.idUser,
       idRole: dto.idRole,
       foto: dto.photoUrl,
-      nombre: `${dto.name} ${dto.surnames}`.trim(),
-      correo: dto.email,
-      telefono: dto.phoneNumber,
+      nombre: `${dto.name ?? ''} ${dto.surnames ?? ''}`.trim(),
+      correo: dto.email ?? '',
+      telefono: dto.phoneNumber ?? '',
       rol: ID_A_ROL[dto.idRole] ?? 'Docente',
-      grado: null,
+      grado: dto.idRole === ID_ROL_ESTUDIANTE && this.gradoSeleccionado !== 'Todos los cursos'
+        ? this.gradoSeleccionado
+        : null,
       estado: dto.status ? 'Activo' : 'Inactivo',
       detalle: dto
     };
@@ -185,12 +207,22 @@ export class UsuariosComponent implements OnInit, OnDestroy {
 
   get usuariosFiltrados(): Usuario[] {
     const term = this.busqueda.trim().toLowerCase();
-    return this.usuarios.filter(u =>
-      !term ||
-      u.nombre.toLowerCase().includes(term) ||
-      u.correo.toLowerCase().includes(term) ||
-      String(u.id).includes(term)
-    );
+
+    if (!term) return this.usuarios;
+
+    return this.usuarios.filter(usuario => {
+      const valores = [
+        usuario.nombre,
+        usuario.correo,
+        usuario.telefono,
+        usuario.detalle.document,
+        usuario.rol,
+        usuario.grado ?? '',
+        String(usuario.id)
+      ];
+
+      return valores.some(valor => String(valor).toLowerCase().includes(term));
+    });
   }
 
   get totalRol(): number {
@@ -208,6 +240,7 @@ export class UsuariosComponent implements OnInit, OnDestroy {
   seleccionarRol(rol: Rol): void {
     this.rolSeleccionado = rol;
     this.gradoSeleccionado = 'Todos los cursos';
+    this.busqueda = '';
     this.mostrarFiltroRol = false;
     this.actualizarBreadcrumb();
     this.cargarUsuarios();
@@ -216,6 +249,7 @@ export class UsuariosComponent implements OnInit, OnDestroy {
   seleccionarGrado(grado: string): void {
     this.rolSeleccionado = 'Estudiante';
     this.gradoSeleccionado = grado;
+    this.busqueda = '';
     this.mostrarFiltroRol = false;
     this.actualizarBreadcrumb();
     this.cargarUsuarios();
@@ -223,32 +257,41 @@ export class UsuariosComponent implements OnInit, OnDestroy {
 
   cambiarTab(tab: Tab): void {
     this.activeTab = tab;
+    this.mostrarFiltroRol = false;
+    this.mostrarMenuRegistrar = false;
     this.actualizarBreadcrumb();
   }
 
- toggleEstado(usuario: Usuario): void {
-  const nuevoEstado = usuario.estado !== 'Activo';
+  toggleEstado(usuario: Usuario): void {
+    if (this.cambiandoEstado.has(usuario.id)) return;
 
-  this.usuariosService.actualizarEstado(usuario.id, nuevoEstado).subscribe({
-    next: () => {
-      usuario.estado = nuevoEstado ? 'Activo' : 'Inactivo';
-      usuario.detalle.status = nuevoEstado;
+    const nuevoEstado = usuario.estado !== 'Activo';
+    this.cambiandoEstado.add(usuario.id);
 
-      if (nuevoEstado) {
-        this.modalService.success('El usuario fue activado exitosamente.');
-      } else {
-        this.modalService.success('El usuario fue desactivado exitosamente.');
+    this.usuariosService.actualizarEstado(usuario.id, nuevoEstado).pipe(
+      finalize(() => this.cambiandoEstado.delete(usuario.id))
+    ).subscribe({
+      next: res => {
+        usuario.estado = nuevoEstado ? 'Activo' : 'Inactivo';
+        usuario.detalle.status = nuevoEstado;
+        this.modalService.success(
+          res.message || (nuevoEstado
+            ? 'El usuario fue activado exitosamente.'
+            : 'El usuario fue desactivado exitosamente.')
+        );
+      },
+      error: err => {
+        console.error(err);
+        this.modalService.error(
+          this.obtenerMensajeError(err, 'No se pudo actualizar el estado del usuario. Intenta de nuevo.')
+        );
       }
-    },
-    error: err => {
-      console.error(err);
-      this.modalService.error(
-        err.error?.message ??
-        'No se pudo actualizar el estado del usuario. Intenta de nuevo.'
-      );
-    }
-  });
-}
+    });
+  }
+
+  estaCambiandoEstado(id: number): boolean {
+    return this.cambiandoEstado.has(id);
+  }
 
   abrirRegistro(tipo: TipoRegistro): void {
     this.tipoRegistro = tipo;
@@ -261,28 +304,30 @@ export class UsuariosComponent implements OnInit, OnDestroy {
   }
 
   guardarUsuario(evento: UsuarioRegistrado): void {
+    if (this.guardandoUsuario) return;
+
     this.guardandoUsuario = true;
 
-    switch (evento.tipo) {
-      case 'Docente':
-        this.usuariosService.registrarDocente(evento.payload).subscribe({
-          next: res => this.onRegistroExitoso(res.message ?? 'Docente registrado correctamente. Se envió un correo de activación.'),
-          error: err => this.onRegistroFallido(err, 'No se pudo registrar el docente.')
-        });
-        break;
-      case 'Estudiante':
-        this.usuariosService.registrarEstudiante(evento.payload).subscribe({
-          next: res => this.onRegistroExitoso(res.message ?? 'Estudiante registrado correctamente. Se envió un correo de activación.'),
-          error: err => this.onRegistroFallido(err, 'No se pudo registrar el estudiante.')
-        });
-        break;
-      case 'Staff':
-        this.usuariosService.registrarPersonal(evento.payload).subscribe({
-          next: res => this.onRegistroExitoso(res.message ?? 'Usuario registrado correctamente. Se envió un correo de activación.'),
-          error: err => this.onRegistroFallido(err, 'No se pudo registrar el usuario.')
-        });
-        break;
+    if (evento.tipo === 'Docente') {
+      this.usuariosService.registrarDocente(evento.payload).subscribe({
+        next: res => this.onRegistroExitoso(res.message || 'Docente registrado correctamente. Se envió un correo de activación.'),
+        error: err => this.onRegistroFallido(err, 'No se pudo registrar el docente.')
+      });
+      return;
     }
+
+    if (evento.tipo === 'Estudiante') {
+      this.usuariosService.registrarEstudiante(evento.payload).subscribe({
+        next: res => this.onRegistroExitoso(res.message || 'Estudiante registrado correctamente. Se envió un correo de activación.'),
+        error: err => this.onRegistroFallido(err, 'No se pudo registrar el estudiante.')
+      });
+      return;
+    }
+
+    this.usuariosService.registrarPersonal(evento.payload).subscribe({
+      next: res => this.onRegistroExitoso(res.message || 'Usuario registrado correctamente. Se envió un correo de activación.'),
+      error: err => this.onRegistroFallido(err, 'No se pudo registrar el usuario.')
+    });
   }
 
   private onRegistroExitoso(mensaje: string): void {
@@ -295,55 +340,76 @@ export class UsuariosComponent implements OnInit, OnDestroy {
   private onRegistroFallido(err: any, mensajePorDefecto: string): void {
     this.guardandoUsuario = false;
     console.error(err);
-    const mensajeError = err.error?.message ?? mensajePorDefecto;
-    if (this.modalRegistro) this.modalRegistro.onErrorGuardado(mensajeError);
-    else this.modalService.error(mensajeError);
+    const mensajeError = this.obtenerMensajeError(err, mensajePorDefecto);
+
+    if (this.modalRegistro) {
+      this.modalRegistro.onErrorGuardado(mensajeError);
+    } else {
+      this.modalService.error(mensajeError);
+    }
   }
 
   editar(usuario: Usuario): void {
+    if (this.cargandoEdicion || this.guardandoEdicion) return;
+
     this.mostrarFiltroRol = false;
     this.mostrarMenuRegistrar = false;
-    this.guardandoEdicion = false;
+    this.cargandoEdicion = true;
 
-    this.usuariosService.obtenerPorId(usuario.id).subscribe({
+    this.usuariosService.obtenerPorId(usuario.id).pipe(
+      finalize(() => this.cargandoEdicion = false)
+    ).subscribe({
       next: res => {
         this.usuarioEnEdicion = res.data;
         this.tipoEdicion = this.obtenerTipoEdicion(res.data.idRole);
       },
       error: err => {
         console.error(err);
-        this.modalService.error(err.error?.message ?? 'No se pudieron cargar los datos del usuario.');
+        this.modalService.error(
+          this.obtenerMensajeError(err, 'No se pudieron cargar los datos del usuario.')
+        );
       }
     });
   }
 
   cerrarEdicion(): void {
-    if (this.guardandoEdicion) return;
+    if (this.guardandoEdicion || this.cargandoEdicion) return;
     this.usuarioEnEdicion = null;
     this.tipoEdicion = null;
   }
 
   guardarEdicion(evento: UsuarioEditado): void {
+    if (this.guardandoEdicion) return;
+
     this.guardandoEdicion = true;
 
     if (evento.tipo === 'Docente') {
-      this.usuariosService.actualizarDocente(evento.id, evento.payload as TeachingRequestDTO).subscribe({
-        next: res => this.finalizarEdicion(res.message ?? 'Docente actualizado correctamente.'),
+      this.usuariosService.actualizarDocente(
+        evento.id,
+        evento.payload as TeachingRequestDTO
+      ).subscribe({
+        next: res => this.finalizarEdicion(res.message || 'Docente actualizado correctamente.'),
         error: err => this.errorEdicion(err)
       });
       return;
     }
 
     if (evento.tipo === 'Estudiante') {
-      this.usuariosService.actualizarEstudiante(evento.id, evento.payload as UpdateStudentDTO).subscribe({
-        next: res => this.finalizarEdicion(res.message ?? 'Estudiante actualizado correctamente.'),
+      this.usuariosService.actualizarEstudiante(
+        evento.id,
+        evento.payload as UpdateStudentDTO
+      ).subscribe({
+        next: res => this.finalizarEdicion(res.message || 'Estudiante actualizado correctamente.'),
         error: err => this.errorEdicion(err)
       });
       return;
     }
 
-    this.usuariosService.actualizarStaff(evento.id, evento.payload as UpdateStaffDTO).subscribe({
-      next: res => this.finalizarEdicion(res.message ?? 'Usuario actualizado correctamente.'),
+    this.usuariosService.actualizarStaff(
+      evento.id,
+      evento.payload as UpdateStaffDTO
+    ).subscribe({
+      next: res => this.finalizarEdicion(res.message || 'Usuario actualizado correctamente.'),
       error: err => this.errorEdicion(err)
     });
   }
@@ -359,7 +425,9 @@ export class UsuariosComponent implements OnInit, OnDestroy {
   private errorEdicion(err: any): void {
     this.guardandoEdicion = false;
     console.error(err);
-    this.modalService.error(err.error?.message ?? 'No se pudieron guardar los cambios del usuario.');
+    this.modalService.error(
+      this.obtenerMensajeError(err, 'No se pudieron guardar los cambios del usuario.')
+    );
   }
 
   private obtenerTipoEdicion(idRole: number): TipoEdicion {
@@ -371,7 +439,7 @@ export class UsuariosComponent implements OnInit, OnDestroy {
   }
 
   exportarCSV(): void {
-    if (this.exportando || this.cargando || this.usuarios.length === 0) return;
+    if (this.exportando || this.cargando || this.usuariosFiltrados.length === 0) return;
 
     this.exportando = true;
 
@@ -384,7 +452,7 @@ export class UsuariosComponent implements OnInit, OnDestroy {
         'Títulos profesionales', 'Descripción cualificaciones', 'Rol', 'Estado'
       ];
 
-      const rows = this.usuarios.map(({ detalle: u }) => [
+      const rows = this.usuariosFiltrados.map(({ detalle: u }) => [
         u.idUser, u.name, u.surnames, u.email, u.phoneNumber, u.document,
         u.documentType, u.documentIssuePlace, u.gender, u.birthdate,
         u.address, u.bloodType, u.disabilities, u.stratum,
@@ -402,7 +470,9 @@ export class UsuariosComponent implements OnInit, OnDestroy {
       const link = document.createElement('a');
       link.href = url;
       link.download = `usuarios_${this.normalizarNombreArchivo(this.rolSeleccionado)}_${this.fechaArchivo()}.csv`;
+      document.body.appendChild(link);
       link.click();
+      link.remove();
       URL.revokeObjectURL(url);
     } finally {
       this.exportando = false;
@@ -418,11 +488,15 @@ export class UsuariosComponent implements OnInit, OnDestroy {
   }
 
   private normalizarNombreArchivo(texto: string): string {
-    return texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+    return texto.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
   }
 
   private fechaArchivo(): string {
     return new Date().toISOString().slice(0, 10);
+  }
+
+  private obtenerMensajeError(err: any, defecto: string): string {
+    return err?.error?.message || err?.message || defecto;
   }
 
   private actualizarBreadcrumb(): void {
