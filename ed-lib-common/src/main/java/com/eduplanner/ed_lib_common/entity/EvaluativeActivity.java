@@ -1,17 +1,11 @@
 package com.eduplanner.ed_lib_common.entity;
 
+import jakarta.persistence.*;
+import lombok.Data;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import lombok.Data;
-
-/** RF 9 - Actividad evaluativa dentro de un periodo (ej. "Examen final", peso 30%) */
 @Entity
 @Data
 @Table(name = "evaluative_activity")
