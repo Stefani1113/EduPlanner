@@ -5,7 +5,7 @@ import algorithms.scheduler as scheduler_module
 from algorithms.scheduler_data import load_scheduler_data
 
 
-def create_schedule_tool(server, client):
+def create_scheduler_tool(server, client):
     """Crea la herramienta para generar el horario académico completo."""
 
     # -------------------------------------------------------------
