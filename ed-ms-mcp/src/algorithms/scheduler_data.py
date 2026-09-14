@@ -106,14 +106,14 @@ def load_scheduler_data(client):
 
     for teacher_id in teacher_ids:
 
-        response = client.get(
+        teacher_response = client.get(
             f"/academic-teachers/{teacher_id}"
         )
 
-        teacher_data = response["data"]
-
         teachers.append(
-            adapt_teacher(teacher_data)
+            adapt_teacher(
+                teacher_response["data"]
+            )
         )
 
     # Disponibilidad de docentes
@@ -121,22 +121,20 @@ def load_scheduler_data(client):
 
     for teacher_id in teacher_ids:
 
-        response = client.get(
+        availability_response = client.get(
             f"/teacher-availability?idTeacher={teacher_id}"
         )
 
-        availability_data = response["data"]
-
         teacher_availability.extend(
             adapt_teacher_availability(
-                availability_data
+                availability_response["data"]
             )
         )
 
     # Franjas horarias
     shift_ids = {
         course["idShift"]
-        for course in courses_data
+        for course in courses
         if course["status"]
     }
 
@@ -144,13 +142,13 @@ def load_scheduler_data(client):
 
     for shift_id in shift_ids:
 
-        response = client.get(
+        time_slots_response = client.get(
             f"/time-slots?idShift={shift_id}"
         )
 
         time_slots.extend(
             adapt_time_slots(
-                response["data"]
+                time_slots_response["data"]
             )
         )
 
