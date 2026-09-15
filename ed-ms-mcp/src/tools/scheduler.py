@@ -14,18 +14,22 @@ def create_scheduler_tool(server, client):
     @server.tool(
         name="generate_schedule",
         description=(
-            "Genera el horario académico completo consultando docentes, cursos, "
-            "bloques horarios, cargas académicas y disponibilidad docente reales "
-            "desde EduPlanner, ejecuta el algoritmo de asignación con backtracking, "
-            "y valida el resultado antes de devolverlo."
+            "Genera el horario académico de uno o varios cursos específicos "
+            "o de todos los cursos si no se especifican. "
+            "Consulta docentes, cursos, bloques horarios, cargas académicas "
+            "y disponibilidad docente reales desde EduPlanner, ejecuta el "
+            "algoritmo de asignación con backtracking y valida el resultado "
+            "antes de devolverlo. "
+            "El parámetro course_names permite indicar los nombres de los cursos, "
+            "por ejemplo ['1A'] o ['1A', '2A']."
         ),
     )
-    def generate_schedule_tool() -> dict[str, Any]:
+    def generate_schedule_tool(course_names : list[str] | None = None) -> dict[str, Any]:
         print(f"👉 [MCP Tool] Ejecutando generación de horario")
         try:
 
             # Cargar datos reales 
-            data = load_scheduler_data(client)
+            data = load_scheduler_data(client, course_names)
 
             print("Datos cargador correctamente")
 
@@ -116,6 +120,10 @@ def create_scheduler_tool(server, client):
             return {
                 "success" : True,
                 "generation_id" : generation_id,
+                "courses" :[
+                    course["name"]
+                    for course in data["courses"]
+                ],
                 "total_clases" : len(schedule),
                 "schedule" : schedule
             }
