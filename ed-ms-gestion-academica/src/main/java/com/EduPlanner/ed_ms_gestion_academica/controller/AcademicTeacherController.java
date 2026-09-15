@@ -57,9 +57,7 @@ public class AcademicTeacherController {
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(r);
     }
-
-    }
-
+}
     @PutMapping("/{id}")
     public ResponseEntity<HttpGlobalResponse<AcademicTeacherResponseDTO>> updateTeacher(@PathVariable Integer id, @Valid @RequestBody AcademicTeacherRequestDTO req) {
         HttpGlobalResponse<AcademicTeacherResponseDTO> r = new HttpGlobalResponse<>();

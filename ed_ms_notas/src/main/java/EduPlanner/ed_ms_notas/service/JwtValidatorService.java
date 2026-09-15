@@ -36,12 +36,10 @@ public class JwtValidatorService {
         );
     }
 
-    /** El idUser va en el "subject" del token */
     public Long extractIdUser(String token) {
         return extractClaim(token, c -> Long.valueOf(c.getSubject()));
     }
 
-    /** El rol viaja como texto (ej. "DOCENTE") */
     public String extractRole(String token) {
         return extractClaim(token, c -> c.get("role", String.class));
     }
