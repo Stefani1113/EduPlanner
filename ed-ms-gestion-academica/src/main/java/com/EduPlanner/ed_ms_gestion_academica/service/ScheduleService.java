@@ -110,4 +110,36 @@ public class ScheduleService {
 
         return generationId;
     }
+
+    /**
+     * Filtrar horario por curso
+     */
+    public List<Schedule> getScheduleByCourse(Integer idCourse) {
+
+    List<AcademicLoad> loads =
+            academicLoadRepository.findByIdCourseAndStatusTrue(idCourse);
+
+    List<Integer> loadIds = loads.stream()
+            .map(AcademicLoad::getIdAcademicLoad)
+            .toList();
+
+    return scheduleRepository
+            .findByIdAcademicLoadInAndStatusTrue(loadIds);
+    }
+
+    /**
+     * Filtrar horario por docente
+     */
+    public List<Schedule> getScheduleByTeacher(Integer idTeacher) {
+
+    List<AcademicLoad> loads =
+            academicLoadRepository.findByIdTeacherAndStatusTrue(idTeacher);
+
+    List<Integer> loadIds = loads.stream()
+            .map(AcademicLoad::getIdAcademicLoad)
+            .toList();
+
+    return scheduleRepository
+            .findByIdAcademicLoadInAndStatusTrue(loadIds);
+    }
 }
