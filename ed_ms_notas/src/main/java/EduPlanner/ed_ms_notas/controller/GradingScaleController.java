@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**Configurar escala de calificación. Base: /eduplanner/grading-scales */
 @RestController
 @RequestMapping("/grading-scales")
 @RequiredArgsConstructor
@@ -21,8 +20,7 @@ public class GradingScaleController {
     private final GradingScaleService service;
 
     @PostMapping
-    public ResponseEntity<HttpGlobalResponse<GradingScaleResponseDTO>> register(
-            @Valid @RequestBody GradingScaleRequestDTO req) {
+    public ResponseEntity<HttpGlobalResponse<GradingScaleResponseDTO>> register(@Valid @RequestBody GradingScaleRequestDTO req) {
         HttpGlobalResponse<GradingScaleResponseDTO> r = new HttpGlobalResponse<>();
         try {
             r.setData(service.register(req));
@@ -35,8 +33,7 @@ public class GradingScaleController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<HttpGlobalResponse<GradingScaleResponseDTO>> update(
-            @PathVariable Integer id, @Valid @RequestBody GradingScaleRequestDTO req) {
+    public ResponseEntity<HttpGlobalResponse<GradingScaleResponseDTO>> update(@PathVariable Integer id, @Valid @RequestBody GradingScaleRequestDTO req) {
         HttpGlobalResponse<GradingScaleResponseDTO> r = new HttpGlobalResponse<>();
         try {
             r.setData(service.update(id, req));

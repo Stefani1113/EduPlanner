@@ -1,20 +1,12 @@
 package com.eduplanner.ed_lib_common.dto;
 
-import java.math.BigDecimal;
-
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import java.math.BigDecimal;
 
-/** RF 9.1 - Configurar escala de calificación */
 @Data
 public class GradingScaleRequestDTO {
-
-    @NotNull
-    private BigDecimal minimumValue;
-
-    @NotNull
-    private BigDecimal maximumValue;
-
-    @NotNull
-    private BigDecimal minimumPassGrade;
+    @NotNull private BigDecimal minimumValue;
+    @NotNull private BigDecimal maximumValue;
+    @NotNull private BigDecimal minimumPassGrade;
 }

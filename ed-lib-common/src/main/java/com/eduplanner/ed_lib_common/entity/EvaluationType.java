@@ -1,16 +1,10 @@
 package com.eduplanner.ed_lib_common.entity;
 
-import java.math.BigDecimal;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Data;
 
-/** RF 9.1 - Tipo/equivalencia de calificación dentro de una escala (ej. 4.5 = "Excelente") */
+import java.math.BigDecimal;
+
 @Entity
 @Data
 @Table(name = "evaluation_type")

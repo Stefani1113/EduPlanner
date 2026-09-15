@@ -1,6 +1,5 @@
 package EduPlanner.ed_ms_notas.controller;
 
-
 import com.eduplanner.ed_lib_common.dto.EvaluationTypeRequestDTO;
 import com.eduplanner.ed_lib_common.dto.EvaluationTypeResponseDTO;
 import com.eduplanner.ed_lib_common.dto.HttpGlobalResponse;
@@ -13,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/**Tipos de evaluación dentro de una escala. Base: /eduplanner/evaluation-types */
 @RestController
 @RequestMapping("/evaluation-types")
 @RequiredArgsConstructor
@@ -22,8 +20,7 @@ public class EvaluationTypeController {
     private final EvaluationTypeService service;
 
     @PostMapping
-    public ResponseEntity<HttpGlobalResponse<EvaluationTypeResponseDTO>> register(
-            @Valid @RequestBody EvaluationTypeRequestDTO req) {
+    public ResponseEntity<HttpGlobalResponse<EvaluationTypeResponseDTO>> register(@Valid @RequestBody EvaluationTypeRequestDTO req) {
         HttpGlobalResponse<EvaluationTypeResponseDTO> r = new HttpGlobalResponse<>();
         try {
             r.setData(service.register(req));
