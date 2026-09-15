@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { forkJoin, of } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import { forkJoin, of, from } from 'rxjs';
+import { catchError, map, concatMap, tap, delay } from 'rxjs/operators';
 
 import {
   NotasService,
@@ -65,7 +65,6 @@ export class NotasComponent implements OnInit {
 
   tabActiva: Tab = 'historial';
 
-  // ================= DATOS BASE =================
 
   niveles: AcademicLevelResponseDTO[] = [];
   cursos: CourseResponseDTO[] = [];
@@ -79,11 +78,9 @@ export class NotasComponent implements OnInit {
   cargandoBase = true;
   errorBase: string | null = null;
 
-  // Selección de curso/periodo compartida entre "Ver Historial" y "Notas"
   idCursoSeleccionado: number | null = null;
   idPeriodoSeleccionado: number | null = null;
 
-  // ================= TAB: VER HISTORIAL =================
 
   cargandoHistorial = false;
   errorHistorial: string | null = null;
@@ -92,7 +89,6 @@ export class NotasComponent implements OnInit {
   resumenAsignaturas: ResumenAsignatura[] = [];
   promedioGeneral = 0;
 
-  // ================= TAB: REPORTES / EXPORTAR =================
 
   idNivelReporte: number | null = null;
   idCursoReporte: number | null = null;
@@ -109,7 +105,8 @@ export class NotasComponent implements OnInit {
   vistaPrevia: ResumenReporteEstudiante[] = [];
   vistaPreviaGenerada = false;
 
-  // ================= TAB: NOTAS =================
+  descargandoPdf = false;
+
 
   idAsignaturaNotas: number | null = null;
 
@@ -124,7 +121,6 @@ export class NotasComponent implements OnInit {
 
   private idTeacherAsignaturaActual: number | null = null;
 
-  // ================= TAB: CALIFICACIÓN =================
 
   formEscala = {
     minimumValue: 0,
@@ -207,7 +203,6 @@ export class NotasComponent implements OnInit {
     });
   }
 
-  // ================= NAVEGACIÓN =================
 
   cambiarTab(tab: Tab): void {
     this.tabActiva = tab;
@@ -241,7 +236,6 @@ export class NotasComponent implements OnInit {
     this.onCambioCursoGlobal();
   }
 
-  // ================= TAB: VER HISTORIAL =================
 
   cargarHistorial(): void {
 
@@ -328,7 +322,6 @@ export class NotasComponent implements OnInit {
     return this.escalaActual?.maximumValue ?? 5;
   }
 
-  // ================= TAB: REPORTES / EXPORTAR =================
 
   onCambioNivelReporte(): void {
 
@@ -453,7 +446,49 @@ export class NotasComponent implements OnInit {
     return this.periodos.find(p => p.idPeriod === this.idPeriodoReporte)?.name ?? '';
   }
 
-  // ================= TAB: NOTAS =================
+  descargarReportePdf(): void {
+
+    if (!this.vistaPreviaGenerada || this.idPeriodoReporte === null || !this.seleccionadosReporte.size) {
+      return;
+    }
+
+    const idPeriodo = this.idPeriodoReporte;
+    const ids = Array.from(this.seleccionadosReporte);
+
+    this.descargandoPdf = true;
+    this.errorReporte = null;
+
+    from(ids).pipe(
+      concatMap(idStudent =>
+        this.notasService.descargarPdfEstudiante(idStudent, idPeriodo).pipe(
+          tap(blob => {
+            const estudiante = this.estudiantesReporte.find(e => e.idUser === idStudent);
+            const nombreArchivo = estudiante
+              ? `notas_${estudiante.name}_${estudiante.surnames}_periodo_${idPeriodo}.pdf`.replace(/\s+/g, '_')
+              : `notas_estudiante_${idStudent}_periodo_${idPeriodo}.pdf`;
+            this.descargarBlob(blob, nombreArchivo);
+          }),
+          catchError(() => {
+            this.errorReporte = 'No se pudo generar el PDF de uno o más estudiantes.';
+            return of(null);
+          }),
+          delay(250)
+        )
+      )
+    ).subscribe({
+      complete: () => { this.descargandoPdf = false; }
+    });
+  }
+
+  private descargarBlob(blob: Blob, nombreArchivo: string): void {
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = nombreArchivo;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  }
+
 
   cargarNotas(): void {
 
@@ -499,7 +534,6 @@ export class NotasComponent implements OnInit {
             'No hay un docente asignado a esta asignatura en este curso (carga académica).';
         }
 
-        // Prellenar celdas con las notas ya registradas, emparejando por nombre
         this.estudiantesNotas.forEach(fila => {
           this.actividadesNotasColumnas.forEach(actividad => {
 
@@ -639,7 +673,6 @@ export class NotasComponent implements OnInit {
     );
   }
 
-  // ================= TAB: CALIFICACIÓN =================
 
   guardarEscala(): void {
 

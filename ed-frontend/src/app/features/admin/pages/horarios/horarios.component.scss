@@ -1,33 +1,3 @@
-.top-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.035);
-}
-
-.breadcrumb {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--inst-muted);
-  font-size: 10px;
-}
-
-.breadcrumb strong {
-  color: var(--inst-accent);
-  font-weight: 500;
-}
-
-.separator {
-  color: var(--inst-border);
-}
-
-.header-user {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
 .user-info {
   display: flex;
   flex-direction: column;
@@ -52,6 +22,10 @@
 }
 
 .horario-toolbar {
+  background: var(--inst-surface);
+  padding: 10px 15px;
+  border-radius: 10px;
+  margin-bottom: 30px;
   display: flex;
   align-items: center;
   justify-content: space-between;

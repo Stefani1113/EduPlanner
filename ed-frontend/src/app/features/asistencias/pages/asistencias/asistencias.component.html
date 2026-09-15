@@ -23,6 +23,15 @@
       <button
         type="button"
         class="tab"
+        [class.active]="tabActiva === 'tomar'"
+        (click)="cambiarTab('tomar')"
+      >
+        Tomar asistencia
+      </button>
+
+      <button
+        type="button"
+        class="tab"
         [class.active]="tabActiva === 'resumen'"
         (click)="cambiarTab('resumen')"
       >
@@ -60,6 +69,158 @@
 
     <ng-container [ngSwitch]="tabActiva">
 
+
+      <ng-container *ngSwitchCase="'tomar'">
+
+        <div class="filtros-bar">
+
+          <label>
+            Curso
+
+            <select
+              [(ngModel)]="tomaCurso"
+              (ngModelChange)="cargarToma()"
+            >
+
+              <option [ngValue]="null">
+                Selecciona un curso
+              </option>
+
+              <option
+                *ngFor="let c of cursos"
+                [ngValue]="c.idCourse"
+              >
+                {{ c.name }}
+              </option>
+
+            </select>
+
+          </label>
+
+          <label>
+            Fecha
+
+            <input
+              type="date"
+              [(ngModel)]="tomaFecha"
+              (change)="cargarToma()"
+            >
+          </label>
+
+        </div>
+
+        <div
+          class="loading"
+          *ngIf="cargandoToma"
+        >
+          Cargando estudiantes del curso...
+        </div>
+
+        <div
+          class="error"
+          *ngIf="errorToma && !cargandoToma"
+        >
+          {{ errorToma }}
+        </div>
+
+        <ng-container *ngIf="!cargandoToma && !errorToma">
+
+          <div
+            class="sin-datos"
+            *ngIf="tomaCurso === null"
+          >
+            Selecciona un curso y una fecha para tomar asistencia.
+          </div>
+
+          <div
+            class="sin-datos"
+            *ngIf="tomaCurso !== null && !tomaFilas.length"
+          >
+            Este curso no tiene estudiantes matriculados.
+          </div>
+
+          <div
+            class="tabla-toma"
+            *ngIf="tomaCurso !== null && tomaFilas.length"
+          >
+
+            <div class="toma-fila" *ngFor="let fila of tomaFilas">
+
+              <span class="toma-nombre">
+                {{ fila.nombre }}
+              </span>
+
+              <div class="toma-acciones">
+
+                <button
+                  type="button"
+                  class="toma-btn toma-presente"
+                  [class.seleccionado]="fila.estado === 'PRESENT'"
+                  (click)="marcarEstado(fila, 'PRESENT')"
+                  title="Presente"
+                >
+                  ✓
+                </button>
+
+                <button
+                  type="button"
+                  class="toma-btn toma-falta"
+                  [class.seleccionado]="fila.estado === 'ABSENT'"
+                  (click)="marcarEstado(fila, 'ABSENT')"
+                  title="Falta"
+                >
+                  ✕
+                </button>
+
+                <button
+                  type="button"
+                  class="toma-btn toma-tardanza"
+                  [class.seleccionado]="fila.estado === 'LATE'"
+                  (click)="marcarEstado(fila, 'LATE')"
+                  title="Tardanza"
+                >
+                  T
+                </button>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <div
+            class="toma-guardar-bar"
+            *ngIf="tomaCurso !== null && tomaFilas.length"
+          >
+
+            <span
+              class="error"
+              *ngIf="errorGuardarToma"
+            >
+              {{ errorGuardarToma }}
+            </span>
+
+            <span
+              class="toma-exito"
+              *ngIf="exitoGuardarToma"
+            >
+              Asistencia guardada correctamente.
+            </span>
+
+            <button
+              type="button"
+              class="btn-guardar-toma"
+              [disabled]="guardandoToma"
+              (click)="guardarToma()"
+            >
+              {{ guardandoToma ? 'Guardando...' : 'Guardar asistencia' }}
+            </button>
+
+          </div>
+
+        </ng-container>
+
+      </ng-container>
 
       <ng-container *ngSwitchCase="'resumen'">
 
@@ -687,7 +848,7 @@
           class="loading"
           *ngIf="cargandoExcusas"
         >
-          Cargando justificaciones...
+          Cargando información de asistencia...
         </div>
 
         <div
@@ -696,6 +857,94 @@
         >
           {{ errorExcusas }}
         </div>
+
+        <ng-container *ngIf="!cargandoExcusas && !errorExcusas">
+
+          <h3 class="subtitulo-seccion">
+            Faltas sin justificar
+          </h3>
+
+          <div
+            class="error"
+            *ngIf="errorGuardarJustificacion"
+          >
+            {{ errorGuardarJustificacion }}
+          </div>
+
+          <div
+            class="lista-excusas"
+            *ngIf="faltasSinJustificar.length"
+          >
+
+            <div
+              class="excusa-card"
+              *ngFor="let falta of faltasSinJustificar"
+            >
+
+              <div class="excusa-info">
+
+                <strong>
+                  {{ nombreEstudiante(falta.idStudent) }}
+                </strong>
+
+                <span>
+                  {{ nombreCurso(falta.idCourse) }}
+                  ·
+                  {{ falta.attendanceDate }}
+                </span>
+
+                <span
+                  class="badge"
+                  [class]="claseEstado(falta.attendanceStatus)"
+                >
+                  {{ etiquetaEstado(falta.attendanceStatus) }}
+                </span>
+
+              </div>
+
+              <div class="justificacion-form">
+
+                <textarea
+                  rows="2"
+                  placeholder="Escribe aquí la justificación de la falta..."
+                  [ngModel]="textoJustificacionDe(falta.idAttendance)"
+                  (ngModelChange)="actualizarTextoJustificacion(falta.idAttendance, $event)"
+                ></textarea>
+
+                <button
+                  type="button"
+                  class="btn-guardar-justificacion"
+                  [disabled]="
+                    !textoJustificacionDe(falta.idAttendance).trim() ||
+                    guardandoJustificacionId === falta.idAttendance
+                  "
+                  (click)="guardarJustificacion(falta)"
+                >
+                  {{
+                    guardandoJustificacionId === falta.idAttendance
+                      ? 'Guardando...'
+                      : 'Guardar justificación'
+                  }}
+                </button>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <div
+            class="sin-datos"
+            *ngIf="!faltasSinJustificar.length"
+          >
+            No hay faltas sin justificar en este periodo.
+          </div>
+
+          <h3 class="subtitulo-seccion">
+            Justificaciones registradas
+          </h3>
+
+        </ng-container>
 
         <div
           class="lista-excusas"
