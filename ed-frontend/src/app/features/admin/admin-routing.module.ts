@@ -67,6 +67,16 @@ const routes: Routes = [
         }
       },
 
+      {
+        path: 'notas',
+        loadComponent: () =>
+          import('../notas/pages/notas.component')
+            .then(m => m.NotasComponent),
+        data: {
+          breadcrumb: ['Notas']
+        }
+      },
+
       { 
         path: 'importacion', 
         loadComponent: () =>
