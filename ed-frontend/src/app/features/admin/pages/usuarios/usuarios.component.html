@@ -3,6 +3,7 @@
   <div class="header-top">
 
     <div class="tabs">
+
       <button
         *ngFor="let tab of tabs"
         type="button"
@@ -12,9 +13,15 @@
       >
         {{ tab.label }}
       </button>
+
     </div>
 
-    <div class="header-actions" *ngIf="activeTab === 'listado'">
+    <div
+      class="header-actions"
+      *ngIf="activeTab === 'listado'"
+    >
+
+      <!-- FILTRO DE ROLES -->
 
       <div class="role-box">
 
@@ -23,24 +30,43 @@
           class="role-toggle"
           (click)="mostrarFiltroRol = !mostrarFiltroRol; mostrarMenuRegistrar = false"
         >
+
           <span>
+
             {{
               rolSeleccionado === 'Estudiante' &&
-              gradoSeleccionado !== 'Todos los grados'
+              gradoSeleccionado !== 'Todos los cursos'
                 ? gradoSeleccionado
                 : rolSeleccionado
             }}
+
           </span>
 
           <span
             class="chevron"
             [class.open]="mostrarFiltroRol"
           >
-          ▼
+            ▼
           </span>
+
         </button>
 
-        <ul class="role-menu" *ngIf="mostrarFiltroRol">
+        <ul
+          class="role-menu"
+          *ngIf="mostrarFiltroRol"
+        >
+
+          <!-- TODOS -->
+
+          <li
+            class="rol-item"
+            [class.active]="rolSeleccionado === 'Todos'"
+            (click)="seleccionarRol('Todos')"
+          >
+            Todos
+          </li>
+
+          <!-- ADMINISTRADOR -->
 
           <li
             class="rol-item"
@@ -50,6 +76,8 @@
             Administrador
           </li>
 
+          <!-- DOCENTE -->
+
           <li
             class="rol-item"
             [class.active]="rolSeleccionado === 'Docente'"
@@ -57,6 +85,8 @@
           >
             Docente
           </li>
+
+          <!-- DIRECTIVO -->
 
           <li
             class="rol-item"
@@ -66,36 +96,65 @@
             Directivo
           </li>
 
+          <!-- ESTUDIANTE -->
+
           <li
             class="rol-item"
-            [class.active]="rolSeleccionado === 'Estudiante' && gradoSeleccionado === 'Todos los grados'"
+            [class.active]="
+              rolSeleccionado === 'Estudiante' &&
+              gradoSeleccionado === 'Todos los cursos'
+            "
             (click)="seleccionarRol('Estudiante')"
           >
             Estudiante
           </li>
 
-          <li
-            *ngFor="let grado of grados"
-            class="grado-item"
-            [class.active]="rolSeleccionado === 'Estudiante' && gradoSeleccionado === grado"
-            (click)="seleccionarGrado(grado)"
+          <!-- CURSOS DE ESTUDIANTES -->
+
+          <ng-container
+            *ngIf="rolSeleccionado === 'Estudiante'"
           >
-            {{ grado }}
-          </li>
+
+            <li
+              *ngFor="let grado of grados"
+              class="grado-item"
+              [class.active]="
+                gradoSeleccionado === grado
+              "
+              (click)="seleccionarGrado(grado)"
+            >
+              {{ grado }}
+            </li>
+
+          </ng-container>
 
         </ul>
 
       </div>
 
+      <!-- EXPORTAR -->
+
       <button
         type="button"
         class="btn-exportar"
         (click)="exportarCSV()"
-        [disabled]="exportando || cargando || usuarios.length === 0"
-        title="Exportar el rol seleccionado a CSV"
+        [disabled]="
+          exportando ||
+          cargando ||
+          usuariosFiltrados.length === 0
+        "
+        title="Exportar los usuarios mostrados a CSV"
       >
-        {{ exportando ? 'Exportando...' : '↓ Exportar CSV' }}
+
+        {{
+          exportando
+            ? 'Exportando...'
+            : '↓ Exportar CSV'
+        }}
+
       </button>
+
+      <!-- REGISTRAR -->
 
       <div class="registrar-box">
 
@@ -111,9 +170,25 @@
           class="registrar-menu"
           *ngIf="mostrarMenuRegistrar"
         >
-          <li (click)="abrirRegistro('Docente')">Docente</li>
-          <li (click)="abrirRegistro('Estudiante')">Estudiante</li>
-          <li (click)="abrirRegistro('Staff')">Administrador / Directivo</li>
+
+          <li
+            (click)="abrirRegistro('Docente')"
+          >
+            Docente
+          </li>
+
+          <li
+            (click)="abrirRegistro('Estudiante')"
+          >
+            Estudiante
+          </li>
+
+          <li
+            (click)="abrirRegistro('Staff')"
+          >
+            Administrador / Directivo
+          </li>
+
         </ul>
 
       </div>
@@ -122,112 +197,262 @@
 
   </div>
 
-  <ng-container [ngSwitch]="activeTab">
+  <ng-container
+    [ngSwitch]="activeTab"
+  >
 
-    <ng-container *ngSwitchCase="'listado'">
+    <!-- LISTADO -->
+
+    <ng-container
+      *ngSwitchCase="'listado'"
+    >
+
+      <!-- BUSCADOR -->
 
       <div class="search-bar">
-          <img class="search-icon" src="assets/img/magnifying_glass.png" alt="">
+
+        <img
+          class="search-icon"
+          src="assets/img/magnifying_glass.png"
+          alt=""
+        >
+
         <input
           type="text"
           placeholder="Buscar por nombre..."
           [(ngModel)]="busqueda"
         >
+
       </div>
+
+      <!-- TABLA -->
 
       <div class="table-wrapper">
 
-        <div class="loading" *ngIf="cargando">Cargando usuarios...</div>
-        <div class="error" *ngIf="errorCarga && !cargando">{{ errorCarga }}</div>
-        <table class="usuarios-table" *ngIf="!cargando && !errorCarga">
-              <thead>
-                <tr>
-                  <th>Foto</th>
-                  <th>Nombre</th>
-                  <th>ID</th>
-                  <th>Correo</th>
-                  <th>Rol</th>
-                  <th>Grado</th>
-                  <th>Estado</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let usuario of usuariosFiltrados">
-                  <td>
-                    <div class="avatar-cell">
-                      <img
-                        [src]="usuario.foto ?? 'assets/img/profile.png'"
-                        alt="Foto"
-                      >
-                    </div>
-                  </td>
-                  <td>{{ usuario.nombre }}</td>
-                  <td>{{ usuario.id }}</td>
-                  <td>{{ usuario.correo }}</td>
-                  <td>{{ usuario.rol }}</td>
-                  <td>{{ usuario.grado ?? '--' }}</td>
-                  <td>
-                    <span
-                      class="estado"
-                      [class.activo]="usuario.estado === 'Activo'"
-                      [class.inactivo]="usuario.estado === 'Inactivo'"
-                    >
-                      {{ usuario.estado }}
-                    </span>
-                  </td>
-                  <td class="acciones-cell">
-                    <button
-                      type="button"
-                      class="accion editar"
-                      (click)="editar(usuario)"
-                    >
-                      Editar
-                    </button>
-                    <button
-                      type="button"
-                      class="accion"
-                      [class.inactivar]="usuario.estado === 'Activo'"
-                      [class.activar]="usuario.estado === 'Inactivo'"
-                      (click)="toggleEstado(usuario)"
-                    >
-                      {{ usuario.estado === 'Activo' ? 'Inactivar' : 'Activar' }}
-                    </button>
-                  </td>
-                </tr>
+        <!-- CARGANDO -->
 
-                <tr *ngIf="usuariosFiltrados.length === 0">
-                  <td colspan="8" class="empty">
-                    No se encontraron usuarios con los filtros actuales.
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+        <div
+          class="loading"
+          *ngIf="cargando"
+        >
+          Cargando usuarios...
+        </div>
+
+        <!-- ERROR -->
+
+        <div
+          class="error"
+          *ngIf="errorCarga && !cargando"
+        >
+          {{ errorCarga }}
+        </div>
+
+        <!-- TABLA -->
+
+        <table
+          class="usuarios-table"
+          *ngIf="!cargando && !errorCarga"
+        >
+
+          <thead>
+
+            <tr>
+
+              <th>Foto</th>
+
+              <th>Nombre</th>
+
+              <th>ID</th>
+
+              <th>Correo</th>
+
+              <th>Rol</th>
+
+              <th>Grado</th>
+
+              <th>Estado</th>
+
+              <th>Acciones</th>
+
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+            <tr
+              *ngFor="let usuario of usuariosFiltrados"
+            >
+
+              <!-- FOTO -->
+
+              <td>
+
+                <div class="avatar-cell">
+
+                  <img
+                    [src]="
+                      usuario.foto ??
+                      'assets/img/profile.png'
+                    "
+                    alt="Foto"
+                  >
+
+                </div>
+
+              </td>
+
+              <!-- NOMBRE -->
+
+              <td>
+                {{ usuario.nombre }}
+              </td>
+
+              <!-- ID -->
+
+              <td>
+                {{ usuario.id }}
+              </td>
+
+              <!-- CORREO -->
+
+              <td>
+                {{ usuario.correo }}
+              </td>
+
+              <!-- ROL -->
+
+              <td>
+                {{ usuario.rol }}
+              </td>
+
+              <!-- GRADO -->
+
+              <td>
+                {{ usuario.grado ?? '--' }}
+              </td>
+
+              <!-- ESTADO -->
+
+              <td>
+
+                <span
+                  class="estado"
+                  [class.activo]="
+                    usuario.estado === 'Activo'
+                  "
+                  [class.inactivo]="
+                    usuario.estado === 'Inactivo'
+                  "
+                >
+                  {{ usuario.estado }}
+                </span>
+
+              </td>
+
+              <!-- ACCIONES -->
+
+              <td class="acciones-cell">
+
+                <button
+                  type="button"
+                  class="accion editar"
+                  (click)="editar(usuario)"
+                  [disabled]="
+                    cargandoEdicion ||
+                    guardandoEdicion
+                  "
+                >
+                  Editar
+                </button>
+
+                <button
+                  type="button"
+                  class="accion"
+                  [class.inactivar]="
+                    usuario.estado === 'Activo'
+                  "
+                  [class.activar]="
+                    usuario.estado === 'Inactivo'
+                  "
+                  (click)="toggleEstado(usuario)"
+                  [disabled]="
+                    estaCambiandoEstado(usuario.id)
+                  "
+                >
+
+                  {{
+                    usuario.estado === 'Activo'
+                      ? 'Inactivar'
+                      : 'Activar'
+                  }}
+
+                </button>
+
+              </td>
+
+            </tr>
+
+            <!-- SIN RESULTADOS -->
+
+            <tr
+              *ngIf="usuariosFiltrados.length === 0"
+            >
+
+              <td
+                colspan="8"
+                class="empty"
+              >
+                No se encontraron usuarios con los filtros actuales.
+              </td>
+
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
 
     </ng-container>
 
-    <ng-container *ngSwitchCase="'importacion'">
-      <app-importacion></app-importacion>
+    <!-- IMPORTACIÓN -->
+
+    <ng-container
+      *ngSwitchCase="'importacion'"
+    >
+
+      <app-importacion>
+      </app-importacion>
+
     </ng-container>
 
   </ng-container>
+
+  <!-- MODAL REGISTRAR -->
 
   <app-registro-usuario-modal
     *ngIf="tipoRegistro"
     [tipo]="tipoRegistro"
     [guardando]="guardandoUsuario"
     (cerrar)="cerrarModal()"
-    (guardar)="guardarUsuario($event)">
+    (guardar)="guardarUsuario($event)"
+  >
   </app-registro-usuario-modal>
 
+  <!-- MODAL EDITAR -->
+
   <app-editar-usuario-modal
-    *ngIf="usuarioEnEdicion && tipoEdicion"
+    *ngIf="
+      usuarioEnEdicion &&
+      tipoEdicion
+    "
     [usuario]="usuarioEnEdicion"
     [tipo]="tipoEdicion"
     [guardando]="guardandoEdicion"
     (cerrar)="cerrarEdicion()"
-    (guardar)="guardarEdicion($event)">
+    (guardar)="guardarEdicion($event)"
+  >
   </app-editar-usuario-modal>
 
 </div>

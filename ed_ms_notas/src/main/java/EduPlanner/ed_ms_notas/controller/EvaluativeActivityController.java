@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-/** Actividades evaluativas. Base: /eduplanner/evaluative-activities */
 @RestController
 @RequestMapping("/evaluative-activities")
 @RequiredArgsConstructor
@@ -21,8 +20,7 @@ public class EvaluativeActivityController {
     private final EvaluativeActivityService service;
 
     @PostMapping
-    public ResponseEntity<HttpGlobalResponse<EvaluativeActivityResponseDTO>> register(
-            @Valid @RequestBody EvaluativeActivityRequestDTO req) {
+    public ResponseEntity<HttpGlobalResponse<EvaluativeActivityResponseDTO>> register(@Valid @RequestBody EvaluativeActivityRequestDTO req) {
         HttpGlobalResponse<EvaluativeActivityResponseDTO> r = new HttpGlobalResponse<>();
         try {
             r.setData(service.register(req));

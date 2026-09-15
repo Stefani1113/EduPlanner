@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { forkJoin, of } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
-
+import { HttpErrorResponse } from '@angular/common/http';
+import { forkJoin, of, Observable } from 'rxjs';
+import { catchError, map, switchMap } from 'rxjs/operators';
 import {
   AsistenciaService,
   AttendanceRequestDTO,
@@ -17,10 +17,10 @@ import {
   SesionResumen,
   UsuarioBasico
 } from '../../services/Asistencia.service';
-
 import { PerfilService } from '../../../admin/services/perfil.service';
 
 type Tab =
+  | 'tomar'
   | 'resumen'
   | 'historial'
   | 'listado'
@@ -62,79 +62,72 @@ const ETIQUETA_JUSTIFICACION: Record<JustificationStatus, string> = {
 })
 export class AsistenciaComponent implements OnInit {
 
-  tabActiva: Tab = 'resumen';
+  private readonly ID_SCHEDULE_ASISTENCIA = 1;
 
-  // ================= DATOS DE APOYO =================
+  tabActiva: Tab = 'tomar';
+
+  tomaCurso: number | null = null;
+  tomaFecha = this.hoyISO();
+
+  tomaFilas: {
+    idStudent: number;
+    nombre: string;
+    idAttendance: number | null;
+    estado: AttendanceStatus;
+  }[] = [];
+
+  cargandoToma = false;
+  errorToma: string | null = null;
+  guardandoToma = false;
+  errorGuardarToma: string | null = null;
+  exitoGuardarToma = false;
 
   cursos: CourseResponseDTO[] = [];
   niveles: AcademicLevelResponseDTO[] = [];
   estudiantes: UsuarioBasico[] = [];
   docentes: UsuarioBasico[] = [];
-
   mapaEstudiantes = new Map<number, string>();
   mapaDocentes = new Map<number, string>();
-
   idAdminActual: number | null = null;
-
   cargandoBase = true;
   errorBase: string | null = null;
 
-  // ================= RESUMEN =================
-
   fechaInicioSesiones = this.primerDiaMesISO();
   fechaFinSesiones = this.hoyISO();
-
   filtroSesionesCurso: number | null = null;
-
   sesiones: SesionResumen[] = [];
-
   cargandoSesiones = false;
   errorSesiones: string | null = null;
   sesionesConsultadas = false;
 
-  // ================= HISTORIAL =================
-
   fechaInicioHistorial = this.primerDiaMesISO();
   fechaFinHistorial = this.hoyISO();
-
   idCursoSeleccionado: number | null = null;
-
   resumenPorCurso: ResumenCurso[] = [];
-
   cargandoHistorialGrafico = false;
   errorHistorialGrafico: string | null = null;
 
-  // ================= LISTADO =================
-
   filtroListadoCurso: number | null = null;
-
   filtroListadoInicio = this.primerDiaMesISO();
   filtroListadoFin = this.hoyISO();
-
   columnasListado: string[] = [];
   filasListado: FilaGridListado[] = [];
-
   cargandoListado = false;
   errorListado: string | null = null;
-
   listadoConsultado = false;
-
   guardandoCelda: string | null = null;
 
-  // ================= EXCUSAS =================
-
   filtroExcusasCurso: number | null = null;
-
   filtroExcusasInicio = this.primerDiaMesISO();
   filtroExcusasFin = this.hoyISO();
-
   excusas: AttendanceResponseDTO[] = [];
-
+  faltasSinJustificar: AttendanceResponseDTO[] = [];
+  textoJustificacion = new Map<number, string>();
+  guardandoJustificacionId: number | null = null;
+  errorGuardarJustificacion: string | null = null;
   cargandoExcusas = false;
   errorExcusas: string | null = null;
-
   excusasConsultadas = false;
-
   revisandoId: number | null = null;
 
   constructor(
@@ -143,28 +136,19 @@ export class AsistenciaComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-
     this.cargandoBase = true;
     this.errorBase = null;
 
     forkJoin({
       cursos: this.asistenciaService.listarCursos(),
-
       niveles: this.asistenciaService.listarNiveles(),
-
-      estudiantes:
-        this.asistenciaService.listarEstudiantes(),
-
-      docentes:
-        this.asistenciaService.listarDocentes(),
-
-      perfil:
-        this.perfilService.obtenerMiPerfil().pipe(
-          map(r => r.data),
-          catchError(() => of(null))
-        )
+      estudiantes: this.asistenciaService.listarEstudiantes(),
+      docentes: this.asistenciaService.listarDocentes(),
+      perfil: this.perfilService.obtenerMiPerfil().pipe(
+        map(r => r.data),
+        catchError(() => of(null))
+      )
     }).subscribe({
-
       next: ({
         cursos,
         niveles,
@@ -172,11 +156,7 @@ export class AsistenciaComponent implements OnInit {
         docentes,
         perfil
       }) => {
-
-        this.cursos = cursos.filter(
-          c => c.status
-        );
-
+        this.cursos = cursos.filter(c => c.status);
         this.niveles = niveles;
         this.estudiantes = estudiantes;
         this.docentes = docentes;
@@ -195,43 +175,30 @@ export class AsistenciaComponent implements OnInit {
           ])
         );
 
-        this.idAdminActual =
-          perfil?.idUser ?? null;
+        this.idAdminActual = perfil?.idUser ?? null;
 
         if (this.cursos.length > 0) {
+          const primerCurso = this.cursos[0].idCourse;
 
-          const primerCurso =
-            this.cursos[0].idCourse;
-
-          this.idCursoSeleccionado =
-            primerCurso;
-
-          this.filtroListadoCurso =
-            primerCurso;
-
-          this.filtroExcusasCurso =
-            primerCurso;
+          this.idCursoSeleccionado = primerCurso;
+          this.filtroListadoCurso = primerCurso;
+          this.filtroExcusasCurso = primerCurso;
+          this.tomaCurso = primerCurso;
         }
 
         this.cargandoBase = false;
-
         this.buscarSesiones();
+        this.cargarToma();
       },
-
       error: () => {
-
         this.errorBase =
           'No se pudo cargar la información base (cursos, niveles, docentes o estudiantes).';
-
         this.cargandoBase = false;
       }
     });
   }
 
-  // ================= NAVEGACIÓN =================
-
   cambiarTab(tab: Tab): void {
-
     this.tabActiva = tab;
 
     if (
@@ -254,12 +221,268 @@ export class AsistenciaComponent implements OnInit {
     ) {
       this.buscarExcusas();
     }
+
+    if (tab === 'tomar') {
+      this.cargarToma();
+    }
   }
 
-  // ================= RESUMEN =================
+  cargarToma(): void {
+    this.errorGuardarToma = null;
+    this.exitoGuardarToma = false;
+
+    if (this.tomaCurso === null || !this.tomaFecha) {
+      this.tomaFilas = [];
+      return;
+    }
+
+    this.cargandoToma = true;
+    this.errorToma = null;
+
+    forkJoin({
+      estudiantes: this.asistenciaService.listarEstudiantesPorCurso(
+        this.tomaCurso
+      ),
+      registros: this.asistenciaService.obtenerHistorialPorCurso(
+        this.tomaCurso,
+        this.tomaFecha,
+        this.tomaFecha
+      )
+    }).subscribe({
+      next: ({ estudiantes, registros }) => {
+        const porEstudiante = new Map<number, AttendanceResponseDTO>();
+
+        registros.forEach(r => {
+          if (!porEstudiante.has(r.idStudent)) {
+            porEstudiante.set(r.idStudent, r);
+          }
+        });
+
+        this.tomaFilas = estudiantes
+          .map(e => {
+            const registro = porEstudiante.get(e.idUser);
+
+            return {
+              idStudent: e.idUser,
+              nombre: `${e.name} ${e.surnames}`.trim(),
+              idAttendance: registro?.idAttendance ?? null,
+              estado:
+                registro?.attendanceStatus ??
+                ('PRESENT' as AttendanceStatus)
+            };
+          })
+          .sort((a, b) => a.nombre.localeCompare(b.nombre));
+
+        this.cargandoToma = false;
+      },
+      error: () => {
+        this.errorToma =
+          'No se pudo cargar la lista de estudiantes del curso.';
+        this.tomaFilas = [];
+        this.cargandoToma = false;
+      }
+    });
+  }
+
+  marcarEstado(
+    fila: {
+      idStudent: number;
+      nombre: string;
+      idAttendance: number | null;
+      estado: AttendanceStatus;
+    },
+    estado: AttendanceStatus
+  ): void {
+    fila.estado = estado;
+    this.exitoGuardarToma = false;
+  }
+
+  guardarToma(): void {
+    if (this.guardandoToma) {
+      return;
+    }
+
+    if (
+      this.tomaCurso === null ||
+      !this.tomaFecha ||
+      !this.tomaFilas.length
+    ) {
+      return;
+    }
+
+    this.guardandoToma = true;
+    this.errorGuardarToma = null;
+    this.exitoGuardarToma = false;
+
+    const idCurso = this.tomaCurso;
+
+    const llamadas = this.tomaFilas.map(fila =>
+      this.guardarFilaToma(idCurso, fila)
+    );
+
+    forkJoin(llamadas).subscribe(resultados => {
+      const mensajesError = new Set<string>();
+
+      resultados.forEach(r => {
+        if (r.ok && r.resultado) {
+          r.fila.idAttendance = r.resultado.idAttendance;
+        } else if (r.mensaje) {
+          mensajesError.add(r.mensaje);
+        }
+      });
+
+      this.guardandoToma = false;
+
+      if (mensajesError.size) {
+        this.errorGuardarToma =
+          Array.from(mensajesError).join(' | ');
+      } else {
+        this.exitoGuardarToma = true;
+      }
+
+      this.listadoConsultado = false;
+      this.excusasConsultadas = false;
+      this.resumenPorCurso = [];
+    });
+  }
+
+  private guardarFilaToma(
+    idCurso: number,
+    fila: {
+      idStudent: number;
+      nombre: string;
+      idAttendance: number | null;
+      estado: AttendanceStatus;
+    }
+  ): Observable<{
+    ok: boolean;
+    fila: {
+      idStudent: number;
+      nombre: string;
+      idAttendance: number | null;
+      estado: AttendanceStatus;
+    };
+    resultado: AttendanceResponseDTO | null;
+    mensaje?: string;
+  }> {
+    const dto: AttendanceRequestDTO = {
+      idSchedule: this.ID_SCHEDULE_ASISTENCIA,
+      idStudent: fila.idStudent,
+      idCourse: idCurso,
+      attendanceDate: this.tomaFecha,
+      attendanceStatus: fila.estado
+    };
+
+    const mensajeDe = (err: HttpErrorResponse): string =>
+      err?.error?.message ||
+      `${fila.nombre}: error al guardar (HTTP ${err?.status ?? '?'})`;
+
+    if (fila.idAttendance) {
+      return this.asistenciaService
+        .actualizarAsistencia(fila.idAttendance, dto)
+        .pipe(
+          map(resultado => ({
+            ok: true,
+            fila,
+            resultado
+          })),
+          catchError((err: HttpErrorResponse) =>
+            of({
+              ok: false,
+              fila,
+              resultado: null,
+              mensaje: mensajeDe(err)
+            })
+          )
+        );
+    }
+
+    return this.asistenciaService
+      .registrarAsistencia(dto)
+      .pipe(
+        map(resultado => ({
+          ok: true,
+          fila,
+          resultado
+        })),
+        catchError((err: HttpErrorResponse) => {
+          const backendMsg: string =
+            err?.error?.message ?? '';
+
+          const esDuplicado =
+            err.status === 409 &&
+            backendMsg.toLowerCase().includes('ya existe');
+
+          if (!esDuplicado) {
+            return of({
+              ok: false,
+              fila,
+              resultado: null,
+              mensaje: mensajeDe(err)
+            });
+          }
+
+          return this.asistenciaService
+            .obtenerHistorialPorEstudiante(
+              fila.idStudent,
+              this.tomaFecha,
+              this.tomaFecha
+            )
+            .pipe(
+              switchMap(registros => {
+                const existente = registros.find(
+                  r =>
+                    r.idSchedule ===
+                    this.ID_SCHEDULE_ASISTENCIA
+                );
+
+                if (!existente) {
+                  return of({
+                    ok: false,
+                    fila,
+                    resultado: null,
+                    mensaje:
+                      `${fila.nombre}: el backend indicó duplicado pero no se encontró el registro existente.`
+                  });
+                }
+
+                return this.asistenciaService
+                  .actualizarAsistencia(
+                    existente.idAttendance,
+                    dto
+                  )
+                  .pipe(
+                    map(resultado => ({
+                      ok: true,
+                      fila,
+                      resultado
+                    })),
+                    catchError(
+                      (err2: HttpErrorResponse) =>
+                        of({
+                          ok: false,
+                          fila,
+                          resultado: null,
+                          mensaje: mensajeDe(err2)
+                        })
+                    )
+                  );
+              }),
+              catchError(
+                (err2: HttpErrorResponse) =>
+                  of({
+                    ok: false,
+                    fila,
+                    resultado: null,
+                    mensaje: mensajeDe(err2)
+                  })
+              )
+            );
+        })
+      );
+  }
 
   buscarSesiones(): void {
-
     this.cargandoSesiones = true;
     this.errorSesiones = null;
     this.sesionesConsultadas = true;
@@ -296,7 +519,6 @@ export class AsistenciaComponent implements OnInit {
         : this.cursos;
 
     if (!cursosAConsultar.length) {
-
       this.sesiones = [];
       this.cargandoSesiones = false;
       return;
@@ -326,14 +548,11 @@ export class AsistenciaComponent implements OnInit {
       );
 
     forkJoin(llamadas).subscribe({
-
       next: resultados => {
-
         const sesiones: SesionResumen[] = [];
 
         resultados.forEach(
           ({ curso, registros }) => {
-
             const porFecha =
               new Map<
                 string,
@@ -341,7 +560,6 @@ export class AsistenciaComponent implements OnInit {
               >();
 
             registros.forEach(registro => {
-
               const lista =
                 porFecha.get(
                   registro.attendanceDate
@@ -357,12 +575,9 @@ export class AsistenciaComponent implements OnInit {
 
             porFecha.forEach(
               (lista, fecha) => {
-
                 sesiones.push({
                   idCourse: curso.idCourse,
-
                   nombreCurso: curso.name,
-
                   docente:
                     curso.homeroomTeacher != null
                       ? (
@@ -371,9 +586,7 @@ export class AsistenciaComponent implements OnInit {
                           ) ?? '—'
                         )
                       : '—',
-
                   fecha,
-
                   presentes:
                     lista.filter(
                       r =>
@@ -382,14 +595,12 @@ export class AsistenciaComponent implements OnInit {
                         r.attendanceStatus ===
                           'JUSTIFIED'
                     ).length,
-
                   ausentes:
                     lista.filter(
                       r =>
                         r.attendanceStatus ===
                         'ABSENT'
                     ).length,
-
                   tardanzas:
                     lista.filter(
                       r =>
@@ -410,19 +621,15 @@ export class AsistenciaComponent implements OnInit {
 
         this.cargandoSesiones = false;
       },
-
       error: () => {
-
         this.errorSesiones =
           'No se pudo cargar el resumen de sesiones.';
-
         this.cargandoSesiones = false;
       }
     });
   }
 
   verSesion(sesion: SesionResumen): void {
-
     this.filtroListadoCurso =
       sesion.idCourse;
 
@@ -433,16 +640,11 @@ export class AsistenciaComponent implements OnInit {
       sesion.fecha;
 
     this.listadoConsultado = false;
-
     this.cambiarTab('listado');
   }
 
-  // ================= HISTORIAL =================
-
   cargarGraficoHistorial(): void {
-
     if (!this.cursos.length) {
-
       this.resumenPorCurso = [];
       return;
     }
@@ -477,9 +679,7 @@ export class AsistenciaComponent implements OnInit {
             this.fechaFinHistorial
           )
           .pipe(
-
             map(registros => {
-
               const calculo =
                 this.asistenciaService.calcularResumen(
                   registros
@@ -493,22 +693,17 @@ export class AsistenciaComponent implements OnInit {
                 );
 
               const resumen: ResumenCurso = {
-
                 idCourse:
                   curso.idCourse,
-
                 nombreCurso:
                   curso.name,
-
                 nombreNivel:
                   nivel?.name ?? '',
-
                 ...calculo
               };
 
               return resumen;
             }),
-
             catchError(() =>
               of(null)
             )
@@ -516,9 +711,7 @@ export class AsistenciaComponent implements OnInit {
       );
 
     forkJoin(llamadas).subscribe({
-
       next: resultados => {
-
         this.resumenPorCurso =
           resultados.filter(
             (
@@ -544,21 +737,16 @@ export class AsistenciaComponent implements OnInit {
         this.cargandoHistorialGrafico =
           false;
       },
-
       error: () => {
-
         this.errorHistorialGrafico =
           'No se pudo cargar el historial de asistencia.';
-
         this.cargandoHistorialGrafico =
           false;
       }
     });
   }
 
-  get resumenSeleccionado():
-    ResumenCurso | null {
-
+  get resumenSeleccionado(): ResumenCurso | null {
     return (
       this.resumenPorCurso.find(
         r =>
@@ -569,7 +757,6 @@ export class AsistenciaComponent implements OnInit {
   }
 
   get promedioGlobal(): number {
-
     if (!this.resumenPorCurso.length) {
       return 0;
     }
@@ -589,7 +776,6 @@ export class AsistenciaComponent implements OnInit {
   }
 
   get totalTardanzasGlobal(): number {
-
     return this.resumenPorCurso.reduce(
       (acc, r) =>
         acc + r.lateCount,
@@ -598,7 +784,6 @@ export class AsistenciaComponent implements OnInit {
   }
 
   get totalFaltasGlobal(): number {
-
     return this.resumenPorCurso.reduce(
       (acc, r) =>
         acc + r.unjustifiedCount,
@@ -607,7 +792,6 @@ export class AsistenciaComponent implements OnInit {
   }
 
   get porcentajeJustificadoGlobal(): number {
-
     const total =
       this.resumenPorCurso.reduce(
         (acc, r) =>
@@ -632,7 +816,6 @@ export class AsistenciaComponent implements OnInit {
   }
 
   get porcentajeNoJustificadoGlobal(): number {
-
     const total =
       this.resumenPorCurso.reduce(
         (acc, r) =>
@@ -657,19 +840,16 @@ export class AsistenciaComponent implements OnInit {
   }
 
   colorBarra(index: number): string {
-
     return PALETA_BARRAS[
       index % PALETA_BARRAS.length
     ];
   }
 
-  get barras():
-    {
-      nombre: string;
-      porcentaje: number;
-      color: string;
-    }[] {
-
+  get barras(): {
+    nombre: string;
+    porcentaje: number;
+    color: string;
+  }[] {
     return this.resumenPorCurso.map(
       (r, i) => ({
         nombre: r.nombreCurso,
@@ -697,7 +877,6 @@ export class AsistenciaComponent implements OnInit {
     porcentaje: number,
     circunferencia: number
   ): number {
-
     const pct =
       Math.max(
         0,
@@ -734,16 +913,12 @@ export class AsistenciaComponent implements OnInit {
     return this.porcentajeNoJustificadoGlobal;
   }
 
-  seleccionarCurso(
-    idCourse: number
-  ): void {
-
+  seleccionarCurso(idCourse: number): void {
     this.idCursoSeleccionado =
       idCourse;
   }
 
   descargarPdfHistorial(): void {
-
     if (
       this.idCursoSeleccionado ===
       null
@@ -764,14 +939,8 @@ export class AsistenciaComponent implements OnInit {
     );
   }
 
-  // ================= LISTADO =================
-
   buscarListado(): void {
-
     this.errorListado = null;
-
-    // Limpiar los resultados anteriores
-    // antes de realizar una nueva consulta.
     this.columnasListado = [];
     this.filasListado = [];
 
@@ -779,7 +948,6 @@ export class AsistenciaComponent implements OnInit {
       this.filtroListadoCurso ===
       null
     ) {
-
       this.listadoConsultado = true;
       this.errorListado =
         'Selecciona un curso.';
@@ -790,7 +958,6 @@ export class AsistenciaComponent implements OnInit {
       !this.filtroListadoInicio ||
       !this.filtroListadoFin
     ) {
-
       this.listadoConsultado = true;
       this.errorListado =
         'Selecciona las fechas de inicio y fin.';
@@ -801,7 +968,6 @@ export class AsistenciaComponent implements OnInit {
       this.filtroListadoInicio >
       this.filtroListadoFin
     ) {
-
       this.listadoConsultado = true;
       this.errorListado =
         'La fecha inicial no puede ser posterior a la fecha final.';
@@ -818,30 +984,20 @@ export class AsistenciaComponent implements OnInit {
         this.filtroListadoFin
       )
       .subscribe({
-
         next: registros => {
-
-          // El servicio convierte 404 en [].
-          // Por eso aquí un [] significa
-          // simplemente "sin registros".
           this.construirGrid(
             registros ?? []
           );
 
           this.cargandoListado = false;
         },
-
-        error: (error) => {
-
+        error: error => {
           this.columnasListado = [];
           this.filasListado = [];
 
           if (error?.status === 404) {
-
             this.errorListado = null;
-
           } else {
-
             this.errorListado =
               'No se pudo cargar el listado de asistencia.';
           }
@@ -854,9 +1010,7 @@ export class AsistenciaComponent implements OnInit {
   private construirGrid(
     registros: AttendanceResponseDTO[]
   ): void {
-
     if (!registros.length) {
-
       this.columnasListado = [];
       this.filasListado = [];
       return;
@@ -887,7 +1041,6 @@ export class AsistenciaComponent implements OnInit {
       >();
 
     registros.forEach(registro => {
-
       const mapaFechas =
         porEstudiante.get(
           registro.idStudent
@@ -913,7 +1066,6 @@ export class AsistenciaComponent implements OnInit {
 
     porEstudiante.forEach(
       (mapaFechas, idStudent) => {
-
         const usuario =
           this.estudiantes.find(
             e =>
@@ -954,7 +1106,6 @@ export class AsistenciaComponent implements OnInit {
           >();
 
         fechas.forEach(fecha => {
-
           porFecha.set(
             fecha,
             mapaFechas.get(
@@ -964,23 +1115,19 @@ export class AsistenciaComponent implements OnInit {
         });
 
         filas.push({
-
           idStudent,
-
           primerNombre:
             partesNombre[0] ?? '',
-
           segundoNombre:
-            partesNombre.slice(1).join(' '),
-
+            partesNombre
+              .slice(1)
+              .join(' '),
           primerApellido:
             partesApellido[0] ?? '',
-
           segundoApellido:
             partesApellido
               .slice(1)
               .join(' '),
-
           porFecha
         });
       }
@@ -989,7 +1136,6 @@ export class AsistenciaComponent implements OnInit {
     this.filasListado =
       filas.sort(
         (a, b) => {
-
           const nombreA =
             `${a.primerNombre} ${a.primerApellido}`;
 
@@ -1007,7 +1153,6 @@ export class AsistenciaComponent implements OnInit {
     fila: FilaGridListado,
     fecha: string
   ): void {
-
     const registro =
       fila.porFecha.get(
         fecha
@@ -1029,22 +1174,17 @@ export class AsistenciaComponent implements OnInit {
 
     const dto:
       AttendanceRequestDTO = {
-
       idSchedule:
-        registro.idSchedule,
-
+        registro.idSchedule ??
+        this.ID_SCHEDULE_ASISTENCIA,
       idStudent:
         registro.idStudent,
-
       idCourse:
         registro.idCourse,
-
       attendanceDate:
         registro.attendanceDate,
-
       attendanceStatus:
         nuevoEstado,
-
       observation:
         registro.observation ??
         undefined
@@ -1059,9 +1199,7 @@ export class AsistenciaComponent implements OnInit {
         dto
       )
       .subscribe({
-
         next: actualizado => {
-
           fila.porFecha.set(
             fecha,
             actualizado
@@ -1070,12 +1208,9 @@ export class AsistenciaComponent implements OnInit {
           this.guardandoCelda =
             null;
         },
-
         error: () => {
-
           this.errorListado =
             'No se pudo actualizar ese registro.';
-
           this.guardandoCelda =
             null;
         }
@@ -1083,7 +1218,6 @@ export class AsistenciaComponent implements OnInit {
   }
 
   descargarPdfListado(): void {
-
     if (
       this.filtroListadoCurso ===
       null
@@ -1104,10 +1238,7 @@ export class AsistenciaComponent implements OnInit {
     );
   }
 
-  // ================= EXCUSAS =================
-
   buscarExcusas(): void {
-
     this.cargandoExcusas = true;
     this.errorExcusas = null;
     this.excusasConsultadas = true;
@@ -1116,12 +1247,9 @@ export class AsistenciaComponent implements OnInit {
       !this.filtroExcusasInicio ||
       !this.filtroExcusasFin
     ) {
-
       this.excusas = [];
-
       this.errorExcusas =
         'Selecciona las fechas de inicio y fin.';
-
       this.cargandoExcusas = false;
       return;
     }
@@ -1130,12 +1258,9 @@ export class AsistenciaComponent implements OnInit {
       this.filtroExcusasInicio >
       this.filtroExcusasFin
     ) {
-
       this.excusas = [];
-
       this.errorExcusas =
         'La fecha inicial no puede ser posterior a la fecha final.';
-
       this.cargandoExcusas = false;
       return;
     }
@@ -1150,8 +1275,8 @@ export class AsistenciaComponent implements OnInit {
         : this.cursos;
 
     if (!cursosAConsultar.length) {
-
       this.excusas = [];
+      this.faltasSinJustificar = [];
       this.cargandoExcusas = false;
       return;
     }
@@ -1174,12 +1299,26 @@ export class AsistenciaComponent implements OnInit {
       );
 
     forkJoin(llamadas).subscribe({
-
       next: resultados => {
+        const registros =
+          resultados.flat();
+
+        this.faltasSinJustificar =
+          registros
+            .filter(
+              r =>
+                r.attendanceStatus === 'ABSENT' &&
+                (r.justificationStatus ?? 'NONE') === 'NONE'
+            )
+            .sort(
+              (a, b) =>
+                b.attendanceDate.localeCompare(
+                  a.attendanceDate
+                )
+            );
 
         this.excusas =
-          resultados
-            .flat()
+          registros
             .filter(
               r =>
                 r.justificationStatus !==
@@ -1195,31 +1334,110 @@ export class AsistenciaComponent implements OnInit {
         this.cargandoExcusas =
           false;
       },
-
       error: () => {
-
         this.errorExcusas =
           'No se pudieron cargar las justificaciones.';
-
         this.cargandoExcusas =
           false;
       }
     });
   }
 
+  textoJustificacionDe(
+    idAttendance: number
+  ): string {
+    return (
+      this.textoJustificacion.get(
+        idAttendance
+      ) ?? ''
+    );
+  }
+
+  actualizarTextoJustificacion(
+    idAttendance: number,
+    valor: string
+  ): void {
+    this.textoJustificacion.set(
+      idAttendance,
+      valor
+    );
+  }
+
+  guardarJustificacion(
+    registro: AttendanceResponseDTO
+  ): void {
+    const texto =
+      this.textoJustificacionDe(
+        registro.idAttendance
+      ).trim();
+
+    if (!texto) {
+      return;
+    }
+
+    this.guardandoJustificacionId =
+      registro.idAttendance;
+
+    this.errorGuardarJustificacion =
+      null;
+
+    this.asistenciaService
+      .enviarJustificacion(
+        registro.idAttendance,
+        texto
+      )
+      .subscribe({
+        next: actualizado => {
+          this.faltasSinJustificar =
+            this.faltasSinJustificar.filter(
+              r =>
+                r.idAttendance !==
+                actualizado.idAttendance
+            );
+
+          const idx =
+            this.excusas.findIndex(
+              r =>
+                r.idAttendance ===
+                actualizado.idAttendance
+            );
+
+          if (idx !== -1) {
+            this.excusas[idx] =
+              actualizado;
+          } else {
+            this.excusas = [
+              actualizado,
+              ...this.excusas
+            ];
+          }
+
+          this.textoJustificacion.delete(
+            registro.idAttendance
+          );
+
+          this.guardandoJustificacionId =
+            null;
+        },
+        error: () => {
+          this.errorGuardarJustificacion =
+            'No se pudo guardar la justificación. Intenta nuevamente.';
+          this.guardandoJustificacionId =
+            null;
+        }
+      });
+  }
+
   revisarJustificacion(
     registro: AttendanceResponseDTO,
     aprobar: boolean
   ): void {
-
     if (
       this.idAdminActual ===
       null
     ) {
-
       this.errorExcusas =
         'No se pudo identificar al administrador que revisa.';
-
       return;
     }
 
@@ -1233,9 +1451,7 @@ export class AsistenciaComponent implements OnInit {
         this.idAdminActual
       )
       .subscribe({
-
         next: actualizado => {
-
           const idx =
             this.excusas.findIndex(
               r =>
@@ -1244,7 +1460,6 @@ export class AsistenciaComponent implements OnInit {
             );
 
           if (idx !== -1) {
-
             this.excusas[idx] =
               actualizado;
           }
@@ -1252,24 +1467,18 @@ export class AsistenciaComponent implements OnInit {
           this.revisandoId =
             null;
         },
-
         error: () => {
-
           this.errorExcusas =
             'No se pudo registrar la revisión de la justificación.';
-
           this.revisandoId =
             null;
         }
       });
   }
 
-  // ================= HELPERS =================
-
   nombreCurso(
     idCourse: number | null
   ): string {
-
     if (idCourse === null) {
       return '';
     }
@@ -1287,7 +1496,6 @@ export class AsistenciaComponent implements OnInit {
   nombreEstudiante(
     idStudent: number
   ): string {
-
     return (
       this.mapaEstudiantes.get(
         idStudent
@@ -1299,7 +1507,6 @@ export class AsistenciaComponent implements OnInit {
   etiquetaEstado(
     estado: AttendanceStatus
   ): string {
-
     return ETIQUETA_ESTADO[
       estado
     ];
@@ -1308,7 +1515,6 @@ export class AsistenciaComponent implements OnInit {
   etiquetaJustificacion(
     estado: JustificationStatus
   ): string {
-
     return ETIQUETA_JUSTIFICACION[
       estado
     ];
@@ -1317,19 +1523,17 @@ export class AsistenciaComponent implements OnInit {
   claseEstado(
     estado: AttendanceStatus
   ): string {
-
     return (
       'badge-' +
       estado
         .toLowerCase()
-        .replace(/_/g, '-')
+        .replace(/\_/g, '-')
     );
   }
 
   claseJustificacion(
     estado: JustificationStatus
   ): string {
-
     return (
       'estado-just-' +
       estado.toLowerCase()
@@ -1342,11 +1546,8 @@ export class AsistenciaComponent implements OnInit {
     >,
     nombreArchivo: string
   ): void {
-
     obs.subscribe({
-
       next: blob => {
-
         const url =
           window.URL.createObjectURL(
             blob
@@ -1360,16 +1561,13 @@ export class AsistenciaComponent implements OnInit {
         a.href = url;
         a.download =
           nombreArchivo;
-
         a.click();
 
         window.URL.revokeObjectURL(
           url
         );
       },
-
       error: () => {
-
         this.errorHistorialGrafico =
           'No se pudo generar el PDF.';
       }
@@ -1377,7 +1575,6 @@ export class AsistenciaComponent implements OnInit {
   }
 
   private hoyISO(): string {
-
     const d = new Date();
 
     return [
@@ -1392,7 +1589,6 @@ export class AsistenciaComponent implements OnInit {
   }
 
   private primerDiaMesISO(): string {
-
     const d = new Date();
 
     return [

@@ -1,7 +1,14 @@
-import { Component, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  OnDestroy,
+  OnInit,
+  ChangeDetectorRef
+} from '@angular/core'; 
+
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
+
 import {
   INFO_TEXT_LIMITS,
   InstitutionInfo,
@@ -16,36 +23,89 @@ interface ColorSwatch {
 }
 
 const SWATCHES: ColorSwatch[] = [
-  { key: 'primary', label: 'Color primario', hint: 'Botones y acentos principales' },
-  { key: 'secondary', label: 'Color secundario', hint: 'Títulos y tarjeta de visión' },
-  { key: 'accent', label: 'Color de acento', hint: 'Fondos suaves y bordes' },
-  { key: 'dark', label: 'Fondo general', hint: 'Fondo principal de todo el sistema' },
-  { key: 'light', label: 'Blanco institucional', hint: 'Texto sobre fondos de color' },
-  { key: 'surface', label: 'Fondo de tarjetas', hint: 'Paneles, tarjetas y bloques' },
-  { key: 'surfaceAlt', label: 'Fondo secundario', hint: 'Campos, menús y elementos secundarios' },
-  { key: 'text', label: 'Texto principal', hint: 'Títulos y contenido principal' },
-  { key: 'muted', label: 'Texto secundario', hint: 'Descripciones y textos suaves' },
-  { key: 'border', label: 'Bordes', hint: 'Líneas, separadores y contornos' }
+  {
+    key: 'primary',
+    label: 'Color primario',
+    hint: 'Botones y acentos principales'
+  },
+  {
+    key: 'secondary',
+    label: 'Color secundario',
+    hint: 'Títulos y tarjeta de visión'
+  },
+  {
+    key: 'accent',
+    label: 'Color de acento',
+    hint: 'Fondos suaves y bordes'
+  },
+  {
+    key: 'dark',
+    label: 'Fondo general',
+    hint: 'Fondo principal de todo el sistema'
+  },
+  {
+    key: 'light',
+    label: 'Blanco institucional',
+    hint: 'Texto sobre fondos de color'
+  },
+  {
+    key: 'surface',
+    label: 'Fondo de tarjetas',
+    hint: 'Paneles, tarjetas y bloques'
+  },
+  {
+    key: 'surfaceAlt',
+    label: 'Fondo secundario',
+    hint: 'Campos, menús y elementos secundarios'
+  },
+  {
+    key: 'text',
+    label: 'Texto principal',
+    hint: 'Títulos y contenido principal'
+  },
+  {
+    key: 'muted',
+    label: 'Texto secundario',
+    hint: 'Descripciones y textos suaves'
+  },
+  {
+    key: 'border',
+    label: 'Bordes',
+    hint: 'Líneas, separadores y contornos'
+  }
 ];
 
 @Component({
   selector: 'app-panel-control',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule
+  ],
   templateUrl: './sistema.component.html',
   styleUrls: ['./sistema.component.scss']
 })
-export class PanelControlComponent implements OnInit, OnDestroy {
+export class PanelControlComponent
+  implements OnInit, OnDestroy {
 
   swatches = SWATCHES;
+
   limits = INFO_TEXT_LIMITS;
+
   palette!: InstitutionPalette;
+
   info!: InstitutionInfo;
+
   savedMessage = '';
+
   colorError = '';
+
   private lastValidPalette!: InstitutionPalette;
+
   private savedTimeout?: ReturnType<typeof setTimeout>;
+
   private colorErrorTimeout?: ReturnType<typeof setTimeout>;
+
   private sub?: Subscription;
 
   constructor(
@@ -54,145 +114,354 @@ export class PanelControlComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.sub = this.settingsService.settings$.subscribe(settings => {
-      this.palette = { ...settings.palette };
-      this.lastValidPalette = { ...settings.palette };
-      this.info = {
-        ...settings.info,
-        carousel: settings.info.carousel.map(c => ({ ...c })),
-        pilares: settings.info.pilares.map(p => ({ ...p }))
-      };
-      this.cdr.detectChanges();
-    });
+
+    this.sub =
+      this.settingsService.settings$
+        .subscribe(settings => {
+
+          this.palette = {
+            ...settings.palette
+          };
+
+          this.lastValidPalette = {
+            ...settings.palette
+          };
+
+          this.info = {
+            ...settings.info,
+
+            carousel:
+              settings.info.carousel.map(
+                c => ({ ...c })
+              ),
+
+            pilares:
+              settings.info.pilares.map(
+                p => ({ ...p })
+              )
+          };
+
+          this.cdr.detectChanges();
+        });
   }
 
   ngOnDestroy(): void {
+
     this.sub?.unsubscribe();
+
     if (this.savedTimeout) {
       clearTimeout(this.savedTimeout);
     }
+
     if (this.colorErrorTimeout) {
       clearTimeout(this.colorErrorTimeout);
     }
   }
 
-  atLimit(value: string | null | undefined, max: number): boolean {
+  atLimit(
+    value: string | null | undefined,
+    max: number
+  ): boolean {
+
     return (value?.length ?? 0) >= max;
   }
 
-  onColorChange(key: keyof InstitutionPalette): void {
-    const nuevoValor = (this.palette[key] || '').toLowerCase();
+  /**
+   * Cambia el color solamente en la vista previa.
+   * El guardado definitivo se realiza al presionar Guardar.
+   */
+  onColorChange(
+    key: keyof InstitutionPalette
+  ): void {
 
-    const estaDuplicado = this.swatches.some(
-      sw => sw.key !== key && (this.palette[sw.key] || '').toLowerCase() === nuevoValor
-    );
+    const nuevoValor =
+      (this.palette[key] || '')
+        .toLowerCase();
+
+    const estaDuplicado =
+      this.swatches.some(
+        sw =>
+          sw.key !== key &&
+          (this.palette[sw.key] || '')
+            .toLowerCase() === nuevoValor
+      );
 
     if (estaDuplicado) {
-      this.palette[key] = this.lastValidPalette[key];
-      this.flashColorError('Ese color ya está en uso por otro elemento de la paleta. El selector de color no está disponible para colores duplicados.');
+
+      this.palette[key] =
+        this.lastValidPalette[key];
+
+      this.flashColorError(
+        'Ese color ya está en uso por otro elemento de la paleta.'
+      );
+
       this.cdr.detectChanges();
+
       return;
     }
 
     this.colorError = '';
-    this.lastValidPalette = { ...this.palette };
-    this.settingsService.updateSettings(this.palette, this.info);
+
+    this.lastValidPalette = {
+      ...this.palette
+    };
+
+    /*
+     * Vista previa inmediata.
+     * NO guarda todavía en backend.
+     */
+    this.settingsService.activarTemaPreview(
+      this.palette
+    );
+
+    this.cdr.detectChanges();
   }
 
-  private flashColorError(message: string): void {
+  /**
+   * Guarda toda la configuración institucional.
+   */
+  guardar(): void {
+
+    this.settingsService
+      .updateSettings(
+        this.palette,
+        this.info
+      )
+      .subscribe({
+
+        next: () => {
+
+          this.flashSaved(
+            'Cambios guardados correctamente'
+          );
+        },
+
+        error: error => {
+
+          console.error(
+            'Error guardando la configuración institucional:',
+            error
+          );
+
+          this.flashSaved(
+            'No se pudieron guardar los cambios'
+          );
+        }
+      });
+  }
+
+  /**
+   * Restablece la configuración original.
+   */
+  restablecer(): void {
+
+    this.settingsService
+      .resetToDefaults()
+      .subscribe({
+
+        next: () => {
+
+          this.flashSaved(
+            'Valores por defecto restaurados'
+          );
+        },
+
+        error: error => {
+
+          console.error(
+            'Error restaurando la configuración institucional:',
+            error
+          );
+
+          this.flashSaved(
+            'No se pudieron restaurar los valores'
+          );
+        }
+      });
+  }
+
+  private flashColorError(
+    message: string
+  ): void {
+
     this.colorError = message;
+
     if (this.colorErrorTimeout) {
-      clearTimeout(this.colorErrorTimeout);
+      clearTimeout(
+        this.colorErrorTimeout
+      );
     }
-    this.colorErrorTimeout = setTimeout(() => {
-      this.colorError = '';
-      this.cdr.detectChanges();
-    }, 4000);
+
+    this.colorErrorTimeout =
+      setTimeout(() => {
+
+        this.colorError = '';
+
+        this.cdr.detectChanges();
+
+      }, 4000);
   }
 
-  onLogoSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
-    if (!file) return;
+  private flashSaved(
+    message: string
+  ): void {
 
-    const reader = new FileReader();
+    this.savedMessage = message;
+
+    if (this.savedTimeout) {
+      clearTimeout(this.savedTimeout);
+    }
+
+    this.savedTimeout =
+      setTimeout(() => {
+
+        this.savedMessage = '';
+
+        this.cdr.detectChanges();
+
+      }, 2500);
+  }
+
+  onLogoSelected(
+    event: Event
+  ): void {
+
+    const input =
+      event.target as HTMLInputElement;
+
+    const file =
+      input.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    const reader =
+      new FileReader();
+
     reader.onload = () => {
-      this.info.logoUrl = reader.result as string;
+
+      this.info.logoUrl =
+        reader.result as string;
+
       this.cdr.detectChanges();
     };
+
     reader.readAsDataURL(file);
+
     input.value = '';
   }
 
-  onCarouselFileSelected(event: Event, index: number): void {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
-    if (!file) return;
+  onCarouselFileSelected(
+    event: Event,
+    index: number
+  ): void {
 
-    const reader = new FileReader();
+    const input =
+      event.target as HTMLInputElement;
+
+    const file =
+      input.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    const reader =
+      new FileReader();
+
     reader.onload = () => {
-      this.info.carousel[index] = { url: reader.result as string };
+
+      this.info.carousel[index] = {
+        url: reader.result as string
+      };
+
       this.cdr.detectChanges();
     };
+
     reader.readAsDataURL(file);
+
     input.value = '';
   }
 
   addCarouselImage(): void {
-    if (this.info.carousel.length >= 4) return;
-    this.info.carousel.push({ url: '' });
-  }
 
-  removeCarouselImage(index: number): void {
-    this.info.carousel.splice(index, 1);
-  }
-
-  onComunidadFileSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      this.info.comunidadImagenUrl = reader.result as string;
-      this.cdr.detectChanges();
-    };
-    reader.readAsDataURL(file);
-    input.value = '';
-  }
-
-  onEspaciosFileSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      this.info.espaciosImagenUrl = reader.result as string;
-      this.cdr.detectChanges();
-    };
-    reader.readAsDataURL(file);
-    input.value = '';
-  }
-
-  guardar(): void {
-    this.settingsService.updateSettings(this.palette, this.info);
-    this.flashSaved('Cambios guardados');
-  }
-
-  restablecer(): void {
-    this.settingsService.resetToDefaults();
-    this.flashSaved('Valores por defecto restaurados');
-  }
-
-  private flashSaved(message: string): void {
-    this.savedMessage = message;
-    if (this.savedTimeout) {
-      clearTimeout(this.savedTimeout);
+    if (this.info.carousel.length >= 4) {
+      return;
     }
-    this.savedTimeout = setTimeout(() => {
-      this.savedMessage = '';
+
+    this.info.carousel.push({
+      url: ''
+    });
+  }
+
+  removeCarouselImage(
+    index: number
+  ): void {
+
+    this.info.carousel.splice(
+      index,
+      1
+    );
+  }
+
+  onComunidadFileSelected(
+    event: Event
+  ): void {
+
+    const input =
+      event.target as HTMLInputElement;
+
+    const file =
+      input.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    const reader =
+      new FileReader();
+
+    reader.onload = () => {
+
+      this.info.comunidadImagenUrl =
+        reader.result as string;
+
       this.cdr.detectChanges();
-    }, 2500);
+    };
+
+    reader.readAsDataURL(file);
+
+    input.value = '';
+  }
+
+  onEspaciosFileSelected(
+    event: Event
+  ): void {
+
+    const input =
+      event.target as HTMLInputElement;
+
+    const file =
+      input.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    const reader =
+      new FileReader();
+
+    reader.onload = () => {
+
+      this.info.espaciosImagenUrl =
+        reader.result as string;
+
+      this.cdr.detectChanges();
+    };
+
+    reader.readAsDataURL(file);
+
+    input.value = '';
   }
 }
