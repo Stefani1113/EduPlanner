@@ -114,31 +114,60 @@ export class HorariosComponent implements OnInit {
   }
 
   enviarMensaje(): void {
-    const texto = this.mensaje.trim();
-    if (!texto || this.cargando) {
-      return;
-    }
+  const texto = this.mensaje.trim();
 
-    this.mensajes.push({
-      tipo: 'usuario',
-      texto
-    });
-
-    this.mensaje = '';
-    this.cargando = true;
-    this.emocionActual = 'pensando';
-
-    setTimeout(() => {
-      const respuesta = this.horariosService.generarRespuesta(texto);
-      this.mensajes.push({
-        tipo: 'ia',
-        texto: respuesta.texto
-      });
-      this.emocionActual = respuesta.emocion;
-      this.cargando = false;
-    }, 700);
+  if (!texto || this.cargando) {
+    return;
   }
 
+  this.mensajes.push({
+    tipo: 'usuario',
+    texto
+  });
+
+  this.mensaje = '';
+  this.cargando = true;
+  this.emocionActual = 'pensando';
+
+  this.horariosService.enviarMensaje(texto).subscribe({
+    next: (respuesta) => {
+
+      if (respuesta.success) {
+        this.mensajes.push({
+          tipo: 'ia',
+          texto: respuesta.response
+        });
+
+        this.emocionActual = 'feliz';
+
+      } else {
+        this.mensajes.push({
+          tipo: 'ia',
+          texto: respuesta.error || 'No pude procesar la solicitud.'
+        });
+
+        this.emocionActual = 'normal';
+      }
+
+      this.cargando = false;
+    },
+
+    error: (error) => {
+      console.error(
+        'Error al comunicarse con EduPlanner IA:',
+        error
+      );
+
+      this.mensajes.push({
+        tipo: 'ia',
+        texto: 'Lo siento, no pude comunicarme con el asistente de EduPlanner. Verifica que el servidor de IA esté activo.'
+      });
+
+      this.cargando = false;
+      this.emocionActual = 'normal';
+    }
+  });
+}
   obtenerImagenIA(): string {
     return `/assets/ia/ia-ordinary.png`;
   }
