@@ -22,7 +22,7 @@ def adapt_courses(data: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return [
         {
             "id_course": course["idCourse"],
-            "name": ["name"],
+            "name": course["name"],
             "id_shift": course["idShift"],
             "id_period": course["idPeriod"],
             "status": course["status"]
@@ -99,10 +99,24 @@ def load_scheduler_data(client, course_names: list[str] | None = None):
 
     # Filtrar cursos
     if course_names :
-        requested_names = {
-            name.strip().upper()
-            for name in course_names
-        }
+
+        requested_names = set()
+
+        for name in course_names:
+
+            # Si llega una lista dentro de la lista
+            if isinstance(name, list):
+
+                for nested_name in name:
+                    requested_names.add(
+                        str(nested_name).strip().upper()
+                    )
+
+            else:
+
+                requested_names.add(
+                    str(name).strip().upper()
+                )
 
         # Busca los cursos solicitados 
         select_courses = [
@@ -114,7 +128,7 @@ def load_scheduler_data(client, course_names: list[str] | None = None):
 
         # Verifica que los cursos solicitados existan
         found_names = {
-            courses["name"].strip().upper()
+            course["name"].strip().upper()
             for course in select_courses
         }
 
@@ -130,7 +144,7 @@ def load_scheduler_data(client, course_names: list[str] | None = None):
     else : 
         # si no se especifican cursos se utilizan todos los cursos activos 
         courses = [
-            courses
+            course
             for course in courses
             if course["status"]
         ]
@@ -164,11 +178,6 @@ def load_scheduler_data(client, course_names: list[str] | None = None):
     selected_course_ids = {
         course["id_course"]
         for course in courses
-    }
-
-    academic_loads = {
-        course["id_course"]
-        for course in courses 
     }
 
     academic_loads = [
