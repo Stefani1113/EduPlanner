@@ -40,4 +40,12 @@ public interface AdministracionServiceClient {
     @GetMapping("/eduplanner/internal/users/{idUser}/full-name")
     String getUserFullName(@PathVariable("idUser") Integer idUser);
     
+
+    /**
+     * Devuelve id del usuario con con curso
+     */
+    @GetMapping("/eduplanner/internal/users/{idUser}/course")
+    Integer getUserCourse(
+            @PathVariable("idUser") Integer idUser
+    );
 }
