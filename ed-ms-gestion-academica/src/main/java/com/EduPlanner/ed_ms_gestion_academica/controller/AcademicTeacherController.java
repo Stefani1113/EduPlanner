@@ -1,4 +1,4 @@
-/*package com.EduPlanner.ed_ms_gestion_academica.controller;
+package com.EduPlanner.ed_ms_gestion_academica.controller;
 
 import com.eduplanner.ed_lib_common.dto.AcademicTeacherRequestDTO;
 import com.eduplanner.ed_lib_common.dto.AcademicTeacherResponseDTO;
@@ -70,4 +70,4 @@ public ResponseEntity<HttpGlobalResponse<AcademicTeacherResponseDTO>> registerTe
         catch (RuntimeException e) { r.setMessage(e.getMessage()); return ResponseEntity.status(HttpStatus.NOT_FOUND).body(r); }
     }
 } 
-*/
+

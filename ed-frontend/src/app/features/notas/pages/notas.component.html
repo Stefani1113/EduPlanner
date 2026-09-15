@@ -167,8 +167,8 @@
               </tbody>
             </table>
 
-            <button type="button" class="btn-verde full" disabled title="Disponible próximamente: pendiente el endpoint de generación de PDF en el backend de Notas">
-              DESCARGAR PDF (próximamente)
+            <button type="button" class="btn-verde full" [disabled]="descargandoPdf" (click)="descargarReportePdf()">
+              {{ descargandoPdf ? 'Generando PDF…' : 'DESCARGAR PDF' }}
             </button>
           </div>
         </div>

@@ -9,11 +9,6 @@
   color: var(--inst-light);
 }
 
-// Los textos institucionales vienen de un formulario editable por el
-// usuario. Aunque hay límites de caracteres, estas reglas evitan que
-// cualquier texto largo (incluso sin espacios) se desborde o choque
-// con elementos vecinos: siempre se envuelve y se recorta con "…"
-// después de cierto número de líneas.
 .hero-badge,
 .hero-title,
 .hero-description,
@@ -319,7 +314,6 @@ h4 {
   p {
     font-size: 18px;
     line-height: 1.8;
-    color: rgba(255, 255, 255, 0.7);
     max-width: 600px;
     @include line-clamp(3);
   }
@@ -432,9 +426,7 @@ h4 {
      color: var(--inst-text);
     }
 
-  p {
-    color: rgba(255, 255, 255, 0.7);
-  }
+
 }
 
 .card-icon {
@@ -598,9 +590,7 @@ h4 {
       color: var(--inst-primary);
     }
 
-    p {
-      color: rgba(255, 255, 255, 0.7);
-    }
+
   }
 
   &.dark {
