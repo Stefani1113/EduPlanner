@@ -30,6 +30,8 @@ class EduPlannerClient :
 
         response.raise_for_status()
 
+        return response.json()
+
 # Llamada post para ingresar datos 
     def post(self, endpoints: str, data: dict) -> Any :
         """Realiza una solicitud POST autenticada a EduPlanner"""

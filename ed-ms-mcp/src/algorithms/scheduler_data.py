@@ -23,6 +23,7 @@ def adapt_courses(data: list[dict[str, Any]]) -> list[dict[str, Any]]:
         {
             "id_course": course["idCourse"],
             "id_shift": course["idShift"],
+            "id_period": course["idPeriod"],
             "status": course["status"]
         }
         for course in data
@@ -95,6 +96,20 @@ def load_scheduler_data(client):
         courses_data
     )
 
+        # Periodos
+    period_ids = {
+        course["id_period"]
+        for course in courses
+        if course["status"]
+    }
+
+    if len(period_ids) != 1:
+        raise ValueError(
+            "Los cursos seleccionados no pertenecen al mismo periodo académico"
+        )
+
+    id_period =  next(iter(period_ids))
+
     # Docentes necesarios
     teacher_ids = {
         load["id_teacher"]
@@ -152,11 +167,13 @@ def load_scheduler_data(client):
             )
         )
 
+
 # Devuelve todo
     return {
         "teachers": teachers,
         "courses": courses,
         "time_slots": time_slots,
         "academic_loads": academic_loads,
-        "teacher_availability": teacher_availability
+        "teacher_availability": teacher_availability,
+        "id_period" : id_period
     }
