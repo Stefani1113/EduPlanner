@@ -4,50 +4,69 @@ Servidor Flask - API REST del Agente Conversacional CrewAI + MCP.
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from agent.conversational_agent import process_message, get_history, clear_history
+from agent.conversational_agent import process_message
 
 app = Flask(__name__)
+
 CORS(app, resources={r"/*": {"origins": "*"}})
 
 
 @app.route("/api/status", methods=["GET"])
 def status():
-    """Estado del servidor MCP y LLM."""
+    """Estado del servidor del agente."""
+
     return jsonify({
         "status": "online",
-        "mcp": {"online": True, "mode": "stdio (subproceso automático)"},
-        "llm": {"model": "gpt-4o-mini"}
+        "mcp": {
+            "online": True,
+            "url": "http://127.0.0.1:8000/mcp"
+        },
+        "llm": {
+            "provider": "gemini",
+            "model": "gemini-3.6-flash"
+        }
     })
 
 
 @app.route("/api/chat", methods=["POST"])
 def chat():
-    """Endpoint que ejecuta un turno en el bucle del agente."""
+    """Recibe un mensaje y lo procesa mediante el agente."""
+
     data = request.get_json() or {}
+
     message = data.get("message", "").strip()
+
     if not message:
-        return jsonify({"error": "Mensaje requerido"}), 400
+        return jsonify({
+            "success": False,
+            "error": "Mensaje requerido"
+        }), 400
 
-    response = process_message(message)
-    return jsonify({
-        "success": True,
-        "response": response
-    })
+    try:
+        response = process_message(message)
 
+        return jsonify({
+            "success": True,
+            "response": response
+        })
 
-@app.route("/api/history", methods=["GET"])
-def history():
-    """Retorna el historial de conversación persistido."""
-    return jsonify({"messages": get_history()})
-
-
-@app.route("/api/history/clear", methods=["POST"])
-def clear():
-    """Limpia el historial de conversación."""
-    clear_history()
-    return jsonify({"success": True})
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
 
 
 if __name__ == "__main__":
-    print("🚀 Servidor Flask API en http://127.0.0.1:5000")
-    app.run(host="127.0.0.1", port=5000, debug=False)
+    print("================================")
+    print("🚀 EDUPLANNER IA")
+    print("================================")
+    print("Servidor Flask:")
+    print("http://127.0.0.1:5000")
+    print("================================")
+
+    app.run(
+        host="127.0.0.1",
+        port=5000,
+        debug=False
+    )

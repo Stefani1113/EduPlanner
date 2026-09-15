@@ -52,7 +52,7 @@ mcp_server = MCPServerHTTP(
 llm = LLM(
     model=os.getenv(
         "LLM_MODEL",
-        "gemini-3.6-flash"
+        "gemini-3.5-flash-lite"
     ),
     api_key=os.getenv("GEMINI_API_KEY")
 )
