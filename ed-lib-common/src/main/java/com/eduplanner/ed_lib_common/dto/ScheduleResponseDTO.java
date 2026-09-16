@@ -20,6 +20,7 @@ public class ScheduleResponseDTO {
     private String teacherName;
 
     private Integer idTimeSlot;
+    private Short slotOrder;
     private String startTime;
     private String endTime;
 
