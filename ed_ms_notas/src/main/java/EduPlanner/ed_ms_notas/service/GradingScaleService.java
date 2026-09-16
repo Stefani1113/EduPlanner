@@ -1,8 +1,8 @@
 package EduPlanner.ed_ms_notas.service;
 
-import EduPlanner.ed_ms_notas.dto.GradingScaleRequestDTO;
-import EduPlanner.ed_ms_notas.dto.GradingScaleResponseDTO;
-import EduPlanner.ed_ms_notas.entity.GradingScale;
+import com.eduplanner.ed_lib_common.dto.GradingScaleRequestDTO;
+import com.eduplanner.ed_lib_common.dto.GradingScaleResponseDTO;
+import com.eduplanner.ed_lib_common.entity.GradingScale;
 import EduPlanner.ed_ms_notas.repository.GradingScaleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

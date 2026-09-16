@@ -1,7 +1,7 @@
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(22, 22, 22, 0.7);
   backdrop-filter: blur(4px);
   display: flex;
   justify-content: center;
@@ -16,7 +16,7 @@
   width: 100%;
   max-width: 720px;
   max-height: 92vh;
-  background: #1a1a1a;
+  background: var(--inst-dark);
   border-radius: 20px;
   overflow: hidden;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
@@ -27,7 +27,7 @@
 
 .modal-header {
   background:
-    linear-gradient(rgba(26, 26, 26, 0.85), rgba(26, 26, 26, 0.92)),
+    linear-gradient(rgba(22, 22, 22, 0.85), rgba(22, 22, 22, 0.92)),
     url("/assets/img/pattern-trasparent.png");
   background-size: cover;
   background-position: center;
@@ -45,13 +45,18 @@
   left: 0;
   right: 0;
   height: 2px;
-  background: linear-gradient(90deg, transparent, #53bb1b, transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--inst-primary),
+    transparent
+  );
   opacity: 0.5;
 }
 
 .modal-header h2 {
   margin: 0;
-  color: #fff;
+  color: var(--inst-light);
   font-size: 20px;
   font-weight: 700;
   letter-spacing: 0.5px;
@@ -66,10 +71,10 @@
   overflow-y: auto;
   flex: 1 1 auto;
   min-height: 0;
-  background: #151515;
+  background: var(--inst-surface);
   scrollbar-gutter: stable;
   scrollbar-width: thin;
-  scrollbar-color: rgba(83, 187, 27, 0.3) transparent;
+  scrollbar-color: rgba(13, 121, 11, 0.3) transparent;
 }
 
 .modal-form::-webkit-scrollbar {
@@ -81,12 +86,12 @@
 }
 
 .modal-form::-webkit-scrollbar-thumb {
-  background-color: rgba(83, 187, 27, 0.3);
+  background-color: rgba(13, 121, 11, 0.3);
   border-radius: 10px;
 }
 
 .modal-form::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(83, 187, 27, 0.5);
+  background-color: rgba(13, 121, 11, 0.5);
 }
 
 .section-title {
@@ -95,8 +100,8 @@
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #6fd62c;
-  border-bottom: 1px solid rgba(83, 187, 27, 0.1);
+  color: var(--inst-secondary);
+  border-bottom: 1px solid rgba(13, 121, 11, 0.1);
   padding-bottom: 8px;
   display: flex;
   align-items: center;
@@ -106,7 +111,7 @@
 .section-title::before {
   content: "▸";
   font-size: 14px;
-  color: #53bb1b;
+  color: var(--inst-primary);
 }
 
 .grid-2 {
@@ -128,7 +133,7 @@
 .field label {
   font-size: 10px;
   font-weight: 700;
-  color: #888;
+  color: var(--inst-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -137,9 +142,9 @@
 .field select,
 .field textarea {
   width: 100%;
-  background: #1e1e1e;
-  border: 1px solid #2d2d2d;
-  color: #eee;
+  background: var(--inst-surface-alt);
+  border: 1px solid var(--inst-border);
+  color: var(--inst-text);
   font-size: 13px;
   border-radius: 8px;
   outline: none;
@@ -151,15 +156,15 @@
 .field input:hover,
 .field select:hover,
 .field textarea:hover {
-  border-color: #3d3d3d;
+  border-color: var(--inst-border);
 }
 
 .field input:focus,
 .field select:focus,
 .field textarea:focus {
-  border-color: rgba(83, 187, 27, 0.5);
-  box-shadow: 0 0 0 3px rgba(83, 187, 27, 0.05);
-  background: #222;
+  border-color: rgba(13, 121, 11, 0.7);
+  box-shadow: 0 0 0 3px rgba(13, 121, 11, 0.08);
+  background: var(--inst-surface-alt);
 }
 
 .field input,
@@ -178,13 +183,13 @@
 
 .field input::placeholder,
 .field textarea::placeholder {
-  color: #555;
+  color: var(--inst-muted);
   font-size: 12px;
 }
 
 .field select option {
-  background: #1e1e1e;
-  color: #eee;
+  background: var(--inst-surface-alt);
+  color: var(--inst-text);
 }
 
 .field.error input,
@@ -221,8 +226,8 @@
   padding: 0 20px;
   border: none;
   border-radius: 8px;
-  background: rgba(83, 187, 27, 0.12);
-  color: #6fd62c;
+  background: rgba(13, 121, 11, 0.12);
+  color: var(--inst-secondary);
   cursor: pointer;
   font-weight: 600;
   font-size: 13px;
@@ -231,7 +236,7 @@
 }
 
 .btn-agregar:hover {
-  background: rgba(83, 187, 27, 0.25);
+  background: rgba(13, 121, 11, 0.25);
   transform: translateY(-1px);
 }
 
@@ -246,9 +251,9 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: rgba(83, 187, 27, 0.08);
-  color: #6fd62c;
-  border: 1px solid rgba(83, 187, 27, 0.15);
+  background: rgba(13, 121, 11, 0.08);
+  color: var(--inst-secondary);
+  border: 1px solid rgba(13, 121, 11, 0.15);
   padding: 4px 10px 4px 14px;
   border-radius: 20px;
   font-size: 12px;
@@ -256,13 +261,13 @@
 }
 
 .titulo-chip:hover {
-  background: rgba(83, 187, 27, 0.15);
+  background: rgba(13, 121, 11, 0.15);
 }
 
 .titulo-chip button {
   border: none;
   background: transparent;
-  color: #666;
+  color: var(--inst-muted);
   cursor: pointer;
   font-size: 16px;
   line-height: 1;
@@ -282,10 +287,10 @@
 .role-tab {
   flex: 1;
   height: 40px;
-  border: 2px solid #2d2d2d;
+  border: 2px solid var(--inst-border);
   border-radius: 8px;
   background: transparent;
-  color: #888;
+  color: var(--inst-muted);
   font-weight: 600;
   font-size: 13px;
   cursor: pointer;
@@ -293,14 +298,14 @@
 }
 
 .role-tab:hover {
-  border-color: #4d4d4d;
-  color: #ccc;
+  border-color: var(--inst-border);
+  color: var(--inst-text);
 }
 
 .role-tab.active {
-  background: rgba(83, 187, 27, 0.12);
-  border-color: #53bb1b;
-  color: #6fd62c;
+  background: rgba(13, 121, 11, 0.12);
+  border-color: var(--inst-primary);
+  color: var(--inst-secondary);
 }
 
 .modal-footer {
@@ -308,8 +313,8 @@
   justify-content: flex-end;
   gap: 12px;
   padding: 16px 24px;
-  background: #151515;
-  border-top: 1px solid rgba(83, 187, 27, 0.08);
+  background: var(--inst-surface);
+  border-top: 1px solid rgba(13, 121, 11, 0.08);
 }
 
 .btn-cancelar,
@@ -325,25 +330,25 @@
 }
 
 .btn-cancelar {
-  background: #2a2a2a;
-  color: #999;
+  background: var(--inst-border);
+  color: var(--inst-muted);
 }
 
 .btn-cancelar:hover {
-  background: #333;
-  color: #fff;
+  background: #454545;
+  color: var(--inst-light);
   transform: translateY(-1px);
 }
 
 .btn-guardar {
-  background: #53bb1b;
-  color: #fff;
+  background: var(--inst-primary);
+  color: var(--inst-light);
 }
 
 .btn-guardar:hover:not(:disabled) {
-  background: #6fd62c;
+  background: var(--inst-secondary);
   transform: translateY(-1px);
-  box-shadow: 0 4px 20px rgba(83, 187, 27, 0.3);
+  box-shadow: 0 4px 20px rgba(13, 121, 11, 0.3);
 }
 
 .btn-guardar:disabled {
@@ -870,5 +875,3 @@
     border-radius: 6px;
   }
 }
-
-
