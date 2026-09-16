@@ -3,6 +3,8 @@ package com.EduPlanner.ed_ms_gestion_academica.controller;
 import com.eduplanner.ed_lib_common.dto.AcademicTeacherRequestDTO;
 import com.eduplanner.ed_lib_common.dto.AcademicTeacherResponseDTO;
 import com.eduplanner.ed_lib_common.dto.HttpGlobalResponse;
+import com.eduplanner.ed_lib_common.enums.RolEnum;
+import com.EduPlanner.ed_ms_gestion_academica.security.RequireRole;
 import com.EduPlanner.ed_ms_gestion_academica.service.AcademicTeacherService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +23,7 @@ public class AcademicTeacherController {
 
     private final AcademicTeacherService service;
 
+    @RequireRole(RolEnum.ADMINISTRADOR)
     @PostMapping
     public ResponseEntity<HttpGlobalResponse<AcademicTeacherResponseDTO>> registerTeacher(
             @Valid @RequestBody AcademicTeacherRequestDTO req) {
@@ -58,6 +61,8 @@ public class AcademicTeacherController {
                     .body(r);
     }
 }
+
+    @RequireRole(RolEnum.ADMINISTRADOR)
     @PutMapping("/{id}")
     public ResponseEntity<HttpGlobalResponse<AcademicTeacherResponseDTO>> updateTeacher(@PathVariable Integer id, @Valid @RequestBody AcademicTeacherRequestDTO req) {
         HttpGlobalResponse<AcademicTeacherResponseDTO> r = new HttpGlobalResponse<>();
@@ -67,12 +72,14 @@ public class AcademicTeacherController {
         catch (RuntimeException e) { r.setMessage(e.getMessage()); return ResponseEntity.status(HttpStatus.NOT_FOUND).body(r); }
     }
 
+    @RequireRole(RolEnum.ADMINISTRADOR)
     @GetMapping
     public ResponseEntity<HttpGlobalResponse<List<AcademicTeacherResponseDTO>>> listTeachers() {
         HttpGlobalResponse<List<AcademicTeacherResponseDTO>> r = new HttpGlobalResponse<>();
         r.setData(service.listTeachers()); r.setMessage("Profesores académicos consultados correctamente"); return ResponseEntity.ok(r);
     }
 
+    @RequireRole(RolEnum.ADMINISTRADOR)
     @GetMapping("/{id}")
     public ResponseEntity<HttpGlobalResponse<AcademicTeacherResponseDTO>> getTeacherById(@PathVariable Integer id) {
         HttpGlobalResponse<AcademicTeacherResponseDTO> r = new HttpGlobalResponse<>();
@@ -81,6 +88,7 @@ public class AcademicTeacherController {
         catch (RuntimeException e) { r.setMessage(e.getMessage()); return ResponseEntity.status(HttpStatus.NOT_FOUND).body(r); }
     }
 
+    @RequireRole(RolEnum.ADMINISTRADOR)
     @DeleteMapping("/{id}")
     public ResponseEntity<HttpGlobalResponse<Void>> deleteTeacher(@PathVariable Integer id) {
         HttpGlobalResponse<Void> r = new HttpGlobalResponse<>();

@@ -10,7 +10,7 @@ public interface AcademicLoadRepository extends JpaRepository<AcademicLoad, Inte
     List<AcademicLoad> findByIdTeacherAndStatusTrue(Integer idTeacher);
     List<AcademicLoad> findByIdCourseAndStatusTrue(Integer idCourse);
     List<AcademicLoad> findByIdSubjectAndStatusTrue(Integer idSubject);
-
     List<AcademicLoad> findAllByIdAcademicLoadIn(List<Integer> ids);
+    
 }
 

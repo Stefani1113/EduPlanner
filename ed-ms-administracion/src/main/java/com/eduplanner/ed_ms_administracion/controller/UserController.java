@@ -63,6 +63,7 @@ public class UserController {
     /**
      * Actualizar curso de estudiante
      */
+    @RequireRole(RolEnum.ADMINISTRADOR)
     @PutMapping("/{id}/course")
     public ResponseEntity<HttpGlobalResponse<Void>> assignCourse(
             @PathVariable Integer id, @RequestBody AssignCourseDTO dto) {
@@ -101,6 +102,7 @@ public class UserController {
     }
 
     //Editar estudiantes
+    @RequireRole(RolEnum.ADMINISTRADOR)
     @PutMapping("/{id}/student")
     public ResponseEntity<HttpGlobalResponse<Void>> updateStudent(
             @PathVariable Integer id, @RequestBody UpdateStudentDTO dto) {
@@ -109,6 +111,7 @@ public class UserController {
 
 
     //Editar staff (administrador / directivo)
+    @RequireRole(RolEnum.ADMINISTRADOR)
     @PutMapping("/{id}/staff")
     public ResponseEntity<HttpGlobalResponse<Void>> updateStaff(
             @PathVariable Integer id, @RequestBody UpdateStaffDTO dto) {
@@ -116,6 +119,7 @@ public class UserController {
     }
 
     //Editar rol
+    @RequireRole(RolEnum.ADMINISTRADOR)
     @PutMapping("/{id}/role")
     public ResponseEntity<HttpGlobalResponse<Void>> updateRole(
             @PathVariable Integer id, @RequestBody UpdateRoleDTO dto) {
@@ -123,6 +127,7 @@ public class UserController {
     }
 
     //Editar stado
+    @RequireRole(RolEnum.ADMINISTRADOR)
     @PatchMapping("/{id}/status")
     public ResponseEntity<HttpGlobalResponse<Void>> updateStatus(
             @PathVariable Integer id, @RequestBody UpdateStatusDTO dto) {
