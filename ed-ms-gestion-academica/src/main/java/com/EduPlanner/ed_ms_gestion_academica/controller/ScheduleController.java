@@ -3,6 +3,8 @@ package com.EduPlanner.ed_ms_gestion_academica.controller;
 import com.eduplanner.ed_lib_common.dto.HttpGlobalResponse;
 import com.eduplanner.ed_lib_common.dto.ScheduleGenerationRequestDTO;
 import com.eduplanner.ed_lib_common.dto.ScheduleResponseDTO;
+import com.eduplanner.ed_lib_common.enums.RolEnum;
+import com.EduPlanner.ed_ms_gestion_academica.security.RequireRole;
 import com.EduPlanner.ed_ms_gestion_academica.service.ScheduleService;
 
 import lombok.RequiredArgsConstructor;
@@ -52,6 +54,7 @@ public class ScheduleController {
     /**
      * Ruta para traer horario de curso
      */
+    @RequireRole(RolEnum.ADMINISTRADOR)
     @GetMapping("/course/{idCourse}")
     public ResponseEntity<HttpGlobalResponse<List<ScheduleResponseDTO>>> getByCourse(
             @PathVariable Integer idCourse) {
@@ -73,6 +76,7 @@ public class ScheduleController {
      * @param idTeacher
      * @return
      */
+    @RequireRole(RolEnum.ADMINISTRADOR)
     @GetMapping("/teacher/{idTeacher}")
     public ResponseEntity<HttpGlobalResponse<List<ScheduleResponseDTO>>> getByTeacher(
             @PathVariable Integer idTeacher) {

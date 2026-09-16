@@ -15,10 +15,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.EduPlanner.ed_ms_gestion_academica.security.RequireRole;
 import com.EduPlanner.ed_ms_gestion_academica.service.CourseService;
 import com.eduplanner.ed_lib_common.dto.CourseRequestDTO;
 import com.eduplanner.ed_lib_common.dto.CourseResponseDTO;
 import com.eduplanner.ed_lib_common.dto.HttpGlobalResponse;
+import com.eduplanner.ed_lib_common.enums.RolEnum;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +30,7 @@ import lombok.RequiredArgsConstructor;
 public class CourseController {
     private final CourseService service;
 
+    @RequireRole(RolEnum.ADMINISTRADOR)
     @PostMapping
     public ResponseEntity<HttpGlobalResponse<CourseResponseDTO>> registerCourse(@Valid @RequestBody CourseRequestDTO req) {
         HttpGlobalResponse<CourseResponseDTO> r = new HttpGlobalResponse<>();
@@ -37,6 +40,7 @@ public class CourseController {
         catch (Exception e) { r.setMessage("Error registrando curso"); return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(r); }
     }
 
+    @RequireRole(RolEnum.ADMINISTRADOR)
     @PutMapping("/{id}")
     public ResponseEntity<HttpGlobalResponse<CourseResponseDTO>> updateCourse(@PathVariable Integer id, @Valid @RequestBody CourseRequestDTO req) {
         HttpGlobalResponse<CourseResponseDTO> r = new HttpGlobalResponse<>();
@@ -46,12 +50,14 @@ public class CourseController {
         catch (RuntimeException e) { r.setMessage(e.getMessage()); return ResponseEntity.status(HttpStatus.NOT_FOUND).body(r); }
     }
 
+    @RequireRole(RolEnum.ADMINISTRADOR)
     @GetMapping
     public ResponseEntity<HttpGlobalResponse<List<CourseResponseDTO>>> listCourses() {
         HttpGlobalResponse<List<CourseResponseDTO>> r = new HttpGlobalResponse<>();
         r.setData(service.listCourses()); r.setMessage("Cursos consultado correctamente"); return ResponseEntity.ok(r);
     }
 
+    @RequireRole(RolEnum.ADMINISTRADOR)
     @GetMapping("/{id}")
     public ResponseEntity<HttpGlobalResponse<CourseResponseDTO>> getCourseById(@PathVariable Integer id) {
         HttpGlobalResponse<CourseResponseDTO> r = new HttpGlobalResponse<>();
@@ -60,6 +66,7 @@ public class CourseController {
         catch (RuntimeException e) { r.setMessage(e.getMessage()); return ResponseEntity.status(HttpStatus.NOT_FOUND).body(r); }
     }
 
+    @RequireRole(RolEnum.ADMINISTRADOR)
     @GetMapping("/filter")
     public ResponseEntity<HttpGlobalResponse<List<CourseResponseDTO>>> filterCourses(
             @RequestParam(required = false) Integer period,
@@ -75,6 +82,7 @@ public class CourseController {
         return data.isEmpty() ? ResponseEntity.status(HttpStatus.NOT_FOUND).body(r) : ResponseEntity.ok(r);
     }
 
+    @RequireRole(RolEnum.ADMINISTRADOR)
     @DeleteMapping("/{id}")
     public ResponseEntity<HttpGlobalResponse<Void>> deleteCourse(@PathVariable Integer id) {
         HttpGlobalResponse<Void> r = new HttpGlobalResponse<>();
