@@ -2,7 +2,7 @@ package com.EduPlanner.ed_ms_gestion_academica.controller;
 
 import com.eduplanner.ed_lib_common.dto.HttpGlobalResponse;
 import com.eduplanner.ed_lib_common.dto.ScheduleGenerationRequestDTO;
-import com.eduplanner.ed_lib_common.entity.Schedule;
+import com.eduplanner.ed_lib_common.dto.ScheduleResponseDTO;
 import com.EduPlanner.ed_ms_gestion_academica.service.ScheduleService;
 
 import lombok.RequiredArgsConstructor;
@@ -53,13 +53,13 @@ public class ScheduleController {
      * Ruta para traer horario de curso
      */
     @GetMapping("/course/{idCourse}")
-    public ResponseEntity<HttpGlobalResponse<List<Schedule>>> getByCourse(
+    public ResponseEntity<HttpGlobalResponse<List<ScheduleResponseDTO>>> getByCourse(
             @PathVariable Integer idCourse) {
 
-        HttpGlobalResponse<List<Schedule>> response =
+        HttpGlobalResponse<List<ScheduleResponseDTO>> response =
                 new HttpGlobalResponse<>();
 
-        List<Schedule> schedules =
+        List<ScheduleResponseDTO> schedules =
                 service.getScheduleByCourse(idCourse);
 
         response.setData(schedules);
@@ -74,14 +74,13 @@ public class ScheduleController {
      * @return
      */
     @GetMapping("/teacher/{idTeacher}")
-    public ResponseEntity<HttpGlobalResponse<List<Schedule>>> getByTeacher(
+    public ResponseEntity<HttpGlobalResponse<List<ScheduleResponseDTO>>> getByTeacher(
             @PathVariable Integer idTeacher) {
 
-        HttpGlobalResponse<List<Schedule>> response =
+        HttpGlobalResponse<List<ScheduleResponseDTO>> response =
                 new HttpGlobalResponse<>();
 
-        List<Schedule> schedules =
-                service.getScheduleByTeacher(idTeacher);
+        List<ScheduleResponseDTO> schedules = service.getScheduleByTeacher(idTeacher);
 
         response.setData(schedules);
         response.setMessage("Horario del docente consultado correctamente");
@@ -96,15 +95,15 @@ public class ScheduleController {
      * @return
      */
     @GetMapping("/my-schedule")
-    public ResponseEntity<HttpGlobalResponse<List<Schedule>>> getMySchedule(
+    public ResponseEntity<HttpGlobalResponse<List<ScheduleResponseDTO>>> getMySchedule(
             @RequestAttribute("idUser") Integer idUser,
             @RequestAttribute("role") String role) {
 
-        HttpGlobalResponse<List<Schedule>> response =
+        HttpGlobalResponse<List<ScheduleResponseDTO>> response =
                 new HttpGlobalResponse<>();
 
         try {
-            List<Schedule> schedules =
+            List<ScheduleResponseDTO> schedules =
                     service.getMySchedule(idUser, role);
 
             response.setData(schedules);
