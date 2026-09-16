@@ -208,9 +208,11 @@ export class HorariosComponent implements OnInit, OnDestroy {
   }
 
   enviarMensaje(): void {
-  const texto = this.mensaje.trim();
+    const texto = this.mensaje.trim();
+    if (!texto || this.cargando) {
+      return;
+    }
 
-<<<<<<< HEAD
     this.mensajes.push({
       tipo: 'usuario',
       texto
@@ -276,60 +278,6 @@ export class HorariosComponent implements OnInit, OnDestroy {
     this.conflictos = this.horariosService.obtenerConflictos();
   }
 
-=======
-  if (!texto || this.cargando) {
-    return;
-  }
-
-  this.mensajes.push({
-    tipo: 'usuario',
-    texto
-  });
-
-  this.mensaje = '';
-  this.cargando = true;
-  this.emocionActual = 'pensando';
-
-  this.horariosService.enviarMensaje(texto).subscribe({
-    next: (respuesta) => {
-
-      if (respuesta.success) {
-        this.mensajes.push({
-          tipo: 'ia',
-          texto: respuesta.response
-        });
-
-        this.emocionActual = 'feliz';
-
-      } else {
-        this.mensajes.push({
-          tipo: 'ia',
-          texto: respuesta.error || 'No pude procesar la solicitud.'
-        });
-
-        this.emocionActual = 'normal';
-      }
-
-      this.cargando = false;
-    },
-
-    error: (error) => {
-      console.error(
-        'Error al comunicarse con EduPlanner IA:',
-        error
-      );
-
-      this.mensajes.push({
-        tipo: 'ia',
-        texto: 'Lo siento, no pude comunicarme con el asistente de EduPlanner. Verifica que el servidor de IA esté activo.'
-      });
-
-      this.cargando = false;
-      this.emocionActual = 'normal';
-    }
-  });
-}
->>>>>>> f60e38b492f3f5b078eab3db443947c640ebae1b
   obtenerImagenIA(): string {
     return `/assets/ia/ia-ordinary.png`;
   }
