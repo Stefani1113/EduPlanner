@@ -6,6 +6,7 @@ import com.eduplanner.ed_lib_common.dto.HttpGlobalResponse;
 import com.EduPlanner.ed_ms_gestion_academica.service.AcademicLoadService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,6 +28,7 @@ public class AcademicLoadController {
     public ResponseEntity<HttpGlobalResponse<AcademicLoadResponseDTO>> updateLoad(@PathVariable Integer id, @Valid @RequestBody AcademicLoadRequestDTO req) {
         HttpGlobalResponse<AcademicLoadResponseDTO> r = new HttpGlobalResponse<>();
         try { r.setData(service.updateLoad(id, req)); r.setMessage("Carga académica actualizada correctamente"); return ResponseEntity.ok(r); }
+        catch (DataIntegrityViolationException e) { throw e; }
         catch (RuntimeException e) { r.setMessage(e.getMessage()); return ResponseEntity.status(HttpStatus.NOT_FOUND).body(r); }
     }
 
@@ -40,6 +42,7 @@ public class AcademicLoadController {
     public ResponseEntity<HttpGlobalResponse<AcademicLoadResponseDTO>> getLoadById(@PathVariable Integer id) {
         HttpGlobalResponse<AcademicLoadResponseDTO> r = new HttpGlobalResponse<>();
         try { r.setData(service.getLoadById(id)); r.setMessage("Lista académica encontrada"); return ResponseEntity.ok(r); }
+        catch (DataIntegrityViolationException e) { throw e; }
         catch (RuntimeException e) { r.setMessage(e.getMessage()); return ResponseEntity.status(HttpStatus.NOT_FOUND).body(r); }
     }
 
@@ -62,6 +65,7 @@ public class AcademicLoadController {
     public ResponseEntity<HttpGlobalResponse<Void>> deleteLoad(@PathVariable Integer id) {
         HttpGlobalResponse<Void> r = new HttpGlobalResponse<>();
         try { service.deleteLoad(id); r.setMessage("Carga académica eliminada correctamente"); return ResponseEntity.ok(r); }
+        catch (DataIntegrityViolationException e) { throw e; }
         catch (RuntimeException e) { r.setMessage(e.getMessage()); return ResponseEntity.status(HttpStatus.NOT_FOUND).body(r); }
     }
 }

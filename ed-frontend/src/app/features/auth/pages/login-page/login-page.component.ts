@@ -58,11 +58,7 @@ export class LoginPageComponent implements OnInit {
 
       next: (response: any) => {
 
-        // Solo guardamos el token. El resto del perfil (nombre, rol,
-        // foto, teléfono...) se pide una única vez a /users/me aquí
-        // mismo y queda cacheado (PerfilService), así el avatar ya
-        // sale correcto apenas se ve el dashboard y no se repite la
-        // llamada al abrir la tarjeta de perfil.
+
         localStorage.setItem('token', response.data.token);
         this.authService.iniciarRenovacionAutomatica();
 
@@ -72,8 +68,7 @@ export class LoginPageComponent implements OnInit {
             this.router.navigate(['/admin/dashboard']);
           },
           error: () => {
-            // Si /me falla, igual dejamos entrar: el token es válido
-            // y el perfil se reintentará desde el menú de usuario.
+
             this.loading = false;
             this.router.navigate(['/admin/dashboard']);
           }
