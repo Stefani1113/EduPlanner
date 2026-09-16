@@ -23,25 +23,25 @@ import { BreadcrumbService } from '../../services/breadcrumb.service';
 })
 export class HorariosComponent implements OnInit, OnDestroy {
 
-
+  // --- Chat IA ---
   chatAbierto = false;
   mensaje = '';
   cargando = false;
   mensajes: MensajeIA[] = [];
   emocionActual = 'normal';
 
-
+  // --- Vista: Horario o Conflictos ---
   vistaActual: 'horario' | 'conflictos' = 'horario';
 
-
+  // --- Tabla de horario ---
   diaSeleccionado = 'Martes';
   horarios: BloqueHorario[] = [];
   horarioDisponible = true;
 
-
+  // --- Conflictos detectados ---
   conflictos: ConflictoHorario[] = [];
 
-
+  // --- Notificaciones (publicación manual o generadas por la IA) ---
   notificaciones: NotificacionHorario[] = [];
 
   get notificacionActual(): NotificacionHorario | null {
@@ -51,12 +51,12 @@ export class HorariosComponent implements OnInit, OnDestroy {
     return this.notificaciones[0] || null;
   }
 
-
+  // --- Selector de curso (Administrador / Docente) ---
   cursosDisponibles: string[] = [];
   cursoSeleccionado = '';
   selectorCursosAbierto = false;
 
-
+  // --- Perfil / rol ---
   cargandoPerfil = true;
   esEstudiante = false;
   esDocente = false;
@@ -64,11 +64,17 @@ export class HorariosComponent implements OnInit, OnDestroy {
   esAdministrador = false;
   gradoEstudiante: string | null = null;
 
-
+  /**
+   * Docente, Directivo y Estudiante comparten la misma vista restringida:
+   * sin asistente IA, sin conflictos ni notificaciones, solo su horario
+   * correspondiente (día, hora, exportar PDF y el grado al que pertenece).
+   * Únicamente el Administrador ve las herramientas completas.
+   */
   get esVistaRestringida(): boolean {
     return !this.esAdministrador;
   }
 
+  // --- Reloj en vivo ---
   horaActual = new Date();
   private idIntervaloReloj: ReturnType<typeof setInterval> | null = null;
 
@@ -104,7 +110,9 @@ export class HorariosComponent implements OnInit, OnDestroy {
         this.esAdministrador = rol.includes('admin') && !this.esDirectivo;
 
         if (this.esVistaRestringida) {
-
+          // Docente, Directivo y Estudiante solo ven el horario que les
+          // corresponde. El grado/curso puede llegar con distintos nombres
+          // según cómo lo exponga finalmente el backend.
           this.gradoEstudiante =
             perfil?.grado ?? perfil?.grade ?? perfil?.curso ?? perfil?.course ?? null;
 
@@ -118,7 +126,8 @@ export class HorariosComponent implements OnInit, OnDestroy {
         this.cargandoPerfil = false;
       },
       error: () => {
- 
+        // Si falla la carga del perfil, se muestra la vista de administrador
+        // con el primer curso disponible como respaldo.
         this.esDirectivo = false;
         this.esDocente = false;
         this.esEstudiante = false;
@@ -138,7 +147,8 @@ export class HorariosComponent implements OnInit, OnDestroy {
   }
 
   alternarVista(vista: 'horario' | 'conflictos'): void {
-
+    // Docente, Directivo y Estudiante no tienen acceso a la vista de
+    // conflictos: solo consultan su horario.
     if (this.esVistaRestringida && vista === 'conflictos') {
       return;
     }
@@ -225,7 +235,13 @@ export class HorariosComponent implements OnInit, OnDestroy {
     }, 700);
   }
 
-
+  /**
+   * Cuando el usuario le pide a la IA organizar/crear un horario, se
+   * simula que la IA generó una versión nueva: se agrega una notificación
+   * y un conflicto pendiente de revisión. Esto es solo demostrativo en
+   * frontend; cuando exista la IA real, este bloque debe reemplazarse por
+   * el resultado que devuelva el backend.
+   */
   private registrarActividadDeIA(textoUsuario: string): void {
     const texto = textoUsuario.toLowerCase();
     const esCreacionDeHorario =

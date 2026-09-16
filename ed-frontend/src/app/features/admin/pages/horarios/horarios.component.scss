@@ -41,8 +41,10 @@
   border-radius: 14px;
   padding: 10px 14px;
   flex-wrap: wrap;
+  margin-left: auto;
 }
 
+/* --- Selector de curso --- */
 
 .course-picker {
   position: relative;
@@ -233,7 +235,6 @@
   background: var(--inst-surface-alt);
   border-radius: 12px;
   padding: 4px;
-  margin-bottom: 20px;
 }
 
 .view-toggle-btn {
@@ -1010,6 +1011,7 @@
   cursor: not-allowed;
 }
 
+/* ===== Responsive (mismos breakpoints que Usuarios) ===== */
 
 @media (max-width: 700px) {
   .horarios-content {
@@ -1027,6 +1029,7 @@
 
   .toolbar-bar {
     width: 100%;
+    margin-left: 0;
   }
 
   .view-toggle {
