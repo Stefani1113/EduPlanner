@@ -1,14 +1,15 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
-import { forkJoin, of, Observable } from 'rxjs';
-import { catchError, map, switchMap } from 'rxjs/operators';
+import { forkJoin, of, from, Observable } from 'rxjs';
+import { catchError, concatMap, map, switchMap } from 'rxjs/operators';
 import {
   AsistenciaService,
   AttendanceRequestDTO,
   AttendanceResponseDTO,
   AttendanceStatus,
+  AttendanceSummaryDTO,
   AcademicLevelResponseDTO,
   CourseResponseDTO,
   FilaGridListado,
@@ -18,6 +19,7 @@ import {
   UsuarioBasico
 } from '../../services/Asistencia.service';
 import { PerfilService } from '../../../admin/services/perfil.service';
+import { BreadcrumbService } from '../../../admin/services/breadcrumb.service';
 
 type Tab =
   | 'tomar'
@@ -50,6 +52,14 @@ const ETIQUETA_JUSTIFICACION: Record<JustificationStatus, string> = {
   REJECTED: 'Rechazado'
 };
 
+const ETIQUETA_TAB: Record<Tab, string> = {
+  tomar: 'Tomar asistencia',
+  resumen: 'Resumen',
+  historial: 'Historial',
+  listado: 'Listado',
+  conflictos: 'Justificaciones'
+};
+
 @Component({
   selector: 'app-asistencia',
   standalone: true,
@@ -60,11 +70,24 @@ const ETIQUETA_JUSTIFICACION: Record<JustificationStatus, string> = {
   templateUrl: './asistencias.component.html',
   styleUrl: './asistencias.component.scss'
 })
-export class AsistenciaComponent implements OnInit {
+export class AsistenciaComponent implements OnInit, OnDestroy {
 
   private readonly ID_SCHEDULE_ASISTENCIA = 1;
 
   tabActiva: Tab = 'tomar';
+
+  // --- Perfil / rol ---
+  esDirectivo = false;
+  esDocente = false;
+  esEstudiante = false;
+  esAdministrador = false;
+  idUsuarioActual: number | null = null;
+  nombreUsuarioActual = '';
+  idCursoEstudiante: number | null = null;
+
+  get tabPorDefecto(): Tab {
+    return this.esEstudiante ? 'resumen' : 'tomar';
+  }
 
   tomaCurso: number | null = null;
   tomaFecha = this.hoyISO();
@@ -99,6 +122,14 @@ export class AsistenciaComponent implements OnInit {
   cargandoSesiones = false;
   errorSesiones: string | null = null;
   sesionesConsultadas = false;
+  busquedaSesiones = '';
+
+  // --- Resumen personal (solo Estudiante) ---
+  misRegistros: AttendanceResponseDTO[] = [];
+  miResumenPersonal: AttendanceSummaryDTO | null = null;
+  cargandoMiResumen = false;
+  errorMiResumen: string | null = null;
+  miResumenConsultado = false;
 
   fechaInicioHistorial = this.primerDiaMesISO();
   fechaFinHistorial = this.hoyISO();
@@ -116,6 +147,7 @@ export class AsistenciaComponent implements OnInit {
   errorListado: string | null = null;
   listadoConsultado = false;
   guardandoCelda: string | null = null;
+  busquedaListado = '';
 
   filtroExcusasCurso: number | null = null;
   filtroExcusasInicio = this.primerDiaMesISO();
@@ -130,9 +162,37 @@ export class AsistenciaComponent implements OnInit {
   excusasConsultadas = false;
   revisandoId: number | null = null;
 
+  // --- Panel lateral: descargar historial por estudiante o por curso ---
+  panelDescargaAbierto = false;
+  panelDescargaTab: 'estudiante' | 'curso' = 'estudiante';
+  panelDescargaBusqueda = '';
+  panelDescargaNivel: number | null = null;
+  panelDescargaGrado: number | 'todos' = 'todos';
+  panelDescargaCargando = false;
+  panelDescargaError: string | null = null;
+  panelDescargaGenerando = false;
+
+  panelDescargaEstudiantes: {
+    idStudent: number;
+    nombre: string;
+    idCourse: number;
+    grado: string;
+    porcentaje: number | null;
+  }[] = [];
+
+  panelDescargaCursos: {
+    idCourse: number;
+    nombre: string;
+    porcentaje: number | null;
+  }[] = [];
+
+  panelDescargaSeleccionEstudiantes = new Set<number>();
+  panelDescargaSeleccionCursos = new Set<number>();
+
   constructor(
     private asistenciaService: AsistenciaService,
-    private perfilService: PerfilService
+    private perfilService: PerfilService,
+    private breadcrumbService: BreadcrumbService
   ) {}
 
   ngOnInit(): void {
@@ -156,7 +216,6 @@ export class AsistenciaComponent implements OnInit {
         docentes,
         perfil
       }) => {
-        this.cursos = cursos.filter(c => c.status);
         this.niveles = niveles;
         this.estudiantes = estudiantes;
         this.docentes = docentes;
@@ -175,9 +234,64 @@ export class AsistenciaComponent implements OnInit {
           ])
         );
 
-        this.idAdminActual = perfil?.idUser ?? null;
+        const perfilAny: any = perfil;
+        const rol = (perfilAny?.roleName || '').toLowerCase();
 
-        if (this.cursos.length > 0) {
+        this.idAdminActual = perfilAny?.idUser ?? null;
+        this.idUsuarioActual = perfilAny?.idUser ?? null;
+        this.nombreUsuarioActual = `${perfilAny?.name ?? ''} ${perfilAny?.surnames ?? ''}`.trim();
+
+        this.esDirectivo = rol.includes('direct');
+        this.esDocente = rol.includes('docente');
+        this.esEstudiante = rol.includes('estudiante');
+        this.esAdministrador = rol.includes('admin') && !this.esDirectivo;
+
+        let cursosVisibles = cursos.filter(c => c.status);
+
+        // El Docente solo debe ver los cursos donde da clase.
+        if (this.esDocente && this.idUsuarioActual !== null) {
+          cursosVisibles = cursosVisibles.filter(
+            c => c.homeroomTeacher === this.idUsuarioActual
+          );
+        }
+
+        this.cursos = cursosVisibles;
+
+        if (this.esEstudiante) {
+          const idCursoPerfil = Number(perfilAny?.idCourse);
+
+          const nombreCursoEstudiante = (
+            perfilAny?.grado ??
+            perfilAny?.grade ??
+            perfilAny?.curso ??
+            perfilAny?.course ??
+            ''
+          )
+            .toString()
+            .trim()
+            .toLowerCase();
+
+          const cursoEncontrado = cursosVisibles.find(
+            c =>
+              (Number.isFinite(idCursoPerfil) &&
+                idCursoPerfil > 0 &&
+                c.idCourse === idCursoPerfil) ||
+              c.name.trim().toLowerCase() === nombreCursoEstudiante
+          );
+
+          this.idCursoEstudiante =
+            cursoEncontrado?.idCourse ??
+            (Number.isFinite(idCursoPerfil) && idCursoPerfil > 0
+              ? idCursoPerfil
+              : null);
+
+          this.idCursoSeleccionado = this.idCursoEstudiante;
+          this.filtroListadoCurso = this.idCursoEstudiante;
+          this.filtroExcusasCurso = this.idCursoEstudiante;
+          this.filtroSesionesCurso = this.idCursoEstudiante;
+
+          this.tabActiva = 'resumen';
+        } else if (this.cursos.length > 0) {
           const primerCurso = this.cursos[0].idCourse;
 
           this.idCursoSeleccionado = primerCurso;
@@ -187,8 +301,19 @@ export class AsistenciaComponent implements OnInit {
         }
 
         this.cargandoBase = false;
-        this.buscarSesiones();
-        this.cargarToma();
+        this.breadcrumbService.setExtra(
+          this.tabActiva === this.tabPorDefecto
+            ? null
+            : ETIQUETA_TAB[this.tabActiva]
+        );
+
+        if (this.esEstudiante) {
+          this.miResumenConsultado = true;
+          this.buscarMiResumen();
+        } else {
+          this.buscarSesiones();
+          this.cargarToma();
+        }
       },
       error: () => {
         this.errorBase =
@@ -198,8 +323,30 @@ export class AsistenciaComponent implements OnInit {
     });
   }
 
+  ngOnDestroy(): void {
+    this.breadcrumbService.setExtra(null);
+  }
+
   cambiarTab(tab: Tab): void {
+    // El Estudiante no puede tomar asistencia.
+    if (tab === 'tomar' && this.esEstudiante) {
+      return;
+    }
+
     this.tabActiva = tab;
+
+    this.breadcrumbService.setExtra(
+      tab === this.tabPorDefecto ? null : ETIQUETA_TAB[tab]
+    );
+
+    if (
+      tab === 'resumen' &&
+      this.esEstudiante &&
+      !this.miResumenConsultado
+    ) {
+      this.miResumenConsultado = true;
+      this.buscarMiResumen();
+    }
 
     if (
       tab === 'historial' &&
@@ -629,6 +776,50 @@ export class AsistenciaComponent implements OnInit {
     });
   }
 
+  get sesionesFiltradas(): SesionResumen[] {
+    const q = this.busquedaSesiones.trim().toLowerCase();
+
+    if (!q) {
+      return this.sesiones;
+    }
+
+    return this.sesiones.filter(
+      s =>
+        s.nombreCurso.toLowerCase().includes(q) ||
+        s.docente.toLowerCase().includes(q)
+    );
+  }
+
+  get sesionesAgrupadas(): {
+    fecha: string;
+    etiqueta: string;
+    items: SesionResumen[];
+  }[] {
+    const grupos = new Map<string, SesionResumen[]>();
+
+    this.sesionesFiltradas.forEach(s => {
+      const lista = grupos.get(s.fecha) ?? [];
+      lista.push(s);
+      grupos.set(s.fecha, lista);
+    });
+
+    const hoy = this.hoyISO();
+    const manana = this.sumarDiasISO(hoy, 1);
+
+    return Array.from(grupos.entries())
+      .sort((a, b) => b[0].localeCompare(a[0]))
+      .map(([fecha, items]) => ({
+        fecha,
+        etiqueta:
+          fecha === hoy
+            ? 'Hoy'
+            : fecha === manana
+            ? 'Mañana'
+            : fecha,
+        items
+      }));
+  }
+
   verSesion(sesion: SesionResumen): void {
     this.filtroListadoCurso =
       sesion.idCourse;
@@ -643,7 +834,89 @@ export class AsistenciaComponent implements OnInit {
     this.cambiarTab('listado');
   }
 
+  /**
+   * Resumen personal del Estudiante: sus propios registros de asistencia
+   * y su porcentaje, en vez del listado de sesiones de todo el curso.
+   */
+  buscarMiResumen(): void {
+    if (this.idUsuarioActual === null) {
+      return;
+    }
+
+    if (!this.fechaInicioSesiones || !this.fechaFinSesiones) {
+      this.errorMiResumen = 'Selecciona las fechas de inicio y fin.';
+      return;
+    }
+
+    if (this.fechaInicioSesiones > this.fechaFinSesiones) {
+      this.errorMiResumen =
+        'La fecha inicial no puede ser posterior a la fecha final.';
+      return;
+    }
+
+    this.cargandoMiResumen = true;
+    this.errorMiResumen = null;
+
+    forkJoin({
+      registros: this.asistenciaService.obtenerHistorialPorEstudiante(
+        this.idUsuarioActual,
+        this.fechaInicioSesiones,
+        this.fechaFinSesiones
+      ),
+      resumen: this.asistenciaService
+        .obtenerResumenPorEstudiante(
+          this.idUsuarioActual,
+          this.fechaInicioSesiones,
+          this.fechaFinSesiones
+        )
+        .pipe(catchError(() => of(null)))
+    }).subscribe({
+      next: ({ registros, resumen }) => {
+        this.misRegistros = (registros ?? [])
+          .slice()
+          .sort((a, b) => {
+            const fecha = b.attendanceDate.localeCompare(a.attendanceDate);
+            return fecha !== 0 ? fecha : b.idAttendance - a.idAttendance;
+          });
+
+        if (this.esEstudiante && this.idCursoEstudiante === null) {
+          const cursoDelHistorial = this.misRegistros.find(r => r.idCourse)?.idCourse;
+          if (cursoDelHistorial) {
+            this.idCursoEstudiante = cursoDelHistorial;
+            this.idCursoSeleccionado = cursoDelHistorial;
+            this.filtroListadoCurso = cursoDelHistorial;
+            this.filtroExcusasCurso = cursoDelHistorial;
+          }
+        }
+
+        this.miResumenPersonal = resumen;
+        this.cargandoMiResumen = false;
+      },
+      error: () => {
+        this.errorMiResumen =
+          'No se pudo cargar tu resumen de asistencia.';
+        this.cargandoMiResumen = false;
+      }
+    });
+  }
+
+  private sumarDiasISO(fechaISO: string, dias: number): string {
+    const d = new Date(`${fechaISO}T00:00:00`);
+    d.setDate(d.getDate() + dias);
+
+    return [
+      d.getFullYear(),
+      String(d.getMonth() + 1).padStart(2, '0'),
+      String(d.getDate()).padStart(2, '0')
+    ].join('-');
+  }
+
   cargarGraficoHistorial(): void {
+    if (this.esEstudiante) {
+      this.cargarGraficoHistorialEstudiante();
+      return;
+    }
+
     if (!this.cursos.length) {
       this.resumenPorCurso = [];
       return;
@@ -744,6 +1017,70 @@ export class AsistenciaComponent implements OnInit {
           false;
       }
     });
+  }
+
+  /**
+   * Para el Estudiante, el panel "Historial" (gráficos) muestra únicamente
+   * su propio porcentaje de asistencia en vez del historial de todos los
+   * cursos. Se reutiliza la misma estructura ResumenCurso para no duplicar
+   * la plantilla de gráficos.
+   */
+  private cargarGraficoHistorialEstudiante(): void {
+    if (this.idUsuarioActual === null) {
+      this.resumenPorCurso = [];
+      this.cargandoHistorialGrafico = false;
+      return;
+    }
+
+    if (!this.fechaInicioHistorial || !this.fechaFinHistorial) {
+      this.errorHistorialGrafico =
+        'Selecciona las fechas del historial.';
+      return;
+    }
+
+    if (this.fechaInicioHistorial > this.fechaFinHistorial) {
+      this.errorHistorialGrafico =
+        'La fecha inicial no puede ser posterior a la fecha final.';
+      return;
+    }
+
+    this.cargandoHistorialGrafico = true;
+    this.errorHistorialGrafico = null;
+
+    this.asistenciaService
+      .obtenerResumenPorEstudiante(
+        this.idUsuarioActual,
+        this.fechaInicioHistorial,
+        this.fechaFinHistorial
+      )
+      .pipe(catchError(() => of(null)))
+      .subscribe(resumen => {
+        if (!resumen) {
+          this.resumenPorCurso = [];
+          this.errorHistorialGrafico =
+            'No se pudo cargar tu historial de asistencia.';
+          this.cargandoHistorialGrafico = false;
+          return;
+        }
+
+        const resumenPersonal: ResumenCurso = {
+          idCourse: this.idCursoEstudiante ?? 0,
+          nombreCurso:
+            this.nombreCurso(this.idCursoEstudiante) || 'Mi curso',
+          nombreNivel: '',
+          totalRecords: resumen.totalRecords,
+          presentCount: resumen.presentCount,
+          lateCount: resumen.lateCount,
+          earlyDepartureCount: resumen.earlyDepartureCount,
+          justifiedCount: resumen.justifiedAbsenceCount,
+          unjustifiedCount: resumen.unjustifiedAbsenceCount,
+          porcentajeAsistencia: resumen.attendancePercentage
+        };
+
+        this.resumenPorCurso = [resumenPersonal];
+        this.idCursoSeleccionado = resumenPersonal.idCourse;
+        this.cargandoHistorialGrafico = false;
+      });
   }
 
   get resumenSeleccionado(): ResumenCurso | null {
@@ -918,6 +1255,413 @@ export class AsistenciaComponent implements OnInit {
       idCourse;
   }
 
+  // --- Panel lateral: descargar historial por estudiante o por curso ---
+
+  get panelDescargaCursosDelNivel(): CourseResponseDTO[] {
+    return this.cursos.filter(
+      c =>
+        this.panelDescargaNivel === null ||
+        c.idLevel === this.panelDescargaNivel
+    );
+  }
+
+  get panelDescargaEstudiantesFiltrados() {
+    const q = this.panelDescargaBusqueda.trim().toLowerCase();
+
+    if (!q) {
+      return this.panelDescargaEstudiantes;
+    }
+
+    return this.panelDescargaEstudiantes.filter(e =>
+      e.nombre.toLowerCase().includes(q)
+    );
+  }
+
+  get panelDescargaCursosFiltrados() {
+    const q = this.panelDescargaBusqueda.trim().toLowerCase();
+
+    if (!q) {
+      return this.panelDescargaCursos;
+    }
+
+    return this.panelDescargaCursos.filter(c =>
+      c.nombre.toLowerCase().includes(q)
+    );
+  }
+
+  get panelDescargaTotalDisponible(): number {
+    return this.panelDescargaTab === 'estudiante'
+      ? this.panelDescargaEstudiantesFiltrados.length
+      : this.panelDescargaCursosFiltrados.length;
+  }
+
+  get panelDescargaTotalSeleccionado(): number {
+    return this.panelDescargaTab === 'estudiante'
+      ? this.panelDescargaSeleccionEstudiantes.size
+      : this.panelDescargaSeleccionCursos.size;
+  }
+
+  get panelDescargaTodoSeleccionado(): boolean {
+    if (this.panelDescargaTab === 'estudiante') {
+      const filtrados = this.panelDescargaEstudiantesFiltrados;
+
+      return (
+        filtrados.length > 0 &&
+        filtrados.every(e =>
+          this.panelDescargaSeleccionEstudiantes.has(e.idStudent)
+        )
+      );
+    }
+
+    const filtrados = this.panelDescargaCursosFiltrados;
+
+    return (
+      filtrados.length > 0 &&
+      filtrados.every(c =>
+        this.panelDescargaSeleccionCursos.has(c.idCourse)
+      )
+    );
+  }
+
+  abrirPanelDescarga(): void {
+    this.panelDescargaAbierto = true;
+    this.panelDescargaTab = 'estudiante';
+    this.panelDescargaBusqueda = '';
+    this.panelDescargaError = null;
+    this.panelDescargaSeleccionEstudiantes.clear();
+    this.panelDescargaSeleccionCursos.clear();
+
+    if (this.panelDescargaNivel === null) {
+      this.panelDescargaNivel = this.niveles[0]?.idLevel ?? null;
+    }
+
+    this.panelDescargaGrado = 'todos';
+    this.cargarPanelDescargaDatos();
+  }
+
+  cerrarPanelDescarga(): void {
+    this.panelDescargaAbierto = false;
+  }
+
+  cambiarPanelDescargaTab(tab: 'estudiante' | 'curso'): void {
+    if (this.panelDescargaTab === tab) {
+      return;
+    }
+
+    this.panelDescargaTab = tab;
+    this.panelDescargaBusqueda = '';
+    this.cargarPanelDescargaDatos();
+  }
+
+  seleccionarPanelDescargaNivel(idLevel: number): void {
+    if (this.panelDescargaNivel === idLevel) {
+      return;
+    }
+
+    this.panelDescargaNivel = idLevel;
+    this.panelDescargaGrado = 'todos';
+    this.cargarPanelDescargaDatos();
+  }
+
+  seleccionarPanelDescargaGrado(grado: number | 'todos'): void {
+    if (this.panelDescargaGrado === grado) {
+      return;
+    }
+
+    this.panelDescargaGrado = grado;
+    this.cargarPanelDescargaDatos();
+  }
+
+  toggleSeleccionPanelEstudiante(idStudent: number): void {
+    if (this.panelDescargaSeleccionEstudiantes.has(idStudent)) {
+      this.panelDescargaSeleccionEstudiantes.delete(idStudent);
+    } else {
+      this.panelDescargaSeleccionEstudiantes.add(idStudent);
+    }
+  }
+
+  toggleSeleccionPanelCurso(idCourse: number): void {
+    if (this.panelDescargaSeleccionCursos.has(idCourse)) {
+      this.panelDescargaSeleccionCursos.delete(idCourse);
+    } else {
+      this.panelDescargaSeleccionCursos.add(idCourse);
+    }
+  }
+
+  toggleSeleccionarTodoPanel(): void {
+    const yaTodo = this.panelDescargaTodoSeleccionado;
+
+    if (this.panelDescargaTab === 'estudiante') {
+      this.panelDescargaEstudiantesFiltrados.forEach(e => {
+        if (yaTodo) {
+          this.panelDescargaSeleccionEstudiantes.delete(e.idStudent);
+        } else {
+          this.panelDescargaSeleccionEstudiantes.add(e.idStudent);
+        }
+      });
+    } else {
+      this.panelDescargaCursosFiltrados.forEach(c => {
+        if (yaTodo) {
+          this.panelDescargaSeleccionCursos.delete(c.idCourse);
+        } else {
+          this.panelDescargaSeleccionCursos.add(c.idCourse);
+        }
+      });
+    }
+  }
+
+  private cargarPanelDescargaDatos(): void {
+    if (this.panelDescargaTab === 'estudiante') {
+      this.cargarPanelDescargaEstudiantes();
+    } else {
+      this.cargarPanelDescargaCursos();
+    }
+  }
+
+  private cargarPanelDescargaEstudiantes(): void {
+    // El Estudiante solo puede descargar su propio historial, nunca el de
+    // sus compañeros.
+    if (this.esEstudiante) {
+      if (this.idUsuarioActual === null) {
+        this.panelDescargaEstudiantes = [];
+        return;
+      }
+
+      this.panelDescargaCargando = true;
+      this.panelDescargaError = null;
+
+      this.asistenciaService
+        .obtenerResumenPorEstudiante(
+          this.idUsuarioActual,
+          this.fechaInicioHistorial,
+          this.fechaFinHistorial
+        )
+        .pipe(
+          catchError(() => of(null))
+        )
+        .subscribe(resumen => {
+          this.panelDescargaEstudiantes = [
+            {
+              idStudent: this.idUsuarioActual as number,
+              nombre: this.nombreUsuarioActual || 'Yo',
+              idCourse: this.idCursoEstudiante ?? 0,
+              grado: this.nombreCurso(this.idCursoEstudiante) || 'Mi curso',
+              porcentaje: resumen?.attendancePercentage ?? 0
+            }
+          ];
+          this.panelDescargaCargando = false;
+        });
+
+      return;
+    }
+
+    const cursosObjetivo =
+      this.panelDescargaGrado === 'todos'
+        ? this.panelDescargaCursosDelNivel
+        : this.panelDescargaCursosDelNivel.filter(
+            c => c.idCourse === this.panelDescargaGrado
+          );
+
+    if (!cursosObjetivo.length) {
+      this.panelDescargaEstudiantes = [];
+      return;
+    }
+
+    this.panelDescargaCargando = true;
+    this.panelDescargaError = null;
+
+    forkJoin(
+      cursosObjetivo.map(curso =>
+        this.asistenciaService
+          .listarEstudiantesPorCurso(curso.idCourse)
+          .pipe(
+            map(estudiantes =>
+              estudiantes.map(e => ({
+                idStudent: e.idUser,
+                nombre: `${e.name} ${e.surnames}`.trim(),
+                idCourse: curso.idCourse,
+                grado: curso.name
+              }))
+            ),
+            catchError(() => of([]))
+          )
+      )
+    ).subscribe({
+      next: listas => {
+        const base = listas.flat();
+
+        if (!base.length) {
+          this.panelDescargaEstudiantes = [];
+          this.panelDescargaCargando = false;
+          return;
+        }
+
+        forkJoin(
+          base.map(est =>
+            this.asistenciaService
+              .obtenerResumenPorEstudiante(
+                est.idStudent,
+                this.fechaInicioHistorial,
+                this.fechaFinHistorial
+              )
+              .pipe(
+                map(resumen => ({
+                  ...est,
+                  porcentaje: resumen?.attendancePercentage ?? 0
+                })),
+                catchError(() =>
+                  of({
+                    ...est,
+                    porcentaje: null
+                  })
+                )
+              )
+          )
+        ).subscribe({
+          next: conPorcentaje => {
+            this.panelDescargaEstudiantes = conPorcentaje;
+            this.panelDescargaCargando = false;
+          },
+          error: () => {
+            this.panelDescargaEstudiantes = base.map(e => ({
+              ...e,
+              porcentaje: null
+            }));
+            this.panelDescargaCargando = false;
+          }
+        });
+      },
+      error: () => {
+        this.panelDescargaError =
+          'No se pudieron cargar los estudiantes.';
+        this.panelDescargaCargando = false;
+      }
+    });
+  }
+
+  private cargarPanelDescargaCursos(): void {
+    // El Estudiante solo puede descargar el reporte de su propio curso.
+    const cursosObjetivo = this.esEstudiante
+      ? this.cursos.filter(c => c.idCourse === this.idCursoEstudiante)
+      : this.panelDescargaCursosDelNivel;
+
+    if (!cursosObjetivo.length) {
+      this.panelDescargaCursos = [];
+      return;
+    }
+
+    this.panelDescargaCargando = true;
+    this.panelDescargaError = null;
+
+    forkJoin(
+      cursosObjetivo.map(curso =>
+        this.asistenciaService
+          .obtenerHistorialPorCurso(
+            curso.idCourse,
+            this.fechaInicioHistorial,
+            this.fechaFinHistorial
+          )
+          .pipe(
+            map(registros => ({
+              idCourse: curso.idCourse,
+              nombre: curso.name,
+              porcentaje: this.asistenciaService.calcularResumen(
+                registros
+              ).porcentajeAsistencia
+            })),
+            catchError(() =>
+              of({
+                idCourse: curso.idCourse,
+                nombre: curso.name,
+                porcentaje: null
+              })
+            )
+          )
+      )
+    ).subscribe({
+      next: resultados => {
+        this.panelDescargaCursos = resultados;
+        this.panelDescargaCargando = false;
+      },
+      error: () => {
+        this.panelDescargaError =
+          'No se pudieron cargar los cursos.';
+        this.panelDescargaCargando = false;
+      }
+    });
+  }
+
+  generarReportePanel(): void {
+    const ids =
+      this.panelDescargaTab === 'estudiante'
+        ? Array.from(this.panelDescargaSeleccionEstudiantes)
+        : Array.from(this.panelDescargaSeleccionCursos);
+
+    if (!ids.length || this.panelDescargaGenerando) {
+      return;
+    }
+
+    this.panelDescargaGenerando = true;
+    this.panelDescargaError = null;
+
+    from(ids)
+      .pipe(
+        concatMap(id => {
+          const params =
+            this.panelDescargaTab === 'estudiante'
+              ? {
+                  student: id,
+                  startDate: this.fechaInicioHistorial,
+                  endDate: this.fechaFinHistorial
+                }
+              : {
+                  course: id,
+                  startDate: this.fechaInicioHistorial,
+                  endDate: this.fechaFinHistorial
+                };
+
+          const nombreEstudianteArchivo =
+            this.esEstudiante && id === this.idUsuarioActual
+              ? this.nombreUsuarioActual || 'mi-asistencia'
+              : this.nombreEstudiante(id);
+
+          const nombreArchivo =
+            this.panelDescargaTab === 'estudiante'
+              ? `asistencia-${nombreEstudianteArchivo
+                  .trim()
+                  .replace(/\s+/g, '-')
+                  .toLowerCase()}.pdf`
+              : `asistencia-${this.nombreCurso(id)
+                  .trim()
+                  .replace(/\s+/g, '-')
+                  .toLowerCase()}.pdf`;
+
+          return this.asistenciaService.descargarPdf(params).pipe(
+            map(blob => ({ blob, nombreArchivo })),
+            catchError(() => of(null))
+          );
+        })
+      )
+      .subscribe({
+        next: resultado => {
+          if (resultado) {
+            this.descargar(
+              of(resultado.blob),
+              resultado.nombreArchivo
+            );
+          }
+        },
+        error: () => {
+          this.panelDescargaError =
+            'No se pudo generar el reporte.';
+          this.panelDescargaGenerando = false;
+        },
+        complete: () => {
+          this.panelDescargaGenerando = false;
+        }
+      });
+  }
+
   descargarPdfHistorial(): void {
     if (
       this.idCursoSeleccionado ===
@@ -926,56 +1670,163 @@ export class AsistenciaComponent implements OnInit {
       return;
     }
 
+    const params = this.esEstudiante && this.idUsuarioActual !== null
+      ? {
+          student: this.idUsuarioActual,
+          startDate: this.fechaInicioHistorial,
+          endDate: this.fechaFinHistorial
+        }
+      : {
+          course: this.idCursoSeleccionado,
+          startDate: this.fechaInicioHistorial,
+          endDate: this.fechaFinHistorial
+        };
+
     this.descargar(
-      this.asistenciaService.descargarPdf({
-        course:
-          this.idCursoSeleccionado,
-        startDate:
-          this.fechaInicioHistorial,
-        endDate:
-          this.fechaFinHistorial
-      }),
-      `asistencia-historial-curso-${this.idCursoSeleccionado}.pdf`
+      this.asistenciaService.descargarPdf(params),
+      this.esEstudiante
+        ? `mi-asistencia-${this.fechaInicioHistorial}-${this.fechaFinHistorial}.pdf`
+        : `asistencia-historial-curso-${this.idCursoSeleccionado}.pdf`
     );
+  }
+
+  get misRegistrosAgrupados(): {
+    fecha: string;
+    etiqueta: string;
+    items: AttendanceResponseDTO[];
+  }[] {
+    const grupos = new Map<string, AttendanceResponseDTO[]>();
+
+    this.misRegistros.forEach(registro => {
+      const items = grupos.get(registro.attendanceDate) ?? [];
+      items.push(registro);
+      grupos.set(registro.attendanceDate, items);
+    });
+
+    return Array.from(grupos.entries())
+      .sort((a, b) => b[0].localeCompare(a[0]))
+      .map(([fecha, items]) => ({
+        fecha,
+        etiqueta: this.etiquetaFechaRelativa(fecha),
+        items
+      }));
+  }
+
+  etiquetaFechaRelativa(fechaISO: string): string {
+    if (!fechaISO) {
+      return '';
+    }
+
+    const hoy = new Date();
+    const fecha = new Date(`${fechaISO}T00:00:00`);
+    const hoyInicio = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+    const fechaInicio = new Date(fecha.getFullYear(), fecha.getMonth(), fecha.getDate());
+    const diferencia = Math.round(
+      (hoyInicio.getTime() - fechaInicio.getTime()) / 86400000
+    );
+
+    if (diferencia === 0) {
+      return 'Hoy';
+    }
+
+    if (diferencia === 1) {
+      return 'Ayer';
+    }
+
+    if (diferencia === -1) {
+      return 'Mañana';
+    }
+
+    return new Intl.DateTimeFormat('es-CO', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    }).format(fecha).replace(/^./, letra => letra.toUpperCase());
+  }
+
+  formatoFechaCorta(fechaISO: string): string {
+    if (!fechaISO) {
+      return '';
+    }
+
+    const fecha = new Date(`${fechaISO}T00:00:00`);
+    return new Intl.DateTimeFormat('es-CO', {
+      day: '2-digit',
+      month: 'short',
+      year: 'numeric'
+    }).format(fecha);
+  }
+
+  get filasListadoVisibles(): FilaGridListado[] {
+    let filas = this.filasListado;
+
+    if (this.esEstudiante && this.idUsuarioActual !== null) {
+      filas = filas.filter(
+        f => f.idStudent === this.idUsuarioActual
+      );
+    }
+
+    const q = this.busquedaListado.trim().toLowerCase();
+
+    if (q) {
+      filas = filas.filter(f =>
+        `${f.primerNombre} ${f.segundoNombre} ${f.primerApellido} ${f.segundoApellido}`
+          .toLowerCase()
+          .includes(q)
+      );
+    }
+
+    return filas;
   }
 
   buscarListado(): void {
     this.errorListado = null;
     this.columnasListado = [];
     this.filasListado = [];
+    this.listadoConsultado = true;
 
-    if (
-      this.filtroListadoCurso ===
-      null
-    ) {
-      this.listadoConsultado = true;
-      this.errorListado =
-        'Selecciona un curso.';
+    if (!this.filtroListadoInicio || !this.filtroListadoFin) {
+      this.errorListado = 'Selecciona las fechas de inicio y fin.';
       return;
     }
 
-    if (
-      !this.filtroListadoInicio ||
-      !this.filtroListadoFin
-    ) {
-      this.listadoConsultado = true;
-      this.errorListado =
-        'Selecciona las fechas de inicio y fin.';
-      return;
-    }
-
-    if (
-      this.filtroListadoInicio >
-      this.filtroListadoFin
-    ) {
-      this.listadoConsultado = true;
-      this.errorListado =
-        'La fecha inicial no puede ser posterior a la fecha final.';
+    if (this.filtroListadoInicio > this.filtroListadoFin) {
+      this.errorListado = 'La fecha inicial no puede ser posterior a la fecha final.';
       return;
     }
 
     this.cargandoListado = true;
-    this.listadoConsultado = true;
+
+    if (this.esEstudiante && this.idUsuarioActual !== null) {
+      this.asistenciaService
+        .obtenerHistorialPorEstudiante(
+          this.idUsuarioActual,
+          this.filtroListadoInicio,
+          this.filtroListadoFin
+        )
+        .subscribe({
+          next: registros => {
+            const registrosCurso = this.filtroListadoCurso === null
+              ? registros
+              : registros.filter(r => r.idCourse === this.filtroListadoCurso);
+
+            this.construirGrid(registrosCurso ?? []);
+            this.cargandoListado = false;
+          },
+          error: () => {
+            this.errorListado = 'No se pudo cargar tu historial de asistencia.';
+            this.cargandoListado = false;
+          }
+        });
+      return;
+    }
+
+    if (this.filtroListadoCurso === null) {
+      this.errorListado = 'Selecciona un curso.';
+      this.cargandoListado = false;
+      return;
+    }
 
     this.asistenciaService
       .obtenerHistorialPorCurso(
@@ -985,23 +1836,15 @@ export class AsistenciaComponent implements OnInit {
       )
       .subscribe({
         next: registros => {
-          this.construirGrid(
-            registros ?? []
-          );
-
+          this.construirGrid(registros ?? []);
           this.cargandoListado = false;
         },
         error: error => {
           this.columnasListado = [];
           this.filasListado = [];
-
-          if (error?.status === 404) {
-            this.errorListado = null;
-          } else {
-            this.errorListado =
-              'No se pudo cargar el listado de asistencia.';
-          }
-
+          this.errorListado = error?.status === 404
+            ? null
+            : 'No se pudo cargar el listado de asistencia.';
           this.cargandoListado = false;
         }
       });
@@ -1074,10 +1917,9 @@ export class AsistenciaComponent implements OnInit {
           );
 
         const nombreCompleto =
-          this.mapaEstudiantes.get(
-            idStudent
-          ) ??
-          `Estudiante ${idStudent}`;
+          this.esEstudiante && this.idUsuarioActual === idStudent && this.nombreUsuarioActual
+            ? this.nombreUsuarioActual
+            : this.mapaEstudiantes.get(idStudent) ?? `Estudiante ${idStudent}`;
 
         const nombre =
           usuario?.name ??
@@ -1265,46 +2107,36 @@ export class AsistenciaComponent implements OnInit {
       return;
     }
 
-    const cursosAConsultar =
-      this.filtroExcusasCurso !== null
-        ? this.cursos.filter(
-            c =>
-              c.idCourse ===
-              this.filtroExcusasCurso
-          )
-        : this.cursos;
-
-    if (!cursosAConsultar.length) {
-      this.excusas = [];
-      this.faltasSinJustificar = [];
-      this.cargandoExcusas = false;
-      return;
-    }
-
-    const llamadas =
-      cursosAConsultar.map(curso =>
-        this.asistenciaService
-          .obtenerHistorialPorCurso(
-            curso.idCourse,
+    const cargarRegistros = this.esEstudiante && this.idUsuarioActual !== null
+      ? this.asistenciaService.obtenerHistorialPorEstudiante(
+          this.idUsuarioActual,
+          this.filtroExcusasInicio,
+          this.filtroExcusasFin
+        )
+      : this.filtroExcusasCurso !== null
+        ? this.asistenciaService.obtenerHistorialPorCurso(
+            this.filtroExcusasCurso,
             this.filtroExcusasInicio,
             this.filtroExcusasFin
           )
-          .pipe(
-            catchError(() =>
-              of(
-                [] as AttendanceResponseDTO[]
-              )
+        : forkJoin(
+            this.cursos.map(curso =>
+              this.asistenciaService.obtenerHistorialPorCurso(
+                curso.idCourse,
+                this.filtroExcusasInicio,
+                this.filtroExcusasFin
+              ).pipe(catchError(() => of([] as AttendanceResponseDTO[])))
             )
-          )
-      );
+          ).pipe(map(resultados => resultados.flat()));
 
-    forkJoin(llamadas).subscribe({
-      next: resultados => {
-        const registros =
-          resultados.flat();
+    cargarRegistros.subscribe({
+      next: registros => {
+        const registrosVisibles = this.esEstudiante && this.filtroExcusasCurso !== null
+          ? registros.filter(r => r.idCourse === this.filtroExcusasCurso)
+          : registros;
 
         this.faltasSinJustificar =
-          registros
+          registrosVisibles
             .filter(
               r =>
                 r.attendanceStatus === 'ABSENT' &&
@@ -1318,7 +2150,7 @@ export class AsistenciaComponent implements OnInit {
             );
 
         this.excusas =
-          registros
+          registrosVisibles
             .filter(
               r =>
                 r.justificationStatus !==
@@ -1432,6 +2264,11 @@ export class AsistenciaComponent implements OnInit {
     registro: AttendanceResponseDTO,
     aprobar: boolean
   ): void {
+    // Solo Administrador/Directivo/Docente pueden revisar justificaciones.
+    if (this.esEstudiante) {
+      return;
+    }
+
     if (
       this.idAdminActual ===
       null
