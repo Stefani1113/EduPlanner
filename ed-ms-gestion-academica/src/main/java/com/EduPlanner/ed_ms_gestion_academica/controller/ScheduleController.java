@@ -2,10 +2,7 @@ package com.EduPlanner.ed_ms_gestion_academica.controller;
 
 import com.eduplanner.ed_lib_common.dto.HttpGlobalResponse;
 import com.eduplanner.ed_lib_common.dto.ScheduleGenerationRequestDTO;
-import com.eduplanner.ed_lib_common.entity.AcademicTeacher;
 import com.eduplanner.ed_lib_common.entity.Schedule;
-import com.EduPlanner.ed_ms_gestion_academica.client.AdministracionServiceClient;
-import com.EduPlanner.ed_ms_gestion_academica.repository.AcademicTeacherRepository;
 import com.EduPlanner.ed_ms_gestion_academica.service.ScheduleService;
 
 import lombok.RequiredArgsConstructor;
@@ -22,7 +19,6 @@ import org.springframework.web.bind.annotation.*;
 public class ScheduleController {
 
     private final ScheduleService service;
-    private final AcademicTeacherRepository academicTeacherRepository;
 
     /**
      * Guardar una generación de horario
