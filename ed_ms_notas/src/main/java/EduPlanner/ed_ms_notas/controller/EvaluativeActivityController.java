@@ -3,6 +3,8 @@ package EduPlanner.ed_ms_notas.controller;
 import com.eduplanner.ed_lib_common.dto.EvaluativeActivityRequestDTO;
 import com.eduplanner.ed_lib_common.dto.EvaluativeActivityResponseDTO;
 import com.eduplanner.ed_lib_common.dto.HttpGlobalResponse;
+import com.eduplanner.ed_lib_common.enums.RolEnum;
+import EduPlanner.ed_ms_notas.security.RequireRole;
 import EduPlanner.ed_ms_notas.service.EvaluativeActivityService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,7 @@ public class EvaluativeActivityController {
     private final EvaluativeActivityService service;
 
     @PostMapping
+    @RequireRole({RolEnum.DOCENTE, RolEnum.ADMINISTRADOR})
     public ResponseEntity<HttpGlobalResponse<EvaluativeActivityResponseDTO>> register(@Valid @RequestBody EvaluativeActivityRequestDTO req) {
         HttpGlobalResponse<EvaluativeActivityResponseDTO> r = new HttpGlobalResponse<>();
         try {
