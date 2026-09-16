@@ -2,56 +2,132 @@
 
   <div class="horario-toolbar">
 
-    <div class="toolbar-left">
+    <div class="toolbar-bar">
 
-      <button
-        type="button"
-        class="toolbar-item active"
+      <div
+        class="course-picker"
+        [class.disabled]="esEstudiante"
+        (click)="alternarSelectorCursos()"
       >
-        Ver Horarios
-      </button>
 
+        <div class="picker-icon">▦</div>
 
-      <button
-        type="button"
-        class="toolbar-item conflict"
-      >
-        Conflictos
-        <span class="conflict-dot"></span>
-      </button>
+        <div class="picker-text">
+          <span class="picker-label">
+            {{ esEstudiante ? 'Tu curso' : 'Curso seleccionado' }}
+          </span>
+          <strong>{{ cursoSeleccionado || 'Sin curso' }}</strong>
+        </div>
 
-    </div>
-
-    <div class="toolbar-right">
-
-      <div class="course-selector">
-
-        <span class="course-label">
-          3° A Bachillerato
+        <span class="picker-badge" *ngIf="!esEstudiante">
+          {{ cursosDisponibles.length }}
         </span>
 
-        <button
-          type="button"
-          class="preview-button"
-        >
-          <span class="eye-icon">◉</span>
-          Previsualizar
-        </button>
+        <span class="picker-chevron" *ngIf="!esEstudiante">⌄</span>
 
-        <button
-          type="button"
-          class="pdf-button"
-        >
-          PDF
-        </button>
+        <div class="course-dropdown" *ngIf="selectorCursosAbierto">
+          <button
+            type="button"
+            *ngFor="let curso of cursosDisponibles"
+            [class.active]="curso === cursoSeleccionado"
+            (click)="seleccionarCurso(curso); $event.stopPropagation()"
+          >
+            {{ curso }}
+          </button>
+        </div>
 
       </div>
+
+      <div class="clock-block">
+        <span class="clock-dot"></span>
+        <div class="clock-text">
+          <span>{{ obtenerNombreDiaActual() }}</span>
+          <strong>{{ obtenerHoraFormateada() }}</strong>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        class="pdf-button"
+        [disabled]="!horarioDisponible"
+      >
+        <span class="pdf-chip">PDF</span>
+        Descargar
+      </button>
 
     </div>
 
   </div>
 
-  <div class="publication-alert">
+  <div class="page-heading">
+    <h1>Horarios</h1>
+    <p>Consulta la distribución de clases de cada curso.</p>
+  </div>
+
+  <div class="view-toggle">
+
+    <button
+      type="button"
+      class="view-toggle-btn"
+      [class.active]="vistaActual === 'horario'"
+      (click)="alternarVista('horario')"
+    >
+      Horario
+    </button>
+
+    <button
+      type="button"
+      class="view-toggle-btn"
+      [class.active]="vistaActual === 'conflictos'"
+      (click)="alternarVista('conflictos')"
+    >
+      Conflictos
+      <span class="badge-count" *ngIf="conflictos.length">
+        {{ conflictos.length }}
+      </span>
+    </button>
+
+  </div>
+
+  <div class="summary-card" *ngIf="vistaActual === 'horario'">
+
+    <div class="summary-icon">▦</div>
+
+    <div class="summary-text">
+      <span>Horario actual</span>
+      <strong>{{ cursoSeleccionado || 'Sin curso' }}</strong>
+    </div>
+
+    <div class="summary-right">
+      <span>{{ cursosDisponibles.length }} cursos registrados</span>
+      <span class="live-dot">
+        <i></i>
+        En vivo
+      </span>
+    </div>
+
+  </div>
+
+  <div class="summary-card" *ngIf="vistaActual === 'conflictos'">
+
+    <div class="summary-icon warning">⚠</div>
+
+    <div class="summary-text">
+      <span>Conflictos detectados</span>
+      <strong>{{ conflictos.length }} en total</strong>
+    </div>
+
+    <div class="summary-right">
+      <span>Revisa y corrige antes de publicar</span>
+    </div>
+
+  </div>
+
+  <div
+    class="publication-alert clickable"
+    *ngIf="notificacionActual"
+    (click)="alternarVista('conflictos')"
+  >
 
     <div class="alert-icon">
       ✿
@@ -60,11 +136,11 @@
     <div class="alert-content">
 
       <strong>
-        Horario 2° periodo publicado el 5 Marzo.
+        {{ notificacionActual.titulo }}
       </strong>
 
       <span>
-        Puedes revisar los Conflictos
+        {{ notificacionActual.mensaje }}
       </span>
 
     </div>
@@ -72,182 +148,252 @@
     <button
       type="button"
       class="history-button"
+      (click)="alternarVista('conflictos'); $event.stopPropagation()"
     >
       Ver historial
     </button>
 
   </div>
 
-  <section class="schedule-wrapper">
+  <ng-container *ngIf="vistaActual === 'horario'">
 
-    <div class="schedule-header">
+    <div class="empty-state" *ngIf="!cargandoPerfil && !horarioDisponible">
 
-      <div class="time-title">
-        Hora/Día
-      </div>
+      <div class="empty-icon">▦</div>
 
-      <button
-        type="button"
-        class="day-button"
-        [class.selected]="diaSeleccionado === 'Lunes'"
-        (click)="seleccionarDia('Lunes')"
-      >
-        Lunes
-      </button>
+      <h3>No hay horario disponible</h3>
 
-      <button
-        type="button"
-        class="day-button"
-        [class.selected]="diaSeleccionado === 'Martes'"
-        (click)="seleccionarDia('Martes')"
-      >
-        Martes
-      </button>
+      <p>
+        El curso <strong>{{ cursoSeleccionado || 'seleccionado' }}</strong>
+        no tiene un horario registrado actualmente.
+      </p>
 
-      <button
-        type="button"
-        class="day-button"
-        [class.selected]="diaSeleccionado === 'Miércoles'"
-        (click)="seleccionarDia('Miércoles')"
-      >
-        Miércoles
-      </button>
-
-      <button
-        type="button"
-        class="day-button"
-        [class.selected]="diaSeleccionado === 'Jueves'"
-        (click)="seleccionarDia('Jueves')"
-      >
-        Jueves
-      </button>
-
-      <button
-        type="button"
-        class="day-button"
-        [class.selected]="diaSeleccionado === 'Viernes'"
-        (click)="seleccionarDia('Viernes')"
-      >
-        Viernes
-      </button>
+      <span *ngIf="!esEstudiante">
+        Selecciona otro curso para consultar su horario.
+      </span>
 
     </div>
 
-    <div
-      class="schedule-row"
-      *ngFor="let horario of horarios; let i = index"
-      [class.break-row]="horario.descanso"
+    <section
+      class="schedule-wrapper"
+      *ngIf="!cargandoPerfil && horarioDisponible"
     >
 
-      <div
-        *ngIf="!horario.descanso"
-        class="time-cell"
-      >
+      <div class="schedule-header">
 
-        <strong>
-          {{ horario.hora }}
-        </strong>
+        <div class="time-title">
+          Hora/Día
+        </div>
 
-        <span>
-          {{ horario.horaFin }}
-        </span>
+        <button
+          type="button"
+          class="day-button"
+          [class.selected]="diaSeleccionado === 'Lunes'"
+          (click)="seleccionarDia('Lunes')"
+        >
+          Lunes
+        </button>
+
+        <button
+          type="button"
+          class="day-button"
+          [class.selected]="diaSeleccionado === 'Martes'"
+          (click)="seleccionarDia('Martes')"
+        >
+          Martes
+        </button>
+
+        <button
+          type="button"
+          class="day-button"
+          [class.selected]="diaSeleccionado === 'Miércoles'"
+          (click)="seleccionarDia('Miércoles')"
+        >
+          Miércoles
+        </button>
+
+        <button
+          type="button"
+          class="day-button"
+          [class.selected]="diaSeleccionado === 'Jueves'"
+          (click)="seleccionarDia('Jueves')"
+        >
+          Jueves
+        </button>
+
+        <button
+          type="button"
+          class="day-button"
+          [class.selected]="diaSeleccionado === 'Viernes'"
+          (click)="seleccionarDia('Viernes')"
+        >
+          Viernes
+        </button>
 
       </div>
 
       <div
-        *ngIf="horario.descanso"
-        class="break-cell"
-      >
-
-        <span class="break-line"></span>
-
-        <strong>
-          Descanso
-        </strong>
-
-        <span class="break-line"></span>
-
-      </div>
-
-      <div
-        *ngIf="!horario.descanso"
-        class="subject-cell"
-        [class.selected-day]="diaSeleccionado === 'Lunes'"
+        class="schedule-row"
+        *ngFor="let horario of horarios; let i = index"
+        [class.break-row]="horario.descanso"
       >
 
         <div
-          class="subject-card"
-          [class.green]="i === 2"
+          *ngIf="!horario.descanso"
+          class="time-cell"
         >
-          <strong>{{ horario.lunes }}</strong>
-          <span>3° A Grupo</span>
+
+          <strong>
+            {{ horario.hora }}
+          </strong>
+
+          <span>
+            {{ horario.horaFin }}
+          </span>
+
+        </div>
+
+        <div
+          *ngIf="horario.descanso"
+          class="break-cell"
+        >
+
+          <span class="break-line"></span>
+
+          <strong>
+            Descanso
+          </strong>
+
+          <span class="break-line"></span>
+
+        </div>
+
+        <div
+          *ngIf="!horario.descanso"
+          class="subject-cell"
+          [class.selected-day]="diaSeleccionado === 'Lunes'"
+        >
+
+          <div class="subject-card">
+            <strong>{{ horario.lunes || '—' }}</strong>
+            <span>{{ cursoSeleccionado }}</span>
+          </div>
+
+        </div>
+
+        <div
+          *ngIf="!horario.descanso"
+          class="subject-cell"
+          [class.selected-day]="diaSeleccionado === 'Martes'"
+        >
+
+          <div class="subject-card">
+            <strong>{{ horario.martes || '—' }}</strong>
+            <span>{{ cursoSeleccionado }}</span>
+          </div>
+
+        </div>
+
+        <div
+          *ngIf="!horario.descanso"
+          class="subject-cell"
+          [class.selected-day]="diaSeleccionado === 'Miércoles'"
+        >
+
+          <div class="subject-card">
+            <strong>{{ horario.miercoles || '—' }}</strong>
+            <span>{{ cursoSeleccionado }}</span>
+          </div>
+
+        </div>
+
+        <div
+          *ngIf="!horario.descanso"
+          class="subject-cell"
+          [class.selected-day]="diaSeleccionado === 'Jueves'"
+        >
+
+          <div class="subject-card">
+            <strong>{{ horario.jueves || '—' }}</strong>
+            <span>{{ cursoSeleccionado }}</span>
+          </div>
+
+        </div>
+
+        <div
+          *ngIf="!horario.descanso"
+          class="subject-cell"
+          [class.selected-day]="diaSeleccionado === 'Viernes'"
+        >
+
+          <div class="subject-card">
+            <strong>{{ horario.viernes || '—' }}</strong>
+            <span>{{ cursoSeleccionado }}</span>
+          </div>
+
         </div>
 
       </div>
 
-      <div
-        *ngIf="!horario.descanso"
-        class="subject-cell"
-        [class.selected-day]="diaSeleccionado === 'Martes'"
-      >
+    </section>
 
-        <div
-          class="subject-card"
-          [class.green]="i === 2"
-        >
-          <strong>{{ horario.martes }}</strong>
-          <span>3° A Grupo</span>
-        </div>
+  </ng-container>
 
-      </div>
+  <section
+    class="conflicts-wrapper"
+    *ngIf="vistaActual === 'conflictos'"
+  >
 
-      <div
-        *ngIf="!horario.descanso"
-        class="subject-cell"
-        [class.selected-day]="diaSeleccionado === 'Miércoles'"
-      >
+    <table
+      class="conflicts-table"
+      *ngIf="conflictos.length"
+    >
 
-        <div
-          class="subject-card"
-          [class.green]="i === 2"
-        >
-          <strong>{{ horario.miercoles }}</strong>
-          <span>3° A Grupo</span>
-        </div>
+      <thead>
+        <tr>
+          <th>Curso</th>
+          <th>Día</th>
+          <th>Hora</th>
+          <th>Tipo</th>
+          <th>Detalle</th>
+          <th>Gravedad</th>
+        </tr>
+      </thead>
 
-      </div>
+      <tbody>
+        <tr *ngFor="let conflicto of conflictos">
+          <td>{{ conflicto.curso }}</td>
+          <td>{{ conflicto.dia }}</td>
+          <td>{{ conflicto.hora }}</td>
+          <td>{{ conflicto.tipo }}</td>
+          <td>{{ conflicto.detalle }}</td>
+          <td>
+            <span
+              class="tag"
+              [class.tag-alta]="conflicto.gravedad === 'alta'"
+              [class.tag-media]="conflicto.gravedad === 'media'"
+              [class.tag-baja]="conflicto.gravedad === 'baja'"
+            >
+              {{ conflicto.gravedad }}
+            </span>
+          </td>
+        </tr>
+      </tbody>
 
-      <div
-        *ngIf="!horario.descanso"
-        class="subject-cell"
-        [class.selected-day]="diaSeleccionado === 'Jueves'"
-      >
+    </table>
 
-        <div
-          class="subject-card"
-          [class.green]="i === 2"
-        >
-          <strong>{{ horario.jueves }}</strong>
-          <span>3° A Grupo</span>
-        </div>
+    <div
+      class="empty-state"
+      *ngIf="!conflictos.length"
+    >
 
-      </div>
+      <div class="empty-icon">✓</div>
 
-      <div
-        *ngIf="!horario.descanso"
-        class="subject-cell"
-        [class.selected-day]="diaSeleccionado === 'Viernes'"
-      >
+      <h3>Sin conflictos</h3>
 
-        <div
-          class="subject-card"
-          [class.green]="i === 2"
-        >
-          <strong>{{ horario.viernes }}</strong>
-          <span>3° A Grupo</span>
-        </div>
-
-      </div>
+      <p>
+        No se han detectado cruces ni errores en los horarios actuales.
+      </p>
 
     </div>
 
