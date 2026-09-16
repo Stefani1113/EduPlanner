@@ -6,14 +6,19 @@ import com.EduPlanner.ed_ms_gestion_academica.repository.AcademicTeacherReposito
 import com.EduPlanner.ed_ms_gestion_academica.repository.ScheduleGenerationCourseRepository;
 import com.EduPlanner.ed_ms_gestion_academica.repository.ScheduleGenerationRepository;
 import com.EduPlanner.ed_ms_gestion_academica.repository.ScheduleRepository;
+import com.EduPlanner.ed_ms_gestion_academica.repository.SubjectRepository;
+import com.EduPlanner.ed_ms_gestion_academica.repository.TimeSlotRepository;
 import com.eduplanner.ed_lib_common.dto.ScheduleGenerationRequestDTO;
 import com.eduplanner.ed_lib_common.dto.ScheduleItemRequestDTO;
+import com.eduplanner.ed_lib_common.dto.ScheduleResponseDTO;
 import com.eduplanner.ed_lib_common.entity.AcademicLoad;
 import com.eduplanner.ed_lib_common.entity.AcademicTeacher;
 import com.eduplanner.ed_lib_common.entity.Schedule;
 import com.eduplanner.ed_lib_common.entity.ScheduleGeneration;
 import com.eduplanner.ed_lib_common.entity.ScheduleGenerationCourse;
 import com.eduplanner.ed_lib_common.entity.SchedulerGenerationType;
+import com.eduplanner.ed_lib_common.entity.Subject;
+import com.eduplanner.ed_lib_common.entity.TimeSlot;
 import com.eduplanner.ed_lib_common.entity.SchedulerGenerationStatus;
 
 import jakarta.transaction.Transactional;
@@ -34,6 +39,8 @@ public class ScheduleService {
     private final AcademicLoadRepository academicLoadRepository;
     private final AdministracionServiceClient administracionServiceClient;
     private final AcademicTeacherRepository academicTeacherRepository;
+    private final SubjectRepository subjectRepository;
+    private final TimeSlotRepository timeSlotRepository;
 
     @Transactional
     public Integer saveGeneration(ScheduleGenerationRequestDTO dto) {
@@ -119,7 +126,7 @@ public class ScheduleService {
     /**
      * Filtrar horario por curso
      */
-    public List<Schedule> getScheduleByCourse(Integer idCourse) {
+    public List<ScheduleResponseDTO> getScheduleByCourse(Integer idCourse) {
 
     List<AcademicLoad> loads =
             academicLoadRepository.findByIdCourseAndStatusTrue(idCourse);
@@ -128,14 +135,22 @@ public class ScheduleService {
             .map(AcademicLoad::getIdAcademicLoad)
             .toList();
 
-    return scheduleRepository
-            .findByIdAcademicLoadInAndStatusTrue(loadIds);
+    if (loadIds.isEmpty()) {
+        return List.of();
+    }
+
+    List<Schedule> schedules =
+            scheduleRepository.findByIdAcademicLoadInAndStatusTrue(loadIds);
+
+    return schedules.stream()
+            .map(this::buildScheduleResponse)
+            .toList();
     }
 
     /**
      * Filtrar horario por docente
      */
-    public List<Schedule> getScheduleByTeacher(Integer idTeacher) {
+    public List<ScheduleResponseDTO> getScheduleByTeacher(Integer idTeacher) {
 
     List<AcademicLoad> loads =
             academicLoadRepository.findByIdTeacherAndStatusTrue(idTeacher);
@@ -144,14 +159,24 @@ public class ScheduleService {
             .map(AcademicLoad::getIdAcademicLoad)
             .toList();
 
-    return scheduleRepository
-            .findByIdAcademicLoadInAndStatusTrue(loadIds);
+    if (loadIds.isEmpty()) {
+        return List.of();
+    }
+
+    List<Schedule> schedules =
+            scheduleRepository.findByIdAcademicLoadInAndStatusTrue(loadIds);
+
+    return schedules.stream()
+            .map(this::buildScheduleResponse)
+            .toList();
     }
 
     /**
      * Listar horario de docente y estudiante
      */
-    public List<Schedule> getMySchedule(Integer idUser, String role) {
+    public List<ScheduleResponseDTO> getMySchedule(
+        Integer idUser,
+        String role) {
 
     if ("DOCENTE".equals(role)) {
 
@@ -169,8 +194,9 @@ public class ScheduleService {
 
     if ("ESTUDIANTE".equals(role)) {
 
-        Integer idCourse = administracionServiceClient
-                .getUserCourse(idUser);
+        
+        Integer idCourse =
+                administracionServiceClient.getUserCourse(idUser);
 
         if (idCourse == null) {
             throw new IllegalArgumentException(
@@ -184,5 +210,65 @@ public class ScheduleService {
     throw new IllegalArgumentException(
             "El usuario no tiene un rol válido para consultar un horario"
     );
-}
+    }
+
+    /**
+     * Metodo para convertir Schedule en el DTO para el front
+     */
+    private ScheduleResponseDTO buildScheduleResponse(Schedule schedule) {
+
+        AcademicLoad load = academicLoadRepository
+                .findById(schedule.getIdAcademicLoad())
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "No se encontró la carga académica"
+                        ));
+
+        Subject subject = subjectRepository
+                .findById(load.getIdSubject())
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "No se encontró la asignatura"
+                        ));
+
+        TimeSlot timeSlot = timeSlotRepository
+                .findById(schedule.getIdTimeSlot())
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "No se encontró el bloque horario"
+                        ));
+
+        AcademicTeacher teacher = academicTeacherRepository
+                .findById(load.getIdTeacher())
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "No se encontró el docente"
+                        ));
+
+        String teacherName =
+                administracionServiceClient.getUserFullName(
+                        teacher.getIdUser()
+                );
+
+        ScheduleResponseDTO dto = new ScheduleResponseDTO();
+
+        dto.setIdSchedule(schedule.getIdSchedule());
+
+        dto.setIdCourse(load.getIdCourse());
+
+        dto.setIdSubject(subject.getIdSubject());
+        dto.setSubjectName(subject.getName());
+
+        dto.setIdTeacher(teacher.getIdAcademicTeacher());
+        dto.setTeacherName(teacherName);
+
+        dto.setIdTimeSlot(timeSlot.getIdTimeSlot());
+        dto.setSlotOrder(timeSlot.getSlotOrder());
+        dto.setStartTime(timeSlot.getStartTime());
+        dto.setEndTime(timeSlot.getEndTime());
+
+        dto.setDayOfWeek(schedule.getDayOfWeek());
+
+        return dto;
+    }
 }
