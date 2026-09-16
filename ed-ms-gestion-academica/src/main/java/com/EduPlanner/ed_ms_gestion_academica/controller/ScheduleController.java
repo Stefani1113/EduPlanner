@@ -92,5 +92,38 @@ public class ScheduleController {
 
         return ResponseEntity.ok(response);
     }
+
+    /**
+     * Ruta para traer horario de docente y estudiante 
+     * @param idUser
+     * @param role
+     * @return
+     */
+    @GetMapping("/my-schedule")
+    public ResponseEntity<HttpGlobalResponse<List<Schedule>>> getMySchedule(
+            @RequestAttribute("idUser") Integer idUser,
+            @RequestAttribute("role") String role) {
+
+        HttpGlobalResponse<List<Schedule>> response =
+                new HttpGlobalResponse<>();
+
+        try {
+            List<Schedule> schedules =
+                    service.getMySchedule(idUser, role);
+
+            response.setData(schedules);
+            response.setMessage("Horario consultado correctamente");
+
+            return ResponseEntity.ok(response);
+
+        } catch (IllegalArgumentException e) {
+
+            response.setMessage(e.getMessage());
+
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(response);
+        }
+    }
 }
 

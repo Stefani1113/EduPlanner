@@ -1,12 +1,15 @@
 package com.EduPlanner.ed_ms_gestion_academica.service;
 
+import com.EduPlanner.ed_ms_gestion_academica.client.AdministracionServiceClient;
 import com.EduPlanner.ed_ms_gestion_academica.repository.AcademicLoadRepository;
+import com.EduPlanner.ed_ms_gestion_academica.repository.AcademicTeacherRepository;
 import com.EduPlanner.ed_ms_gestion_academica.repository.ScheduleGenerationCourseRepository;
 import com.EduPlanner.ed_ms_gestion_academica.repository.ScheduleGenerationRepository;
 import com.EduPlanner.ed_ms_gestion_academica.repository.ScheduleRepository;
 import com.eduplanner.ed_lib_common.dto.ScheduleGenerationRequestDTO;
 import com.eduplanner.ed_lib_common.dto.ScheduleItemRequestDTO;
 import com.eduplanner.ed_lib_common.entity.AcademicLoad;
+import com.eduplanner.ed_lib_common.entity.AcademicTeacher;
 import com.eduplanner.ed_lib_common.entity.Schedule;
 import com.eduplanner.ed_lib_common.entity.ScheduleGeneration;
 import com.eduplanner.ed_lib_common.entity.ScheduleGenerationCourse;
@@ -29,6 +32,8 @@ public class ScheduleService {
     private final ScheduleGenerationCourseRepository generationCourseRepository;
     private final ScheduleRepository scheduleRepository;
     private final AcademicLoadRepository academicLoadRepository;
+    private final AdministracionServiceClient administracionServiceClient;
+    private final AcademicTeacherRepository academicTeacherRepository;
 
     @Transactional
     public Integer saveGeneration(ScheduleGenerationRequestDTO dto) {
@@ -142,4 +147,42 @@ public class ScheduleService {
     return scheduleRepository
             .findByIdAcademicLoadInAndStatusTrue(loadIds);
     }
+
+    /**
+     * Listar horario de docente y estudiante
+     */
+    public List<Schedule> getMySchedule(Integer idUser, String role) {
+
+    if ("DOCENTE".equals(role)) {
+
+        AcademicTeacher teacher = academicTeacherRepository
+                .findByIdUser(idUser)
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "No se encontró información académica para el docente"
+                        ));
+
+        return getScheduleByTeacher(
+                teacher.getIdAcademicTeacher()
+        );
+    }
+
+    if ("ESTUDIANTE".equals(role)) {
+
+        Integer idCourse = administracionServiceClient
+                .getUserCourse(idUser);
+
+        if (idCourse == null) {
+            throw new IllegalArgumentException(
+                    "El estudiante no tiene un curso asignado"
+            );
+        }
+
+        return getScheduleByCourse(idCourse);
+    }
+
+    throw new IllegalArgumentException(
+            "El usuario no tiene un rol válido para consultar un horario"
+    );
+}
 }
