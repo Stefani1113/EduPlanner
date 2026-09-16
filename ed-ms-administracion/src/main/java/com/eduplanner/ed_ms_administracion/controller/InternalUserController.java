@@ -35,7 +35,6 @@ public class InternalUserController {
     }
 
     /**
-
      * Devuelve el nombre completo (nombre + apellidos) de un usuario.
      * Usado por gestion-academica para mostrar nombres en vez de ids
      * (por ejemplo, en el historial y PDF de asistencia).
