@@ -9,10 +9,7 @@
     Cargando información base...
   </div>
 
-  <div
-    class="error"
-    *ngIf="errorBase && !cargandoBase"
-  >
+  <div class="error" *ngIf="errorBase && !cargandoBase">
     {{ errorBase }}
   </div>
 
@@ -23,6 +20,7 @@
       <button
         type="button"
         class="tab"
+        *ngIf="!esEstudiante"
         [class.active]="tabActiva === 'tomar'"
         (click)="cambiarTab('tomar')"
       >
@@ -69,37 +67,30 @@
 
     <ng-container [ngSwitch]="tabActiva">
 
-
       <ng-container *ngSwitchCase="'tomar'">
 
         <div class="filtros-bar">
 
           <label>
             Curso
-
             <select
               [(ngModel)]="tomaCurso"
               (ngModelChange)="cargarToma()"
             >
-
               <option [ngValue]="null">
                 Selecciona un curso
               </option>
-
               <option
                 *ngFor="let c of cursos"
                 [ngValue]="c.idCourse"
               >
                 {{ c.name }}
               </option>
-
             </select>
-
           </label>
 
           <label>
             Fecha
-
             <input
               type="date"
               [(ngModel)]="tomaFecha"
@@ -109,40 +100,25 @@
 
         </div>
 
-        <div
-          class="loading"
-          *ngIf="cargandoToma"
-        >
+        <div class="loading" *ngIf="cargandoToma">
           Cargando estudiantes del curso...
         </div>
 
-        <div
-          class="error"
-          *ngIf="errorToma && !cargandoToma"
-        >
+        <div class="error" *ngIf="errorToma && !cargandoToma">
           {{ errorToma }}
         </div>
 
         <ng-container *ngIf="!cargandoToma && !errorToma">
 
-          <div
-            class="sin-datos"
-            *ngIf="tomaCurso === null"
-          >
+          <div class="sin-datos" *ngIf="tomaCurso === null">
             Selecciona un curso y una fecha para tomar asistencia.
           </div>
 
-          <div
-            class="sin-datos"
-            *ngIf="tomaCurso !== null && !tomaFilas.length"
-          >
+          <div class="sin-datos" *ngIf="tomaCurso !== null && !tomaFilas.length">
             Este curso no tiene estudiantes matriculados.
           </div>
 
-          <div
-            class="tabla-toma"
-            *ngIf="tomaCurso !== null && tomaFilas.length"
-          >
+          <div class="tabla-toma" *ngIf="tomaCurso !== null && tomaFilas.length">
 
             <div class="toma-fila" *ngFor="let fila of tomaFilas">
 
@@ -188,22 +164,13 @@
 
           </div>
 
-          <div
-            class="toma-guardar-bar"
-            *ngIf="tomaCurso !== null && tomaFilas.length"
-          >
+          <div class="toma-guardar-bar" *ngIf="tomaCurso !== null && tomaFilas.length">
 
-            <span
-              class="error"
-              *ngIf="errorGuardarToma"
-            >
+            <span class="error" *ngIf="errorGuardarToma">
               {{ errorGuardarToma }}
             </span>
 
-            <span
-              class="toma-exito"
-              *ngIf="exitoGuardarToma"
-            >
+            <span class="toma-exito" *ngIf="exitoGuardarToma">
               Asistencia guardada correctamente.
             </span>
 
@@ -224,174 +191,221 @@
 
       <ng-container *ngSwitchCase="'resumen'">
 
-        <div class="filtros-bar">
+        <ng-container *ngIf="!esEstudiante; else resumenPersonalTpl">
 
-          <label>
-            Curso
+          <div class="filtros-bar">
 
-            <select
-              [(ngModel)]="filtroSesionesCurso"
-              (ngModelChange)="buscarSesiones()"
-            >
-              <option [ngValue]="null">
-                Todos
-              </option>
-
-              <option
-                *ngFor="let c of cursos"
-                [ngValue]="c.idCourse"
+            <label>
+              Curso
+              <select
+                [(ngModel)]="filtroSesionesCurso"
+                (ngModelChange)="buscarSesiones()"
               >
-                {{ c.name }}
-              </option>
-            </select>
-          </label>
+                <option [ngValue]="null">
+                  Todos
+                </option>
+                <option
+                  *ngFor="let c of cursos"
+                  [ngValue]="c.idCourse"
+                >
+                  {{ c.name }}
+                </option>
+              </select>
+            </label>
 
-          <label>
-            Desde
-
-            <input
-              type="date"
-              [(ngModel)]="fechaInicioSesiones"
-              (change)="buscarSesiones()"
-            >
-          </label>
-
-          <label>
-            Hasta
-
-            <input
-              type="date"
-              [(ngModel)]="fechaFinSesiones"
-              (change)="buscarSesiones()"
-            >
-          </label>
-
-        </div>
-
-        <div
-          class="loading"
-          *ngIf="cargandoSesiones"
-        >
-          Cargando sesiones...
-        </div>
-
-        <div
-          class="error"
-          *ngIf="errorSesiones && !cargandoSesiones"
-        >
-          {{ errorSesiones }}
-        </div>
-
-        <div
-          class="tabla-wrap"
-          *ngIf="!cargandoSesiones && !errorSesiones"
-        >
-
-          <table
-            class="tabla"
-            *ngIf="sesiones.length; else sinSesiones"
-          >
-
-            <thead>
-              <tr>
-                <th>Curso</th>
-                <th>Docente</th>
-                <th>Fecha</th>
-                <th>Presentes</th>
-                <th>Ausentes</th>
-                <th>Tardanzas</th>
-                <th></th>
-              </tr>
-            </thead>
-
-            <tbody>
-
-              <tr
-                *ngFor="let sesion of sesiones"
+            <label>
+              Desde
+              <input
+                type="date"
+                [(ngModel)]="fechaInicioSesiones"
+                (change)="buscarSesiones()"
               >
+            </label>
 
-                <td>
-                  {{ sesion.nombreCurso }}
-                </td>
+            <label>
+              Hasta
+              <input
+                type="date"
+                [(ngModel)]="fechaFinSesiones"
+                (change)="buscarSesiones()"
+              >
+            </label>
 
-                <td>
-                  {{ sesion.docente }}
-                </td>
+            <label class="filtro-busqueda">
+              Buscar
+              <input
+                type="text"
+                placeholder="Curso o docente..."
+                [(ngModel)]="busquedaSesiones"
+              >
+            </label>
 
-                <td>
-                  {{ sesion.fecha }}
-                </td>
+          </div>
 
-                <td>
-                  {{ sesion.presentes }}
-                </td>
+          <div class="loading" *ngIf="cargandoSesiones">
+            Cargando sesiones...
+          </div>
 
-                <td>
-                  {{ sesion.ausentes }}
-                </td>
+          <div class="error" *ngIf="errorSesiones && !cargandoSesiones">
+            {{ errorSesiones }}
+          </div>
 
-                <td>
-                  {{ sesion.tardanzas }}
-                </td>
+          <div class="tabla-wrap" *ngIf="!cargandoSesiones && !errorSesiones">
 
-                <td>
+            <table class="tabla" *ngIf="sesionesFiltradas.length; else sinSesiones">
 
-                  <button
-                    type="button"
-                    class="btn-link"
-                    (click)="verSesion(sesion)"
-                  >
-                    Ver
-                  </button>
+              <thead>
+                <tr>
+                  <th>Curso</th>
+                  <th>Docente</th>
+                  <th>Fecha</th>
+                  <th>Presentes</th>
+                  <th>Ausentes</th>
+                  <th>Tardanzas</th>
+                  <th></th>
+                </tr>
+              </thead>
 
-                </td>
+              <tbody>
 
-              </tr>
+                <ng-container *ngFor="let grupo of sesionesAgrupadas">
 
-            </tbody>
+                  <tr class="fila-grupo">
+                    <td colspan="7">
+                      {{ grupo.etiqueta }} · {{ grupo.items.length }} curso(s)
+                    </td>
+                  </tr>
 
-          </table>
+                  <tr *ngFor="let sesion of grupo.items">
 
-          <ng-template #sinSesiones>
-            <div class="sin-datos">
-              No hay sesiones registradas en este periodo.
+                    <td>{{ sesion.nombreCurso }}</td>
+                    <td>{{ sesion.docente }}</td>
+                    <td>{{ sesion.fecha }}</td>
+                    <td>{{ sesion.presentes }}</td>
+                    <td>{{ sesion.ausentes }}</td>
+                    <td>{{ sesion.tardanzas }}</td>
+
+                    <td>
+                      <button
+                        type="button"
+                        class="btn-link"
+                        (click)="verSesion(sesion)"
+                      >
+                        Ver
+                      </button>
+                    </td>
+
+                  </tr>
+
+                </ng-container>
+
+              </tbody>
+
+            </table>
+
+            <ng-template #sinSesiones>
+              <div class="sin-datos">
+                No hay sesiones registradas en este periodo.
+              </div>
+            </ng-template>
+
+          </div>
+
+        </ng-container>
+
+        <ng-template #resumenPersonalTpl>
+
+          <div class="section-heading">
+            <div>
+              <span class="eyebrow">MI ASISTENCIA</span>
+              <h2>Resumen personal</h2>
+              <p>Consulta tu asistencia y revisa cada registro por día.</p>
             </div>
-          </ng-template>
+            <div class="heading-badge" *ngIf="idCursoEstudiante !== null">
+              <span>Curso</span>
+              <strong>{{ nombreCurso(idCursoEstudiante) || 'Mi curso' }}</strong>
+            </div>
+          </div>
 
-        </div>
+          <div class="filtros-card filtros-personales">
+            <div class="filtro-titulo">
+              <span class="filtro-icono">◷</span>
+              <div><strong>Periodo</strong><span>Selecciona el rango que quieres revisar</span></div>
+            </div>
+            <label>Desde<input type="date" [(ngModel)]="fechaInicioSesiones" (change)="buscarMiResumen()"></label>
+            <label>Hasta<input type="date" [(ngModel)]="fechaFinSesiones" (change)="buscarMiResumen()"></label>
+            <button type="button" class="btn-secundario" (click)="buscarMiResumen()" [disabled]="cargandoMiResumen">
+              {{ cargandoMiResumen ? 'Actualizando...' : 'Actualizar' }}
+            </button>
+          </div>
+
+          <div class="loading-card" *ngIf="cargandoMiResumen">
+            <span class="spinner"></span>
+            <div><strong>Cargando tu asistencia</strong><span>Estamos actualizando tus registros.</span></div>
+          </div>
+
+          <div class="error-card" *ngIf="errorMiResumen && !cargandoMiResumen">{{ errorMiResumen }}</div>
+
+          <ng-container *ngIf="!cargandoMiResumen && !errorMiResumen">
+            <div class="personal-stats" *ngIf="miResumenPersonal as r">
+              <article class="stat-card stat-principal">
+                <div class="stat-ring" [style.--porcentaje]="r.attendancePercentage + '%'">
+                  <div><strong>{{ r.attendancePercentage }}%</strong><span>asistencia</span></div>
+                </div>
+                <div class="stat-copy"><span class="stat-kicker">TOTAL DEL PERIODO</span><h3>Tu asistencia</h3><p>{{ r.totalRecords }} registro{{ r.totalRecords === 1 ? '' : 's' }} consultado{{ r.totalRecords === 1 ? '' : 's' }}</p></div>
+              </article>
+              <article class="stat-card stat-present"><span class="stat-icon">✓</span><div><strong>{{ r.presentCount }}</strong><span>Presentes</span></div></article>
+              <article class="stat-card stat-late"><span class="stat-icon">T</span><div><strong>{{ r.lateCount }}</strong><span>Tardanzas</span></div></article>
+              <article class="stat-card stat-absent"><span class="stat-icon">!</span><div><strong>{{ r.unjustifiedAbsenceCount }}</strong><span>Faltas sin justificar</span></div></article>
+            </div>
+
+            <div class="timeline-card">
+              <div class="timeline-header"><div><span class="eyebrow">DETALLE</span><h3>Historial por día</h3></div><span class="records-count">{{ misRegistros.length }} registros</span></div>
+              <div class="timeline-empty" *ngIf="!misRegistros.length"><span class="empty-icon">✓</span><strong>No hay asistencias registradas</strong><span>No existen registros dentro del periodo seleccionado.</span></div>
+              <div class="timeline" *ngIf="misRegistros.length">
+                <section class="timeline-group" *ngFor="let grupo of misRegistrosAgrupados">
+                  <div class="timeline-date"><span class="date-dot"></span><div><strong>{{ grupo.etiqueta }}</strong><span>{{ formatoFechaCorta(grupo.fecha) }}</span></div></div>
+                  <div class="timeline-items">
+                    <article class="attendance-item" *ngFor="let registro of grupo.items">
+                      <div class="attendance-item-main"><span class="status-mark" [class]="claseEstado(registro.attendanceStatus)">{{ registro.attendanceStatus === 'PRESENT' ? '✓' : registro.attendanceStatus === 'ABSENT' ? '!' : '•' }}</span><div><strong>{{ etiquetaEstado(registro.attendanceStatus) }}</strong><span>{{ nombreCurso(registro.idCourse) }}</span></div></div>
+                      <span class="badge" [class]="claseJustificacion(registro.justificationStatus || 'NONE')">{{ etiquetaJustificacion(registro.justificationStatus || 'NONE') }}</span>
+                    </article>
+                  </div>
+                </section>
+              </div>
+            </div>
+          </ng-container>
+        </ng-template>
 
       </ng-container>
 
-
       <ng-container *ngSwitchCase="'historial'">
+        <div class="section-heading historial-heading">
+          <div><span class="eyebrow">ANÁLISIS</span><h2>{{ esEstudiante ? 'Mi historial de asistencia' : 'Historial de asistencia' }}</h2><p>{{ esEstudiante ? 'Visualiza tu comportamiento de asistencia durante el periodo seleccionado.' : 'Consulta el comportamiento de asistencia de los cursos.' }}</p></div>
+          <div class="heading-badge" *ngIf="esEstudiante && idCursoEstudiante !== null"><span>Curso</span><strong>{{ nombreCurso(idCursoEstudiante) || 'Mi curso' }}</strong></div>
+        </div>
+        <div class="filtros-card" *ngIf="!cargandoHistorialGrafico">
+          <div class="filtro-titulo"><span class="filtro-icono">◷</span><div><strong>Periodo</strong><span>Actualiza las estadísticas de asistencia</span></div></div>
+          <label>Desde<input type="date" [(ngModel)]="fechaInicioHistorial" (change)="cargarGraficoHistorial()"></label>
+          <label>Hasta<input type="date" [(ngModel)]="fechaFinHistorial" (change)="cargarGraficoHistorial()"></label>
+          <button type="button" class="btn-secundario" (click)="cargarGraficoHistorial()" [disabled]="cargandoHistorialGrafico">Actualizar</button>
+        </div>
 
-        <div
-          class="loading"
-          *ngIf="cargandoHistorialGrafico"
-        >
+        <div class="loading" *ngIf="cargandoHistorialGrafico">
           Calculando historial de asistencia...
         </div>
 
-        <div
-          class="error"
-          *ngIf="errorHistorialGrafico && !cargandoHistorialGrafico"
-        >
+        <div class="error" *ngIf="errorHistorialGrafico && !cargandoHistorialGrafico">
           {{ errorHistorialGrafico }}
         </div>
 
-        <div
-          class="resumen-grid"
-          *ngIf="!cargandoHistorialGrafico && !errorHistorialGrafico"
-        >
+        <div class="resumen-grid" *ngIf="!cargandoHistorialGrafico && !errorHistorialGrafico">
 
           <section class="panel panel-global">
 
             <h3>Global</h3>
 
-            <div
-              class="barras-scroll"
-              *ngIf="barras.length > 0; else sinBarras"
-            >
+            <div class="barras-scroll" *ngIf="barras.length > 0; else sinBarras">
 
               <div
                 class="barra-item"
@@ -400,27 +414,16 @@
               >
 
                 <div class="barra-pista">
-
                   <div
                     class="barra-relleno"
                     [style.background]="barra.color"
                     [style.height.%]="barra.porcentaje"
                   ></div>
-
                 </div>
 
-                <span
-                  class="barra-punto"
-                  [style.background]="barra.color"
-                ></span>
-
-                <span class="barra-porcentaje">
-                  {{ barra.porcentaje }}%
-                </span>
-
-                <span class="barra-nombre">
-                  {{ barra.nombre }}
-                </span>
+                <span class="barra-punto" [style.background]="barra.color"></span>
+                <span class="barra-porcentaje">{{ barra.porcentaje }}%</span>
+                <span class="barra-nombre">{{ barra.nombre }}</span>
 
               </div>
 
@@ -438,10 +441,7 @@
 
             <h3>Porcentaje Total</h3>
 
-            <svg
-              class="dona dona-grande"
-              viewBox="0 0 110 110"
-            >
+            <svg class="dona dona-grande" viewBox="0 0 110 110">
 
               <circle
                 class="dona-fondo"
@@ -457,10 +457,7 @@
                 [attr.r]="radioDonaGrande"
                 stroke="#8e44ec"
                 [attr.stroke-dasharray]="circunferenciaGrande"
-                [attr.stroke-dashoffset]="dashOffset(
-                  porcentajeTotal,
-                  circunferenciaGrande
-                )"
+                [attr.stroke-dashoffset]="dashOffset(porcentajeTotal, circunferenciaGrande)"
               ></circle>
 
             </svg>
@@ -473,10 +470,7 @@
 
               <div class="mini-dona-item">
 
-                <svg
-                  class="dona"
-                  viewBox="0 0 90 90"
-                >
+                <svg class="dona" viewBox="0 0 90 90">
 
                   <circle
                     class="dona-fondo"
@@ -492,30 +486,19 @@
                     [attr.r]="radioDonaPequena"
                     stroke="#e0a83a"
                     [attr.stroke-dasharray]="circunferenciaPequena"
-                    [attr.stroke-dashoffset]="dashOffset(
-                      porcentajeNoJustificadas,
-                      circunferenciaPequena
-                    )"
+                    [attr.stroke-dashoffset]="dashOffset(porcentajeNoJustificadas, circunferenciaPequena)"
                   ></circle>
 
                 </svg>
 
-                <span class="dona-valor">
-                  {{ totalTardanzas }}
-                </span>
-
-                <span class="mini-dona-label">
-                  Tardanzas
-                </span>
+                <span class="dona-valor">{{ totalTardanzas }}</span>
+                <span class="mini-dona-label">Tardanzas</span>
 
               </div>
 
               <div class="mini-dona-item">
 
-                <svg
-                  class="dona"
-                  viewBox="0 0 90 90"
-                >
+                <svg class="dona" viewBox="0 0 90 90">
 
                   <circle
                     class="dona-fondo"
@@ -531,21 +514,13 @@
                     [attr.r]="radioDonaPequena"
                     stroke="#2bbfa0"
                     [attr.stroke-dasharray]="circunferenciaPequena"
-                    [attr.stroke-dashoffset]="dashOffset(
-                      porcentajeJustificadas,
-                      circunferenciaPequena
-                    )"
+                    [attr.stroke-dashoffset]="dashOffset(porcentajeJustificadas, circunferenciaPequena)"
                   ></circle>
 
                 </svg>
 
-                <span class="dona-valor">
-                  {{ totalFaltas }}
-                </span>
-
-                <span class="mini-dona-label">
-                  Faltas
-                </span>
+                <span class="dona-valor">{{ totalFaltas }}</span>
+                <span class="mini-dona-label">Faltas</span>
 
               </div>
 
@@ -567,42 +542,30 @@
             <div class="barra-h-item">
 
               <div class="barra-h-pista">
-
                 <div
                   class="barra-h-relleno barra-h-justificadas"
                   [style.width.%]="porcentajeJustificadas"
                 >
-                  <span>
-                    {{ porcentajeJustificadas }}%
-                  </span>
+                  <span>{{ porcentajeJustificadas }}%</span>
                 </div>
-
               </div>
 
-              <span class="barra-h-label">
-                Ausencias justificadas
-              </span>
+              <span class="barra-h-label">Ausencias justificadas</span>
 
             </div>
 
             <div class="barra-h-item">
 
               <div class="barra-h-pista">
-
                 <div
                   class="barra-h-relleno barra-h-no-justificadas"
                   [style.width.%]="porcentajeNoJustificadas"
                 >
-                  <span>
-                    {{ porcentajeNoJustificadas }}%
-                  </span>
+                  <span>{{ porcentajeNoJustificadas }}%</span>
                 </div>
-
               </div>
 
-              <span class="barra-h-label">
-                Ausencias no justificadas
-              </span>
+              <span class="barra-h-label">Ausencias no justificadas</span>
 
             </div>
 
@@ -612,32 +575,32 @@
 
       </ng-container>
 
-
       <ng-container *ngSwitchCase="'listado'">
 
         <div class="filtros-bar">
 
-          <label>
+          <label *ngIf="!esEstudiante">
             Curso
-
             <select
               [(ngModel)]="filtroListadoCurso"
               (ngModelChange)="buscarListado()"
             >
-
               <option
                 *ngFor="let c of cursos"
                 [ngValue]="c.idCourse"
               >
                 {{ c.name }}
               </option>
-
             </select>
           </label>
 
+          <div class="curso-fijo" *ngIf="esEstudiante">
+            <span class="picker-label">Curso</span>
+            <strong>{{ nombreCurso(filtroListadoCurso) || 'Mi curso' }}</strong>
+          </div>
+
           <label>
             Desde
-
             <input
               type="date"
               [(ngModel)]="filtroListadoInicio"
@@ -647,11 +610,19 @@
 
           <label>
             Hasta
-
             <input
               type="date"
               [(ngModel)]="filtroListadoFin"
               (change)="buscarListado()"
+            >
+          </label>
+
+          <label class="filtro-busqueda" *ngIf="!esEstudiante">
+            Buscar
+            <input
+              type="text"
+              placeholder="Nombre del estudiante..."
+              [(ngModel)]="busquedaListado"
             >
           </label>
 
@@ -666,53 +637,30 @@
 
         </div>
 
-        <div
-          class="loading"
-          *ngIf="cargandoListado"
-        >
+        <div class="loading" *ngIf="cargandoListado">
           Cargando listado...
         </div>
 
-        <div
-          class="error"
-          *ngIf="errorListado && !cargandoListado"
-        >
+        <div class="error" *ngIf="errorListado && !cargandoListado">
           {{ errorListado }}
         </div>
 
-        <div
-          class="tabla-wrap tabla-wrap-scroll"
-          *ngIf="!cargandoListado && !errorListado"
-        >
+        <div class="tabla-wrap tabla-wrap-scroll" *ngIf="!cargandoListado && !errorListado">
 
-          <table
-            class="tabla"
-            *ngIf="filasListado.length > 0; else sinListado"
-          >
+          <table class="tabla" *ngIf="filasListadoVisibles.length > 0; else sinListado">
 
             <thead>
-
               <tr>
-
-                <th>
-                  Estudiante
-                </th>
-
-                <th
-                  *ngFor="let fecha of columnasListado"
-                >
+                <th>Estudiante</th>
+                <th *ngFor="let fecha of columnasListado">
                   {{ fecha }}
                 </th>
-
               </tr>
-
             </thead>
 
             <tbody>
 
-              <tr
-                *ngFor="let fila of filasListado"
-              >
+              <tr *ngFor="let fila of filasListadoVisibles">
 
                 <td>
                   {{ fila.primerNombre }}
@@ -721,48 +669,34 @@
                   {{ fila.segundoApellido }}
                 </td>
 
-                <td
-                  *ngFor="let fecha of columnasListado"
-                >
+                <td *ngFor="let fecha of columnasListado">
 
-                  <ng-container
-                    *ngIf="
-                      fila.porFecha.get(fecha) as registro;
-                      else sinRegistro
-                    "
-                  >
+                  <ng-container *ngIf="fila.porFecha.get(fecha) as registro; else sinRegistro">
 
                     <button
+                      *ngIf="!esEstudiante"
                       type="button"
                       class="celda-asistencia"
-                      [class]="claseEstado(
-                        registro.attendanceStatus
-                      )"
-                      [disabled]="
-                        guardandoCelda ===
-                        (fila.idStudent + '-' + fecha)
-                      "
-                      (click)="alternarCelda(
-                        fila,
-                        fecha
-                      )"
-                      [title]="
-                        etiquetaEstado(
-                          registro.attendanceStatus
-                        )
-                      "
+                      [class]="claseEstado(registro.attendanceStatus)"
+                      [disabled]="guardandoCelda === (fila.idStudent + '-' + fecha)"
+                      (click)="alternarCelda(fila, fecha)"
+                      [title]="etiquetaEstado(registro.attendanceStatus)"
                     >
-                      {{ etiquetaEstado(
-                        registro.attendanceStatus
-                      ) }}
+                      {{ etiquetaEstado(registro.attendanceStatus) }}
                     </button>
+
+                    <span
+                      *ngIf="esEstudiante"
+                      class="celda-asistencia celda-solo-lectura"
+                      [class]="claseEstado(registro.attendanceStatus)"
+                    >
+                      {{ etiquetaEstado(registro.attendanceStatus) }}
+                    </span>
 
                   </ng-container>
 
                   <ng-template #sinRegistro>
-                    <span class="celda-sin-registro">
-                      —
-                    </span>
+                    <span class="celda-sin-registro">—</span>
                   </ng-template>
 
                 </td>
@@ -774,129 +708,79 @@
           </table>
 
           <ng-template #sinListado>
-
             <div class="sin-datos listado-vacio">
-
-              <strong>
-                No hay registros de asistencia.
-              </strong>
-
-              <span>
-                No existen registros para el curso
-                seleccionado en el periodo indicado.
-              </span>
-
+              <strong>No hay registros de asistencia.</strong>
+              <span>No existen registros para el curso seleccionado en el periodo indicado.</span>
             </div>
-
           </ng-template>
 
         </div>
 
       </ng-container>
 
-
       <ng-container *ngSwitchCase="'conflictos'">
 
         <div class="filtros-bar">
 
-          <label>
+          <label *ngIf="!esEstudiante">
             Curso
-
             <select
               [(ngModel)]="filtroExcusasCurso"
               (ngModelChange)="buscarExcusas()"
             >
-
-              <option [ngValue]="null">
-                Todos
-              </option>
-
-              <option
-                *ngFor="let c of cursos"
-                [ngValue]="c.idCourse"
-              >
+              <option [ngValue]="null">Todos</option>
+              <option *ngFor="let c of cursos" [ngValue]="c.idCourse">
                 {{ c.name }}
               </option>
-
             </select>
-
           </label>
+
+          <div class="curso-fijo" *ngIf="esEstudiante">
+            <span class="picker-label">Curso</span>
+            <strong>{{ nombreCurso(filtroExcusasCurso) || 'Mi curso' }}</strong>
+          </div>
 
           <label>
             Desde
-
-            <input
-              type="date"
-              [(ngModel)]="filtroExcusasInicio"
-              (change)="buscarExcusas()"
-            >
+            <input type="date" [(ngModel)]="filtroExcusasInicio" (change)="buscarExcusas()">
           </label>
 
           <label>
             Hasta
-
-            <input
-              type="date"
-              [(ngModel)]="filtroExcusasFin"
-              (change)="buscarExcusas()"
-            >
+            <input type="date" [(ngModel)]="filtroExcusasFin" (change)="buscarExcusas()">
           </label>
 
         </div>
 
-        <div
-          class="loading"
-          *ngIf="cargandoExcusas"
-        >
+        <div class="loading" *ngIf="cargandoExcusas">
           Cargando información de asistencia...
         </div>
 
-        <div
-          class="error"
-          *ngIf="errorExcusas && !cargandoExcusas"
-        >
+        <div class="error" *ngIf="errorExcusas && !cargandoExcusas">
           {{ errorExcusas }}
         </div>
 
         <ng-container *ngIf="!cargandoExcusas && !errorExcusas">
 
-          <h3 class="subtitulo-seccion">
-            Faltas sin justificar
-          </h3>
+          <h3 class="subtitulo-seccion">Faltas sin justificar</h3>
 
-          <div
-            class="error"
-            *ngIf="errorGuardarJustificacion"
-          >
+          <div class="error" *ngIf="errorGuardarJustificacion">
             {{ errorGuardarJustificacion }}
           </div>
 
-          <div
-            class="lista-excusas"
-            *ngIf="faltasSinJustificar.length"
-          >
+          <div class="lista-excusas" *ngIf="faltasSinJustificar.length">
 
-            <div
-              class="excusa-card"
-              *ngFor="let falta of faltasSinJustificar"
-            >
+            <div class="excusa-card" *ngFor="let falta of faltasSinJustificar">
 
               <div class="excusa-info">
 
-                <strong>
-                  {{ nombreEstudiante(falta.idStudent) }}
-                </strong>
+                <strong>{{ nombreEstudiante(falta.idStudent) }}</strong>
 
                 <span>
-                  {{ nombreCurso(falta.idCourse) }}
-                  ·
-                  {{ falta.attendanceDate }}
+                  {{ nombreCurso(falta.idCourse) }} · {{ falta.attendanceDate }}
                 </span>
 
-                <span
-                  class="badge"
-                  [class]="claseEstado(falta.attendanceStatus)"
-                >
+                <span class="badge" [class]="claseEstado(falta.attendanceStatus)">
                   {{ etiquetaEstado(falta.attendanceStatus) }}
                 </span>
 
@@ -914,17 +798,10 @@
                 <button
                   type="button"
                   class="btn-guardar-justificacion"
-                  [disabled]="
-                    !textoJustificacionDe(falta.idAttendance).trim() ||
-                    guardandoJustificacionId === falta.idAttendance
-                  "
+                  [disabled]="!textoJustificacionDe(falta.idAttendance).trim() || guardandoJustificacionId === falta.idAttendance"
                   (click)="guardarJustificacion(falta)"
                 >
-                  {{
-                    guardandoJustificacionId === falta.idAttendance
-                      ? 'Guardando...'
-                      : 'Guardar justificación'
-                  }}
+                  {{ guardandoJustificacionId === falta.idAttendance ? 'Guardando...' : 'Guardar justificación' }}
                 </button>
 
               </div>
@@ -933,91 +810,47 @@
 
           </div>
 
-          <div
-            class="sin-datos"
-            *ngIf="!faltasSinJustificar.length"
-          >
+          <div class="sin-datos" *ngIf="!faltasSinJustificar.length">
             No hay faltas sin justificar en este periodo.
           </div>
 
-          <h3 class="subtitulo-seccion">
-            Justificaciones registradas
-          </h3>
+          <h3 class="subtitulo-seccion">Justificaciones registradas</h3>
 
         </ng-container>
 
-        <div
-          class="lista-excusas"
-          *ngIf="!cargandoExcusas && !errorExcusas"
-        >
+        <div class="lista-excusas" *ngIf="!cargandoExcusas && !errorExcusas">
 
-          <div
-            class="excusa-card"
-            *ngFor="let excusa of excusas"
-          >
+          <div class="excusa-card" *ngFor="let excusa of excusas">
 
             <div class="excusa-info">
 
-              <strong>
-                {{ nombreEstudiante(excusa.idStudent) }}
-              </strong>
+              <strong>{{ nombreEstudiante(excusa.idStudent) }}</strong>
 
               <span>
-                {{ nombreCurso(excusa.idCourse) }}
-                ·
-                {{ excusa.attendanceDate }}
+                {{ nombreCurso(excusa.idCourse) }} · {{ excusa.attendanceDate }}
               </span>
 
-              <span
-                class="badge"
-                [class]="claseEstado(
-                  excusa.attendanceStatus
-                )"
-              >
-                {{ etiquetaEstado(
-                  excusa.attendanceStatus
-                ) }}
+              <span class="badge" [class]="claseEstado(excusa.attendanceStatus)">
+                {{ etiquetaEstado(excusa.attendanceStatus) }}
               </span>
 
-              <span
-                class="badge"
-                [class]="claseJustificacion(
-                  excusa.justificationStatus || 'NONE'
-                )"
-              >
-                {{ etiquetaJustificacion(
-                  excusa.justificationStatus || 'NONE'
-                ) }}
+              <span class="badge" [class]="claseJustificacion(excusa.justificationStatus || 'NONE')">
+                {{ etiquetaJustificacion(excusa.justificationStatus || 'NONE') }}
               </span>
 
-              <p
-                *ngIf="excusa.justificationText"
-                class="excusa-texto"
-              >
+              <p *ngIf="excusa.justificationText" class="excusa-texto">
                 {{ excusa.justificationText }}
               </p>
 
             </div>
 
-            <div
-              class="excusa-acciones"
-              *ngIf="
-                excusa.justificationStatus === 'PENDING'
-              "
-            >
+            <div class="excusa-acciones" *ngIf="!esEstudiante && excusa.justificationStatus === 'PENDING'">
 
               <button
                 type="button"
                 class="btn-aprobar"
-                [disabled]="
-                  revisandoId === excusa.idAttendance
-                "
-                (click)="
-                  revisarJustificacion(
-                    excusa,
-                    true
-                  )
-                "
+                [disabled]="revisandoId === excusa.idAttendance"
+                (click)="revisarJustificacion(excusa, true)"
               >
                 Aprobar
               </button>
@@ -1025,15 +858,8 @@
               <button
                 type="button"
                 class="btn-rechazar"
-                [disabled]="
-                  revisandoId === excusa.idAttendance
-                "
-                (click)="
-                  revisarJustificacion(
-                    excusa,
-                    false
-                  )
-                "
+                [disabled]="revisandoId === excusa.idAttendance"
+                (click)="revisarJustificacion(excusa, false)"
               >
                 Rechazar
               </button>
@@ -1042,10 +868,7 @@
 
           </div>
 
-          <div
-            class="sin-datos"
-            *ngIf="!excusas.length"
-          >
+          <div class="sin-datos" *ngIf="!excusas.length">
             No hay justificaciones registradas en este periodo.
           </div>
 
