@@ -23,42 +23,52 @@ import { BreadcrumbService } from '../../services/breadcrumb.service';
 })
 export class HorariosComponent implements OnInit, OnDestroy {
 
-  // --- Chat IA ---
+
   chatAbierto = false;
   mensaje = '';
   cargando = false;
   mensajes: MensajeIA[] = [];
   emocionActual = 'normal';
 
-  // --- Vista: Horario o Conflictos ---
+
   vistaActual: 'horario' | 'conflictos' = 'horario';
 
-  // --- Tabla de horario ---
+
   diaSeleccionado = 'Martes';
   horarios: BloqueHorario[] = [];
   horarioDisponible = true;
 
-  // --- Conflictos detectados ---
+
   conflictos: ConflictoHorario[] = [];
 
-  // --- Notificaciones (publicación manual o generadas por la IA) ---
+
   notificaciones: NotificacionHorario[] = [];
 
   get notificacionActual(): NotificacionHorario | null {
+    if (this.esVistaRestringida) {
+      return null;
+    }
     return this.notificaciones[0] || null;
   }
 
-  // --- Selector de curso (Administrador / Docente) ---
+
   cursosDisponibles: string[] = [];
   cursoSeleccionado = '';
   selectorCursosAbierto = false;
 
-  // --- Perfil / rol ---
+
   cargandoPerfil = true;
   esEstudiante = false;
+  esDocente = false;
+  esDirectivo = false;
+  esAdministrador = false;
   gradoEstudiante: string | null = null;
 
-  // --- Reloj en vivo ---
+
+  get esVistaRestringida(): boolean {
+    return !this.esAdministrador;
+  }
+
   horaActual = new Date();
   private idIntervaloReloj: ReturnType<typeof setInterval> | null = null;
 
@@ -87,15 +97,18 @@ export class HorariosComponent implements OnInit, OnDestroy {
       next: respuesta => {
         const perfil: any = respuesta?.data;
         const rol = (perfil?.roleName || '').toLowerCase();
-        this.esEstudiante = rol.includes('estudiante');
 
-        if (this.esEstudiante) {
-          // El campo de grado/curso puede llegar con distintos nombres
-          // según cómo lo exponga finalmente el backend.
+        this.esDirectivo = rol.includes('direct');
+        this.esDocente = rol.includes('docente');
+        this.esEstudiante = rol.includes('estudiante');
+        this.esAdministrador = rol.includes('admin') && !this.esDirectivo;
+
+        if (this.esVistaRestringida) {
+
           this.gradoEstudiante =
             perfil?.grado ?? perfil?.grade ?? perfil?.curso ?? perfil?.course ?? null;
 
-          this.cursoSeleccionado = this.gradoEstudiante || '';
+          this.cursoSeleccionado = this.gradoEstudiante || this.cursosDisponibles[0] || '';
           this.cargarHorarioDelCurso(this.cursoSeleccionado);
         } else {
           this.cursoSeleccionado = this.cursosDisponibles[0] || '';
@@ -105,9 +118,11 @@ export class HorariosComponent implements OnInit, OnDestroy {
         this.cargandoPerfil = false;
       },
       error: () => {
-        // Si falla la carga del perfil, se muestra la vista de administrador
-        // con el primer curso disponible como respaldo.
+ 
+        this.esDirectivo = false;
+        this.esDocente = false;
         this.esEstudiante = false;
+        this.esAdministrador = false;
         this.cursoSeleccionado = this.cursosDisponibles[0] || '';
         this.cargarHorarioDelCurso(this.cursoSeleccionado);
         this.cargandoPerfil = false;
@@ -123,6 +138,10 @@ export class HorariosComponent implements OnInit, OnDestroy {
   }
 
   alternarVista(vista: 'horario' | 'conflictos'): void {
+
+    if (this.esVistaRestringida && vista === 'conflictos') {
+      return;
+    }
     this.vistaActual = vista;
     this.breadcrumbService.setExtra(vista === 'conflictos' ? 'Conflictos' : null);
   }
@@ -134,7 +153,7 @@ export class HorariosComponent implements OnInit, OnDestroy {
   }
 
   alternarSelectorCursos(): void {
-    if (this.esEstudiante) {
+    if (this.esVistaRestringida) {
       return;
     }
     this.selectorCursosAbierto = !this.selectorCursosAbierto;
@@ -162,6 +181,10 @@ export class HorariosComponent implements OnInit, OnDestroy {
   }
 
   abrirChat(): void {
+    // El asistente IA solo está disponible para el Administrador.
+    if (this.esVistaRestringida) {
+      return;
+    }
     this.chatAbierto = true;
     if (this.mensajes.length === 0) {
       this.mensajes = this.horariosService.obtenerMensajeInicial();
@@ -202,13 +225,7 @@ export class HorariosComponent implements OnInit, OnDestroy {
     }, 700);
   }
 
-  /**
-   * Cuando el usuario le pide a la IA organizar/crear un horario, se
-   * simula que la IA generó una versión nueva: se agrega una notificación
-   * y un conflicto pendiente de revisión. Esto es solo demostrativo en
-   * frontend; cuando exista la IA real, este bloque debe reemplazarse por
-   * el resultado que devuelva el backend.
-   */
+
   private registrarActividadDeIA(textoUsuario: string): void {
     const texto = textoUsuario.toLowerCase();
     const esCreacionDeHorario =

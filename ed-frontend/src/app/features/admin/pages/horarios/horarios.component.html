@@ -6,7 +6,7 @@
 
       <div
         class="course-picker"
-        [class.disabled]="esEstudiante"
+        [class.disabled]="esVistaRestringida"
         (click)="alternarSelectorCursos()"
       >
 
@@ -14,16 +14,16 @@
 
         <div class="picker-text">
           <span class="picker-label">
-            {{ esEstudiante ? 'Tu curso' : 'Curso seleccionado' }}
+            {{ esVistaRestringida ? 'Grado' : 'Curso seleccionado' }}
           </span>
           <strong>{{ cursoSeleccionado || 'Sin curso' }}</strong>
         </div>
 
-        <span class="picker-badge" *ngIf="!esEstudiante">
+        <span class="picker-badge" *ngIf="!esVistaRestringida">
           {{ cursosDisponibles.length }}
         </span>
 
-        <span class="picker-chevron" *ngIf="!esEstudiante">⌄</span>
+        <span class="picker-chevron" *ngIf="!esVistaRestringida">⌄</span>
 
         <div class="course-dropdown" *ngIf="selectorCursosAbierto">
           <button
@@ -64,7 +64,7 @@
     <p>Consulta la distribución de clases de cada curso.</p>
   </div>
 
-  <div class="view-toggle">
+  <div class="view-toggle" *ngIf="!esVistaRestringida">
 
     <button
       type="button"
@@ -94,12 +94,12 @@
     <div class="summary-icon">▦</div>
 
     <div class="summary-text">
-      <span>Horario actual</span>
+      <span>{{ esVistaRestringida ? 'Grado del horario' : 'Horario actual' }}</span>
       <strong>{{ cursoSeleccionado || 'Sin curso' }}</strong>
     </div>
 
     <div class="summary-right">
-      <span>{{ cursosDisponibles.length }} cursos registrados</span>
+      <span *ngIf="!esVistaRestringida">{{ cursosDisponibles.length }} cursos registrados</span>
       <span class="live-dot">
         <i></i>
         En vivo
@@ -108,7 +108,7 @@
 
   </div>
 
-  <div class="summary-card" *ngIf="vistaActual === 'conflictos'">
+  <div class="summary-card" *ngIf="!esVistaRestringida && vistaActual === 'conflictos'">
 
     <div class="summary-icon warning">⚠</div>
 
@@ -125,7 +125,7 @@
 
   <div
     class="publication-alert clickable"
-    *ngIf="notificacionActual"
+    *ngIf="!esVistaRestringida && notificacionActual"
     (click)="alternarVista('conflictos')"
   >
 
@@ -168,7 +168,7 @@
         no tiene un horario registrado actualmente.
       </p>
 
-      <span *ngIf="!esEstudiante">
+      <span *ngIf="!esVistaRestringida">
         Selecciona otro curso para consultar su horario.
       </span>
 
@@ -341,7 +341,7 @@
 
   <section
     class="conflicts-wrapper"
-    *ngIf="vistaActual === 'conflictos'"
+    *ngIf="!esVistaRestringida && vistaActual === 'conflictos'"
   >
 
     <table
@@ -400,6 +400,7 @@
   </section>
 
   <button
+    *ngIf="!esVistaRestringida"
     type="button"
     class="floating-ia"
     (click)="abrirChat()"
@@ -414,6 +415,8 @@
   </button>
 
 </main>
+
+<ng-container *ngIf="!esVistaRestringida">
 
 <div
   class="chat-overlay"
@@ -554,3 +557,5 @@
   </div>
 
 </aside>
+
+</ng-container>
