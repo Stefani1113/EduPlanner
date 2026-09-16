@@ -4,19 +4,23 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
-/**
- * Comunicación con ed-ms-gestion-academica vía Feign.
- * "name" debe coincidir EXACTO con spring.application.name de gestion-academica en Consul.
- */
+import com.eduplanner.ed_lib_common.dto.AcademicPeriodResponseDTO;
+import com.eduplanner.ed_lib_common.dto.CourseResponseDTO;
+import com.eduplanner.ed_lib_common.dto.HttpGlobalResponse;
+import com.eduplanner.ed_lib_common.dto.SubjectResponseDTO;
+
 @FeignClient(name = "ed-ms-gestion-academica")
 public interface GestionAcademicaFeignClient {
 
-    @GetMapping("/eduplanner/internal/courses/{id}/name")
-    String getCourseName(@PathVariable("id") Integer id);
+    @GetMapping("/eduplanner/courses/{id}")
+    HttpGlobalResponse<CourseResponseDTO> getCourse(
+            @PathVariable("id") Integer id);
 
-    @GetMapping("/eduplanner/internal/subjects/{id}/name")
-    String getSubjectName(@PathVariable("id") Integer id);
+    @GetMapping("/eduplanner/subjects/{id}")
+    HttpGlobalResponse<SubjectResponseDTO> getSubject(
+            @PathVariable("id") Integer id);
 
-    @GetMapping("/eduplanner/internal/periods/{id}/name")
-    String getPeriodName(@PathVariable("id") Integer id);
+    @GetMapping("/eduplanner/academic-periods/{id}")
+    HttpGlobalResponse<AcademicPeriodResponseDTO> getAcademicPeriod(
+            @PathVariable("id") Integer id);
 }

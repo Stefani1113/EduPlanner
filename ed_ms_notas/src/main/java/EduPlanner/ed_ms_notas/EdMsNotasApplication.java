@@ -1,11 +1,14 @@
 package EduPlanner.ed_ms_notas;
 
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.persistence.autoconfigure.EntityScan;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 
-@SpringBootApplication
 @EnableFeignClients
+@SpringBootApplication
+@EntityScan(basePackages = "com.eduplanner.ed_lib_common.entity")
 public class EdMsNotasApplication {
 
 	public static void main(String[] args) {

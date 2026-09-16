@@ -9,6 +9,7 @@ public class UserInfoDTO {
     private Integer idUser;
     private String name;
     private String surnames;
+    private String email;
     private String roleName;
     private Integer idRole;
     private Boolean status;

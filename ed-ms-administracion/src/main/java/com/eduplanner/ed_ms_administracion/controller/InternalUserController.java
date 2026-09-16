@@ -8,11 +8,13 @@ import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.eduplanner.ed_lib_common.dto.HttpGlobalResponse;
+import com.eduplanner.ed_lib_common.dto.UserInfoDTO;
 import com.eduplanner.ed_lib_common.dto.UserResponseDTO
 ;
 /**
  * Endpoints internos: solo deben ser llamados por otros microservicios, 
- * en este caso por gestion academica
+ * en este caso por gestion academica y por notas
  */
 @RestController
 @RequestMapping("/internal/users")
@@ -33,13 +35,28 @@ public class InternalUserController {
                 .map(role -> ResponseEntity.ok(role.getName()))
                 .orElse(ResponseEntity.notFound().build());
     }
+  
+    @GetMapping("/{id}")
+    public ResponseEntity<HttpGlobalResponse<UserInfoDTO>> getUserInfo(@PathVariable Integer id) {
+        return userRepository.findById(id)
+                .map(user -> {
+                    UserInfoDTO dto = new UserInfoDTO();
+                    dto.setIdUser(user.getIdUser());
+                    dto.setName(user.getName());
+                    dto.setSurnames(user.getSurnames());
+                    dto.setEmail(user.getEmail());
+                    dto.setRoleName(user.getRole().getName());
+                    dto.setIdRole(user.getRole().getIdRole());
+                    dto.setStatus(user.getStatus());
 
-    /**
+                    HttpGlobalResponse<UserInfoDTO> response = new HttpGlobalResponse<>();
+                    response.setData(dto);
+                    response.setMessage("Usuario encontrado");
+                    return ResponseEntity.ok(response);
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
 
-     * Devuelve el nombre completo (nombre + apellidos) de un usuario.
-     * Usado por gestion-academica para mostrar nombres en vez de ids
-     * (por ejemplo, en el historial y PDF de asistencia).
-     */
     @GetMapping("/{id}/full-name")
     public ResponseEntity<String> getUserFullName(@PathVariable Integer id) {
         return userRepository.findById(id)
