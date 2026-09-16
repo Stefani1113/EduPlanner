@@ -1,8 +1,19 @@
 <div class="asistencia-container">
 
   <div class="page-header">
-    <h1>Asistencia</h1>
-    <p>Estadísticas y control de asistencia por curso</p>
+    <div class="page-header-texto">
+      <h1>Asistencia</h1>
+      <p>Estadísticas y control de asistencia por curso</p>
+    </div>
+
+    <button
+      type="button"
+      class="btn-descargar-historial"
+      (click)="abrirPanelDescarga()"
+    >
+      <span class="btn-descargar-historial-icono">⬇</span>
+      {{ esEstudiante ? 'Descargar mi asistencia' : 'Descargar historial' }}
+    </button>
   </div>
 
   <div class="loading" *ngIf="cargandoBase">
@@ -881,3 +892,198 @@
   </ng-container>
 
 </div>
+
+<div class="panel-descarga-overlay" *ngIf="panelDescargaAbierto" (click)="cerrarPanelDescarga()"></div>
+
+<aside class="panel-descarga" [class.abierto]="panelDescargaAbierto">
+
+  <div class="panel-descarga-header">
+    <button
+      type="button"
+      class="panel-descarga-volver"
+      (click)="cerrarPanelDescarga()"
+      aria-label="Cerrar"
+    >
+      ←
+    </button>
+    <span>Descargar el historial<br>de asistencia</span>
+  </div>
+
+  <div class="panel-descarga-body">
+
+    <div class="panel-descarga-tabs">
+      <button
+        type="button"
+        class="panel-descarga-tab"
+        [class.active]="panelDescargaTab === 'estudiante'"
+        (click)="cambiarPanelDescargaTab('estudiante')"
+      >
+        Estudiante
+      </button>
+      <button
+        type="button"
+        class="panel-descarga-tab"
+        [class.active]="panelDescargaTab === 'curso'"
+        (click)="cambiarPanelDescargaTab('curso')"
+      >
+        Curso
+      </button>
+    </div>
+
+    <div class="panel-descarga-busqueda" *ngIf="!esEstudiante">
+      <span class="panel-descarga-busqueda-icono">⌕</span>
+      <input
+        type="text"
+        [placeholder]="panelDescargaTab === 'estudiante' ? 'Buscar estudiante por nombre' : 'Buscar por grado'"
+        [(ngModel)]="panelDescargaBusqueda"
+      >
+    </div>
+
+    <div class="panel-descarga-filtro-grupo" *ngIf="!esEstudiante">
+      <span class="panel-descarga-filtro-label">Nivel</span>
+      <div class="panel-descarga-chips">
+        <button
+          type="button"
+          class="panel-descarga-chip"
+          *ngFor="let nivel of niveles"
+          [class.active]="panelDescargaNivel === nivel.idLevel"
+          (click)="seleccionarPanelDescargaNivel(nivel.idLevel)"
+        >
+          {{ nivel.name }}
+        </button>
+      </div>
+    </div>
+
+    <div class="panel-descarga-filtro-grupo" *ngIf="!esEstudiante">
+      <span class="panel-descarga-filtro-label">Grado</span>
+      <div class="panel-descarga-chips">
+        <button
+          type="button"
+          class="panel-descarga-chip"
+          [class.active]="panelDescargaGrado === 'todos'"
+          (click)="seleccionarPanelDescargaGrado('todos')"
+        >
+          Todos
+        </button>
+        <button
+          type="button"
+          class="panel-descarga-chip"
+          *ngFor="let curso of panelDescargaCursosDelNivel"
+          [class.active]="panelDescargaGrado === curso.idCourse"
+          (click)="seleccionarPanelDescargaGrado(curso.idCourse)"
+        >
+          {{ curso.name }}
+        </button>
+      </div>
+    </div>
+
+    <div class="panel-descarga-lista-header">
+      <span class="panel-descarga-lista-contador">
+        <strong>{{ panelDescargaTotalDisponible }}</strong>
+        {{ panelDescargaTab === 'estudiante'
+          ? (panelDescargaTotalDisponible === 1 ? 'estudiante' : 'estudiantes')
+          : (panelDescargaTotalDisponible === 1 ? 'curso' : 'cursos') }}
+      </span>
+      <button
+        type="button"
+        class="panel-descarga-seleccionar-todo"
+        (click)="toggleSeleccionarTodoPanel()"
+        [disabled]="panelDescargaTotalDisponible === 0"
+      >
+        {{ panelDescargaTodoSeleccionado ? 'Quitar selección' : 'Seleccionar todo' }}
+      </button>
+    </div>
+
+    <div class="panel-descarga-error" *ngIf="panelDescargaError">
+      {{ panelDescargaError }}
+    </div>
+
+    <div class="panel-descarga-lista">
+
+      <div class="panel-descarga-cargando" *ngIf="panelDescargaCargando">
+        <span class="spinner"></span>
+        Cargando...
+      </div>
+
+      <ng-container *ngIf="!panelDescargaCargando">
+
+        <ng-container *ngIf="panelDescargaTab === 'estudiante'; else listaCursosPanel">
+
+          <label
+            class="panel-descarga-item"
+            *ngFor="let est of panelDescargaEstudiantesFiltrados"
+            [class.seleccionado]="panelDescargaSeleccionEstudiantes.has(est.idStudent)"
+          >
+            <span class="panel-descarga-checkbox-wrap">
+              <input
+                type="checkbox"
+                [checked]="panelDescargaSeleccionEstudiantes.has(est.idStudent)"
+                (change)="toggleSeleccionPanelEstudiante(est.idStudent)"
+              >
+            </span>
+            <span class="panel-descarga-item-texto">
+              <span class="panel-descarga-item-nombre">{{ est.nombre }}</span>
+              <span class="panel-descarga-item-grado">{{ est.grado }}</span>
+            </span>
+            <span class="panel-descarga-item-porcentaje">{{ est.porcentaje ?? 0 }}%</span>
+          </label>
+
+          <div class="panel-descarga-vacio" *ngIf="!panelDescargaEstudiantesFiltrados.length">
+            No hay estudiantes para este filtro.
+          </div>
+
+        </ng-container>
+
+        <ng-template #listaCursosPanel>
+
+          <label
+            class="panel-descarga-item"
+            *ngFor="let curso of panelDescargaCursosFiltrados"
+            [class.seleccionado]="panelDescargaSeleccionCursos.has(curso.idCourse)"
+          >
+            <span class="panel-descarga-checkbox-wrap">
+              <input
+                type="checkbox"
+                [checked]="panelDescargaSeleccionCursos.has(curso.idCourse)"
+                (change)="toggleSeleccionPanelCurso(curso.idCourse)"
+              >
+            </span>
+            <span class="panel-descarga-item-texto">
+              <span class="panel-descarga-item-nombre">{{ curso.nombre }}</span>
+            </span>
+            <span class="panel-descarga-item-porcentaje">{{ curso.porcentaje ?? 0 }}%</span>
+          </label>
+
+          <div class="panel-descarga-vacio" *ngIf="!panelDescargaCursosFiltrados.length">
+            No hay cursos para este filtro.
+          </div>
+
+        </ng-template>
+
+      </ng-container>
+
+    </div>
+
+  </div>
+
+  <div class="panel-descarga-footer">
+
+    <span class="panel-descarga-resumen-seleccion" *ngIf="panelDescargaTotalSeleccionado > 0">
+      {{ panelDescargaTotalSeleccionado }}
+      {{ panelDescargaTab === 'estudiante'
+        ? (panelDescargaTotalSeleccionado === 1 ? 'estudiante seleccionado' : 'estudiantes seleccionados')
+        : (panelDescargaTotalSeleccionado === 1 ? 'curso seleccionado' : 'cursos seleccionados') }}
+    </span>
+
+    <button
+      type="button"
+      class="panel-descarga-generar"
+      [disabled]="panelDescargaTotalSeleccionado === 0 || panelDescargaGenerando"
+      (click)="generarReportePanel()"
+    >
+      {{ panelDescargaGenerando ? 'Generando...' : 'Generar Reporte PDF' }}
+    </button>
+
+  </div>
+
+</aside>

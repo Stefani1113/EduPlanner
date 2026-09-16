@@ -2,8 +2,8 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
-import { forkJoin, of, Observable } from 'rxjs';
-import { catchError, map, switchMap } from 'rxjs/operators';
+import { forkJoin, of, from, Observable } from 'rxjs';
+import { catchError, concatMap, map, switchMap } from 'rxjs/operators';
 import {
   AsistenciaService,
   AttendanceRequestDTO,
@@ -161,6 +161,33 @@ export class AsistenciaComponent implements OnInit, OnDestroy {
   errorExcusas: string | null = null;
   excusasConsultadas = false;
   revisandoId: number | null = null;
+
+  // --- Panel lateral: descargar historial por estudiante o por curso ---
+  panelDescargaAbierto = false;
+  panelDescargaTab: 'estudiante' | 'curso' = 'estudiante';
+  panelDescargaBusqueda = '';
+  panelDescargaNivel: number | null = null;
+  panelDescargaGrado: number | 'todos' = 'todos';
+  panelDescargaCargando = false;
+  panelDescargaError: string | null = null;
+  panelDescargaGenerando = false;
+
+  panelDescargaEstudiantes: {
+    idStudent: number;
+    nombre: string;
+    idCourse: number;
+    grado: string;
+    porcentaje: number | null;
+  }[] = [];
+
+  panelDescargaCursos: {
+    idCourse: number;
+    nombre: string;
+    porcentaje: number | null;
+  }[] = [];
+
+  panelDescargaSeleccionEstudiantes = new Set<number>();
+  panelDescargaSeleccionCursos = new Set<number>();
 
   constructor(
     private asistenciaService: AsistenciaService,
@@ -1226,6 +1253,413 @@ export class AsistenciaComponent implements OnInit, OnDestroy {
   seleccionarCurso(idCourse: number): void {
     this.idCursoSeleccionado =
       idCourse;
+  }
+
+  // --- Panel lateral: descargar historial por estudiante o por curso ---
+
+  get panelDescargaCursosDelNivel(): CourseResponseDTO[] {
+    return this.cursos.filter(
+      c =>
+        this.panelDescargaNivel === null ||
+        c.idLevel === this.panelDescargaNivel
+    );
+  }
+
+  get panelDescargaEstudiantesFiltrados() {
+    const q = this.panelDescargaBusqueda.trim().toLowerCase();
+
+    if (!q) {
+      return this.panelDescargaEstudiantes;
+    }
+
+    return this.panelDescargaEstudiantes.filter(e =>
+      e.nombre.toLowerCase().includes(q)
+    );
+  }
+
+  get panelDescargaCursosFiltrados() {
+    const q = this.panelDescargaBusqueda.trim().toLowerCase();
+
+    if (!q) {
+      return this.panelDescargaCursos;
+    }
+
+    return this.panelDescargaCursos.filter(c =>
+      c.nombre.toLowerCase().includes(q)
+    );
+  }
+
+  get panelDescargaTotalDisponible(): number {
+    return this.panelDescargaTab === 'estudiante'
+      ? this.panelDescargaEstudiantesFiltrados.length
+      : this.panelDescargaCursosFiltrados.length;
+  }
+
+  get panelDescargaTotalSeleccionado(): number {
+    return this.panelDescargaTab === 'estudiante'
+      ? this.panelDescargaSeleccionEstudiantes.size
+      : this.panelDescargaSeleccionCursos.size;
+  }
+
+  get panelDescargaTodoSeleccionado(): boolean {
+    if (this.panelDescargaTab === 'estudiante') {
+      const filtrados = this.panelDescargaEstudiantesFiltrados;
+
+      return (
+        filtrados.length > 0 &&
+        filtrados.every(e =>
+          this.panelDescargaSeleccionEstudiantes.has(e.idStudent)
+        )
+      );
+    }
+
+    const filtrados = this.panelDescargaCursosFiltrados;
+
+    return (
+      filtrados.length > 0 &&
+      filtrados.every(c =>
+        this.panelDescargaSeleccionCursos.has(c.idCourse)
+      )
+    );
+  }
+
+  abrirPanelDescarga(): void {
+    this.panelDescargaAbierto = true;
+    this.panelDescargaTab = 'estudiante';
+    this.panelDescargaBusqueda = '';
+    this.panelDescargaError = null;
+    this.panelDescargaSeleccionEstudiantes.clear();
+    this.panelDescargaSeleccionCursos.clear();
+
+    if (this.panelDescargaNivel === null) {
+      this.panelDescargaNivel = this.niveles[0]?.idLevel ?? null;
+    }
+
+    this.panelDescargaGrado = 'todos';
+    this.cargarPanelDescargaDatos();
+  }
+
+  cerrarPanelDescarga(): void {
+    this.panelDescargaAbierto = false;
+  }
+
+  cambiarPanelDescargaTab(tab: 'estudiante' | 'curso'): void {
+    if (this.panelDescargaTab === tab) {
+      return;
+    }
+
+    this.panelDescargaTab = tab;
+    this.panelDescargaBusqueda = '';
+    this.cargarPanelDescargaDatos();
+  }
+
+  seleccionarPanelDescargaNivel(idLevel: number): void {
+    if (this.panelDescargaNivel === idLevel) {
+      return;
+    }
+
+    this.panelDescargaNivel = idLevel;
+    this.panelDescargaGrado = 'todos';
+    this.cargarPanelDescargaDatos();
+  }
+
+  seleccionarPanelDescargaGrado(grado: number | 'todos'): void {
+    if (this.panelDescargaGrado === grado) {
+      return;
+    }
+
+    this.panelDescargaGrado = grado;
+    this.cargarPanelDescargaDatos();
+  }
+
+  toggleSeleccionPanelEstudiante(idStudent: number): void {
+    if (this.panelDescargaSeleccionEstudiantes.has(idStudent)) {
+      this.panelDescargaSeleccionEstudiantes.delete(idStudent);
+    } else {
+      this.panelDescargaSeleccionEstudiantes.add(idStudent);
+    }
+  }
+
+  toggleSeleccionPanelCurso(idCourse: number): void {
+    if (this.panelDescargaSeleccionCursos.has(idCourse)) {
+      this.panelDescargaSeleccionCursos.delete(idCourse);
+    } else {
+      this.panelDescargaSeleccionCursos.add(idCourse);
+    }
+  }
+
+  toggleSeleccionarTodoPanel(): void {
+    const yaTodo = this.panelDescargaTodoSeleccionado;
+
+    if (this.panelDescargaTab === 'estudiante') {
+      this.panelDescargaEstudiantesFiltrados.forEach(e => {
+        if (yaTodo) {
+          this.panelDescargaSeleccionEstudiantes.delete(e.idStudent);
+        } else {
+          this.panelDescargaSeleccionEstudiantes.add(e.idStudent);
+        }
+      });
+    } else {
+      this.panelDescargaCursosFiltrados.forEach(c => {
+        if (yaTodo) {
+          this.panelDescargaSeleccionCursos.delete(c.idCourse);
+        } else {
+          this.panelDescargaSeleccionCursos.add(c.idCourse);
+        }
+      });
+    }
+  }
+
+  private cargarPanelDescargaDatos(): void {
+    if (this.panelDescargaTab === 'estudiante') {
+      this.cargarPanelDescargaEstudiantes();
+    } else {
+      this.cargarPanelDescargaCursos();
+    }
+  }
+
+  private cargarPanelDescargaEstudiantes(): void {
+    // El Estudiante solo puede descargar su propio historial, nunca el de
+    // sus compañeros.
+    if (this.esEstudiante) {
+      if (this.idUsuarioActual === null) {
+        this.panelDescargaEstudiantes = [];
+        return;
+      }
+
+      this.panelDescargaCargando = true;
+      this.panelDescargaError = null;
+
+      this.asistenciaService
+        .obtenerResumenPorEstudiante(
+          this.idUsuarioActual,
+          this.fechaInicioHistorial,
+          this.fechaFinHistorial
+        )
+        .pipe(
+          catchError(() => of(null))
+        )
+        .subscribe(resumen => {
+          this.panelDescargaEstudiantes = [
+            {
+              idStudent: this.idUsuarioActual as number,
+              nombre: this.nombreUsuarioActual || 'Yo',
+              idCourse: this.idCursoEstudiante ?? 0,
+              grado: this.nombreCurso(this.idCursoEstudiante) || 'Mi curso',
+              porcentaje: resumen?.attendancePercentage ?? 0
+            }
+          ];
+          this.panelDescargaCargando = false;
+        });
+
+      return;
+    }
+
+    const cursosObjetivo =
+      this.panelDescargaGrado === 'todos'
+        ? this.panelDescargaCursosDelNivel
+        : this.panelDescargaCursosDelNivel.filter(
+            c => c.idCourse === this.panelDescargaGrado
+          );
+
+    if (!cursosObjetivo.length) {
+      this.panelDescargaEstudiantes = [];
+      return;
+    }
+
+    this.panelDescargaCargando = true;
+    this.panelDescargaError = null;
+
+    forkJoin(
+      cursosObjetivo.map(curso =>
+        this.asistenciaService
+          .listarEstudiantesPorCurso(curso.idCourse)
+          .pipe(
+            map(estudiantes =>
+              estudiantes.map(e => ({
+                idStudent: e.idUser,
+                nombre: `${e.name} ${e.surnames}`.trim(),
+                idCourse: curso.idCourse,
+                grado: curso.name
+              }))
+            ),
+            catchError(() => of([]))
+          )
+      )
+    ).subscribe({
+      next: listas => {
+        const base = listas.flat();
+
+        if (!base.length) {
+          this.panelDescargaEstudiantes = [];
+          this.panelDescargaCargando = false;
+          return;
+        }
+
+        forkJoin(
+          base.map(est =>
+            this.asistenciaService
+              .obtenerResumenPorEstudiante(
+                est.idStudent,
+                this.fechaInicioHistorial,
+                this.fechaFinHistorial
+              )
+              .pipe(
+                map(resumen => ({
+                  ...est,
+                  porcentaje: resumen?.attendancePercentage ?? 0
+                })),
+                catchError(() =>
+                  of({
+                    ...est,
+                    porcentaje: null
+                  })
+                )
+              )
+          )
+        ).subscribe({
+          next: conPorcentaje => {
+            this.panelDescargaEstudiantes = conPorcentaje;
+            this.panelDescargaCargando = false;
+          },
+          error: () => {
+            this.panelDescargaEstudiantes = base.map(e => ({
+              ...e,
+              porcentaje: null
+            }));
+            this.panelDescargaCargando = false;
+          }
+        });
+      },
+      error: () => {
+        this.panelDescargaError =
+          'No se pudieron cargar los estudiantes.';
+        this.panelDescargaCargando = false;
+      }
+    });
+  }
+
+  private cargarPanelDescargaCursos(): void {
+    // El Estudiante solo puede descargar el reporte de su propio curso.
+    const cursosObjetivo = this.esEstudiante
+      ? this.cursos.filter(c => c.idCourse === this.idCursoEstudiante)
+      : this.panelDescargaCursosDelNivel;
+
+    if (!cursosObjetivo.length) {
+      this.panelDescargaCursos = [];
+      return;
+    }
+
+    this.panelDescargaCargando = true;
+    this.panelDescargaError = null;
+
+    forkJoin(
+      cursosObjetivo.map(curso =>
+        this.asistenciaService
+          .obtenerHistorialPorCurso(
+            curso.idCourse,
+            this.fechaInicioHistorial,
+            this.fechaFinHistorial
+          )
+          .pipe(
+            map(registros => ({
+              idCourse: curso.idCourse,
+              nombre: curso.name,
+              porcentaje: this.asistenciaService.calcularResumen(
+                registros
+              ).porcentajeAsistencia
+            })),
+            catchError(() =>
+              of({
+                idCourse: curso.idCourse,
+                nombre: curso.name,
+                porcentaje: null
+              })
+            )
+          )
+      )
+    ).subscribe({
+      next: resultados => {
+        this.panelDescargaCursos = resultados;
+        this.panelDescargaCargando = false;
+      },
+      error: () => {
+        this.panelDescargaError =
+          'No se pudieron cargar los cursos.';
+        this.panelDescargaCargando = false;
+      }
+    });
+  }
+
+  generarReportePanel(): void {
+    const ids =
+      this.panelDescargaTab === 'estudiante'
+        ? Array.from(this.panelDescargaSeleccionEstudiantes)
+        : Array.from(this.panelDescargaSeleccionCursos);
+
+    if (!ids.length || this.panelDescargaGenerando) {
+      return;
+    }
+
+    this.panelDescargaGenerando = true;
+    this.panelDescargaError = null;
+
+    from(ids)
+      .pipe(
+        concatMap(id => {
+          const params =
+            this.panelDescargaTab === 'estudiante'
+              ? {
+                  student: id,
+                  startDate: this.fechaInicioHistorial,
+                  endDate: this.fechaFinHistorial
+                }
+              : {
+                  course: id,
+                  startDate: this.fechaInicioHistorial,
+                  endDate: this.fechaFinHistorial
+                };
+
+          const nombreEstudianteArchivo =
+            this.esEstudiante && id === this.idUsuarioActual
+              ? this.nombreUsuarioActual || 'mi-asistencia'
+              : this.nombreEstudiante(id);
+
+          const nombreArchivo =
+            this.panelDescargaTab === 'estudiante'
+              ? `asistencia-${nombreEstudianteArchivo
+                  .trim()
+                  .replace(/\s+/g, '-')
+                  .toLowerCase()}.pdf`
+              : `asistencia-${this.nombreCurso(id)
+                  .trim()
+                  .replace(/\s+/g, '-')
+                  .toLowerCase()}.pdf`;
+
+          return this.asistenciaService.descargarPdf(params).pipe(
+            map(blob => ({ blob, nombreArchivo })),
+            catchError(() => of(null))
+          );
+        })
+      )
+      .subscribe({
+        next: resultado => {
+          if (resultado) {
+            this.descargar(
+              of(resultado.blob),
+              resultado.nombreArchivo
+            );
+          }
+        },
+        error: () => {
+          this.panelDescargaError =
+            'No se pudo generar el reporte.';
+          this.panelDescargaGenerando = false;
+        },
+        complete: () => {
+          this.panelDescargaGenerando = false;
+        }
+      });
   }
 
   descargarPdfHistorial(): void {
