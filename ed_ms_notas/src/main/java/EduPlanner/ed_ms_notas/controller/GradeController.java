@@ -3,8 +3,11 @@ package EduPlanner.ed_ms_notas.controller;
 import com.eduplanner.ed_lib_common.dto.GradeRequestDTO;
 import com.eduplanner.ed_lib_common.dto.GradeResponseDTO;
 import com.eduplanner.ed_lib_common.dto.HttpGlobalResponse;
+import com.eduplanner.ed_lib_common.enums.RolEnum;
+import EduPlanner.ed_ms_notas.security.RequireRole;
 import EduPlanner.ed_ms_notas.service.GradePdfService;
 import EduPlanner.ed_ms_notas.service.GradeService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -24,6 +27,7 @@ public class GradeController {
     private final GradePdfService pdfService;
 
     @PostMapping
+    @RequireRole(RolEnum.DOCENTE)
     public ResponseEntity<HttpGlobalResponse<GradeResponseDTO>> registerGrade(@Valid @RequestBody GradeRequestDTO req) {
         HttpGlobalResponse<GradeResponseDTO> r = new HttpGlobalResponse<>();
         try {
@@ -37,6 +41,7 @@ public class GradeController {
     }
 
     @PutMapping("/{id}")
+    @RequireRole(RolEnum.DOCENTE)
     public ResponseEntity<HttpGlobalResponse<GradeResponseDTO>> updateGrade(@PathVariable Integer id, @Valid @RequestBody GradeRequestDTO req) {
         HttpGlobalResponse<GradeResponseDTO> r = new HttpGlobalResponse<>();
         try {
@@ -50,10 +55,16 @@ public class GradeController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<HttpGlobalResponse<GradeResponseDTO>> getById(@PathVariable Integer id) {
+    @RequireRole({RolEnum.ESTUDIANTE, RolEnum.DOCENTE, RolEnum.ADMINISTRADOR})
+    public ResponseEntity<HttpGlobalResponse<GradeResponseDTO>> getById(HttpServletRequest request, @PathVariable Integer id) {
         HttpGlobalResponse<GradeResponseDTO> r = new HttpGlobalResponse<>();
         try {
-            r.setData(service.getById(id));
+            GradeResponseDTO grade = service.getById(id);
+            if (!canViewStudentData(request, grade.getIdStudent())) {
+                r.setMessage("No tienes permiso para consultar la nota de otro estudiante");
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(r);
+            }
+            r.setData(grade);
             r.setMessage("Nota encontrada");
             return ResponseEntity.ok(r);
         } catch (IllegalArgumentException e) {
@@ -62,16 +73,23 @@ public class GradeController {
         }
     }
 
+    /** RF 9.3 - Visualizar y consultar notas: el estudiante solo puede ver las suyas. */
     @GetMapping("/by-student")
+    @RequireRole({RolEnum.ESTUDIANTE, RolEnum.DOCENTE, RolEnum.ADMINISTRADOR})
     public ResponseEntity<HttpGlobalResponse<List<GradeResponseDTO>>> getByStudent(
-            @RequestParam Integer student, @RequestParam Integer period) {
+            HttpServletRequest request, @RequestParam Integer student, @RequestParam Integer period) {
         HttpGlobalResponse<List<GradeResponseDTO>> r = new HttpGlobalResponse<>();
+        if (!canViewStudentData(request, student)) {
+            r.setMessage("No tienes permiso para consultar las notas de otro estudiante");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(r);
+        }
         r.setData(service.getByStudentAndPeriod(student, period));
         r.setMessage("Notas recuperadas con éxito");
         return ResponseEntity.ok(r);
     }
 
     @GetMapping("/by-course")
+    @RequireRole({RolEnum.DOCENTE, RolEnum.ADMINISTRADOR})
     public ResponseEntity<HttpGlobalResponse<List<GradeResponseDTO>>> getByCourse(
             @RequestParam Integer course, @RequestParam Integer subject, @RequestParam Integer period) {
         HttpGlobalResponse<List<GradeResponseDTO>> r = new HttpGlobalResponse<>();
@@ -80,17 +98,37 @@ public class GradeController {
         return ResponseEntity.ok(r);
     }
 
+    /** Un estudiante solo puede ver sus propias notas; docentes/administradores pueden ver cualquiera. */
+    private boolean canViewStudentData(HttpServletRequest request, Integer idStudent) {
+        Object role = request.getAttribute("role");
+        if (!"ESTUDIANTE".equals(role)) {
+            return true;
+        }
+        Object idUser = request.getAttribute("idUser");
+        return idUser != null && idUser.toString().equals(String.valueOf(idStudent));
+    }
+
     /**
      * RF 9.4 - Generar y descargar en PDF las notas de un estudiante o de un curso/asignatura.
      * GET /eduplanner/grades/pdf?student=15&period=1
      * GET /eduplanner/grades/pdf?course=1&subject=1&period=1
      */
     @GetMapping("/pdf")
+    @RequireRole({RolEnum.ESTUDIANTE, RolEnum.DOCENTE, RolEnum.ADMINISTRADOR})
     public ResponseEntity<byte[]> downloadPdf(
+            HttpServletRequest request,
             @RequestParam(required = false) Integer student,
             @RequestParam(required = false) Integer course,
             @RequestParam(required = false) Integer subject,
             @RequestParam Integer period) {
+
+        if (student != null && !canViewStudentData(request, student)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        if (student == null && "ESTUDIANTE".equals(request.getAttribute("role"))) {
+            // Un estudiante no puede exportar el reporte completo de un curso.
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
 
         List<GradeResponseDTO> records;
         String title;
