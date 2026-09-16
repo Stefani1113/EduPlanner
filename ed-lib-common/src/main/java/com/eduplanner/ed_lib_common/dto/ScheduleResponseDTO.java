@@ -1,5 +1,7 @@
 package com.eduplanner.ed_lib_common.dto;
 
+import java.time.LocalTime;
+
 import lombok.Data;
 
 /**
@@ -21,8 +23,8 @@ public class ScheduleResponseDTO {
 
     private Integer idTimeSlot;
     private Short slotOrder;
-    private String startTime;
-    private String endTime;
+    private LocalTime startTime;
+    private LocalTime endTime;
 
     private Byte dayOfWeek;
 }
