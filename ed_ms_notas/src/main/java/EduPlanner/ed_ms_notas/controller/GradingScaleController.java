@@ -3,6 +3,8 @@ package EduPlanner.ed_ms_notas.controller;
 import com.eduplanner.ed_lib_common.dto.GradingScaleRequestDTO;
 import com.eduplanner.ed_lib_common.dto.GradingScaleResponseDTO;
 import com.eduplanner.ed_lib_common.dto.HttpGlobalResponse;
+import com.eduplanner.ed_lib_common.enums.RolEnum;
+import EduPlanner.ed_ms_notas.security.RequireRole;
 import EduPlanner.ed_ms_notas.service.GradingScaleService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/** RF 9.1 - Configurar escala de calificación (rol Sistema -> administrador). */
 @RestController
 @RequestMapping("/grading-scales")
 @RequiredArgsConstructor
@@ -20,6 +23,7 @@ public class GradingScaleController {
     private final GradingScaleService service;
 
     @PostMapping
+    @RequireRole(RolEnum.ADMINISTRADOR)
     public ResponseEntity<HttpGlobalResponse<GradingScaleResponseDTO>> register(@Valid @RequestBody GradingScaleRequestDTO req) {
         HttpGlobalResponse<GradingScaleResponseDTO> r = new HttpGlobalResponse<>();
         try {
@@ -33,6 +37,7 @@ public class GradingScaleController {
     }
 
     @PutMapping("/{id}")
+    @RequireRole(RolEnum.ADMINISTRADOR)
     public ResponseEntity<HttpGlobalResponse<GradingScaleResponseDTO>> update(@PathVariable Integer id, @Valid @RequestBody GradingScaleRequestDTO req) {
         HttpGlobalResponse<GradingScaleResponseDTO> r = new HttpGlobalResponse<>();
         try {
