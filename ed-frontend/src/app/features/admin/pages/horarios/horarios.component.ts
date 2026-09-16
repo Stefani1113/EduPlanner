@@ -286,4 +286,4 @@ export class HorariosComponent implements OnInit, OnDestroy {
     this.mensaje = pregunta;
     this.enviarMensaje();
   }
-}
+} 
