@@ -23,30 +23,228 @@
   color: var(--inst-text);
 }
 
+/* ===== Toolbar: selector de curso + reloj + acciones ===== */
+
 .horario-toolbar {
-  background: transparent;
-  padding: 0;
-  border-radius: 0;
-  margin-bottom: 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 14px;
+  margin-bottom: 24px;
 }
 
-.toolbar-left {
+.toolbar-bar {
   display: flex;
   align-items: center;
+  gap: 14px;
+  background: var(--inst-surface);
+  border-radius: 14px;
+  padding: 10px 14px;
+  flex-wrap: wrap;
+}
+
+/* --- Selector de curso --- */
+
+.course-picker {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--inst-surface-alt);
+  border-radius: 10px;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.course-picker:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.course-picker.disabled {
+  cursor: default;
+}
+
+.picker-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--inst-secondary) 18%, transparent);
+  color: var(--inst-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+
+.picker-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.picker-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--inst-muted);
+}
+
+.picker-text strong {
+  font-size: 14px;
+  color: var(--inst-text);
+}
+
+.picker-badge {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 50%;
+  background: var(--inst-secondary);
+  color: var(--inst-dark);
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.picker-chevron {
+  color: var(--inst-muted);
+  font-size: 13px;
+}
+
+.course-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  min-width: 160px;
+  background: var(--inst-surface-alt);
+  border: 1px solid var(--inst-border);
+  border-radius: 10px;
+  padding: 6px;
+  z-index: 20;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+}
+
+.course-dropdown button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  color: var(--inst-muted);
+  font-size: 13px;
+  padding: 9px 10px;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: 0.15s;
+}
+
+.course-dropdown button:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--inst-text);
+}
+
+.course-dropdown button.active {
+  background: color-mix(in srgb, var(--inst-secondary) 20%, transparent);
+  color: var(--inst-secondary);
+  font-weight: 600;
+}
+
+/* --- Reloj en vivo --- */
+
+.clock-block {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 4px;
+}
+
+.clock-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--inst-secondary);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--inst-secondary) 60%, transparent);
+  flex-shrink: 0;
+}
+
+.clock-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.clock-text span {
+  font-size: 11px;
+  color: var(--inst-muted);
+}
+
+.clock-text strong {
+  font-size: 14px;
+  color: var(--inst-text);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Botones de acción --- */
+
+.pdf-button {
+  height: 40px;
+  border: none;
+  background: var(--inst-primary);
+  color: var(--inst-text);
+  border-radius: 8px;
+  padding: 0 18px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.pdf-chip {
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 5px;
+  padding: 2px 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.pdf-button:hover:not(:disabled) {
+  background: var(--inst-secondary);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(48, 97, 22, 0.3);
+}
+
+.pdf-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* ===== Toggle Horario / Conflictos ===== */
+
+.view-toggle {
+  display: inline-flex;
   gap: 6px;
   background: var(--inst-surface-alt);
   border-radius: 12px;
   padding: 4px;
-  flex-shrink: 0;
+  margin-bottom: 20px;
 }
 
-.toolbar-item {
-  position: relative;
+.view-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   border: none;
   background: transparent;
   color: var(--inst-muted);
@@ -59,104 +257,267 @@
   white-space: nowrap;
 }
 
-.toolbar-item:hover {
+.view-toggle-btn:hover {
   color: var(--inst-text);
   background: rgba(255, 255, 255, 0.05);
 }
 
-.toolbar-item.active {
+.view-toggle-btn.active {
   background: color-mix(in srgb, var(--inst-secondary) 20%, transparent);
   color: var(--inst-secondary);
   font-weight: 600;
   box-shadow: 0 2px 8px color-mix(in srgb, var(--inst-secondary) 15%, transparent);
 }
 
-.toolbar-item.conflict {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.conflict-dot {
-  width: 6px;
-  height: 6px;
-  background: #e87561;
+.badge-count {
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
   border-radius: 50%;
-}
-
-.toolbar-right {
+  background: #e87561;
+  color: #1a1a1a;
+  font-size: 10px;
+  font-weight: 700;
   display: flex;
   align-items: center;
+  justify-content: center;
 }
 
-.course-selector {
+/* ===== Encabezado de página ===== */
+
+.page-heading {
+  margin-bottom: 20px;
+}
+
+.page-heading h1 {
+  margin: 0 0 6px;
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--inst-text);
+}
+
+.page-heading p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--inst-muted);
+}
+
+/* ===== Tarjeta resumen "Horario actual" ===== */
+
+.summary-card {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
+  background: var(--inst-surface);
+  border-radius: 14px;
+  padding: 18px 20px;
+  margin-bottom: 24px;
   flex-wrap: wrap;
 }
 
-.course-label {
-  color: var(--inst-secondary);
-  font-size: 15px;
-  font-weight: 600;
-}
-
-.preview-button {
+.summary-icon {
+  width: 40px;
   height: 40px;
-  border: 1px solid color-mix(in srgb, var(--inst-secondary) 30%, transparent);
-  background: color-mix(in srgb, var(--inst-secondary) 8%, transparent);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--inst-secondary) 18%, transparent);
   color: var(--inst-secondary);
-  border-radius: 8px;
-  padding: 0 16px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all .2s ease;
-  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  flex-shrink: 0;
 }
 
-.preview-button:hover {
-  background: color-mix(in srgb, var(--inst-secondary) 16%, transparent);
-  transform: translateY(-1px);
+.summary-icon.warning {
+  background: color-mix(in srgb, #e87561 20%, transparent);
+  color: #e87561;
 }
 
-.eye-icon {
-  margin-right: 6px;
+.summary-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
 }
 
-.pdf-button {
-  height: 40px;
-  border: none;
-  background: var(--inst-primary);
+.summary-text span {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--inst-muted);
+}
+
+.summary-text strong {
+  font-size: 16px;
   color: var(--inst-text);
-  border-radius: 8px;
-  padding: 0 22px;
-  font-size: 14px;
+}
+
+.summary-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-left: auto;
+  flex-wrap: wrap;
+}
+
+.summary-right > span {
+  font-size: 13px;
+  color: var(--inst-muted);
+}
+
+.live-dot {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--inst-secondary);
   font-weight: 600;
-  cursor: pointer;
-  transition: all 0.25s ease;
 }
 
-.pdf-button:hover {
+.live-dot i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
   background: var(--inst-secondary);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 15px rgba(48, 97, 22, 0.3);
+  display: inline-block;
 }
 
+/* ===== Estado vacío: sin horario ===== */
+
+.empty-state {
+  background: var(--inst-surface);
+  border-radius: 16px;
+  padding: 70px 24px;
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.empty-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--inst-secondary) 16%, transparent);
+  color: var(--inst-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  margin: 0 auto 20px;
+}
+
+.empty-state h3 {
+  margin: 0 0 10px;
+  font-size: 19px;
+  color: var(--inst-text);
+}
+
+.empty-state p {
+  margin: 0 0 6px;
+  font-size: 14px;
+  color: var(--inst-muted);
+}
+
+.empty-state p strong {
+  color: var(--inst-secondary);
+}
+
+.empty-state > span {
+  font-size: 13px;
+  color: var(--inst-muted);
+  opacity: 0.8;
+}
+
+/* ===== Aviso de publicación ===== */
 
 .publication-alert {
-margin: 0 auto 24px;
-max-width: 50%;
-min-height: 56px;
-border-left: 4px solid var(--inst-secondary);
-background: var(--inst-surface-alt);
-border-radius: 12px;
-display: flex;
-align-items: center;
-padding: 12px 20px;
-box-sizing: border-box;
-gap: 4px;
+  position: relative;
+  margin: 0 0 24px;
+  max-width: 100%;
+  min-height: 56px;
+  border-left: 4px solid var(--inst-secondary);
+  background: var(--inst-surface-alt);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  box-sizing: border-box;
+  gap: 4px;
+}
+
+.publication-alert.clickable {
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.publication-alert.clickable:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* ===== Tabla de conflictos ===== */
+
+.conflicts-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: 12px;
+  background: var(--inst-surface);
+  padding: 12px;
+  margin-bottom: 24px;
+}
+
+.conflicts-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 800px;
+}
+
+.conflicts-table th {
+  text-align: left;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--inst-muted);
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--inst-border);
+}
+
+.conflicts-table td {
+  font-size: 13px;
+  color: var(--inst-text);
+  padding: 14px;
+  border-bottom: 1px solid var(--inst-border);
+  vertical-align: top;
+}
+
+.conflicts-table tr:last-child td {
+  border-bottom: none;
+}
+
+.conflicts-table tr:hover td {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.tag {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.tag-alta {
+  background: color-mix(in srgb, #e87561 20%, transparent);
+  color: #e87561;
+}
+
+.tag-media {
+  background: color-mix(in srgb, #e8b961 20%, transparent);
+  color: #e8b961;
+}
+
+.tag-baja {
+  background: color-mix(in srgb, var(--inst-secondary) 20%, transparent);
+  color: var(--inst-secondary);
 }
 
 .alert-icon {
@@ -205,6 +566,7 @@ gap: 4px;
   background: color-mix(in srgb, var(--inst-secondary) 12%, transparent);
 }
 
+/* ===== Tabla de horario ===== */
 
 .schedule-wrapper {
   width: 100%;
@@ -217,7 +579,7 @@ gap: 4px;
 
 .schedule-header {
   display: grid;
-  grid-template-columns: 110px repeat(5, minmax(150px, 1fr));
+  grid-template-columns: 110px repeat(5, minmax(165px, 1fr));
   gap: 10px;
   min-width: 1000px;
   align-items: center;
@@ -232,10 +594,10 @@ gap: 4px;
   align-items: center;
   justify-content: center;
   color: var(--inst-muted);
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.6px;
 }
 
 .day-button {
@@ -244,8 +606,8 @@ gap: 4px;
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.045);
   color: var(--inst-muted);
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 700;
   cursor: pointer;
   transition: 0.2s;
   letter-spacing: 0.3px;
@@ -264,7 +626,7 @@ gap: 4px;
 
 .schedule-row {
   display: grid;
-  grid-template-columns: 110px repeat(5, minmax(150px, 1fr));
+  grid-template-columns: 110px repeat(5, minmax(165px, 1fr));
   gap: 10px;
   min-width: 1000px;
   margin-top: 12px;
@@ -284,12 +646,13 @@ gap: 4px;
 
 .time-cell strong {
   color: var(--inst-secondary);
-  font-size: 14px;
+  font-size: 16px;
+  font-weight: 700;
 }
 
 .time-cell span {
   color: var(--inst-muted);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .subject-cell {
@@ -323,8 +686,10 @@ gap: 4px;
 
 .subject-card strong {
   color: var(--inst-text);
-  font-size: 13px;
+  font-size: 15px;
+  font-weight: 700;
   line-height: 1.3;
+  letter-spacing: 0.2px;
   text-transform: uppercase;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -333,7 +698,8 @@ gap: 4px;
 
 .subject-card span {
   color: var(--inst-muted);
-  font-size: 11px;
+  font-size: 12.5px;
+  font-weight: 500;
 }
 
 .selected-day .subject-card {
@@ -356,8 +722,9 @@ gap: 4px;
 
 .break-cell strong {
   color: var(--inst-secondary);
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
 }
 
 .break-line {
@@ -366,6 +733,7 @@ gap: 4px;
   background: color-mix(in srgb, var(--inst-secondary) 25%, transparent);
 }
 
+/* ===== Botón flotante IA ===== */
 
 .floating-ia {
   position: fixed;
@@ -397,6 +765,7 @@ gap: 4px;
   top: 8px;
 }
 
+/* ===== Chat IA ===== */
 
 .chat-overlay {
   position: fixed;
@@ -653,6 +1022,7 @@ gap: 4px;
   cursor: not-allowed;
 }
 
+/* ===== Responsive (mismos breakpoints que Usuarios) ===== */
 
 @media (max-width: 700px) {
   .horarios-content {
@@ -668,19 +1038,33 @@ gap: 4px;
     align-items: stretch;
   }
 
-  .toolbar-left {
+  .toolbar-bar {
     width: 100%;
-    overflow-x: auto;
   }
 
-  .toolbar-item {
-    white-space: nowrap;
+  .view-toggle {
+    width: 100%;
   }
 
-  .course-selector {
+  .view-toggle-btn {
+    flex: 1;
+    padding: 10px 12px;
+    text-align: center;
+    justify-content: center;
+  }
+
+  .summary-card {
+    padding: 14px 16px;
+  }
+
+  .summary-right {
+    margin-left: 0;
     width: 100%;
-    flex-wrap: wrap;
-    gap: 8px;
+    justify-content: space-between;
+  }
+
+  .empty-state {
+    padding: 44px 18px;
   }
 
   .schedule-wrapper {
