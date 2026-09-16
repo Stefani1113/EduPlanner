@@ -23,7 +23,6 @@
   color: var(--inst-text);
 }
 
-/* ===== Toolbar: selector de curso + reloj + acciones ===== */
 
 .horario-toolbar {
   display: flex;
@@ -44,7 +43,6 @@
   flex-wrap: wrap;
 }
 
-/* --- Selector de curso --- */
 
 .course-picker {
   position: relative;
@@ -154,7 +152,6 @@
   font-weight: 600;
 }
 
-/* --- Reloj en vivo --- */
 
 .clock-block {
   display: flex;
@@ -189,7 +186,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* --- Botones de acción --- */
 
 .pdf-button {
   height: 40px;
@@ -230,7 +226,6 @@
   box-shadow: none !important;
 }
 
-/* ===== Toggle Horario / Conflictos ===== */
 
 .view-toggle {
   display: inline-flex;
@@ -283,7 +278,6 @@
   justify-content: center;
 }
 
-/* ===== Encabezado de página ===== */
 
 .page-heading {
   margin-bottom: 20px;
@@ -302,7 +296,6 @@
   color: var(--inst-muted);
 }
 
-/* ===== Tarjeta resumen "Horario actual" ===== */
 
 .summary-card {
   display: flex;
@@ -381,7 +374,6 @@
   display: inline-block;
 }
 
-/* ===== Estado vacío: sin horario ===== */
 
 .empty-state {
   background: var(--inst-surface);
@@ -426,7 +418,6 @@
   opacity: 0.8;
 }
 
-/* ===== Aviso de publicación ===== */
 
 .publication-alert {
   position: relative;
@@ -452,7 +443,6 @@
   background: rgba(255, 255, 255, 0.06);
 }
 
-/* ===== Tabla de conflictos ===== */
 
 .conflicts-wrapper {
   width: 100%;
@@ -733,7 +723,6 @@
   background: color-mix(in srgb, var(--inst-secondary) 25%, transparent);
 }
 
-/* ===== Botón flotante IA ===== */
 
 .floating-ia {
   position: fixed;
@@ -765,7 +754,6 @@
   top: 8px;
 }
 
-/* ===== Chat IA ===== */
 
 .chat-overlay {
   position: fixed;
@@ -1022,7 +1010,6 @@
   cursor: not-allowed;
 }
 
-/* ===== Responsive (mismos breakpoints que Usuarios) ===== */
 
 @media (max-width: 700px) {
   .horarios-content {
