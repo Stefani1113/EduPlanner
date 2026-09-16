@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 
 import {
   DocentesService,
@@ -307,6 +308,34 @@ export class RegistroComponent implements OnInit {
 
   ngOnInit(): void {
     this.cargarDatos();
+  }
+
+
+  /**
+   * El backend reutiliza el mismo mensaje ("El X indicado no existe / no se encontró en Y")
+   * tanto cuando guardas algo con un id inválido como cuando ELIMINAS algo que MySQL bloquea
+   * por tener registros dependientes. En una eliminación esa frase es engañosa: el registro
+   * que borraste sí existe (lo tenías seleccionado en la lista); lo que pasa es que otra
+   * tabla todavía lo referencia. Esta función detecta ese caso y da el mensaje correcto,
+   * sin necesidad de tocar el backend.
+   */
+  private mensajeErrorEliminacion(err: any, fallback: string): string {
+
+    const mensaje: string =
+      err?.error?.message ||
+      err?.error?.error ||
+      '';
+
+    const pareceViolacionDeIntegridad =
+      /no se encontr[oó] en/i.test(mensaje) ||
+      /foreign key/i.test(mensaje);
+
+    if (pareceViolacionDeIntegridad) {
+      return 'No se puede eliminar: todavía hay otros registros del sistema que dependen de este elemento. ' +
+        'Elimina o reasigna esos registros primero e inténtalo de nuevo.';
+    }
+
+    return mensaje || fallback;
   }
 
 
@@ -708,6 +737,23 @@ export class RegistroComponent implements OnInit {
   }
 
 
+  /**
+   * Vuelve a pedir la lista de cursos al backend antes de abrir un formulario que permite
+   * elegir un curso. Evita que el <select> muestre cursos que ya fueron eliminados en otra
+   * pestaña/sesión, que es lo que provoca el error "El idCourse indicado no existe" al guardar.
+   */
+  private refrescarCursosDisponibles(): void {
+    this.horariosService.listarCursos().subscribe({
+      next: respuesta => {
+        this.cursosDisponibles = respuesta.data ?? [];
+      },
+      error: err => {
+        console.error('No se pudo refrescar la lista de cursos:', err);
+      }
+    });
+  }
+
+
   abrirAgregarDocente(): void {
 
     this.editandoDocente = false;
@@ -723,6 +769,7 @@ export class RegistroComponent implements OnInit {
       horasSemanaArea: 0
     };
 
+    this.refrescarCursosDisponibles();
     this.mostrarFormularioDocente = true;
   }
 
@@ -749,6 +796,7 @@ export class RegistroComponent implements OnInit {
       horasSemanaArea: docente.horasSemanaArea
     };
 
+    this.refrescarCursosDisponibles();
     this.mostrarFormularioDocente = true;
   }
 
@@ -778,6 +826,17 @@ export class RegistroComponent implements OnInit {
     ) {
       this.errorFormularioDocente =
         'Completa todos los campos obligatorios.';
+      return;
+    }
+
+
+    if (
+      !this.cursosDisponibles.some(
+        curso => curso.idCourse === formulario.idCourse
+      )
+    ) {
+      this.errorFormularioDocente =
+        'El curso seleccionado ya no existe o fue eliminado. Vuelve a abrir este formulario para actualizar la lista de cursos.';
       return;
     }
 
@@ -974,9 +1033,10 @@ export class RegistroComponent implements OnInit {
           );
 
           this.modalService.error(
-            err?.error?.message ||
-            err?.error?.error ||
-            'No se pudo eliminar la asignación.'
+            this.mensajeErrorEliminacion(
+              err,
+              'No se pudo eliminar la asignación.'
+            )
           );
         }
 
@@ -1127,9 +1187,74 @@ export class RegistroComponent implements OnInit {
     }
 
 
-    this.horariosService
-      .eliminarAsignatura(
-        asignatura.idSubject
+    // Antes de borrar, vemos si hay cargas académicas (docentes asignados a esta
+    // asignatura en algún curso) que dependen de ella. Si las hay, el borrado directo
+    // fallaría con un 409, así que avisamos y, si el usuario acepta, las eliminamos
+    // primero en cascada.
+    this.horariosService.listarCargasAcademicas().subscribe({
+
+      next: async respuesta => {
+
+        const cargasRelacionadas =
+          (respuesta.data ?? []).filter(
+            carga => carga.idSubject === asignatura.idSubject
+          );
+
+        if (cargasRelacionadas.length > 0) {
+
+          const confirmarCascada = await this.modalService.confirm(
+            `"${asignatura.nombre}" está asignada a ${cargasRelacionadas.length} ` +
+            `docente(s)/curso(s) en carga académica. Si continúas, también se eliminarán ` +
+            `esas asignaciones. ¿Deseas continuar?`,
+            'La asignatura está en uso'
+          );
+
+          if (!confirmarCascada) {
+            return;
+          }
+        }
+
+        this.ejecutarEliminarAsignatura(asignatura, cargasRelacionadas);
+      },
+
+      error: err => {
+        console.error(
+          'No se pudo verificar si la asignatura está en uso:',
+          err
+        );
+
+        this.modalService.error(
+          'No se pudo verificar si la asignatura está en uso. Inténtalo de nuevo.'
+        );
+      }
+    });
+  }
+
+
+  /**
+   * Borra las cargas académicas relacionadas (si las hay) y luego la asignatura.
+   * Si falla la eliminación de alguna carga, se detiene y no se intenta borrar la
+   * asignatura, para no dejar el sistema a medias.
+   */
+  private ejecutarEliminarAsignatura(
+    asignatura: AsignaturaFila,
+    cargasRelacionadas: AcademicLoadResponseDTO[]
+  ): void {
+
+    const eliminacionesCargas =
+      cargasRelacionadas.map(carga =>
+        this.horariosService.eliminarCargaAcademica(carga.idAcademicLoad)
+      );
+
+    // forkJoin([]) emite un arreglo vacío y se completa de inmediato, así que no hace
+    // falta un caso especial cuando no hay cargas relacionadas.
+    const pasoPrevio$ = forkJoin(eliminacionesCargas);
+
+    pasoPrevio$
+      .pipe(
+        switchMap(() =>
+          this.horariosService.eliminarAsignatura(asignatura.idSubject)
+        )
       )
       .subscribe({
 
@@ -1150,6 +1275,9 @@ export class RegistroComponent implements OnInit {
             );
 
           this.asignaturaSeleccionada = null;
+
+          // Refresca todo (docentes, cargas, etc.) para reflejar las asignaciones eliminadas
+          this.cargarDatos();
         },
 
 
@@ -1161,9 +1289,10 @@ export class RegistroComponent implements OnInit {
           );
 
           this.modalService.error(
-            err?.error?.message ||
-            err?.error?.error ||
-            'No se pudo eliminar la asignatura.'
+            this.mensajeErrorEliminacion(
+              err,
+              'No se pudo eliminar la asignatura.'
+            )
           );
         }
 
@@ -1553,9 +1682,10 @@ export class RegistroComponent implements OnInit {
           );
 
           this.modalService.error(
-            err?.error?.message ||
-            err?.error?.error ||
-            'No se pudo eliminar el curso.'
+            this.mensajeErrorEliminacion(
+              err,
+              'No se pudo eliminar el curso.'
+            )
           );
         } 
 
@@ -1669,9 +1799,10 @@ export class RegistroComponent implements OnInit {
       error: err => {
         console.error('Error eliminando nivel:', err);
         this.modalService.error(
-          err?.error?.message ||
-          err?.error?.error ||
-          'No se pudo eliminar el nivel académico.'
+          this.mensajeErrorEliminacion(
+            err,
+            'No se pudo eliminar el nivel académico.'
+          )
         );
       }
     });
@@ -1798,9 +1929,10 @@ export class RegistroComponent implements OnInit {
       error: err => {
         console.error('Error eliminando período:', err);
         this.modalService.error(
-          err?.error?.message ||
-          err?.error?.error ||
-          'No se pudo eliminar el período académico.'
+          this.mensajeErrorEliminacion(
+            err,
+            'No se pudo eliminar el período académico.'
+          )
         );
       }
     });
@@ -1922,9 +2054,10 @@ export class RegistroComponent implements OnInit {
       error: err => {
         console.error('Error eliminando jornada:', err);
         this.modalService.error(
-          err?.error?.message ||
-          err?.error?.error ||
-          'No se pudo eliminar la jornada académica.'
+          this.mensajeErrorEliminacion(
+            err,
+            'No se pudo eliminar la jornada académica.'
+          )
         );
       }
     });
@@ -2057,9 +2190,10 @@ export class RegistroComponent implements OnInit {
       error: err => {
         console.error('Error eliminando franja:', err);
         this.modalService.error(
-          err?.error?.message ||
-          err?.error?.error ||
-          'No se pudo eliminar la franja horaria.'
+          this.mensajeErrorEliminacion(
+            err,
+            'No se pudo eliminar la franja horaria.'
+          )
         );
       }
     });
@@ -2189,9 +2323,10 @@ export class RegistroComponent implements OnInit {
       error: err => {
         console.error('Error eliminando disponibilidad:', err);
         this.modalService.error(
-          err?.error?.message ||
-          err?.error?.error ||
-          'No se pudo eliminar la disponibilidad.'
+          this.mensajeErrorEliminacion(
+            err,
+            'No se pudo eliminar la disponibilidad.'
+          )
         );
       }
     });
