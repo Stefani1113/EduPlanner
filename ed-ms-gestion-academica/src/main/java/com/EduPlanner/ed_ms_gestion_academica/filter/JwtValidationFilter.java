@@ -40,7 +40,7 @@ public class JwtValidationFilter extends OncePerRequestFilter {
                 return;
             }
 
-            req.setAttribute("idUser", jwtValidatorService.extractIdUser(token));
+            req.setAttribute("idUser", jwtValidatorService.extractIdUser(token).intValue());
             req.setAttribute("role", jwtValidatorService.extractRole(token));
         } catch (Exception e) {
             log.error("JWT filter error", e);

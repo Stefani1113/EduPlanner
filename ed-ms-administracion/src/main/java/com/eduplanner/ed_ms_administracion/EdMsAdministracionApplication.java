@@ -14,5 +14,4 @@ public class EdMsAdministracionApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(EdMsAdministracionApplication.class, args);
 	}
-
 }
