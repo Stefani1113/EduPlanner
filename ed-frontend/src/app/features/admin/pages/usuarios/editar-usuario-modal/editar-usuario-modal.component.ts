@@ -1,7 +1,14 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { UserResponseDTO, TeachingRequestDTO, UpdateStudentDTO, UpdateStaffDTO } from '../../../services/usuarios.service';
+import {
+  UserResponseDTO,
+  TeachingRequestDTO,
+  UpdateStudentDTO,
+  UpdateStaffDTO,
+  UsuariosService,
+  CourseBasicoDTO
+} from '../../../services/usuarios.service';
 
 export type TipoEdicion = 'Docente' | 'Estudiante' | 'Staff';
 
@@ -34,10 +41,20 @@ export class EditarUsuarioModalComponent implements OnInit {
   tiposSangre = ['O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-'];
   estratos = [1, 2, 3, 4, 5, 6];
 
-  constructor(private fb: FormBuilder) {}
+  cursosDisponibles: CourseBasicoDTO[] = [];
+  cargandoCursos = false;
+
+  constructor(
+    private fb: FormBuilder,
+    private usuariosService: UsuariosService
+  ) {}
 
   ngOnInit(): void {
     const u = this.usuario;
+
+    if (this.tipo === 'Estudiante') {
+      this.cargarCursos();
+    }
 
     this.form = this.fb.group({
       name: [u?.name ?? '', Validators.required],
@@ -49,6 +66,7 @@ export class EditarUsuarioModalComponent implements OnInit {
       gender: [u?.gender ?? '', Validators.required],
       email: [u?.email ?? '', [Validators.required, Validators.email]],
       phoneNumber: [u?.phoneNumber ?? '', Validators.required],
+      idCourse: [''],
       address: [u?.address ?? '', Validators.required],
       bloodType: [u?.bloodType ?? '', Validators.required],
       stratum: [u?.stratum ?? '', Validators.required],
@@ -71,6 +89,22 @@ export class EditarUsuarioModalComponent implements OnInit {
       this.form.get('professionalDegrees')?.setValidators(Validators.required);
       this.form.get('professionalDegrees')?.updateValueAndValidity();
     }
+  }
+
+
+  private cargarCursos(): void {
+    this.cargandoCursos = true;
+
+    this.usuariosService.listarCursos().subscribe({
+      next: res => {
+        this.cursosDisponibles = (res.data ?? []).filter(c => c.status);
+        this.cargandoCursos = false;
+      },
+      error: () => {
+        this.cursosDisponibles = [];
+        this.cargandoCursos = false;
+      }
+    });
   }
 
   get titulo(): string {
@@ -161,7 +195,8 @@ export class EditarUsuarioModalComponent implements OnInit {
       stratum: v.stratum ? Number(v.stratum) : undefined,
       populationType: v.populationType || undefined,
       healthRegime: v.healthRegime || undefined,
-      eps: v.eps || undefined
+      eps: v.eps || undefined,
+      idCourse: v.idCourse ? Number(v.idCourse) : undefined
     };
   }
 

@@ -1,7 +1,13 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import {
+  HttpClient,
+  HttpErrorResponse
+} from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import {
+  catchError,
+  map
+} from 'rxjs/operators';
 
 interface HttpGlobalResponse<T> {
   data: T;
@@ -32,7 +38,7 @@ export interface AttendanceRequestDTO {
 
 export interface AttendanceResponseDTO {
   idAttendance: number;
-  idSchedule: number;
+  idSchedule: number | null;
   idStudent: number;
   idCourse: number;
   attendanceDate: string;
@@ -136,7 +142,10 @@ export interface FilaGridListado {
   segundoNombre: string;
   primerApellido: string;
   segundoApellido: string;
-  porFecha: Map<string, AttendanceResponseDTO | null>;
+  porFecha: Map<
+    string,
+    AttendanceResponseDTO | null
+  >;
 }
 
 interface DescargarPdfParams {
@@ -150,8 +159,8 @@ interface DescargarPdfParams {
   providedIn: 'root'
 })
 export class AsistenciaService {
-
-  private readonly base = '/gestion-academica/eduplanner';
+  private readonly base =
+    '/gestion-academica/eduplanner';
 
   private readonly administracionUsers =
     '/administracion/eduplanner/users';
@@ -161,47 +170,61 @@ export class AsistenciaService {
 
   private readonly ID_ROL_ESTUDIANTE = 3;
 
-  constructor(private http: HttpClient) {}
+  private readonly ID_SCHEDULE_ASISTENCIA = 1;
 
+  constructor(
+    private http: HttpClient
+  ) {}
 
   listarCursos(): Observable<CourseResponseDTO[]> {
     return this.http
-      .get<HttpGlobalResponse<CourseResponseDTO[]>>(
+      .get<
+        HttpGlobalResponse<CourseResponseDTO[]>
+      >(
         `${this.base}/courses`
       )
       .pipe(
-        map(r => r.data ?? [])
+        map(r => r.data ?? []),
+        catchError(() => of([]))
       );
   }
 
   listarNiveles(): Observable<AcademicLevelResponseDTO[]> {
     return this.http
-      .get<HttpGlobalResponse<AcademicLevelResponseDTO[]>>(
+      .get<
+        HttpGlobalResponse<AcademicLevelResponseDTO[]>
+      >(
         `${this.base}/academic-levels`
       )
       .pipe(
-        map(r => r.data ?? [])
+        map(r => r.data ?? []),
+        catchError(() => of([]))
       );
   }
 
   listarDocentesAcademicos(): Observable<AcademicTeacherResponseDTO[]> {
     return this.http
-      .get<HttpGlobalResponse<AcademicTeacherResponseDTO[]>>(
+      .get<
+        HttpGlobalResponse<AcademicTeacherResponseDTO[]>
+      >(
         `${this.base}/academic-teachers`
       )
       .pipe(
-        map(r => r.data ?? [])
+        map(r => r.data ?? []),
+        catchError(() => of([]))
       );
   }
 
-
   listarEstudiantes(): Observable<UsuarioBasico[]> {
     return this.http
-      .get<HttpGlobalResponse<UsuarioBasico[]>>(
+      .get<
+        HttpGlobalResponse<UsuarioBasico[]>
+      >(
         this.administracionUsers,
         {
           params: {
-            idRole: this.ID_ROL_ESTUDIANTE
+            idRole:
+              this.ID_ROL_ESTUDIANTE
           }
         }
       )
@@ -211,9 +234,26 @@ export class AsistenciaService {
       );
   }
 
+  listarEstudiantesPorCurso(
+    idCourse: number
+  ): Observable<UsuarioBasico[]> {
+    return this.http
+      .get<
+        HttpGlobalResponse<UsuarioBasico[]>
+      >(
+        `${this.administracionUsers}/course/${idCourse}`
+      )
+      .pipe(
+        map(r => r.data ?? []),
+        catchError(() => of([]))
+      );
+  }
+
   listarDocentes(): Observable<UsuarioBasico[]> {
     return this.http
-      .get<HttpGlobalResponse<UsuarioBasico[]>>(
+      .get<
+        HttpGlobalResponse<UsuarioBasico[]>
+      >(
         this.administracionTeachers
       )
       .pipe(
@@ -222,12 +262,13 @@ export class AsistenciaService {
       );
   }
 
-
   registrarAsistencia(
     dto: AttendanceRequestDTO
   ): Observable<AttendanceResponseDTO> {
     return this.http
-      .post<HttpGlobalResponse<AttendanceResponseDTO>>(
+      .post<
+        HttpGlobalResponse<AttendanceResponseDTO>
+      >(
         `${this.base}/attendance`,
         dto
       )
@@ -240,7 +281,9 @@ export class AsistenciaService {
     idAttendance: number
   ): Observable<AttendanceResponseDTO> {
     return this.http
-      .get<HttpGlobalResponse<AttendanceResponseDTO>>(
+      .get<
+        HttpGlobalResponse<AttendanceResponseDTO>
+      >(
         `${this.base}/attendance/${idAttendance}`
       )
       .pipe(
@@ -248,15 +291,15 @@ export class AsistenciaService {
       );
   }
 
-
   obtenerHistorialPorCurso(
     idCourse: number,
     startDate: string,
     endDate: string
   ): Observable<AttendanceResponseDTO[]> {
-
     return this.http
-      .get<HttpGlobalResponse<AttendanceResponseDTO[]>>(
+      .get<
+        HttpGlobalResponse<AttendanceResponseDTO[]>
+      >(
         `${this.base}/attendance/history`,
         {
           params: {
@@ -268,13 +311,15 @@ export class AsistenciaService {
       )
       .pipe(
         map(r => r.data ?? []),
-        catchError((err: HttpErrorResponse) => {
-          if (err.status === 404) {
-            return of([]);
-          }
+        catchError(
+          (err: HttpErrorResponse) => {
+            if (err.status === 404) {
+              return of([]);
+            }
 
-          throw err;
-        })
+            throw err;
+          }
+        )
       );
   }
 
@@ -283,9 +328,10 @@ export class AsistenciaService {
     startDate: string,
     endDate: string
   ): Observable<AttendanceResponseDTO[]> {
-
     return this.http
-      .get<HttpGlobalResponse<AttendanceResponseDTO[]>>(
+      .get<
+        HttpGlobalResponse<AttendanceResponseDTO[]>
+      >(
         `${this.base}/attendance/history`,
         {
           params: {
@@ -297,13 +343,15 @@ export class AsistenciaService {
       )
       .pipe(
         map(r => r.data ?? []),
-        catchError((err: HttpErrorResponse) => {
-          if (err.status === 404) {
-            return of([]);
-          }
+        catchError(
+          (err: HttpErrorResponse) => {
+            if (err.status === 404) {
+              return of([]);
+            }
 
-          throw err;
-        })
+            throw err;
+          }
+        )
       );
   }
 
@@ -312,9 +360,10 @@ export class AsistenciaService {
     startDate: string,
     endDate: string
   ): Observable<AttendanceSummaryDTO> {
-
     return this.http
-      .get<HttpGlobalResponse<AttendanceSummaryDTO>>(
+      .get<
+        HttpGlobalResponse<AttendanceSummaryDTO>
+      >(
         `${this.base}/attendance/summary`,
         {
           params: {
@@ -333,11 +382,19 @@ export class AsistenciaService {
     idAttendance: number,
     dto: AttendanceRequestDTO
   ): Observable<AttendanceResponseDTO> {
+    const dtoCorregido: AttendanceRequestDTO = {
+      ...dto,
+      idSchedule:
+        dto.idSchedule ??
+        this.ID_SCHEDULE_ASISTENCIA
+    };
 
     return this.http
-      .put<HttpGlobalResponse<AttendanceResponseDTO>>(
+      .put<
+        HttpGlobalResponse<AttendanceResponseDTO>
+      >(
         `${this.base}/attendance/${idAttendance}`,
-        dto
+        dtoCorregido
       )
       .pipe(
         map(r => r.data)
@@ -348,13 +405,14 @@ export class AsistenciaService {
     idAttendance: number,
     justificationText: string
   ): Observable<AttendanceResponseDTO> {
-
     const dto: JustificationRequestDTO = {
       justificationText
     };
 
     return this.http
-      .patch<HttpGlobalResponse<AttendanceResponseDTO>>(
+      .patch<
+        HttpGlobalResponse<AttendanceResponseDTO>
+      >(
         `${this.base}/attendance/${idAttendance}/justification`,
         dto
       )
@@ -368,14 +426,15 @@ export class AsistenciaService {
     aprobar: boolean,
     reviewedBy: number
   ): Observable<AttendanceResponseDTO> {
-
     const dto: JustificationReviewDTO = {
       approved: aprobar,
       reviewedBy
     };
 
     return this.http
-      .patch<HttpGlobalResponse<AttendanceResponseDTO>>(
+      .patch<
+        HttpGlobalResponse<AttendanceResponseDTO>
+      >(
         `${this.base}/attendance/${idAttendance}/justification/review`,
         dto
       )
@@ -387,47 +446,65 @@ export class AsistenciaService {
   descargarPdf(
     params: DescargarPdfParams
   ): Observable<Blob> {
-
     return this.http.get(
       `${this.base}/attendance/pdf`,
       {
         params: {
           ...params
-        } as Record<string, string | number>,
+        } as Record<
+          string,
+          string | number
+        >,
         responseType: 'blob'
       }
     );
   }
 
-
   calcularResumen(
     registros: AttendanceResponseDTO[]
   ): Omit<
     ResumenCurso,
-    'idCourse' | 'nombreCurso' | 'nombreNivel'
+    'idCourse' |
+    'nombreCurso' |
+    'nombreNivel'
   > {
+    const totalRecords =
+      registros.length;
 
-    const totalRecords = registros.length;
+    const presentCount =
+      registros.filter(
+        r =>
+          r.attendanceStatus ===
+          'PRESENT'
+      ).length;
 
-    const presentCount = registros.filter(
-      r => r.attendanceStatus === 'PRESENT'
-    ).length;
+    const lateCount =
+      registros.filter(
+        r =>
+          r.attendanceStatus ===
+          'LATE'
+      ).length;
 
-    const lateCount = registros.filter(
-      r => r.attendanceStatus === 'LATE'
-    ).length;
+    const earlyDepartureCount =
+      registros.filter(
+        r =>
+          r.attendanceStatus ===
+          'EARLY_DEPARTURE'
+      ).length;
 
-    const earlyDepartureCount = registros.filter(
-      r => r.attendanceStatus === 'EARLY_DEPARTURE'
-    ).length;
+    const justifiedCount =
+      registros.filter(
+        r =>
+          r.attendanceStatus ===
+          'JUSTIFIED'
+      ).length;
 
-    const justifiedCount = registros.filter(
-      r => r.attendanceStatus === 'JUSTIFIED'
-    ).length;
-
-    const unjustifiedCount = registros.filter(
-      r => r.attendanceStatus === 'ABSENT'
-    ).length;
+    const unjustifiedCount =
+      registros.filter(
+        r =>
+          r.attendanceStatus ===
+          'ABSENT'
+      ).length;
 
     const asistieron =
       presentCount +
@@ -439,7 +516,10 @@ export class AsistenciaService {
       totalRecords === 0
         ? 0
         : Math.round(
-            (asistieron * 100 / totalRecords) * 100
+            (asistieron *
+              100 /
+              totalRecords) *
+              100
           ) / 100;
 
     return {
