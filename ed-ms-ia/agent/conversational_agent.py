@@ -20,6 +20,15 @@ load_dotenv(
     dotenv_path=os.path.abspath(env_path)
 )
 
+print("================================")
+print("VERIFICACIÓN DEL .ENV")
+print("RUTA:", os.path.abspath(env_path))
+print("EXISTE:", os.path.exists(os.path.abspath(env_path)))
+print("GEMINI_API_KEY CARGADA:", bool(os.getenv("GEMINI_API_KEY")))
+print("LLM_MODEL:", os.getenv("LLM_MODEL"))
+print("MCP_SERVER_URL:", os.getenv("MCP_SERVER_URL"))
+print("================================")
+
 
 # ============================================================
 # FILTRO DE HERRAMIENTAS MCP
