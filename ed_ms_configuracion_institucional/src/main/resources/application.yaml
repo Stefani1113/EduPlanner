@@ -5,7 +5,7 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/institutional_configuration
     username: root
-    password: root
+    password: kari
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
@@ -34,6 +34,9 @@ spring:
 server:
   port: 8086
 
+security:
+  jwt:
+    secret-key: "czyYSEj017tCB8M8mnOSvhgV4gSdI4P5Bql+3HrWZtM="
 management:
   endpoints:
     web:
