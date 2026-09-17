@@ -1,57 +1,62 @@
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(22, 22, 22, 0.7);
-  backdrop-filter: blur(4px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
   z-index: 1000;
-  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   box-sizing: border-box;
+  padding: 20px;
+  background: rgba(22, 22, 22, 0.78);
+  backdrop-filter: blur(5px);
   animation: fadeIn 0.3s ease;
 }
 
 .modal {
+  display: flex;
+  flex-direction: column;
   width: 100%;
   max-width: 720px;
   max-height: 92vh;
-  background: var(--inst-dark);
-  border-radius: 20px;
   overflow: hidden;
+  border: 1px solid transparent;
+  border-radius: 20px;
+  background: var(--inst-dark);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
-  display: flex;
-  flex-direction: column;
   animation: slideUp 0.3s ease;
 }
 
 .modal-header {
-  background:
-    linear-gradient(rgba(22, 22, 22, 0.85), rgba(22, 22, 22, 0.92)),
-    url("/assets/img/pattern-trasparent.png");
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  position: relative;
   display: flex;
   justify-content: center;
   padding: 20px 25px 18px;
-  position: relative;
+  background:
+    linear-gradient(
+      rgba(22, 22, 22, 0.88),
+      rgba(22, 22, 22, 0.95)
+    ),
+    url('/assets/img/pattern-trasparent.png');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 
 .modal-header::after {
-  content: "";
+  content: '';
   position: absolute;
+  right: 0;
   bottom: 0;
   left: 0;
-  right: 0;
   height: 2px;
   background: linear-gradient(
     90deg,
     transparent,
     var(--inst-primary),
+    var(--inst-secondary),
     transparent
   );
-  opacity: 0.5;
+  opacity: 0.7;
 }
 
 .modal-header h2 {
@@ -64,17 +69,18 @@
 }
 
 .modal-form {
-  padding: 20px 24px;
   display: flex;
+  flex: 1 1 auto;
   flex-direction: column;
+  min-height: 0;
   gap: 16px;
   overflow-y: auto;
-  flex: 1 1 auto;
-  min-height: 0;
+  padding: 20px 24px;
+  box-sizing: border-box;
   background: var(--inst-surface);
   scrollbar-gutter: stable;
   scrollbar-width: thin;
-  scrollbar-color: rgba(13, 121, 11, 0.3) transparent;
+  scrollbar-color: rgba(78, 209, 11, 0.35) transparent;
 }
 
 .modal-form::-webkit-scrollbar {
@@ -86,32 +92,32 @@
 }
 
 .modal-form::-webkit-scrollbar-thumb {
-  background-color: rgba(13, 121, 11, 0.3);
   border-radius: 10px;
+  background-color: rgba(78, 209, 11, 0.35);
 }
 
 .modal-form::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(13, 121, 11, 0.5);
+  background-color: rgba(78, 209, 11, 0.55);
 }
 
 .section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin: 8px 0 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid transparent;
+  color: var(--inst-secondary);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--inst-secondary);
-  border-bottom: 1px solid rgba(13, 121, 11, 0.1);
-  padding-bottom: 8px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
 }
 
 .section-title::before {
-  content: "▸";
-  font-size: 14px;
+  content: '▸';
   color: var(--inst-primary);
+  font-size: 14px;
 }
 
 .grid-2 {
@@ -131,40 +137,41 @@
 }
 
 .field label {
+  color: var(--inst-muted);
   font-size: 10px;
   font-weight: 700;
-  color: var(--inst-muted);
-  text-transform: uppercase;
   letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
 .field input,
 .field select,
 .field textarea {
   width: 100%;
-  background: var(--inst-surface-alt);
-  border: 1px solid var(--inst-border);
-  color: var(--inst-text);
-  font-size: 13px;
+  box-sizing: border-box;
+  border: 1px solid transparent;
   border-radius: 8px;
   outline: none;
-  transition: all 0.25s ease;
+  background: var(--inst-surface-alt);
+  color: var(--inst-text);
   font-family: inherit;
-  box-sizing: border-box;
+  font-size: 13px;
+  transition: all 0.25s ease;
 }
 
 .field input:hover,
 .field select:hover,
 .field textarea:hover {
-  border-color: var(--inst-border);
+  border-color: transparent;
+  background: #202121;
 }
 
 .field input:focus,
 .field select:focus,
 .field textarea:focus {
-  border-color: rgba(13, 121, 11, 0.7);
-  box-shadow: 0 0 0 3px rgba(13, 121, 11, 0.08);
+  border-color: transparent;
   background: var(--inst-surface-alt);
+  box-shadow: 0 0 0 3px rgba(78, 209, 11, 0.1);
 }
 
 .field input,
@@ -174,11 +181,11 @@
 }
 
 .field textarea {
+  min-height: 60px;
+  max-height: 150px;
   height: 80px;
   padding: 10px 14px;
   resize: vertical;
-  min-height: 60px;
-  max-height: 150px;
 }
 
 .field input::placeholder,
@@ -195,7 +202,7 @@
 .field.error input,
 .field.error select,
 .field.error textarea {
-  border-color: #e56a6a;
+  border-color: transparent;
   box-shadow: 0 0 0 3px rgba(229, 106, 106, 0.1) !important;
 }
 
@@ -204,17 +211,17 @@
 }
 
 .error-msg {
+  margin-top: 2px;
   color: #e56a6a;
   font-size: 10px;
   font-weight: 500;
-  margin-top: 2px;
   animation: fadeIn 0.2s ease;
 }
 
 .titulo-row {
   display: flex;
-  gap: 10px;
   align-items: center;
+  gap: 10px;
 }
 
 .titulo-row input {
@@ -226,17 +233,18 @@
   padding: 0 20px;
   border: none;
   border-radius: 8px;
-  background: rgba(13, 121, 11, 0.12);
+  background: rgba(78, 209, 11, 0.12);
   color: var(--inst-secondary);
   cursor: pointer;
-  font-weight: 600;
   font-size: 13px;
+  font-weight: 600;
   transition: all 0.25s ease;
   white-space: nowrap;
 }
 
 .btn-agregar:hover {
-  background: rgba(13, 121, 11, 0.25);
+  background: rgba(78, 209, 11, 0.22);
+  color: var(--inst-light);
   transform: translateY(-1px);
 }
 
@@ -251,32 +259,32 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: rgba(13, 121, 11, 0.08);
-  color: var(--inst-secondary);
-  border: 1px solid rgba(13, 121, 11, 0.15);
   padding: 4px 10px 4px 14px;
+  border: 1px solid transparent;
   border-radius: 20px;
+  background: rgba(78, 209, 11, 0.08);
+  color: var(--inst-secondary);
   font-size: 12px;
   transition: all 0.2s ease;
 }
 
 .titulo-chip:hover {
-  background: rgba(13, 121, 11, 0.15);
+  background: rgba(78, 209, 11, 0.16);
 }
 
 .titulo-chip button {
+  padding: 0 2px;
   border: none;
   background: transparent;
   color: var(--inst-muted);
   cursor: pointer;
   font-size: 16px;
   line-height: 1;
-  padding: 0 2px;
   transition: color 0.2s ease;
 }
 
 .titulo-chip button:hover {
-  color: #e05656;
+  color: #e56a6a;
 }
 
 .role-tabs {
@@ -287,25 +295,27 @@
 .role-tab {
   flex: 1;
   height: 40px;
-  border: 2px solid var(--inst-border);
+  border: 2px solid transparent;
   border-radius: 8px;
-  background: transparent;
+  background: var(--inst-surface-alt);
   color: var(--inst-muted);
-  font-weight: 600;
-  font-size: 13px;
   cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
   transition: all 0.25s ease;
 }
 
 .role-tab:hover {
-  border-color: var(--inst-border);
+  border-color: transparent;
+  background: #202121;
   color: var(--inst-text);
 }
 
 .role-tab.active {
-  background: rgba(13, 121, 11, 0.12);
-  border-color: var(--inst-primary);
+  border-color: transparent;
+  background: rgba(78, 209, 11, 0.14);
   color: var(--inst-secondary);
+  box-shadow: inset 0 0 0 1px rgba(78, 209, 11, 0.12);
 }
 
 .modal-footer {
@@ -313,16 +323,16 @@
   justify-content: flex-end;
   gap: 12px;
   padding: 16px 24px;
+  border-top: 1px solid transparent;
   background: var(--inst-surface);
-  border-top: 1px solid rgba(13, 121, 11, 0.08);
 }
 
 .btn-cancelar,
 .btn-guardar {
-  border: none;
-  border-radius: 8px;
   height: 40px;
   padding: 0 28px;
+  border: none;
+  border-radius: 8px;
   cursor: pointer;
   font-size: 13px;
   font-weight: 600;
@@ -347,8 +357,9 @@
 
 .btn-guardar:hover:not(:disabled) {
   background: var(--inst-secondary);
+  color: var(--inst-dark);
   transform: translateY(-1px);
-  box-shadow: 0 4px 20px rgba(13, 121, 11, 0.3);
+  box-shadow: 0 4px 20px rgba(78, 209, 11, 0.3);
 }
 
 .btn-guardar:disabled {
@@ -410,14 +421,14 @@
   }
 
   .modal-form {
-    padding: 12px 14px;
     gap: 12px;
+    padding: 12px 14px;
   }
 
   .section-title {
-    font-size: 10px;
-    padding-bottom: 6px;
     margin: 4px 0 0;
+    padding-bottom: 6px;
+    font-size: 10px;
   }
 
   .grid-2 {
@@ -428,14 +439,14 @@
   .field input,
   .field select {
     height: 36px;
-    font-size: 12px;
     padding: 0 12px;
+    font-size: 12px;
   }
 
   .field textarea {
     height: 60px;
-    font-size: 12px;
     padding: 8px 12px;
+    font-size: 12px;
   }
 
   .field label {
@@ -468,22 +479,22 @@
   }
 
   .titulo-chip {
-    font-size: 11px;
     padding: 3px 8px 3px 12px;
+    font-size: 11px;
   }
 
   .modal-footer {
-    padding: 12px 14px;
     flex-direction: column-reverse;
     gap: 8px;
+    padding: 12px 14px;
   }
 
   .btn-cancelar,
   .btn-guardar {
+    width: 100%;
     height: 36px;
     padding: 0 16px;
     font-size: 12px;
-    width: 100%;
   }
 }
 
@@ -506,8 +517,8 @@
   }
 
   .modal-form {
-    padding: 14px 16px;
     gap: 13px;
+    padding: 14px 16px;
   }
 
   .section-title {
@@ -548,15 +559,15 @@
   }
 
   .modal-footer {
-    padding: 14px 16px;
     flex-direction: column-reverse;
     gap: 8px;
+    padding: 14px 16px;
   }
 
   .btn-cancelar,
   .btn-guardar {
-    height: 38px;
     width: 100%;
+    height: 38px;
   }
 }
 
@@ -675,8 +686,8 @@
   }
 
   .modal-form {
-    padding: 24px 28px;
     gap: 18px;
+    padding: 24px 28px;
   }
 
   .grid-2 {
@@ -703,19 +714,19 @@
   }
 
   .modal-header h2 {
-    font-size: 16px;
     margin: 0;
+    font-size: 16px;
   }
 
   .modal-form {
-    padding: 10px 16px;
     gap: 8px;
+    padding: 10px 16px;
   }
 
   .section-title {
-    font-size: 9px;
-    padding-bottom: 4px;
     margin: 2px 0 0;
+    padding-bottom: 4px;
+    font-size: 9px;
   }
 
   .grid-2 {
@@ -729,15 +740,15 @@
   .field input,
   .field select {
     height: 30px;
-    font-size: 12px;
     padding: 0 10px;
+    font-size: 12px;
   }
 
   .field textarea {
-    height: 45px;
-    font-size: 12px;
-    padding: 6px 10px;
     min-height: 40px;
+    height: 45px;
+    padding: 6px 10px;
+    font-size: 12px;
   }
 
   .error-msg {
@@ -751,8 +762,8 @@
 
   .btn-agregar {
     height: 30px;
-    font-size: 11px;
     padding: 0 14px;
+    font-size: 11px;
   }
 
   .modal-footer {
@@ -762,13 +773,13 @@
   .btn-cancelar,
   .btn-guardar {
     height: 32px;
-    font-size: 12px;
     padding: 0 16px;
+    font-size: 12px;
   }
 
   .titulo-chip {
-    font-size: 10px;
     padding: 2px 8px 2px 10px;
+    font-size: 10px;
   }
 
   .titulo-chip button {
@@ -786,19 +797,19 @@
   }
 
   .modal-header h2 {
-    font-size: 14px;
     margin: 0;
+    font-size: 14px;
   }
 
   .modal-form {
-    padding: 6px 12px;
     gap: 4px;
+    padding: 6px 12px;
   }
 
   .section-title {
-    font-size: 8px;
-    padding-bottom: 2px;
     margin: 0;
+    padding-bottom: 2px;
+    font-size: 8px;
   }
 
   .grid-2 {
@@ -813,17 +824,17 @@
   .field input,
   .field select {
     height: 24px;
-    font-size: 11px;
     padding: 0 8px;
     border-radius: 6px;
+    font-size: 11px;
   }
 
   .field textarea {
-    height: 32px;
-    font-size: 11px;
-    padding: 4px 8px;
     min-height: 30px;
+    height: 32px;
+    padding: 4px 8px;
     border-radius: 6px;
+    font-size: 11px;
   }
 
   .error-msg {
@@ -836,9 +847,9 @@
 
   .role-tab {
     height: 24px;
-    font-size: 10px;
     border-radius: 6px;
     border-width: 1px;
+    font-size: 10px;
   }
 
   .titulo-row {
@@ -847,15 +858,15 @@
 
   .btn-agregar {
     height: 24px;
-    font-size: 10px;
     padding: 0 10px;
     border-radius: 6px;
+    font-size: 10px;
   }
 
   .titulo-chip {
-    font-size: 9px;
     padding: 2px 6px 2px 8px;
     border-radius: 14px;
+    font-size: 9px;
   }
 
   .titulo-chip button {
@@ -863,15 +874,15 @@
   }
 
   .modal-footer {
-    padding: 6px 12px;
     gap: 6px;
+    padding: 6px 12px;
   }
 
   .btn-cancelar,
   .btn-guardar {
     height: 28px;
-    font-size: 11px;
     padding: 0 12px;
     border-radius: 6px;
+    font-size: 11px;
   }
 }
