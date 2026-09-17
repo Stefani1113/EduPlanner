@@ -70,6 +70,7 @@ public class TeachingController {
      * RF 5.2 - Listar todos los docentes activos.
      * GET /eduplanner/teacher
      */
+    @RequireRole(RolEnum.ADMINISTRADOR)
     @GetMapping
     public ResponseEntity<HttpGlobalResponse<List<TeachingResponseDTO>>> listTeachers() {
         HttpGlobalResponse<List<TeachingResponseDTO>> response = new HttpGlobalResponse<>();
@@ -88,6 +89,7 @@ public class TeachingController {
      * RF 5.2 - Ver perfil de un docente por id.
      * GET /eduplanner/teacher/{id}
      */
+    @RequireRole(RolEnum.ADMINISTRADOR)
     @GetMapping("/{id}")
     public ResponseEntity<HttpGlobalResponse<TeachingResponseDTO>> getTeacherById(@PathVariable Integer id) {
         HttpGlobalResponse<TeachingResponseDTO> response = new HttpGlobalResponse<>();

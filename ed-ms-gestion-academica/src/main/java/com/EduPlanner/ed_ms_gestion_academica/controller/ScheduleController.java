@@ -2,9 +2,14 @@ package com.EduPlanner.ed_ms_gestion_academica.controller;
 
 import com.eduplanner.ed_lib_common.dto.HttpGlobalResponse;
 import com.eduplanner.ed_lib_common.dto.ScheduleGenerationRequestDTO;
+import com.eduplanner.ed_lib_common.dto.ScheduleResponseDTO;
+import com.eduplanner.ed_lib_common.enums.RolEnum;
+import com.EduPlanner.ed_ms_gestion_academica.security.RequireRole;
 import com.EduPlanner.ed_ms_gestion_academica.service.ScheduleService;
 
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -45,4 +50,79 @@ public class ScheduleController {
                     .body(response);
         }
     }
+
+    /**
+     * Ruta para traer horario de curso
+     */
+    @RequireRole(RolEnum.ADMINISTRADOR)
+    @GetMapping("/course/{idCourse}")
+    public ResponseEntity<HttpGlobalResponse<List<ScheduleResponseDTO>>> getByCourse(
+            @PathVariable Integer idCourse) {
+
+        HttpGlobalResponse<List<ScheduleResponseDTO>> response =
+                new HttpGlobalResponse<>();
+
+        List<ScheduleResponseDTO> schedules =
+                service.getScheduleByCourse(idCourse);
+
+        response.setData(schedules);
+        response.setMessage("Horario del curso consultado correctamente");
+
+        return ResponseEntity.ok(response);
+    }
+    
+    /**
+     * Ruta para buscar horario de docente
+     * @param idTeacher
+     * @return
+     */
+    @RequireRole(RolEnum.ADMINISTRADOR)
+    @GetMapping("/teacher/{idTeacher}")
+    public ResponseEntity<HttpGlobalResponse<List<ScheduleResponseDTO>>> getByTeacher(
+            @PathVariable Integer idTeacher) {
+
+        HttpGlobalResponse<List<ScheduleResponseDTO>> response =
+                new HttpGlobalResponse<>();
+
+        List<ScheduleResponseDTO> schedules = service.getScheduleByTeacher(idTeacher);
+
+        response.setData(schedules);
+        response.setMessage("Horario del docente consultado correctamente");
+
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Ruta para traer horario de docente y estudiante 
+     * @param idUser
+     * @param role
+     * @return
+     */
+    @GetMapping("/my-schedule")
+    public ResponseEntity<HttpGlobalResponse<List<ScheduleResponseDTO>>> getMySchedule(
+            @RequestAttribute("idUser") Integer idUser,
+            @RequestAttribute("role") String role) {
+
+        HttpGlobalResponse<List<ScheduleResponseDTO>> response =
+                new HttpGlobalResponse<>();
+
+        try {
+            List<ScheduleResponseDTO> schedules =
+                    service.getMySchedule(idUser, role);
+
+            response.setData(schedules);
+            response.setMessage("Horario consultado correctamente");
+
+            return ResponseEntity.ok(response);
+
+        } catch (IllegalArgumentException e) {
+
+            response.setMessage(e.getMessage());
+
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(response);
+        }
+    }
 }
+

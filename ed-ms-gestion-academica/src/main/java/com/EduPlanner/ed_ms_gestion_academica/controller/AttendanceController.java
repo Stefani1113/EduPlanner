@@ -6,6 +6,8 @@ import com.eduplanner.ed_lib_common.dto.AttendanceSummaryDTO;
 import com.eduplanner.ed_lib_common.dto.HttpGlobalResponse;
 import com.eduplanner.ed_lib_common.dto.JustificationRequestDTO;
 import com.eduplanner.ed_lib_common.dto.JustificationReviewDTO;
+import com.eduplanner.ed_lib_common.enums.RolEnum;
+import com.EduPlanner.ed_ms_gestion_academica.security.RequireRole;
 import com.EduPlanner.ed_ms_gestion_academica.service.AttendancePdfService;
 import com.EduPlanner.ed_ms_gestion_academica.service.AttendanceService;
 import jakarta.validation.Valid;
@@ -30,6 +32,7 @@ public class AttendanceController {
     private final AttendanceService service;
     private final AttendancePdfService pdfService;
 
+    @RequireRole({RolEnum.ADMINISTRADOR, RolEnum.DOCENTE})
     @PostMapping
     public ResponseEntity<HttpGlobalResponse<AttendanceResponseDTO>> registerAttendance(
             @Valid @RequestBody AttendanceRequestDTO req) {
@@ -44,6 +47,7 @@ public class AttendanceController {
         }
     }
 
+    @RequireRole({RolEnum.ADMINISTRADOR, RolEnum.DOCENTE})
     @PutMapping("/{id}")
     public ResponseEntity<HttpGlobalResponse<AttendanceResponseDTO>> updateAttendance(
             @PathVariable Integer id, @Valid @RequestBody AttendanceRequestDTO req) {
@@ -60,6 +64,7 @@ public class AttendanceController {
         }
     }
 
+    @RequireRole({RolEnum.ADMINISTRADOR, RolEnum.DOCENTE})
     @GetMapping("/{id}")
     public ResponseEntity<HttpGlobalResponse<AttendanceResponseDTO>> getAttendanceById(
             @PathVariable Integer id) {
@@ -80,6 +85,7 @@ public class AttendanceController {
      * GET /eduplanner/attendance/history?student=15&startDate=2026-01-01&endDate=2026-06-30
      * GET /eduplanner/attendance/history?course=1&startDate=2026-01-01&endDate=2026-06-30
      */
+    @RequireRole({RolEnum.ADMINISTRADOR, RolEnum.DOCENTE})
     @GetMapping("/history")
     public ResponseEntity<HttpGlobalResponse<List<AttendanceResponseDTO>>> getHistory(
             @RequestParam(required = false) Integer student,
@@ -133,6 +139,7 @@ public class AttendanceController {
      *Un directivo/docente aprueba o rechaza la justificación.
      * PATCH /eduplanner/attendance/{id}/justification/review
      */
+    @RequireRole({RolEnum.ADMINISTRADOR, RolEnum.DOCENTE, RolEnum.DIRECTIVO})
     @PatchMapping("/{id}/justification/review")
     public ResponseEntity<HttpGlobalResponse<AttendanceResponseDTO>> reviewJustification(
             @PathVariable Integer id, @Valid @RequestBody JustificationReviewDTO req) {
@@ -178,6 +185,7 @@ public class AttendanceController {
      * GET /eduplanner/attendance/pdf?student=15&startDate=2026-01-01&endDate=2026-06-30
      * GET /eduplanner/attendance/pdf?course=1&startDate=2026-01-01&endDate=2026-06-30
      */
+    @RequireRole({RolEnum.ADMINISTRADOR, RolEnum.DOCENTE, RolEnum.DIRECTIVO})
     @GetMapping("/pdf")
     public ResponseEntity<byte[]> downloadPdf(
             @RequestParam(required = false) Integer student,
