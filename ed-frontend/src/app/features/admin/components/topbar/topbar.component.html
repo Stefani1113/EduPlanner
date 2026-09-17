@@ -12,14 +12,14 @@
   </button>
 
   <div class="logo">
-    <img src="assets/img/Logo-nav.png" alt="Edu Planner">
+    <img [src]="logoUrl$ | async" [alt]="nombreInstitucion$ | async">
   </div>
 
   <nav class="breadcrumb" aria-label="breadcrumb">
     <span
       *ngFor="let item of breadcrumb; let last = last"
       class="crumb"
-      [class.is-last]="last && !extra"
+      [class.is-last]="last && !extra" 
     >
       {{ item }}
       <span class="sep" *ngIf="!last || extra">&rsaquo;</span>

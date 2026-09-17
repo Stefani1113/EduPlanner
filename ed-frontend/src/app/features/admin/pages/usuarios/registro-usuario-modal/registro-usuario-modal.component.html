@@ -711,6 +711,39 @@
       </small>
     </div>
 
+    <div
+      class="field"
+      [class.error]="campoInvalidoEstudiante('idCourse')"
+    >
+      <label>Curso *</label>
+
+      <select formControlName="idCourse">
+        <option [ngValue]="''" disabled>
+          {{ cargandoCursos ? 'Cargando cursos...' : 'Seleccionar curso' }}
+        </option>
+        <option
+          *ngFor="let curso of cursosDisponibles"
+          [ngValue]="curso.idCourse"
+        >
+          {{ curso.name }}
+        </option>
+      </select>
+
+      <small
+        class="error-msg"
+        *ngIf="campoInvalidoEstudiante('idCourse')"
+      >
+        Selecciona el curso del estudiante
+      </small>
+
+      <small
+        class="hint"
+        *ngIf="!cargandoCursos && cursosDisponibles.length === 0"
+      >
+        No hay cursos configurados en la institución todavía.
+      </small>
+    </div>
+
   </div>
 
 

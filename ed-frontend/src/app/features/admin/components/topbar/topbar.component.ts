@@ -1,11 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
-import { filter } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { filter, map } from 'rxjs/operators';
 import { BreadcrumbService } from '../../services/breadcrumb.service';
 import { SidebarService } from '../../services/sidebar.service';
 import { ProfileMenuComponent } from '../profile-menu/profile-menu.component';
 import { PerfilService } from '../../services/perfil.service';
+import { InstitutionSettingsService } from '../../services/institution-settings.service';
 
 @Component({
   selector: 'app-topbar',
@@ -24,13 +26,28 @@ export class TopbarComponent implements OnInit {
   nombreUsuario = '';
   rolUsuario = 'Administrador';
 
+  readonly DEFAULT_LOGO = 'assets/img/Logo-nav.png';
+
+  logoUrl$: Observable<string>;
+  nombreInstitucion$: Observable<string>;
+
   constructor(
     private router: Router,
     private activatedRoute: ActivatedRoute,
     private breadcrumbService: BreadcrumbService,
     private sidebarService: SidebarService,
-    private perfilService: PerfilService
-  ) {}
+    private perfilService: PerfilService,
+    private institutionSettingsService: InstitutionSettingsService
+  ) {
+
+    this.logoUrl$ = this.institutionSettingsService.settings$.pipe(
+      map(settings => settings.info.logoUrl || this.DEFAULT_LOGO)
+    );
+
+    this.nombreInstitucion$ = this.institutionSettingsService.settings$.pipe(
+      map(settings => settings.info.nombreCorto || 'Edu Planner')
+    );
+  }
 
   toggleSidebar(): void {
     this.sidebarService.toggle();
@@ -51,8 +68,6 @@ export class TopbarComponent implements OnInit {
 
   private cargarUsuario(): void {
 
-    // Reutiliza el perfil ya cacheado por PerfilService (pedido una
-    // sola vez justo tras el login); no dispara una llamada nueva.
     this.perfilService.obtenerMiPerfil().subscribe({
       next: (respuesta) => {
 
@@ -71,7 +86,7 @@ export class TopbarComponent implements OnInit {
         }
       },
       error: () => {
-        // Si falla, se deja el valor por defecto ('Administrador').
+
       }
     });
   }

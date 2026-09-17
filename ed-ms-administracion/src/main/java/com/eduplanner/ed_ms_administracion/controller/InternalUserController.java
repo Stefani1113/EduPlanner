@@ -35,12 +35,7 @@ public class InternalUserController {
                 .map(role -> ResponseEntity.ok(role.getName()))
                 .orElse(ResponseEntity.notFound().build());
     }
-
-    /**
-     * Datos básicos de un usuario (nombre, correo, rol) para uso interno de
-     * otros microservicios, por ejemplo ed_ms_notas para armar reportes y
-     * notificaciones de notas definitivas (RF 9.5).
-     */
+  
     @GetMapping("/{id}")
     public ResponseEntity<HttpGlobalResponse<UserInfoDTO>> getUserInfo(@PathVariable Integer id) {
         return userRepository.findById(id)
@@ -62,14 +57,19 @@ public class InternalUserController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    /**
-     * lista de estudiantes de un curso
-     */
+    @GetMapping("/{id}/full-name")
+    public ResponseEntity<String> getUserFullName(@PathVariable Integer id) {
+        return userRepository.findById(id)
+                .map(user -> ResponseEntity.ok(user.getName() + " " + user.getSurnames()))
+                .orElse(ResponseEntity.notFound().build());
+    }
+     
     @GetMapping("/course/{idCourse}")
     public ResponseEntity<List<UserResponseDTO>> getUsersByCourse(@PathVariable Integer idCourse) {
         List<UserResponseDTO> users = userRepository.findByIdCourse(idCourse).stream()
                 .map(UserResponseDTO::fromEntity)
                 .toList();
         return ResponseEntity.ok(users);
+
     }
 }
