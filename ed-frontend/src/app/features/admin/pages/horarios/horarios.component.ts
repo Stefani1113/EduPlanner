@@ -6,7 +6,9 @@ import {
   MensajeIA,
   BloqueHorario,
   ConflictoHorario,
-  NotificacionHorario
+  NotificacionHorario,
+  CursoDTO,
+  ClaseHorarioDTO
 } from '../../services/horarios.service';
 import { PerfilService } from '../../services/perfil.service';
 import { BreadcrumbService } from '../../services/breadcrumb.service';
@@ -23,25 +25,20 @@ import { BreadcrumbService } from '../../services/breadcrumb.service';
 })
 export class HorariosComponent implements OnInit, OnDestroy {
 
-  // --- Chat IA ---
   chatAbierto = false;
   mensaje = '';
   cargando = false;
   mensajes: MensajeIA[] = [];
   emocionActual = 'normal';
 
-  // --- Vista: Horario o Conflictos ---
   vistaActual: 'horario' | 'conflictos' = 'horario';
 
-  // --- Tabla de horario ---
   diaSeleccionado = 'Martes';
   horarios: BloqueHorario[] = [];
   horarioDisponible = true;
 
-  // --- Conflictos detectados ---
   conflictos: ConflictoHorario[] = [];
 
-  // --- Notificaciones (publicación manual o generadas por la IA) ---
   notificaciones: NotificacionHorario[] = [];
 
   get notificacionActual(): NotificacionHorario | null {
@@ -51,36 +48,37 @@ export class HorariosComponent implements OnInit, OnDestroy {
     return this.notificaciones[0] || null;
   }
 
-  // --- Selector de curso (Administrador / Docente) ---
   cursosDisponibles: string[] = [];
   cursoSeleccionado = '';
   selectorCursosAbierto = false;
 
-  // --- Perfil / rol ---
   cargandoPerfil = true;
   esEstudiante = false;
   esDocente = false;
   esDirectivo = false;
   esAdministrador = false;
-  gradoEstudiante: string | null = null;
+  idCursoEstudiante: number | null = null;
 
-  /**
-   * Docente, Directivo y Estudiante comparten la misma vista restringida:
-   * sin asistente IA, sin conflictos ni notificaciones, solo su horario
-   * correspondiente (día, hora, exportar PDF y el grado al que pertenece).
-   * Únicamente el Administrador ve las herramientas completas.
-   */
+  private idCursoPorNombre: { [nombre: string]: number } = {};
+
   get esVistaRestringida(): boolean {
-    return !this.esAdministrador;
+    return !(this.esAdministrador || this.esDirectivo);
   }
 
-  // --- Reloj en vivo ---
   horaActual = new Date();
   private idIntervaloReloj: ReturnType<typeof setInterval> | null = null;
 
   private readonly nombresDias = [
     'Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'
   ];
+
+  private readonly diaSemanaPorIndice: { [dia: number]: keyof BloqueHorario } = {
+    1: 'lunes',
+    2: 'martes',
+    3: 'miercoles',
+    4: 'jueves',
+    5: 'viernes'
+  };
 
   constructor(
     private horariosService: HorariosService,
@@ -95,7 +93,6 @@ export class HorariosComponent implements OnInit, OnDestroy {
       this.horaActual = new Date();
     }, 1000);
 
-    this.cursosDisponibles = this.horariosService.obtenerCursosRegistrados();
     this.conflictos = this.horariosService.obtenerConflictos();
     this.notificaciones = this.horariosService.obtenerNotificaciones();
 
@@ -109,31 +106,15 @@ export class HorariosComponent implements OnInit, OnDestroy {
         this.esEstudiante = rol.includes('estudiante');
         this.esAdministrador = rol.includes('admin') && !this.esDirectivo;
 
-        if (this.esVistaRestringida) {
-          // Docente, Directivo y Estudiante solo ven el horario que les
-          // corresponde. El grado/curso puede llegar con distintos nombres
-          // según cómo lo exponga finalmente el backend.
-          this.gradoEstudiante =
-            perfil?.grado ?? perfil?.grade ?? perfil?.curso ?? perfil?.course ?? null;
+        this.idCursoEstudiante = perfil?.idCourse ?? null;
 
-          this.cursoSeleccionado = this.gradoEstudiante || this.cursosDisponibles[0] || '';
-          this.cargarHorarioDelCurso(this.cursoSeleccionado);
-        } else {
-          this.cursoSeleccionado = this.cursosDisponibles[0] || '';
-          this.cargarHorarioDelCurso(this.cursoSeleccionado);
-        }
-
-        this.cargandoPerfil = false;
+        this.inicializarVista();
       },
       error: () => {
-        // Si falla la carga del perfil, se muestra la vista de administrador
-        // con el primer curso disponible como respaldo.
         this.esDirectivo = false;
         this.esDocente = false;
         this.esEstudiante = false;
         this.esAdministrador = false;
-        this.cursoSeleccionado = this.cursosDisponibles[0] || '';
-        this.cargarHorarioDelCurso(this.cursoSeleccionado);
         this.cargandoPerfil = false;
       }
     });
@@ -146,20 +127,125 @@ export class HorariosComponent implements OnInit, OnDestroy {
     this.breadcrumbService.setExtra(null);
   }
 
+  private inicializarVista(): void {
+    if (this.esVistaRestringida) {
+
+      if (this.esEstudiante) {
+        this.horariosService.obtenerCursos().subscribe({
+          next: respuesta => {
+            const curso = (respuesta?.data || [])
+              .find(c => c.idCourse === this.idCursoEstudiante);
+
+            this.cursoSeleccionado = curso?.name || '';
+            this.cargarHorario(this.idCursoEstudiante);
+            this.cargandoPerfil = false;
+          },
+          error: () => {
+            this.cargarHorario(this.idCursoEstudiante);
+            this.cargandoPerfil = false;
+          }
+        });
+        return;
+      }
+
+      if (this.esDocente) {
+        this.cursoSeleccionado = 'Mi horario';
+        this.cargarHorario(null);
+        this.cargandoPerfil = false;
+        return;
+      }
+
+      this.cargandoPerfil = false;
+      return;
+    }
+
+    this.horariosService.obtenerCursos().subscribe({
+      next: respuesta => {
+        const cursos = respuesta?.data || [];
+        this.cursosDisponibles = cursos.map(c => c.name);
+        this.idCursoPorNombre = {};
+        cursos.forEach(c => this.idCursoPorNombre[c.name] = c.idCourse);
+
+        this.cursoSeleccionado = this.cursosDisponibles[0] || '';
+        this.cargarHorario(this.idCursoPorNombre[this.cursoSeleccionado] ?? null);
+        this.cargandoPerfil = false;
+      },
+      error: () => {
+        this.cargandoPerfil = false;
+      }
+    });
+  }
+
+  private cargarHorario(idCourse: number | null): void {
+    this.horariosService.obtenerMiHorario(idCourse).subscribe({
+      next: respuesta => {
+        const clases = respuesta?.data || [];
+        this.horarios = this.construirGrilla(clases);
+        this.horarioDisponible = this.horarios.length > 0;
+      },
+      error: () => {
+        this.horarios = [];
+        this.horarioDisponible = false;
+      }
+    });
+  }
+
+  private construirGrilla(clases: ClaseHorarioDTO[]): BloqueHorario[] {
+    const filas = new Map<string, BloqueHorario>();
+
+    const clasesOrdenadas = [...clases].sort((a, b) =>
+      (a.startTime || '').localeCompare(b.startTime || '')
+    );
+
+    for (const clase of clasesOrdenadas) {
+      const clave = `${clase.startTime}-${clase.endTime}`;
+
+      if (!filas.has(clave)) {
+        filas.set(clave, {
+          hora: this.formatearHora(clase.startTime),
+          horaFin: this.formatearHora(clase.endTime),
+          lunes: '',
+          martes: '',
+          miercoles: '',
+          jueves: '',
+          viernes: '',
+          descanso: false
+        });
+      }
+
+      const fila = filas.get(clave) as BloqueHorario;
+      const diaKey = this.diaSemanaPorIndice[clase.dayOfWeek];
+
+      if (diaKey) {
+        (fila as any)[diaKey] = clase.subjectName || '';
+      }
+    }
+
+    return Array.from(filas.values());
+  }
+
+  private formatearHora(horaIso: string): string {
+    if (!horaIso) {
+      return '';
+    }
+
+    const [horas, minutos] = horaIso.split(':').map(Number);
+    const periodo = horas >= 12 ? 'pm' : 'am';
+    let horas12 = horas % 12;
+
+    if (horas12 === 0) {
+      horas12 = 12;
+    }
+
+    return `${horas12}:${minutos.toString().padStart(2, '0')} ${periodo}`;
+  }
+
   alternarVista(vista: 'horario' | 'conflictos'): void {
-    // Docente, Directivo y Estudiante no tienen acceso a la vista de
-    // conflictos: solo consultan su horario.
     if (this.esVistaRestringida && vista === 'conflictos') {
       return;
     }
     this.vistaActual = vista;
     this.breadcrumbService.setExtra(vista === 'conflictos' ? 'Conflictos' : null);
-  }
-
-  private cargarHorarioDelCurso(curso: string): void {
-    const horario = this.horariosService.obtenerHorarioPorGrado(curso);
-    this.horarios = horario;
-    this.horarioDisponible = horario.length > 0;
   }
 
   alternarSelectorCursos(): void {
@@ -172,7 +258,7 @@ export class HorariosComponent implements OnInit, OnDestroy {
   seleccionarCurso(curso: string): void {
     this.cursoSeleccionado = curso;
     this.selectorCursosAbierto = false;
-    this.cargarHorarioDelCurso(curso);
+    this.cargarHorario(this.idCursoPorNombre[curso] ?? null);
   }
 
   seleccionarDia(dia: string): void {
@@ -191,7 +277,6 @@ export class HorariosComponent implements OnInit, OnDestroy {
   }
 
   abrirChat(): void {
-    // El asistente IA solo está disponible para el Administrador.
     if (this.esVistaRestringida) {
       return;
     }
@@ -222,60 +307,46 @@ export class HorariosComponent implements OnInit, OnDestroy {
     this.cargando = true;
     this.emocionActual = 'pensando';
 
-    setTimeout(() => {
-      const respuesta = this.horariosService.generarRespuesta(texto);
-      this.mensajes.push({
-        tipo: 'ia',
-        texto: respuesta.texto
-      });
-      this.emocionActual = respuesta.emocion;
-      this.cargando = false;
+    this.horariosService.enviarMensajeIA(texto).subscribe({
+      next: respuesta => {
+        const textoRespuesta = respuesta?.success
+          ? (respuesta.response || 'Listo.')
+          : (respuesta?.error || 'No pude procesar tu solicitud.');
 
-      this.registrarActividadDeIA(texto);
-    }, 700);
+        this.mensajes.push({
+          tipo: 'ia',
+          texto: textoRespuesta
+        });
+
+        this.emocionActual = respuesta?.success ? 'feliz' : 'normal';
+        this.cargando = false;
+
+        if (respuesta?.success) {
+          this.actualizarHorarioTrasIA();
+        }
+      },
+      error: () => {
+        this.mensajes.push({
+          tipo: 'ia',
+          texto: 'No pude conectarme con el asistente de horarios. Intenta nuevamente en unos segundos.'
+        });
+        this.emocionActual = 'normal';
+        this.cargando = false;
+      }
+    });
   }
 
-  /**
-   * Cuando el usuario le pide a la IA organizar/crear un horario, se
-   * simula que la IA generó una versión nueva: se agrega una notificación
-   * y un conflicto pendiente de revisión. Esto es solo demostrativo en
-   * frontend; cuando exista la IA real, este bloque debe reemplazarse por
-   * el resultado que devuelva el backend.
-   */
-  private registrarActividadDeIA(textoUsuario: string): void {
-    const texto = textoUsuario.toLowerCase();
-    const esCreacionDeHorario =
-      texto.includes('organizar') ||
-      texto.includes('crear horario') ||
-      texto.includes('genera') ||
-      texto.includes('nuevo horario');
-
-    if (!esCreacionDeHorario) {
-      return;
-    }
-
-    const fecha = new Date().toLocaleDateString('es-CO', {
-      day: 'numeric',
-      month: 'long'
-    });
+  private actualizarHorarioTrasIA(): void {
+    const idCourse = this.idCursoPorNombre[this.cursoSeleccionado] ?? null;
+    this.cargarHorario(idCourse);
 
     this.horariosService.registrarNotificacion({
       titulo: 'La IA generó un nuevo horario.',
-      mensaje: `Revisa los posibles conflictos antes de publicarlo · ${fecha}`,
-      fecha
-    });
-
-    this.horariosService.registrarConflicto({
-      curso: this.cursoSeleccionado || 'Sin curso',
-      dia: this.diaSeleccionado,
-      hora: 'Por definir',
-      tipo: 'Pendiente de revisión',
-      detalle: 'Este bloque fue generado automáticamente por la IA y aún no ha sido validado.',
-      gravedad: 'media'
+      mensaje: 'El horario mostrado ya refleja la última generación disponible.',
+      fecha: new Date().toLocaleDateString('es-CO', { day: 'numeric', month: 'long' })
     });
 
     this.notificaciones = this.horariosService.obtenerNotificaciones();
-    this.conflictos = this.horariosService.obtenerConflictos();
   }
 
   obtenerImagenIA(): string {
@@ -286,4 +357,4 @@ export class HorariosComponent implements OnInit, OnDestroy {
     this.mensaje = pregunta;
     this.enviarMensaje();
   }
-} 
+}

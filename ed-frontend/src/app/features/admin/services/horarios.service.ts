@@ -1,13 +1,10 @@
 import { Injectable } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable } from 'rxjs';
 
 export interface MensajeIA {
   tipo: 'ia' | 'usuario';
   texto: string;
-}
-
-export interface RespuestaIA {
-  texto: string;
-  emocion: string;
 }
 
 export interface BloqueHorario {
@@ -38,57 +35,53 @@ export interface NotificacionHorario {
   fecha: string;
 }
 
+export interface HttpGlobalResponse<T> {
+  data: T;
+  message: string;
+}
+
+export interface CursoDTO {
+  idCourse: number;
+  idPeriod: number;
+  idLevel: number;
+  idShift: number;
+  homeroomTeacher: number | null;
+  name: string;
+  studentCount: number;
+  status: boolean;
+}
+
+export interface ClaseHorarioDTO {
+  idSchedule: number;
+  dayOfWeek: number;
+  idTimeSlot: number;
+  startTime: string;
+  endTime: string;
+  isBreak: boolean;
+  idCourse: number;
+  courseName: string;
+  subjectName: string;
+  teacherName: string;
+}
+
+export interface RespuestaChatIA {
+  success: boolean;
+  response?: string;
+  error?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class HorariosService {
 
-  /**
-   * Mock de conflictos detectados en los horarios (cruces de docentes,
-   * aulas duplicadas, etc). Cuando exista el endpoint real de validación
-   * de horarios, reemplazar por la respuesta del backend.
-   */
-  private conflictos: ConflictoHorario[] = [
-    {
-      curso: '10-A',
-      dia: 'Miércoles',
-      hora: '8:00 am - 9:00 am',
-      tipo: 'Cruce de docente',
-      detalle: 'El docente de Matemáticas también está asignado en 11-B a la misma hora.',
-      gravedad: 'alta'
-    },
-    {
-      curso: '11-B',
-      dia: 'Jueves',
-      hora: '7:00 am - 8:00 am',
-      tipo: 'Aula duplicada',
-      detalle: 'El aula 204 está asignada a dos grupos de forma simultánea.',
-      gravedad: 'media'
-    },
-    {
-      curso: '10-A',
-      dia: 'Viernes',
-      hora: '11:00 am - 12:00 pm',
-      tipo: 'Carga horaria excedida',
-      detalle: 'El curso supera el máximo de horas semanales configurado para Ciencias.',
-      gravedad: 'baja'
-    }
-  ];
+  private apiGestionAcademica = '/gestion-academica/eduplanner';
+  private apiIa = '/ia/api';
 
-  /**
-   * Historial de notificaciones relacionadas con la publicación o
-   * generación de horarios (manual o por IA). El más reciente queda
-   * primero en la lista.
-   */
-  private notificaciones: NotificacionHorario[] = [
-    {
-      titulo: 'Horario 2° periodo publicado el 5 Marzo.',
-      mensaje: 'Puedes revisar los Conflictos',
-      fecha: '5 de marzo'
-    }
-  ];
+  private conflictos: ConflictoHorario[] = [];
+  private notificaciones: NotificacionHorario[] = [];
 
-  constructor() {}
+  constructor(private http: HttpClient) {}
 
   obtenerConflictos(): ConflictoHorario[] {
     return [...this.conflictos];
@@ -106,174 +99,30 @@ export class HorariosService {
     this.notificaciones = [notificacion, ...this.notificaciones];
   }
 
-  /**
-   * Horario general que se muestra por defecto (vista de Administrador / Docente).
-   * Cuando exista el endpoint real, este método debería reemplazarse por una
-   * llamada HTTP al backend.
-   */
-  obtenerHorarioGeneral(): BloqueHorario[] {
-    return [
-      {
-        hora: '6:00 am',
-        horaFin: '7:00 am',
-        lunes: 'Matemáticas',
-        martes: 'Inglés',
-        miercoles: 'Programación',
-        jueves: 'Ciencias',
-        viernes: 'Español',
-        descanso: false
-      },
-      {
-        hora: '7:00 am',
-        horaFin: '8:00 am',
-        lunes: 'Inglés',
-        martes: 'Matemáticas',
-        miercoles: 'Base de Datos',
-        jueves: 'Programación',
-        viernes: 'Sociales',
-        descanso: false
-      },
-      {
-        hora: '8:00 am',
-        horaFin: '9:00 am',
-        lunes: 'Programación',
-        martes: 'Ciencias',
-        miercoles: 'Matemáticas',
-        jueves: 'Inglés',
-        viernes: 'Educación Física',
-        descanso: false
-      },
-      {
-        hora: '9:00 am',
-        horaFin: '10:00 am',
-        lunes: 'Base de Datos',
-        martes: 'Español',
-        miercoles: 'Inglés',
-        jueves: 'Matemáticas',
-        viernes: 'Programación',
-        descanso: false
-      },
-      {
-        hora: '10:00 am',
-        horaFin: '10:30 am',
-        lunes: '',
-        martes: '',
-        miercoles: '',
-        jueves: '',
-        viernes: '',
-        descanso: true
-      },
-      {
-        hora: '11:00 am',
-        horaFin: '12:00 pm',
-        lunes: 'Ciencias',
-        martes: 'Programación',
-        miercoles: 'Sociales',
-        jueves: 'Base de Datos',
-        viernes: 'Matemáticas',
-        descanso: false
-      }
-    ];
+  obtenerCursos(): Observable<HttpGlobalResponse<CursoDTO[]>> {
+    return this.http.get<HttpGlobalResponse<CursoDTO[]>>(
+      `${this.apiGestionAcademica}/courses`
+    );
   }
 
-  /**
-   * Horarios de ejemplo organizados por curso/grado, para simular en frontend
-   * lo que un estudiante debería ver según su curso. La clave se normaliza
-   * en minúsculas y sin espacios (ej: "10-a", "11-b").
-   *
-   * Cuando exista el endpoint real (ej: GET /horarios/mi-curso), este mapa
-   * debe eliminarse y reemplazarse por la respuesta del backend.
-   */
-  private horariosPorGrado: { [grado: string]: BloqueHorario[] } = {
-    '10-a': [
-      {
-        hora: '6:00 am',
-        horaFin: '7:00 am',
-        lunes: 'Matemáticas',
-        martes: 'Inglés',
-        miercoles: 'Programación',
-        jueves: 'Ciencias',
-        viernes: 'Español',
-        descanso: false
-      },
-      {
-        hora: '7:00 am',
-        horaFin: '8:00 am',
-        lunes: 'Inglés',
-        martes: 'Matemáticas',
-        miercoles: 'Base de Datos',
-        jueves: 'Programación',
-        viernes: 'Sociales',
-        descanso: false
-      },
-      {
-        hora: '10:00 am',
-        horaFin: '10:30 am',
-        lunes: '',
-        martes: '',
-        miercoles: '',
-        jueves: '',
-        viernes: '',
-        descanso: true
-      },
-      {
-        hora: '11:00 am',
-        horaFin: '12:00 pm',
-        lunes: 'Ciencias',
-        martes: 'Programación',
-        miercoles: 'Sociales',
-        jueves: 'Base de Datos',
-        viernes: 'Matemáticas',
-        descanso: false
-      }
-    ],
-    '11-b': [
-      {
-        hora: '7:00 am',
-        horaFin: '8:00 am',
-        lunes: 'Cálculo',
-        martes: 'Física',
-        miercoles: 'Química',
-        jueves: 'Inglés',
-        viernes: 'Español',
-        descanso: false
-      },
-      {
-        hora: '8:00 am',
-        horaFin: '9:00 am',
-        lunes: 'Física',
-        martes: 'Cálculo',
-        miercoles: 'Inglés',
-        jueves: 'Química',
-        viernes: 'Educación Física',
-        descanso: false
-      }
-    ]
-  };
+  obtenerMiHorario(idCourse?: number | null): Observable<HttpGlobalResponse<ClaseHorarioDTO[]>> {
+    let params = new HttpParams();
 
-  /**
-   * Devuelve el horario correspondiente a un grado/curso específico.
-   * Si el grado no tiene horario registrado, devuelve un arreglo vacío
-   * para que la vista pueda mostrar el estado "sin horario disponible".
-   */
-  obtenerHorarioPorGrado(grado: string | null | undefined): BloqueHorario[] {
-    const clave = (grado || '').trim().toLowerCase();
-
-    if (!clave || !this.horariosPorGrado[clave]) {
-      return [];
+    if (idCourse !== null && idCourse !== undefined) {
+      params = params.set('idCourse', idCourse);
     }
 
-    return [...this.horariosPorGrado[clave]];
+    return this.http.get<HttpGlobalResponse<ClaseHorarioDTO[]>>(
+      `${this.apiGestionAcademica}/schedules/mi-horario`,
+      { params }
+    );
   }
 
-  /**
-   * Devuelve la lista de cursos que tienen horario registrado, para
-   * alimentar el selector de curso en la vista de Administrador/Docente.
-   * Cuando exista el endpoint real, reemplazar por la lista de cursos
-   * de la institución.
-   */
-  obtenerCursosRegistrados(): string[] {
-    return Object.keys(this.horariosPorGrado).map(clave => clave.toUpperCase());
+  enviarMensajeIA(mensaje: string): Observable<RespuestaChatIA> {
+    return this.http.post<RespuestaChatIA>(
+      `${this.apiIa}/chat`,
+      { message: mensaje }
+    );
   }
 
   obtenerMensajeInicial(): MensajeIA[] {
@@ -283,56 +132,5 @@ export class HorariosService {
         texto: '¡Hola! Soy EduPlanner IA. Estoy aquí para ayudarte con la organización y consulta de los horarios.'
       }
     ];
-  }
-
-  generarRespuesta(pregunta: string): RespuestaIA {
-    const texto = pregunta.toLowerCase();
-
-    if (
-      texto.includes('conflicto') ||
-      texto.includes('problema') ||
-      texto.includes('cruce')
-    ) {
-      return {
-        texto: 'He revisado la información disponible. En esta versión de demostración no se está consultando todavía el sistema real, pero puedo ayudarte a identificar posibles cruces de profesores, cursos y horas.',
-        emocion: 'pensando'
-      };
-    }
-
-    if (
-      texto.includes('organizar') ||
-      texto.includes('crear') ||
-      texto.includes('horario')
-    ) {
-      return {
-        texto: 'Claro. Para organizar un horario podemos tener en cuenta cursos, docentes, asignaturas y horas disponibles. Cuando conectemos la IA real, podré analizar esos datos automáticamente.',
-        emocion: 'feliz'
-      };
-    }
-
-    if (
-      texto.includes('profesor') ||
-      texto.includes('docente')
-    ) {
-      return {
-        texto: 'Puedo ayudarte a revisar la disponibilidad de los docentes y detectar posibles cruces de horarios. Por ahora esta función funciona como una demostración del asistente.',
-        emocion: 'normal'
-      };
-    }
-
-    if (
-      texto.includes('hola') ||
-      texto.includes('buenas')
-    ) {
-      return {
-        texto: '¡Hola! Me alegra verte. ¿Quieres que revisemos o organicemos un horario?',
-        emocion: 'feliz'
-      };
-    }
-
-    return {
-      texto: 'Entiendo tu pregunta. Soy el asistente de horarios de EduPlanner. Actualmente estoy en modo demostración frontend, pero puedo simular la ayuda que posteriormente tendrá la IA.',
-      emocion: 'normal'
-    };
   }
 }
