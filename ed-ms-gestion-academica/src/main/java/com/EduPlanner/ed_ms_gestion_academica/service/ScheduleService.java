@@ -200,7 +200,7 @@ public class ScheduleService {
             .map(this::buildScheduleResponse)
             .toList();
     }
-    
+
     /**
      * Listar horario de docente y estudiante
      */
@@ -368,5 +368,35 @@ public class ScheduleService {
     return schedules.stream()
             .map(this::buildScheduleResponse)
             .toList();
-}
+    }
+
+    /**
+     * Eliminar horario
+     */
+    @Transactional
+    public void deleteGeneration(Integer idGeneration) {
+
+        ScheduleGeneration generation =
+                generationRepository.findById(idGeneration)
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "No se encontró la generación"
+                                ));
+
+        if (generation.getStatus()
+                == SchedulerGenerationStatus.PUBLISHED) {
+
+            throw new IllegalArgumentException(
+                    "No se puede eliminar una generación publicada"
+            );
+        }
+
+        scheduleRepository
+                .deleteByIdScheduleGeneration(idGeneration);
+
+        generationCourseRepository
+                .deleteByIdScheduleGeneration(idGeneration);
+
+        generationRepository.delete(generation);
+    }
 }
