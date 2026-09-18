@@ -3,8 +3,6 @@ package com.EduPlanner.ed_ms_gestion_academica.controller;
 import com.eduplanner.ed_lib_common.dto.AcademicLoadRequestDTO;
 import com.eduplanner.ed_lib_common.dto.AcademicLoadResponseDTO;
 import com.eduplanner.ed_lib_common.dto.HttpGlobalResponse;
-import com.eduplanner.ed_lib_common.enums.RolEnum;
-import com.EduPlanner.ed_ms_gestion_academica.security.RequireRole;
 import com.EduPlanner.ed_ms_gestion_academica.service.AcademicLoadService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +17,6 @@ import java.util.List;
 public class AcademicLoadController {
     private final AcademicLoadService service;
 
-    @RequireRole(RolEnum.ADMINISTRADOR)
     @PostMapping
     public ResponseEntity<HttpGlobalResponse<AcademicLoadResponseDTO>> registerLoad(@Valid @RequestBody AcademicLoadRequestDTO req) {
         HttpGlobalResponse<AcademicLoadResponseDTO> r = new HttpGlobalResponse<>();
@@ -27,7 +24,6 @@ public class AcademicLoadController {
         catch (IllegalArgumentException e) { r.setMessage(e.getMessage()); return ResponseEntity.status(HttpStatus.CONFLICT).body(r); }
     }
 
-    @RequireRole(RolEnum.ADMINISTRADOR)
     @PutMapping("/{id}")
     public ResponseEntity<HttpGlobalResponse<AcademicLoadResponseDTO>> updateLoad(@PathVariable Integer id, @Valid @RequestBody AcademicLoadRequestDTO req) {
         HttpGlobalResponse<AcademicLoadResponseDTO> r = new HttpGlobalResponse<>();
@@ -36,14 +32,12 @@ public class AcademicLoadController {
         catch (RuntimeException e) { r.setMessage(e.getMessage()); return ResponseEntity.status(HttpStatus.NOT_FOUND).body(r); }
     }
 
-    @RequireRole(RolEnum.ADMINISTRADOR)
     @GetMapping
     public ResponseEntity<HttpGlobalResponse<List<AcademicLoadResponseDTO>>> listLoads() {
         HttpGlobalResponse<List<AcademicLoadResponseDTO>> r = new HttpGlobalResponse<>();
         r.setData(service.listLoads()); r.setMessage("Cargas académicas recuperadas correctamente"); return ResponseEntity.ok(r);
     }
 
-    @RequireRole(RolEnum.ADMINISTRADOR)
     @GetMapping("/{id}")
     public ResponseEntity<HttpGlobalResponse<AcademicLoadResponseDTO>> getLoadById(@PathVariable Integer id) {
         HttpGlobalResponse<AcademicLoadResponseDTO> r = new HttpGlobalResponse<>();
@@ -52,7 +46,6 @@ public class AcademicLoadController {
         catch (RuntimeException e) { r.setMessage(e.getMessage()); return ResponseEntity.status(HttpStatus.NOT_FOUND).body(r); }
     }
 
-    @RequireRole(RolEnum.ADMINISTRADOR)
     @GetMapping("/filter")
     public ResponseEntity<HttpGlobalResponse<List<AcademicLoadResponseDTO>>> filterLoads(
             @RequestParam(required = false) Integer teacher,
@@ -68,7 +61,6 @@ public class AcademicLoadController {
         return data.isEmpty() ? ResponseEntity.status(HttpStatus.NOT_FOUND).body(r) : ResponseEntity.ok(r);
     }
 
-    @RequireRole(RolEnum.ADMINISTRADOR)
     @DeleteMapping("/{id}")
     public ResponseEntity<HttpGlobalResponse<Void>> deleteLoad(@PathVariable Integer id) {
         HttpGlobalResponse<Void> r = new HttpGlobalResponse<>();
