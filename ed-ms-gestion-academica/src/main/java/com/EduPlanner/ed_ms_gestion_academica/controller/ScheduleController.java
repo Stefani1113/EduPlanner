@@ -190,5 +190,36 @@ public class ScheduleController {
                     .body(response);
         }
     }
+
+    /**
+     * Eliminar horario académico
+     */
+    @RequireRole(RolEnum.ADMINISTRADOR)
+    @DeleteMapping("/generations/{idGeneration}")
+    public ResponseEntity<HttpGlobalResponse<Void>> deleteGeneration(
+            @PathVariable Integer idGeneration) {
+
+        HttpGlobalResponse<Void> response =
+                new HttpGlobalResponse<>();
+
+        try {
+
+            service.deleteGeneration(idGeneration);
+
+            response.setMessage(
+                    "Generación eliminada correctamente"
+            );
+
+            return ResponseEntity.ok(response);
+
+        } catch (IllegalArgumentException e) {
+
+            response.setMessage(e.getMessage());
+
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(response);
+        }
+    }
 }
 
