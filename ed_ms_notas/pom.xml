@@ -56,6 +56,12 @@
 			<artifactId>spring-boot-starter-webmvc</artifactId>
 		</dependency>
 
+		<!-- Envío de correos: RF 9.5 - Notificar notas definitivas -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-mail</artifactId>
+		</dependency>
+
 		<!-- OpenFeign para clientes HTTP declarativos -->
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
@@ -94,7 +100,11 @@
 			<artifactId>ed-lib-common</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
 		</dependency>
-
+        <dependency>
+     		<groupId>org.apache.pdfbox</groupId>
+    		<artifactId>pdfbox</artifactId>
+    		<version>3.0.5</version>
+		</dependency>
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
 			<artifactId>jjwt-api</artifactId>

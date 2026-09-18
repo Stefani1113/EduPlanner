@@ -66,9 +66,9 @@ spring:
           filters:
             - StripPrefix=1
 
-      # ── Microservicio Inteligencia Artificial (ACTIVO: 8085) ─────────────────────────
+      # ── Microservicio Inteligencia Artificial─────────────────────────
         - id: ed-ms-ia
-          uri: lb://ed-ms-ia
+          uri: http://127.0.0.1:5000
           predicates:
             - Path=/ia/**
           filters:

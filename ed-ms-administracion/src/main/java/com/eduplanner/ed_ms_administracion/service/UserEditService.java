@@ -66,13 +66,6 @@ public class UserEditService {
     Integer oldCourseId = user.getIdCourse();
     Integer newCourseId = dto.getIdCourse();
 
-    log.info("======================================");
-    log.info("CAMBIO DE CURSO");
-    log.info("Usuario: {}", idUser);
-    log.info("Curso anterior: {}", oldCourseId);
-    log.info("Curso nuevo: {}", newCourseId);
-    log.info("======================================");
-
     user.setIdCourse(newCourseId);
     userRepository.save(user);
 

@@ -62,18 +62,12 @@ public class JwtAuthFilter implements GlobalFilter, Ordered {
 
             //  Validar JWT
             if (!jwtUtil.isTokenValid(token)) {
-        log.warning("======================================");
-        log.warning("TOKEN INVALIDO");
-        log.warning("RUTA: " + path);
-        log.warning("TOKEN RECIBIDO: " + token);
-        log.warning("======================================");
-
         return responderError(exchange, HttpStatus.UNAUTHORIZED,
                 "Error de validación del token");
     }
 
         //Token válido: extraer claims e inyectarlos como headers 
-         String email   = jwtUtil.extractUsername(token);
+        String email   = jwtUtil.extractUsername(token);
         Integer userId = jwtUtil.extractUserId(token);
         Integer rolId  = jwtUtil.extractRolId(token);
 
