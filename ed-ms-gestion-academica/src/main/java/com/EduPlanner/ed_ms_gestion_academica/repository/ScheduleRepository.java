@@ -8,4 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ScheduleRepository extends JpaRepository<Schedule, Integer> {
         List<Schedule> findByIdAcademicLoadInAndStatusTrue(List<Integer> idAcademicLoads);
+        List<Schedule> findByIdScheduleGenerationAndStatusTrue(Integer idScheduleGeneration);
+        List<Schedule> findByIdScheduleGenerationAndIdAcademicLoadInAndStatusTrue(Integer idScheduleGeneration,List<Integer> idAcademicLoads);
+        void deleteByIdScheduleGeneration(Integer idScheduleGeneration);
 }
