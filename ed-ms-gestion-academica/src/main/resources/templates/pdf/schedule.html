@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="es">
 
@@ -10,7 +9,7 @@
 
         @page {
             size: A4 landscape;
-            margin: 22mm 14mm 18mm 14mm;
+            margin: 18mm 14mm 16mm 14mm;
         }
 
         * {
@@ -20,41 +19,43 @@
         }
 
         body {
-            font-family: 'Helvetica', 'Arial', sans-serif;
+            font-family: Helvetica, Arial, sans-serif;
             background-color: #ffffff;
             color: #111111;
             font-size: 12px;
         }
 
-        /* ===================== HEADER ===================== */
+        /* =========================
+           HEADER
+           ========================= */
 
         .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            width: 100%;
             border-bottom: 3px solid #1e7a3d;
-            padding-bottom: 14px;
-            margin-bottom: 18px;
+            padding-bottom: 12px;
+            margin-bottom: 16px;
         }
 
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 10px;
+        .header-table {
+            width: 100%;
+            border-collapse: collapse;
         }
 
-        .brand-logo {
-            width: 34px;
-            height: 34px;
-            border-radius: 8px;
-            background: linear-gradient(135deg, #2e9e52, #1c6e37);
+        .header-left {
+            width: 60%;
+            vertical-align: middle;
+        }
+
+        .header-right {
+            width: 40%;
+            text-align: right;
+            vertical-align: middle;
         }
 
         .brand-name {
-            font-size: 20px;
-            font-weight: 700;
+            font-size: 21px;
+            font-weight: bold;
             color: #14532d;
-            letter-spacing: 0.3px;
         }
 
         .brand-name span {
@@ -62,136 +63,163 @@
         }
 
         .doc-title {
-            text-align: right;
-        }
-
-        .doc-title h1 {
             font-size: 18px;
-            font-weight: 700;
+            font-weight: bold;
             color: #14532d;
-            margin-bottom: 2px;
-        }
-
-        .doc-title p {
-            font-size: 11px;
-            color: #4b5563;
-        }
-
-        /* ===================== INFO CARDS ===================== */
-
-        .info-panel {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 18px;
-        }
-
-        .info-card {
-            flex: 1;
-            background-color: #f2f9f4;
-            border: 1px solid #cdeed9;
-            border-left: 4px solid #2e9e52;
-            border-radius: 6px;
-            padding: 10px 14px;
-        }
-
-        .info-card .label {
-            font-size: 9px;
-            text-transform: uppercase;
-            letter-spacing: 0.6px;
-            color: #2e9e52;
-            font-weight: 700;
             margin-bottom: 3px;
         }
 
-        .info-card .value {
-            font-size: 13px;
-            font-weight: 600;
+        .doc-date {
+            font-size: 10px;
+            color: #4b5563;
+        }
+
+        /* =========================
+           INFORMATION PANEL
+           ========================= */
+
+        .info-panel {
+            width: 100%;
+            margin-bottom: 18px;
+        }
+
+        .info-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 8px 0;
+        }
+
+        .info-card {
+            width: 25%;
+            background-color: #f2f9f4;
+            border: 1px solid #cdeed9;
+            border-left: 4px solid #2e9e52;
+            padding: 9px 12px;
+            vertical-align: top;
+        }
+
+        .info-card:first-child {
+            border-left: 4px solid #2e9e52;
+        }
+
+        .label {
+            font-size: 8px;
+            text-transform: uppercase;
+            color: #2e9e52;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .value {
+            font-size: 12px;
+            font-weight: bold;
             color: #111111;
         }
 
-        /* ===================== TABLE ===================== */
+        /* =========================
+           SCHEDULE TABLE
+           ========================= */
 
         table.schedule {
             width: 100%;
             border-collapse: collapse;
-            border-radius: 8px;
-            overflow: hidden;
+            table-layout: fixed;
         }
 
         table.schedule thead th {
             background-color: #1e7a3d;
             color: #ffffff;
-            font-size: 11px;
+            font-size: 10px;
+            font-weight: bold;
             text-transform: uppercase;
-            letter-spacing: 0.4px;
-            padding: 10px 8px;
+            padding: 9px 6px;
             text-align: center;
             border: 1px solid #1e7a3d;
         }
 
-        table.schedule thead th:first-child {
+        table.schedule thead th.hour-header {
+            width: 105px;
             text-align: left;
-            width: 90px;
         }
 
         table.schedule tbody td {
-            padding: 9px 8px;
+            height: 42px;
+            padding: 7px 5px;
             text-align: center;
+            vertical-align: middle;
             border: 1px solid #d9e9de;
             color: #111111;
-            font-size: 11.5px;
+            font-size: 10px;
         }
 
         table.schedule tbody td.hour-cell {
             text-align: left;
-            font-weight: 700;
+            font-weight: bold;
             background-color: #e6f5eb;
             color: #14532d;
+            font-size: 9px;
         }
 
-        table.schedule tbody tr:nth-child(even) td:not(.hour-cell) {
+        table.schedule tbody tr:nth-child(even) td {
             background-color: #f7fbf8;
         }
 
-        table.schedule tbody tr:nth-child(odd) td:not(.hour-cell) {
-            background-color: #ffffff;
+        table.schedule tbody tr:nth-child(even) td.hour-cell {
+            background-color: #e6f5eb;
         }
 
-        td.empty-slot {
-            color: #b8c2bc;
+        .empty-slot {
+            color: #aab5ae;
             font-style: italic;
         }
 
-        /* ===================== LEGEND / FOOTER ===================== */
+        /* =========================
+            LEGEND
+        ========================= */
 
         .legend {
-            display: flex;
-            gap: 16px;
-            margin-top: 16px;
-            font-size: 10px;
+            margin-top: 14px;
+            font-size: 9px;
             color: #4b5563;
         }
 
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 5px;
+        .legend-table {
+            border-collapse: collapse;
         }
 
         .legend-dot {
-            width: 9px;
-            height: 9px;
-            border-radius: 2px;
+            width: 8px;
+            height: 8px;
+            background-color: #2e9e52;
+            display: inline-block;
+            margin-right: 5px;
         }
 
+        /* =========================
+           FOOTER
+           ========================= */
+
         .footer {
-            margin-top: 26px;
-            padding-top: 10px;
+            width: 100%;
+            margin-top: 20px;
+            padding-top: 9px;
             border-top: 1px solid #d9e9de;
-            display: flex;
-            justify-content: space-between;
-            font-size: 9.5px;
+            font-size: 8.5px;
             color: #6b7280;
+        }
+
+        .footer-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .footer-left {
+            text-align: left;
+        }
+
+        .footer-right {
+            text-align: right;
         }
 
     </style>
@@ -199,40 +227,302 @@
 
 <body>
 
-<!-- ===================== HEADER ===================== -->
+<!-- =========================
+     HEADER
+     ========================= -->
 
 <div class="header">
 
-    <div class="brand">
+    <table class="header-table">
+        <tr>
 
-        <div class="brand-logo"></div>
+            <td class="header-left">
 
-        <div class="brand-name">
-            Edu<span>Planner</span>
-        </div>
+                <div class="brand-name">
+                    Edu<span>Planner</span>
+                </div>
 
-    </div>
+            </td>
 
-    <div class="doc-title">
+            <td class="header-right">
 
-        <h1>Horario académico</h1>
+                <div class="doc-title">
+                    Horario académico
+                </div>
 
-        <p th:text="${'Generado el ' + fechaGeneracion}">
-            Generado el 17/09/2026
-        </p>
+                <div class="doc-date"
+                     th:text="${'Generado el ' + fechaGeneracion}">
+                    Generado el 18/09/2026
+                </div>
 
-    </div>
+            </td>
+
+        </tr>
+    </table>
 
 </div>
 
 
-<!-- ===================== INFO PANEL ===================== -->
+<!-- =========================
+     INFORMATION PANEL
+     ========================= -->
 
 <div class="info-panel">
 
-    <!-- Curso -->
+    <table class="info-table">
 
-    <div class="info-card">
+        <tr>
 
-        <div class="label">
-```
+            <!-- CURSO -->
+
+            <td class="info-card">
+
+                <div class="label">
+                    Curso
+                </div>
+
+                <div class="value"
+                     th:text="${curso != null and !curso.isEmpty() ? curso : 'No especificado'}">
+                    No especificado
+                </div>
+
+            </td>
+
+
+            <!-- PERIODO -->
+
+            <td class="info-card">
+
+                <div class="label">
+                    Periodo académico
+                </div>
+
+                <div class="value"
+                     th:text="${periodo != null and !periodo.isEmpty() ? periodo : 'No especificado'}">
+                    No especificado
+                </div>
+
+            </td>
+
+
+            <!-- DOCENTE -->
+
+            <td class="info-card"
+                th:if="${docente != null and !docente.isEmpty()}">
+
+                <div class="label">
+                    Docente
+                </div>
+
+                <div class="value"
+                     th:text="${docente}">
+                    No especificado
+                </div>
+
+            </td>
+
+
+            <!-- ESTUDIANTE -->
+
+            <td class="info-card"
+                th:if="${estudiante != null and !estudiante.isEmpty()}">
+
+                <div class="label">
+                    Estudiante
+                </div>
+
+                <div class="value"
+                     th:text="${estudiante}">
+                    No especificado
+                </div>
+
+            </td>
+
+        </tr>
+
+    </table>
+
+</div>
+
+
+<!-- =========================
+     SCHEDULE
+     ========================= -->
+
+<table class="schedule">
+
+    <thead>
+
+    <tr>
+
+        <th class="hour-header">
+            Hora
+        </th>
+
+        <th>
+            Lunes
+        </th>
+
+        <th>
+            Martes
+        </th>
+
+        <th>
+            Miércoles
+        </th>
+
+        <th>
+            Jueves
+        </th>
+
+        <th>
+            Viernes
+        </th>
+
+    </tr>
+
+    </thead>
+
+
+    <tbody>
+
+    <!--
+        Cada fila representa un bloque horario.
+    -->
+
+    <tr th:each="fila : ${filas}">
+
+        <!-- HORA -->
+
+        <td class="hour-cell">
+
+            <span th:text="${fila.horaInicio}">
+                07:00
+            </span>
+
+            <span>
+                -
+            </span>
+
+            <span th:text="${fila.horaFin}">
+                08:00
+            </span>
+
+        </td>
+
+
+        <!-- LUNES -->
+
+        <td th:text="${fila.lunes != null and !fila.lunes.isEmpty() ? fila.lunes : '—'}"
+            th:classappend="${fila.lunes == null or fila.lunes.isEmpty() ? 'empty-slot' : ''}">
+            Matemáticas
+        </td>
+
+
+        <!-- MARTES -->
+
+        <td th:text="${fila.martes != null and !fila.martes.isEmpty() ? fila.martes : '—'}"
+            th:classappend="${fila.martes == null or fila.martes.isEmpty() ? 'empty-slot' : ''}">
+            Inglés
+        </td>
+
+
+        <!-- MIÉRCOLES -->
+
+        <td th:text="${fila.miercoles != null and !fila.miercoles.isEmpty() ? fila.miercoles : '—'}"
+            th:classappend="${fila.miercoles == null or fila.miercoles.isEmpty() ? 'empty-slot' : ''}">
+            Ciencias
+        </td>
+
+
+        <!-- JUEVES -->
+
+        <td th:text="${fila.jueves != null and !fila.jueves.isEmpty() ? fila.jueves : '—'}"
+            th:classappend="${fila.jueves == null or fila.jueves.isEmpty() ? 'empty-slot' : ''}">
+            Sociales
+        </td>
+
+
+        <!-- VIERNES -->
+
+        <td th:text="${fila.viernes != null and !fila.viernes.isEmpty() ? fila.viernes : '—'}"
+            th:classappend="${fila.viernes == null or fila.viernes.isEmpty() ? 'empty-slot' : ''}">
+            Educación Física
+        </td>
+
+    </tr>
+
+
+    <!--
+        Mensaje cuando no existen horarios.
+    -->
+
+    <tr th:if="${filas == null or filas.isEmpty()}">
+
+        <td colspan="6"
+            style="padding: 25px; text-align: center; color: #6b7280;">
+
+            No hay horarios disponibles para mostrar.
+
+        </td>
+
+    </tr>
+
+    </tbody>
+
+</table>
+
+
+<!-- =========================
+     LEGEND
+     ========================= -->
+
+<div class="legend">
+
+    <table class="legend-table">
+
+        <tr>
+
+            <td>
+                <span class="legend-dot"></span>
+            </td>
+
+            <td>
+                Horario académico generado por EduPlanner
+            </td>
+
+        </tr>
+
+    </table>
+
+</div>
+
+
+<!-- =========================
+     FOOTER
+     ========================= -->
+
+<div class="footer">
+
+    <table class="footer-table">
+
+        <tr>
+
+            <td class="footer-left">
+                EduPlanner — Gestión académica
+            </td>
+
+            <td class="footer-right"
+                th:text="${'© ' + anio}">
+                © 2026
+            </td>
+
+        </tr>
+
+    </table>
+
+</div>
+
+</body>
+
+</html>

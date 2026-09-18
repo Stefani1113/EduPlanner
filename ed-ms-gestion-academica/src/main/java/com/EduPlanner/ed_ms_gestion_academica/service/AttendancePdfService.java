@@ -12,8 +12,9 @@ import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
-import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
 import org.springframework.stereotype.Service;
+import org.apache.pdfbox.pdmodel.font.PDFont;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
 
 import java.awt.*;
 import java.io.ByteArrayOutputStream;
@@ -87,8 +88,8 @@ public class AttendancePdfService {
     // fecha, estado, curso, observación, justificación, revisión
     private static final float[] COL_WIDTHS = {62, 78, 55, 95, 100, 75};
 
-    private final PDFont fontRegular = new PDType1Font(Standard14Fonts.FontName.HELVETICA);
-    private final PDFont fontBold = new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD);
+    private final PDFont fontRegular = PDType1Font.HELVETICA;
+    private final PDFont fontBold = PDType1Font.HELVETICA_BOLD;
 
     public byte[] generatePdf(String title, String subtitle, List<AttendanceResponseDTO> records, AttendanceSummaryDTO summary) {
         try (PDDocument document = new PDDocument()) {
