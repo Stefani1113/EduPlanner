@@ -29,3 +29,31 @@ build/
 
 # VS Code
 .vscode/
+
+# Variables de entorno agente
+venv/
+.venv/
+**/venv/
+**/.venv/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+venv/
+.venv/
+**/venv/
+**/.venv/
+
+# Environment variables
+.env
+**/.env
+
+# Agent test history
+ed-ms-ia/data/history/
+
+# Archivos de python
+__pycache__/
+*.pyc

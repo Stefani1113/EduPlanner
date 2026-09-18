@@ -6,6 +6,10 @@ import com.eduplanner.ed_lib_common.dto.GradeRequestDTO;
 import com.eduplanner.ed_lib_common.dto.GradeResponseDTO;
 import com.eduplanner.ed_lib_common.dto.HttpGlobalResponse;
 import com.eduplanner.ed_lib_common.dto.UserInfoDTO;
+import EduPlanner.ed_ms_notas.client.AdministracionServiceClient;
+import EduPlanner.ed_ms_notas.client.GestionAcademicaServiceClient;
+import com.eduplanner.ed_lib_common.dto.GradeRequestDTO;
+import com.eduplanner.ed_lib_common.dto.GradeResponseDTO;
 import com.eduplanner.ed_lib_common.entity.EvaluationType;
 import com.eduplanner.ed_lib_common.entity.EvaluativeActivity;
 import com.eduplanner.ed_lib_common.entity.Grade;
@@ -33,8 +37,8 @@ public class GradeService {
     private final EvaluationTypeRepository evaluationTypeRepository;
     private final EvaluativeActivityRepository evaluativeActivityRepository;
     private final GradingScaleService gradingScaleService;
-    private final AdministracionFeignClient administracionFeignClient;
-    private final GestionAcademicaFeignClient gestionAcademicaFeignClient;
+    private final AdministracionServiceClient administracionServiceClient;
+    private final GestionAcademicaServiceClient gestionAcademicaServiceClient;
 
     public GradeResponseDTO registerGrade(GradeRequestDTO req) {
         validateIsRole(req.getIdStudent(), "ESTUDIANTE", "estudiante");
@@ -105,12 +109,7 @@ public class GradeService {
     }
 
     private void validateIsRole(Integer idUser, String expectedRole, String label) {
-        String role;
-        try {
-            role = administracionFeignClient.getUserRole(idUser);
-        } catch (FeignException.NotFound e) {
-            throw new IllegalArgumentException("El " + label + " " + idUser + " no existe en administración");
-        }
+        String role = administracionServiceClient.getUserRole(idUser);
         if (role == null) {
             throw new IllegalArgumentException("El " + label + " " + idUser + " no existe en administración");
         }
@@ -121,10 +120,7 @@ public class GradeService {
 
     private String fetchUserName(Integer idUser) {
         try {
-            HttpGlobalResponse<UserInfoDTO> resp = administracionFeignClient.getUserById(idUser);
-            UserInfoDTO u = resp != null ? resp.getData() : null;
-            if (u == null) return null;
-            return (u.getName() != null ? u.getName() : "") + " " + (u.getSurnames() != null ? u.getSurnames() : "");
+            return administracionServiceClient.getUserName(idUser);
         } catch (FeignException e) {
             log.warn("No se pudo obtener el nombre del usuario {} en administración: {}", idUser, e.getMessage());
             return null;
@@ -133,7 +129,7 @@ public class GradeService {
 
     private String fetchCourseName(Integer idCourse) {
         try {
-            return gestionAcademicaFeignClient.getCourseName(idCourse);
+            return gestionAcademicaServiceClient.getCourseName(idCourse);
         } catch (FeignException e) {
             log.warn("No se pudo obtener el nombre del curso {}: {}", idCourse, e.getMessage());
             return null;
@@ -142,7 +138,7 @@ public class GradeService {
 
     private String fetchSubjectName(Integer idSubject) {
         try {
-            return gestionAcademicaFeignClient.getSubjectName(idSubject);
+            return gestionAcademicaServiceClient.getSubjectName(idSubject);
         } catch (FeignException e) {
             log.warn("No se pudo obtener el nombre de la asignatura {}: {}", idSubject, e.getMessage());
             return null;
@@ -151,7 +147,7 @@ public class GradeService {
 
     private String fetchPeriodName(Integer idPeriod) {
         try {
-            return gestionAcademicaFeignClient.getPeriodName(idPeriod);
+            return gestionAcademicaServiceClient.getAcademicPeriodName(idPeriod);
         } catch (FeignException e) {
             log.warn("No se pudo obtener el nombre del periodo {}: {}", idPeriod, e.getMessage());
             return null;

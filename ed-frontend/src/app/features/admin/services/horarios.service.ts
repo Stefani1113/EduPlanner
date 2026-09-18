@@ -1,13 +1,73 @@
 import { Injectable } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable } from 'rxjs';
 
 export interface MensajeIA {
   tipo: 'ia' | 'usuario';
   texto: string;
 }
 
-export interface RespuestaIA {
-  texto: string;
-  emocion: string;
+export interface BloqueHorario {
+  hora: string;
+  horaFin: string;
+  lunes: string;
+  martes: string;
+  miercoles: string;
+  jueves: string;
+  viernes: string;
+  descanso: boolean;
+}
+
+export type GravedadConflicto = 'alta' | 'media' | 'baja';
+
+export interface ConflictoHorario {
+  curso: string;
+  dia: string;
+  hora: string;
+  tipo: string;
+  detalle: string;
+  gravedad: GravedadConflicto;
+}
+
+export interface NotificacionHorario {
+  titulo: string;
+  mensaje: string;
+  fecha: string;
+}
+
+export interface HttpGlobalResponse<T> {
+  data: T;
+  message: string;
+}
+
+export interface CursoDTO {
+  idCourse: number;
+  idPeriod: number;
+  idLevel: number;
+  idShift: number;
+  homeroomTeacher: number | null;
+  name: string;
+  studentCount: number;
+  status: boolean;
+}
+
+export interface ClaseHorarioDTO {
+  idSchedule: number;
+  dayOfWeek: number;
+  idTimeSlot: number;
+  startTime: string;
+  endTime: string;
+  isBreak: boolean;
+  idCourse: number;
+  courseName: string;
+  subjectName: string;
+  teacherName: string;
+}
+
+export interface RespuestaChatIA {
+  success: boolean;
+  response?: string;
+  error?: string;
 }
 
 @Injectable({
@@ -15,7 +75,55 @@ export interface RespuestaIA {
 })
 export class HorariosService {
 
-  constructor() {}
+  private apiGestionAcademica = '/gestion-academica/eduplanner';
+  private apiIa = '/ia/api';
+
+  private conflictos: ConflictoHorario[] = [];
+  private notificaciones: NotificacionHorario[] = [];
+
+  constructor(private http: HttpClient) {}
+
+  obtenerConflictos(): ConflictoHorario[] {
+    return [...this.conflictos];
+  }
+
+  registrarConflicto(conflicto: ConflictoHorario): void {
+    this.conflictos = [conflicto, ...this.conflictos];
+  }
+
+  obtenerNotificaciones(): NotificacionHorario[] {
+    return [...this.notificaciones];
+  }
+
+  registrarNotificacion(notificacion: NotificacionHorario): void {
+    this.notificaciones = [notificacion, ...this.notificaciones];
+  }
+
+  obtenerCursos(): Observable<HttpGlobalResponse<CursoDTO[]>> {
+    return this.http.get<HttpGlobalResponse<CursoDTO[]>>(
+      `${this.apiGestionAcademica}/courses`
+    );
+  }
+
+  obtenerMiHorario(idCourse?: number | null): Observable<HttpGlobalResponse<ClaseHorarioDTO[]>> {
+    let params = new HttpParams();
+
+    if (idCourse !== null && idCourse !== undefined) {
+      params = params.set('idCourse', idCourse);
+    }
+
+    return this.http.get<HttpGlobalResponse<ClaseHorarioDTO[]>>(
+      `${this.apiGestionAcademica}/schedules/mi-horario`,
+      { params }
+    );
+  }
+
+  enviarMensajeIA(mensaje: string): Observable<RespuestaChatIA> {
+    return this.http.post<RespuestaChatIA>(
+      `${this.apiIa}/chat`,
+      { message: mensaje }
+    );
+  }
 
   obtenerMensajeInicial(): MensajeIA[] {
     return [
@@ -24,56 +132,5 @@ export class HorariosService {
         texto: '¡Hola! Soy EduPlanner IA. Estoy aquí para ayudarte con la organización y consulta de los horarios.'
       }
     ];
-  }
-
-  generarRespuesta(pregunta: string): RespuestaIA {
-    const texto = pregunta.toLowerCase();
-
-    if (
-      texto.includes('conflicto') ||
-      texto.includes('problema') ||
-      texto.includes('cruce')
-    ) {
-      return {
-        texto: 'He revisado la información disponible. En esta versión de demostración no se está consultando todavía el sistema real, pero puedo ayudarte a identificar posibles cruces de profesores, cursos y horas.',
-        emocion: 'pensando'
-      };
-    }
-
-    if (
-      texto.includes('organizar') ||
-      texto.includes('crear') ||
-      texto.includes('horario')
-    ) {
-      return {
-        texto: 'Claro. Para organizar un horario podemos tener en cuenta cursos, docentes, asignaturas y horas disponibles. Cuando conectemos la IA real, podré analizar esos datos automáticamente.',
-        emocion: 'feliz'
-      };
-    }
-
-    if (
-      texto.includes('profesor') ||
-      texto.includes('docente')
-    ) {
-      return {
-        texto: 'Puedo ayudarte a revisar la disponibilidad de los docentes y detectar posibles cruces de horarios. Por ahora esta función funciona como una demostración del asistente.',
-        emocion: 'normal'
-      };
-    }
-
-    if (
-      texto.includes('hola') ||
-      texto.includes('buenas')
-    ) {
-      return {
-        texto: '¡Hola! Me alegra verte. ¿Quieres que revisemos o organicemos un horario?',
-        emocion: 'feliz'
-      };
-    }
-
-    return {
-      texto: 'Entiendo tu pregunta. Soy el asistente de horarios de EduPlanner. Actualmente estoy en modo demostración frontend, pero puedo simular la ayuda que posteriormente tendrá la IA.',
-      emocion: 'normal'
-    };
   }
 }

@@ -26,7 +26,7 @@ public interface AdministracionServiceClient {
      * @param idCourse ID del curso
      * @return lista de usuarios
      */
-    @GetMapping("/eduplanner/internal/user/courses/{idCourse}")
+    @GetMapping("/eduplanner/internal/users/courses/{idCourse}")
     List<UserResponseDTO> getUsersByCourse(
             @PathVariable("idCourse") Integer idCourse
     );
@@ -40,4 +40,12 @@ public interface AdministracionServiceClient {
     @GetMapping("/eduplanner/internal/users/{idUser}/full-name")
     String getUserFullName(@PathVariable("idUser") Integer idUser);
     
+
+    /**
+     * Devuelve id del usuario con con curso
+     */
+    @GetMapping("/eduplanner/internal/users/{idUser}/course")
+    Integer getUserCourse(
+            @PathVariable("idUser") Integer idUser
+    );
 }

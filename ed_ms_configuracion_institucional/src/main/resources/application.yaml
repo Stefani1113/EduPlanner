@@ -1,0 +1,64 @@
+spring:
+  application:
+    name: ed_ms_configuracion_institucional
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/institutional_configuration
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+
+  servlet:
+    multipart:
+      max-file-size: 3MB
+      max-request-size: 3MB
+
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+      discovery:
+        instance-id: ${spring.application.name}:${random.value}
+        health-check-path: /actuator/health
+        health-check-interval: 15s
+
+server:
+  port: 8086
+
+security:
+  jwt:
+    secret-key: "czyYSEj017tCB8M8mnOSvhgV4gSdI4P5Bql+3HrWZtM="
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+cloudinary:
+  cloud-name: f0qiiq22
+  api-key: 588271412933438
+  api-secret: _pVZj_anQw5kn-Hkj2RLwSt0C8k
+
+  folder: eduplanner/institution
+
+institution:
+  default-colors:
+    primary: "#0FA000"
+    secondary: "#45E000"
+    accent: "#C8E8CF"
+    card-background: "#171717"
+    secondary-background: "#202020"
+  logo:
+    max-size-bytes: 2097152
+    allowed-content-types: image/png,image/jpeg,image/jpg,image/svg+xml
+  carousel:
+    max-images: 5

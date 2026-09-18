@@ -38,6 +38,9 @@ public class GradePdfService {
 
     private static final float MARGIN = 40f;
     private static final float ROW_HEIGHT = 20f;
+    // Tamaño A4 en horizontal (apaisado): ancho y alto invertidos
+    private static final PDRectangle A4_LANDSCAPE =
+            new PDRectangle(PDRectangle.A4.getHeight(), PDRectangle.A4.getWidth());
     // estudiante, curso, asignatura, periodo, actividad/tipo, nota, estado
     private static final float[] COL_WIDTHS = {110, 55, 90, 55, 55, 45, 65};
 
@@ -56,7 +59,7 @@ public class GradePdfService {
 
     public byte[] generatePdf(String title, String subtitle, List<GradeResponseDTO> records) {
         try (PDDocument document = new PDDocument()) {
-            PDPage page = new PDPage(PDRectangle.A4.rotate());
+            PDPage page = new PDPage(A4_LANDSCAPE);
             document.addPage(page);
             float pageWidth = page.getMediaBox().getWidth();
             PDPageContentStream content = new PDPageContentStream(document, page);
@@ -95,7 +98,7 @@ public class GradePdfService {
             for (GradeResponseDTO g : records) {
                 if (y < MARGIN + ROW_HEIGHT) {
                     content.close();
-                    PDPage newPage = new PDPage(PDRectangle.A4.rotate());
+                    PDPage newPage = new PDPage(A4_LANDSCAPE);
                     document.addPage(newPage);
                     content = new PDPageContentStream(document, newPage);
                     y = newPage.getMediaBox().getHeight() - MARGIN;
@@ -174,5 +177,4 @@ public class GradePdfService {
     public String buildFileName(String prefix, Integer id, Integer period) {
         return prefix + "_" + id + "_periodo" + period + "_" + LocalDate.now() + ".pdf";
     }
-}
 
