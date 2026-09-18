@@ -4,7 +4,10 @@ import com.eduplanner.ed_lib_common.dto.HttpGlobalResponse;
 import com.eduplanner.ed_lib_common.dto.ScheduleGenerationRequestDTO;
 import com.eduplanner.ed_lib_common.dto.SchedulePdfDTO;
 import com.eduplanner.ed_lib_common.dto.ScheduleResponseDTO;
+import com.eduplanner.ed_lib_common.entity.AcademicPeriod;
+import com.eduplanner.ed_lib_common.entity.Course;
 import com.eduplanner.ed_lib_common.enums.RolEnum;
+import com.EduPlanner.ed_ms_gestion_academica.client.AdministracionServiceClient;
 import com.EduPlanner.ed_ms_gestion_academica.security.RequireRole;
 import com.EduPlanner.ed_ms_gestion_academica.service.SchedulePdfService;
 import com.EduPlanner.ed_ms_gestion_academica.service.ScheduleService;
@@ -12,6 +15,7 @@ import com.EduPlanner.ed_ms_gestion_academica.service.ScheduleService;
 import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import org.springframework.http.HttpHeaders;
@@ -26,6 +30,7 @@ public class ScheduleController {
 
         private final ScheduleService service;
         private final SchedulePdfService pdfService;
+        private final AdministracionServiceClient administracionServiceClient;
 
         /**
          * Guardar una generación de horario
@@ -228,33 +233,63 @@ public class ScheduleController {
         }
 
         /**
-         * Descargar mi horario
+         * Descargar mi horario a pdf
          */
         @GetMapping("/my-schedule/pdf")
         public ResponseEntity<byte[]> downloadMySchedulePdf(
                 @RequestAttribute("idUser") Integer idUser,
                 @RequestAttribute("role") String role) {
 
-                try {
+        try {
 
-                // 1. Obtener el horario del usuario
                 List<ScheduleResponseDTO> schedules =
                         service.getMySchedule(idUser, role);
 
-                // 2. Crear información para el PDF
                 SchedulePdfDTO pdfData = new SchedulePdfDTO();
 
+                // Fecha de generación
                 pdfData.setFechaGeneracion(
-                        LocalDate.now().toString()
+                        LocalDate.now().format(
+                                DateTimeFormatter.ofPattern("dd/MM/yyyy")
+                        )
                 );
 
-                // 3. Generar PDF
-                byte[] pdf = pdfService.generateSchedulePdf(
-                        pdfData,
-                        schedules
-                );
+                // Información específica del usuario
+                if ("ESTUDIANTE".equals(role)) {
 
-                // 4. Preparar respuesta
+                Integer idCourse =
+                        administracionServiceClient.getUserCourse(idUser);
+
+                if (idCourse != null) {
+
+                        Course course =
+                                service.getCourseById(idCourse);
+
+                        // Curso
+                        pdfData.setCurso(course.getName());
+
+                        // Periodo académico
+                        Integer idPeriod = course.getIdPeriod();
+
+                        AcademicPeriod period =
+                                service.getAcademicPeriodById(idPeriod);
+
+                        pdfData.setPeriodo(period.getName());
+                }
+
+                // Estudiante
+                pdfData.setEstudiante(
+                        administracionServiceClient
+                                .getUserFullName(idUser)
+                );
+                }
+
+                byte[] pdf =
+                        pdfService.generateSchedulePdf(
+                                pdfData,
+                                schedules
+                        );
+
                 return ResponseEntity.ok()
                         .header(
                                 HttpHeaders.CONTENT_DISPOSITION,
@@ -263,14 +298,16 @@ public class ScheduleController {
                         .contentType(MediaType.APPLICATION_PDF)
                         .body(pdf);
 
-                } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
 
                 return ResponseEntity.badRequest().build();
 
-                } catch (Exception e) {
+        } catch (Exception e) {
 
-                return ResponseEntity.internalServerError().build();
-                }
+        e.printStackTrace();
+
+        return ResponseEntity.internalServerError().build();
+        }
         }
 }
 
