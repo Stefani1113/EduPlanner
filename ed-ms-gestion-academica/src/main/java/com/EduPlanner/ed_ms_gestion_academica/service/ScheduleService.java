@@ -2,7 +2,9 @@ package com.EduPlanner.ed_ms_gestion_academica.service;
 
 import com.EduPlanner.ed_ms_gestion_academica.client.AdministracionServiceClient;
 import com.EduPlanner.ed_ms_gestion_academica.repository.AcademicLoadRepository;
+import com.EduPlanner.ed_ms_gestion_academica.repository.AcademicPeriodRepository;
 import com.EduPlanner.ed_ms_gestion_academica.repository.AcademicTeacherRepository;
+import com.EduPlanner.ed_ms_gestion_academica.repository.CourseRepository;
 import com.EduPlanner.ed_ms_gestion_academica.repository.ScheduleGenerationCourseRepository;
 import com.EduPlanner.ed_ms_gestion_academica.repository.ScheduleGenerationRepository;
 import com.EduPlanner.ed_ms_gestion_academica.repository.ScheduleRepository;
@@ -12,7 +14,9 @@ import com.eduplanner.ed_lib_common.dto.ScheduleGenerationRequestDTO;
 import com.eduplanner.ed_lib_common.dto.ScheduleItemRequestDTO;
 import com.eduplanner.ed_lib_common.dto.ScheduleResponseDTO;
 import com.eduplanner.ed_lib_common.entity.AcademicLoad;
+import com.eduplanner.ed_lib_common.entity.AcademicPeriod;
 import com.eduplanner.ed_lib_common.entity.AcademicTeacher;
+import com.eduplanner.ed_lib_common.entity.Course;
 import com.eduplanner.ed_lib_common.entity.Schedule;
 import com.eduplanner.ed_lib_common.entity.ScheduleGeneration;
 import com.eduplanner.ed_lib_common.entity.ScheduleGenerationCourse;
@@ -33,17 +37,19 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class ScheduleService {
 
-    private final ScheduleGenerationRepository generationRepository;
-    private final ScheduleGenerationCourseRepository generationCourseRepository;
-    private final ScheduleRepository scheduleRepository;
-    private final AcademicLoadRepository academicLoadRepository;
-    private final AdministracionServiceClient administracionServiceClient;
-    private final AcademicTeacherRepository academicTeacherRepository;
-    private final SubjectRepository subjectRepository;
-    private final TimeSlotRepository timeSlotRepository;
+        private final ScheduleGenerationRepository generationRepository;
+        private final ScheduleGenerationCourseRepository generationCourseRepository;
+        private final ScheduleRepository scheduleRepository;
+        private final AcademicLoadRepository academicLoadRepository;
+        private final AdministracionServiceClient administracionServiceClient;
+        private final AcademicTeacherRepository academicTeacherRepository;
+        private final SubjectRepository subjectRepository;
+        private final TimeSlotRepository timeSlotRepository;
+        private final CourseRepository courseRepository;
+        private final AcademicPeriodRepository academicPeriodRepository;
 
-    @Transactional
-    public Integer saveGeneration(ScheduleGenerationRequestDTO dto) {
+        @Transactional
+        public Integer saveGeneration(ScheduleGenerationRequestDTO dto) {
 
         /**
          * Crear la generación
@@ -399,4 +405,26 @@ public class ScheduleService {
 
         generationRepository.delete(generation);
     }
+
+        /**
+         * Obtener curso para descargar pdf
+         */
+        public Course getCourseById(Integer idCourse) {
+        return courseRepository.findById(idCourse)
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "No se encontró el curso con id: " + idCourse
+                ));
+        }
+
+        /**
+         * Obtener periodo
+         */
+        public AcademicPeriod getAcademicPeriodById(Integer idPeriod) {
+        return academicPeriodRepository.findById(idPeriod)
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "No se encontró el periodo académico con id: " + idPeriod
+                        ));
+        }
 }
