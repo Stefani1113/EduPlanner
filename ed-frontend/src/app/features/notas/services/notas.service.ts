@@ -122,35 +122,23 @@ export interface GradeRequestDTO {
 
 export interface GradeDetailResponseDTO {
   idGrade: number;
-  idStudent?: number;
-  studentName: string;
-  idCourse?: number;
-  courseName: string;
-  idTeacher?: number;
-  teacherName: string;
-  idSubject?: number;
-  subjectName: string;
-  idPeriod?: number;
-  periodName: string;
-  idEvaluative?: number;
-  evaluativeActivityName?: string;
-  idEvaluationType?: number;
-  evaluationTypeName?: string;
-  gradeValue: number;
-  status: string;
-  registrationDate: string;
-}
-
-export interface FinalGradeResponseDTO {
-  idFinal: number;
   idStudent: number;
   studentName: string;
+  idTeacher: number;
+  teacherName: string;
+  idCourse: number;
+  courseName: string;
   idSubject: number;
   subjectName: string;
   idPeriod: number;
   periodName: string;
-  finalGrade: number;
-  passed: boolean;
+  idEvaluative: number;
+  evaluativeActivityName?: string;
+  idEvaluationType: number;
+  evaluationTypeName?: string;
+  gradeValue: number;
+  status: string;
+  registrationDate: string;
 }
 
 @Injectable({
@@ -303,38 +291,6 @@ export class NotasService {
       .pipe(map(r => r.data ?? []), catchError(() => of([])));
   }
 
-
-  calcularDefinitivaEstudiante(idStudent: number, idSubject: number, idPeriod: number): Observable<FinalGradeResponseDTO> {
-    return this.http
-      .post<HttpGlobalResponse<FinalGradeResponseDTO>>(`${this.baseNotas}/final-grades/calculate`, null, {
-        params: { student: idStudent, subject: idSubject, period: idPeriod }
-      })
-      .pipe(map(r => r.data));
-  }
-
-  calcularDefinitivasCurso(idCourse: number, idSubject: number, idPeriod: number): Observable<FinalGradeResponseDTO[]> {
-    return this.http
-      .post<HttpGlobalResponse<FinalGradeResponseDTO[]>>(`${this.baseNotas}/final-grades/calculate-course`, null, {
-        params: { course: idCourse, subject: idSubject, period: idPeriod }
-      })
-      .pipe(map(r => r.data ?? []));
-  }
-
-  obtenerDefinitivaEstudiante(idStudent: number, idSubject: number, idPeriod: number): Observable<FinalGradeResponseDTO> {
-    return this.http
-      .get<HttpGlobalResponse<FinalGradeResponseDTO>>(`${this.baseNotas}/final-grades/by-student`, {
-        params: { student: idStudent, subject: idSubject, period: idPeriod }
-      })
-      .pipe(map(r => r.data));
-  }
-
-  listarDefinitivasPorAsignatura(idSubject: number, idPeriod: number): Observable<FinalGradeResponseDTO[]> {
-    return this.http
-      .get<HttpGlobalResponse<FinalGradeResponseDTO[]>>(`${this.baseNotas}/final-grades/by-subject`, {
-        params: { subject: idSubject, period: idPeriod }
-      })
-      .pipe(map(r => r.data ?? []), catchError(() => of([])));
-  }
 
   descargarPdfEstudiante(idStudent: number, idPeriod: number): Observable<Blob> {
     return this.http.get(`${this.baseNotas}/grades/pdf`, {
