@@ -9,4 +9,5 @@ public interface CourseRepository extends JpaRepository<Course, Integer> {
     List<Course> findByIdPeriodAndStatusTrue(Integer idPeriod);
     List<Course> findByIdLevelAndStatusTrue(Integer idLevel);
     List<Course> findByIdShiftAndStatusTrue(Integer idShift);
+
 }
