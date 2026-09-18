@@ -309,5 +309,70 @@ public class ScheduleController {
         return ResponseEntity.internalServerError().build();
         }
         }
+
+        /**
+         * Descargar horario de un curso a PDF
+         */
+        @RequireRole(RolEnum.ADMINISTRADOR)
+        @GetMapping("/course/{idCourse}/pdf")
+        public ResponseEntity<byte[]> downloadCourseSchedulePdf(
+                @PathVariable Integer idCourse) {
+
+        try {
+
+                // Obtener horario publicado del curso
+                List<ScheduleResponseDTO> schedules =
+                        service.getScheduleByCourse(idCourse);
+
+                // Crear datos para el PDF
+                SchedulePdfDTO pdfData = new SchedulePdfDTO();
+
+                // Fecha de generación
+                pdfData.setFechaGeneracion(
+                        LocalDate.now().format(
+                                DateTimeFormatter.ofPattern("dd/MM/yyyy")
+                        )
+                );
+
+                // Obtener información del curso
+                Course course =
+                        service.getCourseById(idCourse);
+
+                pdfData.setCurso(course.getName());
+
+                // Obtener periodo académico
+                Integer idPeriod = course.getIdPeriod();
+
+                AcademicPeriod period =
+                        service.getAcademicPeriodById(idPeriod);
+
+                pdfData.setPeriodo(period.getName());
+
+                // Generar PDF
+                byte[] pdf =
+                        pdfService.generateSchedulePdf(
+                                pdfData,
+                                schedules
+                        );
+
+                return ResponseEntity.ok()
+                        .header(
+                                HttpHeaders.CONTENT_DISPOSITION,
+                                "attachment; filename=horario-" + course.getName() + ".pdf"
+                        )
+                        .contentType(MediaType.APPLICATION_PDF)
+                        .body(pdf);
+
+        } catch (IllegalArgumentException e) {
+
+                e.printStackTrace();
+                return ResponseEntity.badRequest().build();
+
+        } catch (Exception e) {
+
+                e.printStackTrace();
+                return ResponseEntity.internalServerError().build();
+        }
+        }
 }
 
