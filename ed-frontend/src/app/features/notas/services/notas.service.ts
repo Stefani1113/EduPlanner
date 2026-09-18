@@ -122,13 +122,20 @@ export interface GradeRequestDTO {
 
 export interface GradeDetailResponseDTO {
   idGrade: number;
+  idStudent: number;
   studentName: string;
+  idTeacher: number;
   teacherName: string;
+  idCourse: number;
   courseName: string;
+  idSubject: number;
   subjectName: string;
+  idPeriod: number;
   periodName: string;
-  evaluativeActivityName: string;
-  evaluationTypeName: string;
+  idEvaluative: number;
+  evaluativeActivityName?: string;
+  idEvaluationType: number;
+  evaluationTypeName?: string;
   gradeValue: number;
   status: string;
   registrationDate: string;

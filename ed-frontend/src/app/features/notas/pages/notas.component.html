@@ -187,7 +187,16 @@
             <option *ngFor="let a of asignaturas" [ngValue]="a.idSubject">{{ a.name }}</option>
           </select>
         </label>
+
+        <button type="button" class="btn-outline"
+                [disabled]="descargandoPdfCurso || !estudiantesNotas.length"
+                (click)="descargarPdfCurso()">
+          {{ descargandoPdfCurso ? 'Generando PDF…' : 'DESCARGAR PDF DEL CURSO' }}
+        </button>
       </div>
+
+      <div class="error" *ngIf="errorPdfCurso">{{ errorPdfCurso }}</div>
+      <div class="error error-guardado" *ngIf="errorGuardado">{{ errorGuardado }}</div>
 
       <div class="loading" *ngIf="cargandoNotas">Cargando notas…</div>
       <div class="error" *ngIf="errorNotas">{{ errorNotas }}</div>

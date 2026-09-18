@@ -9,7 +9,6 @@ import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
 import org.apache.pdfbox.pdmodel.font.PDFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
-import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
 import org.springframework.stereotype.Service;
 
 import java.awt.*;
@@ -178,4 +177,4 @@ public class GradePdfService {
     public String buildFileName(String prefix, Integer id, Integer period) {
         return prefix + "_" + id + "_periodo" + period + "_" + LocalDate.now() + ".pdf";
     }
-}
+
