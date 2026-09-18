@@ -291,28 +291,159 @@ def validate_schedule(schedule, teachers, courses, time_slots, academic_loads, t
 
     return errors
 
+def explain_no_feasible_schedule(teachers, courses, time_slots, academic_loads, teacher_availability) :
+    for load in academic_loads :
+        if not load["status"] :
+            continue
+
+        teacher = next (
+            (
+                teacher 
+                for teacher in teachers
+                if teacher["id_academic_teacher"] == load["id_teacher"]
+                and teacher["status"]
+            ),
+            None
+        )
+
+        course = next (
+            (
+                course 
+                for course in courses
+                if course["id_course"] == load["id_course"]
+                and course["status"]
+            ),
+            None
+        )
+        if not teacher or not course:
+            continue
+
+        available_blocks = []
+
+        for day in range(1, 6):
+
+            for slot in time_slots:
+
+                if not slot["status"]:
+                    continue
+
+                if slot["break"]:
+                    continue
+
+                # La jornada debe coincidir
+                if slot["id_shift"] != course["id_shift"]:
+                    continue
+
+                # El docente debe estar disponible
+                if teacher_is_available(
+                    load["id_teacher"],
+                    slot["id_time_slot"],
+                    day,
+                    teacher_availability
+                ):
+
+                    day_names = {
+                        1: "Lunes",
+                        2: "Martes",
+                        3: "Miércoles",
+                        4: "Jueves",
+                        5: "Viernes"
+                    }
+
+                    available_blocks.append(
+                        f"{day_names[day]} "
+                        f"{str(slot['start_time'])[:5]} - "
+                        f"{str(slot['end_time'])[:5]}"
+                    )
+
+        required_hours = load["weekly_hours"]
+
+        if len(available_blocks) < required_hours:
+
+            course_name = course.get(
+                "name",
+                f"Curso {course['id_course']}"
+            )
+
+            return {
+                "type": "DISPONIBILIDAD_INSUFICIENTE",
+                "course": course_name,
+                "day": "—",
+                "time": "—",
+                "message": (
+                    f"No se pudo generar el horario de "
+                    f"{course_name}. La carga académica necesita "
+                    f"{required_hours} horas semanales, pero el "
+                    f"docente solo tiene {len(available_blocks)} "
+                    f"bloques compatibles disponibles: "
+                    f"{', '.join(available_blocks) if available_blocks else 'ninguno'}."
+                ),
+                "severity": "ALTA"
+            }
+
+    return {
+        "type": "NO_FEASIBLE_SCHEDULE",
+        "course": "—",
+        "day": "—",
+        "time": "—",
+        "message": (
+            "No fue posible generar un horario que cumpliera "
+            "todas las restricciones configuradas."
+        ),
+        "severity": "ALTA"
+}
+    
 # Genera el horario y lo valida antes de devolverlo.
-def generate_and_validate_schedule(teachers, courses, time_slots, academic_loads, teacher_availability):
-    schedule = generate_schedule(teachers, courses, time_slots, academic_loads, teacher_availability)
+def generate_and_validate_schedule(teachers, courses, time_slots, academic_loads, teacher_availability) :
 
+    # Primero verificamos rápidamente si existe
+    # suficiente disponibilidad para las cargas académicas
+    conflict = explain_no_feasible_schedule(
+        teachers,
+        courses,
+        time_slots,
+        academic_loads,
+        teacher_availability
+    )
+
+    # Si encontramos un problema de disponibilidad
+    # no ejecutamos el backtracking
+    if conflict["type"] == "DISPONIBILIDAD_INSUFICIENTE":
+        return None, [conflict]
+
+    # Si hay disponibilidad suficiente
+    # ejecutamos el algoritmo normal
+    schedule = generate_schedule(
+        teachers,
+        courses,
+        time_slots,
+        academic_loads,
+        teacher_availability
+    )
+
+    # Si el algoritmo no encontró solución
     if schedule is None:
-        return None, ["No fue posible generar un horario con las restricciones actuales"]
+        conflict = explain_no_feasible_schedule(
+            teachers,
+            courses,
+            time_slots,
+            academic_loads,
+            teacher_availability
+        )
 
-    errors = validate_schedule(schedule, teachers, courses, time_slots, academic_loads, teacher_availability)
+        return None, [conflict]
+
+    # Validamos el horario generado
+    errors = validate_schedule(
+        schedule,
+        teachers,
+        courses,
+        time_slots,
+        academic_loads,
+        teacher_availability
+    )
 
     if errors:
-        return None, errors  # no paso la validación
+        return None, errors
 
-    return schedule, []  # horario válido
-
-if __name__ == "__main__":
-    schedule, errors = generate_and_validate_schedule()
-
-    if errors:
-        print("El horario generado tiene problemas:")
-        for error in errors:
-            print(" -", error)
-    else:
-        print("Horario generado y validado correctamente:")
-        for clas in schedule:
-            print(clas)
+    return schedule, []

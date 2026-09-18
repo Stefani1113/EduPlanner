@@ -3,7 +3,6 @@ package com.eduplanner.ed_lib_common.dto;
 
 import com.eduplanner.ed_lib_common.entity.ScheduleGenerationType;
 
-import jakarta.persistence.GenerationType;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -19,7 +18,7 @@ public class ScheduleGenerationRequestDTO {
     private Integer idPeriod;
 
     @NotNull
-    private GenerationType generationType;
+    private ScheduleGenerationType generationType;
 
     @NotNull
     private Integer generatedBy;
