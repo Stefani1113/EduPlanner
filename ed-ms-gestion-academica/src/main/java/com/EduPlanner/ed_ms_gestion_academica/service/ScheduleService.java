@@ -139,8 +139,23 @@ public class ScheduleService {
         return List.of();
     }
 
+    ScheduleGeneration publishedGeneration =
+            generationRepository
+                    .findFirstByStatusOrderByCreatedAtDesc(
+                            SchedulerGenerationStatus.PUBLISHED
+                    )
+                    .orElseThrow(() ->
+                            new IllegalArgumentException(
+                                    "No existe un horario publicado"
+                            )
+                    );
+
     List<Schedule> schedules =
-            scheduleRepository.findByIdAcademicLoadInAndStatusTrue(loadIds);
+            scheduleRepository
+                    .findByIdScheduleGenerationAndIdAcademicLoadInAndStatusTrue(
+                            publishedGeneration.getIdScheduleGeneration(),
+                            loadIds
+                    );
 
     return schedules.stream()
             .map(this::buildScheduleResponse)
@@ -163,14 +178,29 @@ public class ScheduleService {
         return List.of();
     }
 
+    ScheduleGeneration publishedGeneration =
+            generationRepository
+                    .findFirstByStatusOrderByCreatedAtDesc(
+                            SchedulerGenerationStatus.PUBLISHED
+                    )
+                    .orElseThrow(() ->
+                            new IllegalArgumentException(
+                                    "No existe un horario publicado"
+                            )
+                    );
+
     List<Schedule> schedules =
-            scheduleRepository.findByIdAcademicLoadInAndStatusTrue(loadIds);
+            scheduleRepository
+                    .findByIdScheduleGenerationAndIdAcademicLoadInAndStatusTrue(
+                            publishedGeneration.getIdScheduleGeneration(),
+                            loadIds
+                    );
 
     return schedules.stream()
             .map(this::buildScheduleResponse)
             .toList();
     }
-
+    
     /**
      * Listar horario de docente y estudiante
      */
