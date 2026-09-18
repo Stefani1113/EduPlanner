@@ -16,7 +16,8 @@ import {
   EvaluationTypeResponseDTO,
   EvaluativeActivityResponseDTO,
   GradeDetailResponseDTO,
-  GradeRequestDTO
+  GradeRequestDTO,
+  FinalGradeResponseDTO
 } from '../services/notas.service';
 
 type Tab = 'historial' | 'reportes' | 'notas' | 'calificacion';
@@ -32,6 +33,7 @@ interface ResumenAsignatura {
 interface FilaNotas {
   estudiante: UsuarioBasico;
   nombreCompleto: string;
+  notaFinal: FinalGradeResponseDTO | null;
 }
 
 interface CeldaEstado {
@@ -106,6 +108,7 @@ export class NotasComponent implements OnInit {
   vistaPreviaGenerada = false;
 
   descargandoPdf = false;
+  descargandoPdfCurso = false;
 
 
   idAsignaturaNotas: number | null = null;
@@ -120,6 +123,9 @@ export class NotasComponent implements OnInit {
   celdas = new Map<string, CeldaEstado>();
 
   private idTeacherAsignaturaActual: number | null = null;
+  definitivasNotas = new Map<number, FinalGradeResponseDTO>();
+  calculandoDefinitivas = false;
+  mensajeDefinitivas: string | null = null;
 
 
   formEscala = {
@@ -480,6 +486,32 @@ export class NotasComponent implements OnInit {
     });
   }
 
+  descargarPdfCursoActual(): void {
+    if (this.idCursoSeleccionado === null || this.idAsignaturaNotas === null || this.idPeriodoSeleccionado === null) {
+      return;
+    }
+
+    this.descargandoPdfCurso = true;
+    this.errorNotas = null;
+
+    this.notasService.descargarPdfCurso(
+      this.idCursoSeleccionado,
+      this.idAsignaturaNotas,
+      this.idPeriodoSeleccionado
+    ).subscribe({
+      next: blob => {
+        const curso = this.cursoSeleccionadoNombre.replace(/\s+/g, '_');
+        const asignatura = this.asignaturas.find(a => a.idSubject === this.idAsignaturaNotas)?.name?.replace(/\s+/g, '_') ?? 'asignatura';
+        this.descargarBlob(blob, `notas_${curso}_${asignatura}_periodo_${this.idPeriodoSeleccionado}.pdf`);
+        this.descargandoPdfCurso = false;
+      },
+      error: err => {
+        this.errorNotas = err?.error?.message ?? 'No se pudo generar el PDF del curso.';
+        this.descargandoPdfCurso = false;
+      }
+    });
+  }
+
   private descargarBlob(blob: Blob, nombreArchivo: string): void {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -516,14 +548,21 @@ export class NotasComponent implements OnInit {
     forkJoin({
       estudiantes: this.notasService.listarEstudiantesPorCurso(idCurso),
       cargas: this.notasService.listarCargaPorCurso(idCurso),
-      notas: this.notasService.obtenerNotasPorCurso(idCurso, idSubject, idPeriodo)
+      notas: this.notasService.obtenerNotasPorCurso(idCurso, idSubject, idPeriodo),
+      definitivas: this.notasService.listarDefinitivasPorAsignatura(idSubject, idPeriodo)
     }).subscribe({
 
-      next: ({ estudiantes, cargas, notas }) => {
+      next: ({ estudiantes, cargas, notas, definitivas }) => {
+
+        this.definitivasNotas = new Map(definitivas.map(d => [d.idStudent, d]));
 
         this.estudiantesNotas = estudiantes
           .filter(e => e.status !== false)
-          .map(e => ({ estudiante: e, nombreCompleto: `${e.name} ${e.surnames}`.trim() }))
+          .map(e => ({
+            estudiante: e,
+            nombreCompleto: `${e.name} ${e.surnames}`.trim(),
+            notaFinal: this.definitivasNotas.get(e.idUser) ?? null
+          }))
           .sort((a, b) => a.nombreCompleto.localeCompare(b.nombreCompleto));
 
         const carga = cargas.find(c => c.idSubject === idSubject && c.status);
@@ -540,7 +579,7 @@ export class NotasComponent implements OnInit {
             const clave = this.claveCelda(fila.estudiante.idUser, actividad.idEvaluative);
 
             const notaExistente = notas.find(
-              n => n.studentName === fila.nombreCompleto && n.evaluativeActivityName === actividad.evaluationName
+              n => n.idStudent === fila.estudiante.idUser && n.idEvaluative === actividad.idEvaluative
             );
 
             this.celdas.set(clave, {
@@ -558,6 +597,42 @@ export class NotasComponent implements OnInit {
       error: () => {
         this.errorNotas = 'No se pudo cargar el listado de estudiantes o las notas del curso.';
         this.cargandoNotas = false;
+      }
+    });
+  }
+
+  calcularDefinitivasCurso(): void {
+    if (this.idCursoSeleccionado === null || this.idAsignaturaNotas === null || this.idPeriodoSeleccionado === null) {
+      return;
+    }
+
+    if (!this.actividadesNotasColumnas.length || this.actividadesNotasColumnas.reduce((t, a) => t + Number(a.weightPercentage || 0), 0) !== 100) {
+      this.mensajeDefinitivas = 'Las actividades evaluativas del periodo deben sumar exactamente 100%.';
+      return;
+    }
+
+    this.calculandoDefinitivas = true;
+    this.mensajeDefinitivas = null;
+
+    this.notasService.calcularDefinitivasCurso(
+      this.idCursoSeleccionado,
+      this.idAsignaturaNotas,
+      this.idPeriodoSeleccionado
+    ).subscribe({
+      next: definitivas => {
+        this.definitivasNotas = new Map(definitivas.map(d => [d.idStudent, d]));
+        this.estudiantesNotas = this.estudiantesNotas.map(f => ({
+          ...f,
+          notaFinal: this.definitivasNotas.get(f.estudiante.idUser) ?? null
+        }));
+        this.mensajeDefinitivas = definitivas.length
+          ? `Se calcularon ${definitivas.length} notas definitivas correctamente.`
+          : 'No hay estudiantes con notas suficientes para calcular la definitiva.';
+        this.calculandoDefinitivas = false;
+      },
+      error: err => {
+        this.mensajeDefinitivas = err?.error?.message ?? 'No se pudieron calcular las notas definitivas.';
+        this.calculandoDefinitivas = false;
       }
     });
   }
