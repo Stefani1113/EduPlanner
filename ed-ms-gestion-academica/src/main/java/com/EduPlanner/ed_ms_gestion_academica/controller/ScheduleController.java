@@ -124,5 +124,71 @@ public class ScheduleController {
                     .body(response);
         }
     }
+
+    /**
+     * Metodo para publicar horario
+     */
+    @RequireRole(RolEnum.ADMINISTRADOR)
+    @PutMapping("/generations/{idGeneration}/publish")
+    public ResponseEntity<HttpGlobalResponse<Void>> publishGeneration(
+            @PathVariable Integer idGeneration) {
+
+        HttpGlobalResponse<Void> response =
+                new HttpGlobalResponse<>();
+
+        try {
+
+            service.publishGeneration(idGeneration);
+
+            response.setMessage(
+                    "Horario publicado correctamente"
+            );
+
+            return ResponseEntity.ok(response);
+
+        } catch (IllegalArgumentException e) {
+
+            response.setMessage(e.getMessage());
+
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(response);
+        }
+    }
+
+    /**
+     * Previsualización de horario antes de publicar
+     */
+    @RequireRole(RolEnum.ADMINISTRADOR)
+    @GetMapping("/generations/{idGeneration}")
+    public ResponseEntity<
+            HttpGlobalResponse<List<ScheduleResponseDTO>>
+            > previewGeneration(
+                    @PathVariable Integer idGeneration) {
+
+        HttpGlobalResponse<List<ScheduleResponseDTO>> response =
+                new HttpGlobalResponse<>();
+
+        try {
+
+            List<ScheduleResponseDTO> schedules =
+                    service.previewGeneration(idGeneration);
+
+            response.setData(schedules);
+            response.setMessage(
+                    "Previsualización consultada correctamente"
+            );
+
+            return ResponseEntity.ok(response);
+
+        } catch (IllegalArgumentException e) {
+
+            response.setMessage(e.getMessage());
+
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(response);
+        }
+    }
 }
 

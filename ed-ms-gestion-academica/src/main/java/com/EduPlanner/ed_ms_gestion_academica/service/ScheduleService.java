@@ -271,4 +271,72 @@ public class ScheduleService {
 
         return dto;
     }
+
+    /**
+     * Metodo para publicar horario
+     */
+    @Transactional
+    public void publishGeneration(Integer idGeneration) {
+
+        ScheduleGeneration generation =
+                generationRepository.findById(idGeneration)
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "No se encontró la generación"
+                                ));
+
+        if (generation.getStatus()
+                != SchedulerGenerationStatus.COMPLETED) {
+
+            throw new IllegalArgumentException(
+                    "Solo se pueden publicar generaciones completadas"
+            );
+        }
+
+        generation.setStatus(
+                SchedulerGenerationStatus.PUBLISHED
+        );
+
+        generationRepository.save(generation);
+    }
+
+    /**
+     * Previsualización de horario antes de publicar
+     */
+    public List<ScheduleResponseDTO> previewGeneration(
+        Integer idGeneration) {
+
+    ScheduleGeneration generation =
+            generationRepository.findById(idGeneration)
+                    .orElseThrow(() ->
+                            new IllegalArgumentException(
+                                    "No se encontró la generación"
+                            ));
+
+    if (generation.getStatus()
+            == SchedulerGenerationStatus.FAILED) {
+
+        throw new IllegalArgumentException(
+                "La generación falló y no puede ser visualizada"
+        );
+    }
+
+    if (generation.getStatus()
+            == SchedulerGenerationStatus.PROCESSING) {
+
+        throw new IllegalArgumentException(
+                "La generación todavía está en proceso"
+        );
+    }
+
+    List<Schedule> schedules =
+            scheduleRepository
+                    .findByIdScheduleGenerationAndStatusTrue(
+                            idGeneration
+                    );
+
+    return schedules.stream()
+            .map(this::buildScheduleResponse)
+            .toList();
+}
 }
