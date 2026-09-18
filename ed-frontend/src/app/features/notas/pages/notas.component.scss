@@ -914,3 +914,35 @@
     width: 100%;
   }
 }
+.acciones-notas {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 14px;
+  margin: 0 0 16px;
+}
+
+.mensaje-definitivas {
+  color: var(--inst-muted);
+  font-size: 13px;
+}
+
+.col-final {
+  min-width: 110px;
+  text-align: center;
+}
+
+.estado-final {
+  display: block;
+  margin-top: 3px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.estado-final.aprobado {
+  color: #22a06b;
+}
+
+.estado-final.reprobado {
+  color: #e0575a;
+}
