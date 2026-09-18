@@ -38,7 +38,14 @@
   margin-top: 10px;
 }
 
+.error-guardado {
+  background: rgba(224, 87, 90, 0.12);
+  border: 1px solid rgba(224, 87, 90, 0.4);
+  font-weight: 600;
+}
+
 .vacio {
+
   color: var(--inst-muted);
   font-size: 13.5px;
   padding: 16px 0;
@@ -535,10 +542,20 @@
 
 .filtros-notas {
   display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
   gap: 16px;
   margin-bottom: 20px;
-  max-width: 340px;
+  max-width: 100%;
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25);
+}
+
+.filtros-notas .campo {
+  min-width: 220px;
+}
+
+.filtros-notas .btn-outline {
+  white-space: nowrap;
 }
 
 .grid-notas-wrap {

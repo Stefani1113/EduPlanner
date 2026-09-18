@@ -106,6 +106,8 @@ export class NotasComponent implements OnInit {
   vistaPreviaGenerada = false;
 
   descargandoPdf = false;
+  descargandoPdfCurso = false;
+  errorPdfCurso: string | null = null;
 
 
   idAsignaturaNotas: number | null = null;
@@ -118,6 +120,7 @@ export class NotasComponent implements OnInit {
   notasConsultadas = false;
 
   celdas = new Map<string, CeldaEstado>();
+  errorGuardado: string | null = null;
 
   private idTeacherAsignaturaActual: number | null = null;
 
@@ -480,6 +483,36 @@ export class NotasComponent implements OnInit {
     });
   }
 
+  /** Descarga el PDF de notas del curso/asignatura/periodo que se está viendo en la pestaña "Notas". */
+  descargarPdfCurso(): void {
+
+    if (this.idCursoSeleccionado === null || this.idAsignaturaNotas === null || this.idPeriodoSeleccionado === null) {
+      return;
+    }
+
+    this.descargandoPdfCurso = true;
+    this.errorPdfCurso = null;
+
+    const idCurso = this.idCursoSeleccionado;
+    const idSubject = this.idAsignaturaNotas;
+    const idPeriodo = this.idPeriodoSeleccionado;
+
+    const nombreCurso = this.cursoSeleccionadoNombre;
+    const nombreAsignatura = this.asignaturas.find(a => a.idSubject === idSubject)?.name ?? `asignatura_${idSubject}`;
+    const nombreArchivo = `notas_${nombreCurso}_${nombreAsignatura}_periodo_${idPeriodo}.pdf`.replace(/\s+/g, '_');
+
+    this.notasService.descargarPdfCurso(idCurso, idSubject, idPeriodo).subscribe({
+      next: blob => {
+        this.descargarBlob(blob, nombreArchivo);
+        this.descargandoPdfCurso = false;
+      },
+      error: () => {
+        this.errorPdfCurso = 'No se pudo generar el PDF del curso.';
+        this.descargandoPdfCurso = false;
+      }
+    });
+  }
+
   private descargarBlob(blob: Blob, nombreArchivo: string): void {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -540,7 +573,7 @@ export class NotasComponent implements OnInit {
             const clave = this.claveCelda(fila.estudiante.idUser, actividad.idEvaluative);
 
             const notaExistente = notas.find(
-              n => n.studentName === fila.nombreCompleto && n.evaluativeActivityName === actividad.evaluationName
+              n => n.idStudent === fila.estudiante.idUser && n.idEvaluative === actividad.idEvaluative
             );
 
             this.celdas.set(clave, {
@@ -571,13 +604,23 @@ export class NotasComponent implements OnInit {
     return this.celdas.get(clave) ?? { valor: '', idGrade: null, guardando: false, error: null };
   }
 
-  onCambioCelda(idStudent: number, idEvaluative: number, valor: string): void {
+  onCambioCelda(idStudent: number, idEvaluative: number, valor: string | number): void {
     const clave = this.claveCelda(idStudent, idEvaluative);
     const actual = this.celdas.get(clave) ?? { valor: '', idGrade: null, guardando: false, error: null };
-    this.celdas.set(clave, { ...actual, valor, error: null });
+    this.celdas.set(clave, { ...actual, valor: String(valor ?? ''), error: null });
+    this.errorGuardado = null;
   }
 
   guardarCelda(fila: FilaNotas, actividad: EvaluativeActivityResponseDTO): void {
+    try {
+      this.intentarGuardarCelda(fila, actividad);
+    } catch (e) {
+      console.error('Error inesperado al guardar la celda de notas', e);
+      this.errorGuardado = 'Ocurrió un error inesperado al intentar guardar la nota. Revisa la consola para más detalle.';
+    }
+  }
+
+  private intentarGuardarCelda(fila: FilaNotas, actividad: EvaluativeActivityResponseDTO): void {
 
     if (this.idCursoSeleccionado === null || this.idAsignaturaNotas === null || this.idPeriodoSeleccionado === null) {
       return;
@@ -586,7 +629,7 @@ export class NotasComponent implements OnInit {
     const clave = this.claveCelda(fila.estudiante.idUser, actividad.idEvaluative);
     const celda = this.celdas.get(clave);
 
-    if (!celda || celda.valor.trim() === '') {
+    if (!celda || String(celda.valor).trim() === '') {
       return;
     }
 
@@ -622,6 +665,7 @@ export class NotasComponent implements OnInit {
     }
 
     this.celdas.set(clave, { ...celda, guardando: true, error: null });
+    this.errorGuardado = null;
 
     const dto: GradeRequestDTO = {
       idStudent: fila.estudiante.idUser,
@@ -648,8 +692,16 @@ export class NotasComponent implements OnInit {
         });
       },
       error: (err) => {
-        const mensaje = err?.error?.message ?? 'No se pudo guardar la nota';
+        const mensaje = err?.error?.message ?? err?.error?.error ?? 'No se pudo guardar la nota';
         this.celdas.set(clave, { ...celda, guardando: false, error: mensaje });
+
+        if (err?.status === 401 || err?.status === 403) {
+          this.errorGuardado = 'No tienes permisos para registrar notas con tu rol actual. '
+            + 'El registro y edición de notas está reservado a usuarios con rol Docente. '
+            + 'Inicia sesión con una cuenta de docente para guardar calificaciones.';
+        } else {
+          this.errorGuardado = mensaje;
+        }
       }
     });
   }
