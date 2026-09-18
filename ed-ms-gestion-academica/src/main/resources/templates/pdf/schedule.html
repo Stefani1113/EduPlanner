@@ -1,0 +1,238 @@
+```html
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+
+<head>
+    <meta charset="UTF-8"/>
+    <title>Horario Académico - EduPlanner</title>
+
+    <style>
+
+        @page {
+            size: A4 landscape;
+            margin: 22mm 14mm 18mm 14mm;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            background-color: #ffffff;
+            color: #111111;
+            font-size: 12px;
+        }
+
+        /* ===================== HEADER ===================== */
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid #1e7a3d;
+            padding-bottom: 14px;
+            margin-bottom: 18px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand-logo {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #2e9e52, #1c6e37);
+        }
+
+        .brand-name {
+            font-size: 20px;
+            font-weight: 700;
+            color: #14532d;
+            letter-spacing: 0.3px;
+        }
+
+        .brand-name span {
+            color: #2e9e52;
+        }
+
+        .doc-title {
+            text-align: right;
+        }
+
+        .doc-title h1 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #14532d;
+            margin-bottom: 2px;
+        }
+
+        .doc-title p {
+            font-size: 11px;
+            color: #4b5563;
+        }
+
+        /* ===================== INFO CARDS ===================== */
+
+        .info-panel {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .info-card {
+            flex: 1;
+            background-color: #f2f9f4;
+            border: 1px solid #cdeed9;
+            border-left: 4px solid #2e9e52;
+            border-radius: 6px;
+            padding: 10px 14px;
+        }
+
+        .info-card .label {
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            color: #2e9e52;
+            font-weight: 700;
+            margin-bottom: 3px;
+        }
+
+        .info-card .value {
+            font-size: 13px;
+            font-weight: 600;
+            color: #111111;
+        }
+
+        /* ===================== TABLE ===================== */
+
+        table.schedule {
+            width: 100%;
+            border-collapse: collapse;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        table.schedule thead th {
+            background-color: #1e7a3d;
+            color: #ffffff;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            padding: 10px 8px;
+            text-align: center;
+            border: 1px solid #1e7a3d;
+        }
+
+        table.schedule thead th:first-child {
+            text-align: left;
+            width: 90px;
+        }
+
+        table.schedule tbody td {
+            padding: 9px 8px;
+            text-align: center;
+            border: 1px solid #d9e9de;
+            color: #111111;
+            font-size: 11.5px;
+        }
+
+        table.schedule tbody td.hour-cell {
+            text-align: left;
+            font-weight: 700;
+            background-color: #e6f5eb;
+            color: #14532d;
+        }
+
+        table.schedule tbody tr:nth-child(even) td:not(.hour-cell) {
+            background-color: #f7fbf8;
+        }
+
+        table.schedule tbody tr:nth-child(odd) td:not(.hour-cell) {
+            background-color: #ffffff;
+        }
+
+        td.empty-slot {
+            color: #b8c2bc;
+            font-style: italic;
+        }
+
+        /* ===================== LEGEND / FOOTER ===================== */
+
+        .legend {
+            display: flex;
+            gap: 16px;
+            margin-top: 16px;
+            font-size: 10px;
+            color: #4b5563;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .legend-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 2px;
+        }
+
+        .footer {
+            margin-top: 26px;
+            padding-top: 10px;
+            border-top: 1px solid #d9e9de;
+            display: flex;
+            justify-content: space-between;
+            font-size: 9.5px;
+            color: #6b7280;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<!-- ===================== HEADER ===================== -->
+
+<div class="header">
+
+    <div class="brand">
+
+        <div class="brand-logo"></div>
+
+        <div class="brand-name">
+            Edu<span>Planner</span>
+        </div>
+
+    </div>
+
+    <div class="doc-title">
+
+        <h1>Horario académico</h1>
+
+        <p th:text="${'Generado el ' + fechaGeneracion}">
+            Generado el 17/09/2026
+        </p>
+
+    </div>
+
+</div>
+
+
+<!-- ===================== INFO PANEL ===================== -->
+
+<div class="info-panel">
+
+    <!-- Curso -->
+
+    <div class="info-card">
+
+        <div class="label">
+```
