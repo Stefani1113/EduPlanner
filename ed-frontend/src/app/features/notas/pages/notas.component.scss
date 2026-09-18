@@ -38,7 +38,14 @@
   margin-top: 10px;
 }
 
+.error-guardado {
+  background: rgba(224, 87, 90, 0.12);
+  border: 1px solid rgba(224, 87, 90, 0.4);
+  font-weight: 600;
+}
+
 .vacio {
+
   color: var(--inst-muted);
   font-size: 13.5px;
   padding: 16px 0;
@@ -535,10 +542,20 @@
 
 .filtros-notas {
   display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
   gap: 16px;
   margin-bottom: 20px;
-  max-width: 340px;
+  max-width: 100%;
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25);
+}
+
+.filtros-notas .campo {
+  min-width: 220px;
+}
+
+.filtros-notas .btn-outline {
+  white-space: nowrap;
 }
 
 .grid-notas-wrap {
@@ -913,36 +930,4 @@
   .botones-finales button {
     width: 100%;
   }
-}
-.acciones-notas {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 14px;
-  margin: 0 0 16px;
-}
-
-.mensaje-definitivas {
-  color: var(--inst-muted);
-  font-size: 13px;
-}
-
-.col-final {
-  min-width: 110px;
-  text-align: center;
-}
-
-.estado-final {
-  display: block;
-  margin-top: 3px;
-  font-size: 11px;
-  font-weight: 700;
-}
-
-.estado-final.aprobado {
-  color: #22a06b;
-}
-
-.estado-final.reprobado {
-  color: #e0575a;
 }

@@ -187,21 +187,16 @@
             <option *ngFor="let a of asignaturas" [ngValue]="a.idSubject">{{ a.name }}</option>
           </select>
         </label>
-      </div>
 
-      <div class="acciones-notas" *ngIf="!cargandoNotas">
         <button type="button" class="btn-outline"
                 [disabled]="descargandoPdfCurso || !estudiantesNotas.length"
-                (click)="descargarPdfCursoActual()">
-          {{ descargandoPdfCurso ? 'Generando PDF…' : 'PDF DEL CURSO' }}
+                (click)="descargarPdfCurso()">
+          {{ descargandoPdfCurso ? 'Generando PDF…' : 'DESCARGAR PDF DEL CURSO' }}
         </button>
-        <button type="button" class="btn-verde"
-                [disabled]="calculandoDefinitivas || !estudiantesNotas.length || !actividadesNotasColumnas.length"
-                (click)="calcularDefinitivasCurso()">
-          {{ calculandoDefinitivas ? 'Calculando definitivas…' : 'CALCULAR NOTAS DEFINITIVAS' }}
-        </button>
-        <span class="mensaje-definitivas" *ngIf="mensajeDefinitivas">{{ mensajeDefinitivas }}</span>
       </div>
+
+      <div class="error" *ngIf="errorPdfCurso">{{ errorPdfCurso }}</div>
+      <div class="error error-guardado" *ngIf="errorGuardado">{{ errorGuardado }}</div>
 
       <div class="loading" *ngIf="cargandoNotas">Cargando notas…</div>
       <div class="error" *ngIf="errorNotas">{{ errorNotas }}</div>
@@ -216,7 +211,6 @@
                 {{ act.evaluationName }}
                 <span class="peso">{{ act.weightPercentage }}%</span>
               </th>
-              <th class="col-final">Definitiva</th>
             </tr>
           </thead>
           <tbody>
@@ -240,15 +234,6 @@
                   <span class="celda-error" *ngIf="celda.error">{{ celda.error }}</span>
                 </ng-container>
 
-              </td>
-              <td class="col-final">
-                <ng-container *ngIf="fila.notaFinal as final; else sinFinal">
-                  <strong>{{ final.finalGrade | number:'1.2-2' }}</strong>
-                  <span class="estado-final" [class.aprobado]="final.passed" [class.reprobado]="!final.passed">
-                    {{ final.passed ? 'Aprobado' : 'Reprobado' }}
-                  </span>
-                </ng-container>
-                <ng-template #sinFinal>—</ng-template>
               </td>
             </tr>
           </tbody>
