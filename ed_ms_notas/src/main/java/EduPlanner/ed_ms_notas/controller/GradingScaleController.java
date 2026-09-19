@@ -23,7 +23,7 @@ public class GradingScaleController {
     private final GradingScaleService service;
 
     @PostMapping
-    @RequireRole(RolEnum.ADMINISTRADOR)
+    @RequireRole({RolEnum.DOCENTE, RolEnum.ADMINISTRADOR})
     public ResponseEntity<HttpGlobalResponse<GradingScaleResponseDTO>> register(@Valid @RequestBody GradingScaleRequestDTO req) {
         HttpGlobalResponse<GradingScaleResponseDTO> r = new HttpGlobalResponse<>();
         try {
@@ -37,7 +37,7 @@ public class GradingScaleController {
     }
 
     @PutMapping("/{id}")
-    @RequireRole(RolEnum.ADMINISTRADOR)
+    @RequireRole({RolEnum.DOCENTE, RolEnum.ADMINISTRADOR})
     public ResponseEntity<HttpGlobalResponse<GradingScaleResponseDTO>> update(@PathVariable Integer id, @Valid @RequestBody GradingScaleRequestDTO req) {
         HttpGlobalResponse<GradingScaleResponseDTO> r = new HttpGlobalResponse<>();
         try {

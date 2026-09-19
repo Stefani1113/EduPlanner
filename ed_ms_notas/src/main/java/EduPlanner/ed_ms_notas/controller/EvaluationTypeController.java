@@ -22,7 +22,7 @@ public class EvaluationTypeController {
     private final EvaluationTypeService service;
 
     @PostMapping
-    @RequireRole(RolEnum.ADMINISTRADOR)
+    @RequireRole({RolEnum.DOCENTE, RolEnum.ADMINISTRADOR})
     public ResponseEntity<HttpGlobalResponse<EvaluationTypeResponseDTO>> register(@Valid @RequestBody EvaluationTypeRequestDTO req) {
         HttpGlobalResponse<EvaluationTypeResponseDTO> r = new HttpGlobalResponse<>();
         try {
