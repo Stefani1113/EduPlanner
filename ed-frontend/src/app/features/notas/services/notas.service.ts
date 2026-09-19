@@ -136,12 +136,13 @@ export interface GradeDetailResponseDTO {
   gradeValue: number;
   status: string;
   registrationDate: string;
-}
+} 
 
 @Injectable({
   providedIn: 'root'
 })
 export class NotasService {
+
   private readonly baseAcademica = '/gestion-academica/eduplanner';
   private readonly baseAdministracion = '/administracion/eduplanner';
   private readonly baseNotas = '/notas/eduplanner';
