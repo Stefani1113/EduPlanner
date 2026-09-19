@@ -28,7 +28,7 @@ public class UserController {
     private final UserEditService userEditService;
 
     // Consultar todos los usuarios
-    @RequireRole(RolEnum.ADMINISTRADOR)
+    @RequireRole({RolEnum.ADMINISTRADOR, RolEnum.DIRECTIVO})
     @GetMapping
     public ResponseEntity<HttpGlobalResponse<List<UserResponseDTO>>> getUsers(
             @RequestParam(required = false) Integer idRole) {
