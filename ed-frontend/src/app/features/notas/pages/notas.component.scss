@@ -802,46 +802,163 @@
 }
 
 .pasos-panel {
-  max-width: 460px;
+  max-width: 620px;
   margin: 0 auto 24px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.32);
-  border-color: color-mix(in srgb, var(--inst-secondary) 20%, var(--inst-border));
+  border: 1px solid color-mix(in srgb, var(--inst-secondary) 20%, var(--inst-border));
 }
 
-.paso-row {
+.pasos-header {
   position: relative;
   z-index: 1;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 10px;
-  background: var(--inst-dark);
-  border-radius: 12px;
-  padding: 12px 16px;
-  margin-bottom: 10px;
+  gap: 16px;
+  margin-bottom: 6px;
 }
 
-.paso-row:last-of-type {
+.pasos-header-texto .panel-subtitle-green {
   margin-bottom: 4px;
 }
 
-.paso-nombre {
-  color: var(--inst-accent);
+.pasos-header-texto .panel-hint {
+  margin: 0;
+  max-width: 320px;
+}
+
+.pasos-badge {
+  flex: 0 0 auto;
+  background: color-mix(in srgb, #e0575a 16%, transparent);
+  color: #e0575a;
+  border: 1px solid color-mix(in srgb, #e0575a 40%, transparent);
+  font-weight: 800;
+  font-size: 14px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.pasos-badge.completo {
+  background: color-mix(in srgb, var(--inst-secondary) 20%, transparent);
+  color: var(--inst-secondary);
+  border-color: color-mix(in srgb, var(--inst-secondary) 45%, transparent);
+}
+
+.pasos-select-periodo {
+  margin-top: 14px;
+}
+
+.pasos-aviso-bloqueado {
+  position: relative;
+  z-index: 1;
+  display: block;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: var(--inst-text, #f2f2f2);
   font-size: 12.5px;
+  line-height: 1.5;
+  padding: 10px 14px;
+  border-radius: 10px;
+  margin: 0 0 16px;
+}
+
+.pasos-aviso-icono {
+  flex: 0 0 auto;
+  font-size: 13px;
+}
+
+.pasos-lista {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.paso-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  border-radius: 14px;
+  padding: 12px 16px;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.paso-card:hover {
+  border-color: color-mix(in srgb, var(--inst-secondary, #2ecc71) 30%, transparent);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.paso-card.bloqueado {
+  opacity: 0.75;
+}
+
+.paso-indice {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--inst-secondary, #2ecc71) 20%, transparent);
+  border: 1px solid color-mix(in srgb, var(--inst-secondary, #2ecc71) 45%, transparent);
+  color: var(--inst-secondary, #2ecc71);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.paso-info {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.paso-nombre {
+  color: var(--inst-light, #f2f2f2);
+  font-size: 13px;
   font-weight: 700;
-  letter-spacing: 0.3px;
-  text-transform: uppercase;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.paso-barra {
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+}
+
+.paso-barra-relleno {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--inst-secondary, #2ecc71), var(--inst-primary, #27ae60));
+  transition: width 0.25s ease;
 }
 
 .paso-porcentaje {
-  color: var(--inst-secondary);
+  flex: 0 0 auto;
+  background: color-mix(in srgb, var(--inst-secondary, #2ecc71) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--inst-secondary, #2ecc71) 35%, transparent);
+  border-radius: 999px;
+  color: var(--inst-secondary, #2ecc71);
   font-weight: 800;
-  font-size: 16px;
-  min-width: 46px;
-  text-align: right;
+  font-size: 13px;
+  min-width: 52px;
+  padding: 4px 10px;
+  text-align: center;
 }
 
 .paso-botones {
+  flex: 0 0 auto;
   display: flex;
   gap: 6px;
 }
@@ -865,14 +982,37 @@
   color: var(--inst-dark);
 }
 
-.paso-total {
+.pasos-total-wrap {
   position: relative;
   z-index: 1;
+  margin-top: 18px;
+}
+
+.pasos-total-barra {
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--inst-light) 10%, transparent);
+  overflow: hidden;
+}
+
+.pasos-total-relleno {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--inst-secondary), var(--inst-primary));
+  transition: width 0.25s ease, background 0.2s ease;
+}
+
+.pasos-total-relleno.error {
+  background: linear-gradient(90deg, #e0575a, #b23d40);
+}
+
+.paso-total {
   text-align: right;
   color: var(--inst-secondary);
   font-weight: 800;
-  font-size: 13.5px;
-  margin-top: 8px;
+  font-size: 13px;
+  margin: 8px 0 0;
 }
 
 .paso-total-error {

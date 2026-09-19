@@ -19,6 +19,8 @@ import {
   GradeRequestDTO
 } from '../services/notas.service';
 
+import { PerfilService, MiPerfilDTO } from '../../admin/services/perfil.service';
+
 type Tab = 'historial' | 'reportes' | 'notas' | 'calificacion';
 
 interface ResumenAsignatura {
@@ -123,7 +125,7 @@ export class NotasComponent implements OnInit {
   errorGuardado: string | null = null;
 
   private idTeacherAsignaturaActual: number | null = null;
-
+  private perfilActual: MiPerfilDTO | null = null;
 
   formEscala = {
     minimumValue: 0,
@@ -144,7 +146,10 @@ export class NotasComponent implements OnInit {
   guardandoPasos = false;
   errorPasos: string | null = null;
 
-  constructor(private notasService: NotasService) {}
+  constructor(
+    private notasService: NotasService,
+    private perfilService: PerfilService
+  ) {}
 
   ngOnInit(): void {
 
@@ -158,10 +163,15 @@ export class NotasComponent implements OnInit {
       asignaturas: this.notasService.listarAsignaturas(),
       escalas: this.notasService.listarEscalas(),
       tipos: this.notasService.listarTiposEvaluacion(),
-      actividades: this.notasService.listarActividadesEvaluativas()
+      actividades: this.notasService.listarActividadesEvaluativas(),
+      perfil: this.perfilService.obtenerMiPerfil().pipe(
+        catchError(() => of(null))
+      )
     }).subscribe({
 
-      next: ({ niveles, cursos, periodos, asignaturas, escalas, tipos, actividades }) => {
+      next: ({ niveles, cursos, periodos, asignaturas, escalas, tipos, actividades, perfil }) => {
+
+        this.perfilActual = perfil?.data ?? null;
 
         this.niveles = niveles;
         this.cursos = cursos.filter(c => c.status);
@@ -252,6 +262,7 @@ export class NotasComponent implements OnInit {
 
     const idCurso = this.idCursoSeleccionado;
     const idPeriodo = this.idPeriodoSeleccionado;
+    const nombreCurso = this.cursoSeleccionadoNombre;
 
     this.notasService.listarCargaPorCurso(idCurso).subscribe({
 
@@ -308,14 +319,14 @@ export class NotasComponent implements OnInit {
           },
 
           error: () => {
-            this.errorHistorial = 'No se pudo cargar el historial de notas del curso.';
+            this.errorHistorial = `No se pudo cargar el historial de notas del curso ${nombreCurso}.`;
             this.cargandoHistorial = false;
           }
         });
       },
 
       error: () => {
-        this.errorHistorial = 'No se pudo cargar la carga académica del curso.';
+        this.errorHistorial = `No se pudo cargar la información académica del curso ${nombreCurso}.`;
         this.cargandoHistorial = false;
       }
     });
@@ -367,13 +378,15 @@ export class NotasComponent implements OnInit {
     this.cargandoEstudiantesReporte = true;
     this.errorReporte = null;
 
+    const nombreCurso = this.nombreCursoReporte || 'seleccionado';
+
     this.notasService.listarEstudiantesPorCurso(this.idCursoReporte).subscribe({
       next: estudiantes => {
         this.estudiantesReporte = estudiantes.filter(e => e.status !== false);
         this.cargandoEstudiantesReporte = false;
       },
       error: () => {
-        this.errorReporte = 'No se pudo cargar el listado de estudiantes.';
+        this.errorReporte = `No se pudo cargar el listado de estudiantes del curso ${nombreCurso}.`;
         this.cargandoEstudiantesReporte = false;
       }
     });
@@ -507,7 +520,7 @@ export class NotasComponent implements OnInit {
         this.descargandoPdfCurso = false;
       },
       error: () => {
-        this.errorPdfCurso = 'No se pudo generar el PDF del curso.';
+        this.errorPdfCurso = `No se pudo generar el PDF del curso ${nombreCurso}.`;
         this.descargandoPdfCurso = false;
       }
     });
@@ -537,6 +550,7 @@ export class NotasComponent implements OnInit {
     const idCurso = this.idCursoSeleccionado;
     const idSubject = this.idAsignaturaNotas;
     const idPeriodo = this.idPeriodoSeleccionado;
+    const nombreCurso = this.cursoSeleccionadoNombre;
 
     this.actividadesNotasColumnas = this.actividadesEvaluativas.filter(
       a => a.idPeriod === idPeriodo && a.isActive
@@ -559,12 +573,29 @@ export class NotasComponent implements OnInit {
           .map(e => ({ estudiante: e, nombreCompleto: `${e.name} ${e.surnames}`.trim() }))
           .sort((a, b) => a.nombreCompleto.localeCompare(b.nombreCompleto));
 
-        const carga = cargas.find(c => c.idSubject === idSubject && c.status);
-        this.idTeacherAsignaturaActual = carga?.idTeacher ?? null;
+        const carga = cargas.find(
+          c => c.idSubject === idSubject && c.status === true
+        );
+
+        const rolActual = (this.perfilActual?.roleName ?? '').trim().toUpperCase();
+        const idUsuarioActual = this.perfilActual?.idUser ?? null;
+
+        if (rolActual === 'DOCENTE' && idUsuarioActual !== null) {
+          this.idTeacherAsignaturaActual = idUsuarioActual;
+        } else if (carga?.idTeacher) {
+          this.idTeacherAsignaturaActual = carga.idTeacher;
+        } else {
+          this.idTeacherAsignaturaActual = null;
+        }
 
         if (!carga) {
           this.errorNotas = (this.errorNotas ? this.errorNotas + ' ' : '') +
-            'No hay un docente asignado a esta asignatura en este curso (carga académica).';
+            `No hay un docente asignado a esta asignatura en el curso ${nombreCurso} (carga académica).`;
+        }
+
+        if (rolActual !== 'DOCENTE') {
+          this.errorNotas = (this.errorNotas ? this.errorNotas + ' ' : '') +
+            'El registro y edición de notas requiere una cuenta con rol Docente.';
         }
 
         this.estudiantesNotas.forEach(fila => {
@@ -588,8 +619,13 @@ export class NotasComponent implements OnInit {
         this.cargandoNotas = false;
       },
 
-      error: () => {
-        this.errorNotas = 'No se pudo cargar el listado de estudiantes o las notas del curso.';
+      error: (err) => {
+        if (err?.status === 403) {
+          this.errorNotas = `No tienes permisos para ver los estudiantes del curso ${nombreCurso}. `
+            + 'Contacta al administrador para que revise tu rol de acceso.';
+        } else {
+          this.errorNotas = `No se pudo cargar el listado de estudiantes o las notas del curso ${nombreCurso}.`;
+        }
         this.cargandoNotas = false;
       }
     });
@@ -649,10 +685,19 @@ export class NotasComponent implements OnInit {
       return;
     }
 
-    if (this.idTeacherAsignaturaActual === null) {
-      this.celdas.set(clave, { ...celda, error: 'Sin docente asignado a la asignatura' });
+    const rolActual = (this.perfilActual?.roleName ?? '').trim().toUpperCase();
+
+    if (rolActual !== 'DOCENTE' || this.perfilActual?.idUser == null) {
+      this.celdas.set(clave, {
+        ...celda,
+        error: 'Sin permiso'
+      });
+      this.errorGuardado = 'Para registrar o editar notas debes iniciar sesión con una cuenta de Docente.';
       return;
     }
+
+    const idTeacher = this.perfilActual.idUser;
+    this.idTeacherAsignaturaActual = idTeacher;
 
     const tipo = this.encontrarTipoEvaluacion(valorNumerico);
 
@@ -670,7 +715,7 @@ export class NotasComponent implements OnInit {
     const dto: GradeRequestDTO = {
       idStudent: fila.estudiante.idUser,
       idCourse: this.idCursoSeleccionado,
-      idTeacher: this.idTeacherAsignaturaActual,
+      idTeacher,
       idPeriod: this.idPeriodoSeleccionado,
       idSubject: this.idAsignaturaNotas,
       idEvaluative: actividad.idEvaluative,
@@ -693,13 +738,22 @@ export class NotasComponent implements OnInit {
       },
       error: (err) => {
         const mensaje = err?.error?.message ?? err?.error?.error ?? 'No se pudo guardar la nota';
-        this.celdas.set(clave, { ...celda, guardando: false, error: mensaje });
 
         if (err?.status === 401 || err?.status === 403) {
+          this.celdas.set(clave, { ...celda, guardando: false, error: 'Sin permiso' });
           this.errorGuardado = 'No tienes permisos para registrar notas con tu rol actual. '
             + 'El registro y edición de notas está reservado a usuarios con rol Docente. '
             + 'Inicia sesión con una cuenta de docente para guardar calificaciones.';
+        } else if (err?.status === 400 && /no existe en administración/i.test(mensaje)) {
+          this.celdas.set(clave, { ...celda, guardando: false, error: 'No se pudo guardar' });
+          this.errorGuardado = 'El docente utilizado para registrar la nota no existe en Administración. '
+            + 'La sesión actual debe corresponder a un usuario registrado con rol Docente.';
+        } else if (err?.status === 400 && /no tiene rol DOCENTE/i.test(mensaje)) {
+          this.celdas.set(clave, { ...celda, guardando: false, error: 'No se pudo guardar' });
+          this.errorGuardado = 'El usuario utilizado para registrar la nota no tiene rol Docente. '
+            + 'Inicia sesión con una cuenta que tenga ese rol.';
         } else {
+          this.celdas.set(clave, { ...celda, guardando: false, error: 'No se pudo guardar' });
           this.errorGuardado = mensaje;
         }
       }
@@ -752,10 +806,12 @@ export class NotasComponent implements OnInit {
       next: escala => {
         this.escalaActual = escala;
         this.guardandoEscala = false;
+        alert('Los cambios en la escala de calificación se guardaron correctamente.');
       },
       error: (err) => {
         this.errorEscala = err?.error?.message ?? 'No se pudo guardar la escala de calificación.';
         this.guardandoEscala = false;
+        alert('No se pudo guardar la escala de calificación. Revisa los datos e intenta de nuevo.');
       }
     });
   }
@@ -909,10 +965,12 @@ export class NotasComponent implements OnInit {
         this.actividadesEvaluativas = [...this.actividadesEvaluativas, ...creadas];
         this.guardandoPasos = false;
         this.actualizarPasosPeriodo();
+        alert('Los pasos del periodo se guardaron correctamente.');
       },
       error: (err) => {
         this.errorPasos = err?.error?.message ?? 'No se pudieron guardar los pasos del periodo.';
         this.guardandoPasos = false;
+        alert('No se pudieron guardar los pasos del periodo. Revisa que sumen 100% e intenta de nuevo.');
       }
     });
   }
