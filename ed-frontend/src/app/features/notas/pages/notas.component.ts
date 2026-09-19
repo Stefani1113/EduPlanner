@@ -9,6 +9,7 @@ import {
   tap,
   delay
 } from 'rxjs/operators';
+
 import {
   NotasService,
   AcademicLevelResponseDTO,
@@ -22,6 +23,7 @@ import {
   GradeDetailResponseDTO,
   GradeRequestDTO
 } from '../services/notas.service';
+
 import {
   PerfilService,
   MiPerfilDTO
@@ -69,12 +71,14 @@ interface ResumenReporteEstudiante {
 @Component({
   selector: 'app-notas',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule
+  ],
   templateUrl: './notas.component.html',
   styleUrl: './notas.component.scss'
 })
 export class NotasComponent implements OnInit {
-
   tabActiva: Tab = 'historial';
 
   niveles: AcademicLevelResponseDTO[] = [];
@@ -97,6 +101,7 @@ export class NotasComponent implements OnInit {
   esEstudiante = false;
   esDocente = false;
   esAdministrador = false;
+  esDirectivo = false;
 
   idEstudianteActual: number | null = null;
   idCursoEstudiante: number | null = null;
@@ -114,6 +119,7 @@ export class NotasComponent implements OnInit {
 
   cursosReporte: CourseResponseDTO[] = [];
   estudiantesReporte: UsuarioBasico[] = [];
+
   seleccionadosReporte = new Set<number>();
 
   cargandoEstudiantesReporte = false;
@@ -162,7 +168,6 @@ export class NotasComponent implements OnInit {
   errorTipo: string | null = null;
 
   idPeriodoPasos: number | null = null;
-
   pasosPeriodo: PasoPeriodo[] = [];
   pasosYaDefinidos = false;
 
@@ -185,10 +190,13 @@ export class NotasComponent implements OnInit {
       asignaturas: this.notasService.listarAsignaturas(),
       escalas: this.notasService.listarEscalas(),
       tipos: this.notasService.listarTiposEvaluacion(),
-      actividades: this.notasService.listarActividadesEvaluativas(),
-      perfil: this.perfilService.obtenerMiPerfil().pipe(
-        catchError(() => of(null))
-      )
+      actividades:
+        this.notasService.listarActividadesEvaluativas(),
+      perfil: this.perfilService
+        .obtenerMiPerfil()
+        .pipe(
+          catchError(() => of(null))
+        )
     }).subscribe({
       next: ({
         niveles,
@@ -200,33 +208,47 @@ export class NotasComponent implements OnInit {
         actividades,
         perfil
       }) => {
-        this.perfilActual = perfil?.data ?? null;
+        this.perfilActual =
+          perfil?.data ?? null;
 
         this.configurarRol();
 
         this.niveles = niveles;
-        this.cursos = cursos.filter(c => c.status);
+
+        this.cursos = cursos.filter(
+          c => c.status
+        );
+
         this.periodos = periodos;
+
         this.asignaturas = asignaturas;
 
-        this.escalaActual = escalas.length
-          ? escalas[escalas.length - 1]
-          : null;
+        this.escalaActual =
+          escalas.length
+            ? escalas[escalas.length - 1]
+            : null;
 
         this.tiposEvaluacion = tipos;
-        this.actividadesEvaluativas = actividades;
+        this.actividadesEvaluativas =
+          actividades;
 
         if (this.escalaActual) {
           this.formEscala = {
-            minimumValue: this.escalaActual.minimumValue,
-            maximumValue: this.escalaActual.maximumValue,
-            minimumPassGrade: this.escalaActual.minimumPassGrade
+            minimumValue:
+              this.escalaActual.minimumValue,
+            maximumValue:
+              this.escalaActual.maximumValue,
+            minimumPassGrade:
+              this.escalaActual.minimumPassGrade
           };
         }
 
         if (this.esEstudiante) {
-          if (this.idCursoEstudiante !== null) {
-            this.idCursoSeleccionado = this.idCursoEstudiante;
+          if (
+            this.idCursoEstudiante !== null
+          ) {
+            this.idCursoSeleccionado =
+              this.idCursoEstudiante;
           } else {
             this.errorBase =
               'No se encontró el curso asignado a tu usuario.';
@@ -235,13 +257,15 @@ export class NotasComponent implements OnInit {
           }
         } else {
           if (this.cursos.length) {
-            this.idCursoSeleccionado = this.cursos[0].idCourse;
+            this.idCursoSeleccionado =
+              this.cursos[0].idCourse;
           }
         }
 
-        const periodoActivo = this.periodos.find(
-          p => p.status
-        );
+        const periodoActivo =
+          this.periodos.find(
+            p => p.status
+          );
 
         this.idPeriodoSeleccionado =
           (
@@ -272,11 +296,15 @@ export class NotasComponent implements OnInit {
 
         if (this.esEstudiante) {
           this.configurarReporteEstudiante();
+        } else {
+          this.configurarReporteGeneral();
         }
       },
+
       error: () => {
         this.errorBase =
           'No se pudo cargar la información base del módulo de notas.';
+
         this.cargandoBase = false;
       }
     });
@@ -294,6 +322,9 @@ export class NotasComponent implements OnInit {
 
     this.esDocente =
       rol === 'DOCENTE';
+
+    this.esDirectivo =
+      rol === 'DIRECTIVO';
 
     this.esAdministrador =
       rol === 'ADMINISTRADOR' ||
@@ -319,7 +350,9 @@ export class NotasComponent implements OnInit {
     this.idCursoEstudiante =
       this.perfilActual.idCourse ?? null;
 
-    if (this.idCursoEstudiante !== null) {
+    if (
+      this.idCursoEstudiante !== null
+    ) {
       this.idCursoSeleccionado =
         this.idCursoEstudiante;
     }
@@ -343,8 +376,12 @@ export class NotasComponent implements OnInit {
             Array.from(
               new Set(
                 cargas
-                  .filter(c => c.status !== false)
-                  .map(c => c.idSubject)
+                  .filter(
+                    c => c.status !== false
+                  )
+                  .map(
+                    c => c.idSubject
+                  )
               )
             );
 
@@ -371,11 +408,14 @@ export class NotasComponent implements OnInit {
               this.asignaturas[0].idSubject;
           }
 
-          if (this.tabActiva === 'notas') {
+          if (
+            this.tabActiva === 'notas'
+          ) {
             this.notasConsultadas = false;
             this.cargarNotas();
           }
         },
+
         error: () => {
           this.errorBase =
             'No se pudieron cargar las asignaturas de tu curso.';
@@ -384,11 +424,27 @@ export class NotasComponent implements OnInit {
   }
 
   cambiarTab(tab: Tab): void {
+    if (
+      this.esDirectivo &&
+      (
+        tab === 'notas' ||
+        tab === 'calificacion'
+      )
+    ) {
+      return;
+    }
+
+    if (
+      this.esEstudiante &&
+      tab === 'calificacion'
+    ) {
+      return;
+    }
+
     this.tabActiva = tab;
 
     if (
-      tab === 'historial' &&
-      !this.historialConsultado
+      tab === 'historial'
     ) {
       this.cargarHistorial();
     }
@@ -401,10 +457,13 @@ export class NotasComponent implements OnInit {
     }
 
     if (
-      tab === 'reportes' &&
-      this.esEstudiante
+      tab === 'reportes'
     ) {
-      this.configurarReporteEstudiante();
+      if (this.esEstudiante) {
+        this.configurarReporteEstudiante();
+      } else {
+        this.configurarReporteGeneral();
+      }
     }
   }
 
@@ -418,7 +477,9 @@ export class NotasComponent implements OnInit {
   }
 
   get nombreNivelReporte(): string {
-    if (this.idNivelReporte === null) {
+    if (
+      this.idNivelReporte === null
+    ) {
       return '';
     }
 
@@ -433,16 +494,25 @@ export class NotasComponent implements OnInit {
     if (this.esEstudiante) {
       this.idCursoSeleccionado =
         this.idCursoEstudiante;
+
       return;
     }
 
     this.historialConsultado = false;
     this.notasConsultadas = false;
+
     this.celdas.clear();
 
-    if (this.tabActiva === 'historial') {
+    if (
+      this.tabActiva === 'historial'
+    ) {
       this.cargarHistorial();
-    } else if (this.tabActiva === 'notas') {
+    }
+
+    if (
+      this.tabActiva === 'notas' &&
+      !this.esDirectivo
+    ) {
       this.cargarNotas();
     }
   }
@@ -450,23 +520,44 @@ export class NotasComponent implements OnInit {
   onCambioPeriodoGlobal(): void {
     this.historialConsultado = false;
     this.notasConsultadas = false;
+
     this.celdas.clear();
 
     if (this.esEstudiante) {
       this.cargarHistorial();
 
-      if (this.tabActiva === 'notas') {
+      if (
+        this.tabActiva === 'notas'
+      ) {
         this.cargarNotas();
       }
 
-      if (this.tabActiva === 'reportes') {
+      if (
+        this.tabActiva === 'reportes'
+      ) {
         this.configurarReporteEstudiante();
       }
 
       return;
     }
 
-    this.onCambioCursoGlobal();
+    this.cargarHistorial();
+
+    if (
+      this.tabActiva === 'notas' &&
+      !this.esDirectivo
+    ) {
+      this.cargarNotas();
+    }
+
+    if (
+      this.tabActiva === 'reportes'
+    ) {
+      this.idPeriodoReporte =
+        this.idPeriodoSeleccionado;
+      this.vistaPreviaGenerada = false;
+      this.vistaPrevia = [];
+    }
   }
 
   cargarHistorial(): void {
@@ -506,8 +597,12 @@ export class NotasComponent implements OnInit {
             Array.from(
               new Set(
                 cargas
-                  .filter(c => c.status !== false)
-                  .map(c => c.idSubject)
+                  .filter(
+                    c => c.status !== false
+                  )
+                  .map(
+                    c => c.idSubject
+                  )
               )
             );
 
@@ -549,16 +644,20 @@ export class NotasComponent implements OnInit {
                   resultados
                 );
 
-                this.cargandoHistorial = false;
+                this.cargandoHistorial =
+                  false;
               },
+
               error: () => {
                 this.errorHistorial =
                   `No se pudo cargar el historial de notas del curso ${nombreCurso}.`;
 
-                this.cargandoHistorial = false;
+                this.cargandoHistorial =
+                  false;
               }
             });
         },
+
         error: () => {
           this.errorHistorial =
             `No se pudo cargar la información académica del curso ${nombreCurso}.`;
@@ -590,8 +689,12 @@ export class NotasComponent implements OnInit {
             Array.from(
               new Set(
                 cargas
-                  .filter(c => c.status !== false)
-                  .map(c => c.idSubject)
+                  .filter(
+                    c => c.status !== false
+                  )
+                  .map(
+                    c => c.idSubject
+                  )
               )
             );
 
@@ -612,8 +715,14 @@ export class NotasComponent implements OnInit {
                 const notasDelCurso =
                   notas.filter(
                     nota =>
-                      Number(nota.idCourse) ===
-                      Number(idCurso)
+                      Number(
+                        nota.idCourse
+                      ) ===
+                      Number(idCurso) &&
+                      Number(
+                        nota.idPeriod
+                      ) ===
+                      Number(idPeriodo)
                   );
 
                 const resultados =
@@ -626,7 +735,9 @@ export class NotasComponent implements OnInit {
                             Number(
                               nota.idSubject
                             ) ===
-                            Number(idSubject)
+                            Number(
+                              idSubject
+                            )
                         )
                     })
                   );
@@ -635,16 +746,20 @@ export class NotasComponent implements OnInit {
                   resultados
                 );
 
-                this.cargandoHistorial = false;
+                this.cargandoHistorial =
+                  false;
               },
+
               error: () => {
                 this.errorHistorial =
                   'No se pudieron cargar tus notas para el periodo seleccionado.';
 
-                this.cargandoHistorial = false;
+                this.cargandoHistorial =
+                  false;
               }
             });
         },
+
         error: () => {
           this.errorHistorial =
             'No se pudieron cargar las asignaturas de tu curso.';
@@ -669,7 +784,8 @@ export class NotasComponent implements OnInit {
           const nombre =
             this.asignaturas.find(
               a =>
-                a.idSubject === idSubject
+                a.idSubject ===
+                idSubject
             )?.name ??
             notas[0]?.subjectName ??
             `Asignatura ${idSubject}`;
@@ -739,6 +855,81 @@ export class NotasComponent implements OnInit {
     );
   }
 
+  private configurarReporteGeneral(): void {
+    if (this.esEstudiante) {
+      return;
+    }
+
+    if (
+      this.idNivelReporte === null
+    ) {
+      const curso =
+        this.cursos.find(
+          c =>
+            c.idCourse ===
+            this.idCursoSeleccionado
+        );
+
+      this.idNivelReporte =
+        curso?.idLevel ?? null;
+    }
+
+    this.idCursoReporte =
+      this.idCursoSeleccionado;
+
+    this.idPeriodoReporte =
+      this.idPeriodoSeleccionado;
+
+    if (
+      this.idNivelReporte !== null
+    ) {
+      this.cargarCursosReporte(
+        this.idNivelReporte,
+        this.idCursoReporte
+      );
+    }
+  }
+
+  private cargarCursosReporte(
+    idNivel: number,
+    idCursoPreferido: number | null
+  ): void {
+    this.notasService
+      .listarCursosPorNivel(idNivel)
+      .subscribe({
+        next: cursos => {
+          this.cursosReporte =
+            cursos.filter(
+              c => c.status
+            );
+
+          if (
+            idCursoPreferido !== null &&
+            this.cursosReporte.some(
+              c =>
+                c.idCourse ===
+                idCursoPreferido
+            )
+          ) {
+            this.idCursoReporte =
+              idCursoPreferido;
+          } else {
+            this.idCursoReporte =
+              this.cursosReporte[0]
+                ?.idCourse ?? null;
+          }
+
+          this.onCambioCursoReporte();
+        },
+
+        error: () => {
+          this.cursosReporte = [];
+          this.estudiantesReporte = [];
+          this.seleccionadosReporte.clear();
+        }
+      });
+  }
+
   onCambioNivelReporte(): void {
     if (this.esEstudiante) {
       this.configurarReporteEstudiante();
@@ -758,30 +949,10 @@ export class NotasComponent implements OnInit {
       return;
     }
 
-    this.notasService
-      .listarCursosPorNivel(
-        this.idNivelReporte
-      )
-      .subscribe({
-        next: cursos => {
-          this.cursosReporte =
-            cursos.filter(
-              c => c.status
-            );
-
-          if (
-            this.cursosReporte.length
-          ) {
-            this.idCursoReporte =
-              this.cursosReporte[0].idCourse;
-
-            this.onCambioCursoReporte();
-          }
-        },
-        error: () => {
-          this.cursosReporte = [];
-        }
-      });
+    this.cargarCursosReporte(
+      this.idNivelReporte,
+      null
+    );
   }
 
   private configurarReporteEstudiante(): void {
@@ -874,7 +1045,9 @@ export class NotasComponent implements OnInit {
       return;
     }
 
-    this.cargandoEstudiantesReporte = true;
+    this.cargandoEstudiantesReporte =
+      true;
+
     this.errorReporte = null;
 
     const nombreCurso =
@@ -888,15 +1061,15 @@ export class NotasComponent implements OnInit {
       .subscribe({
         next: estudiantes => {
           this.estudiantesReporte =
-            estudiantes
-              .filter(
-                e =>
-                  e.status !== false
-              );
+            estudiantes.filter(
+              e =>
+                e.status !== false
+            );
 
           this.cargandoEstudiantesReporte =
             false;
         },
+
         error: () => {
           this.errorReporte =
             `No se pudo cargar el listado de estudiantes del curso ${nombreCurso}.`;
@@ -970,7 +1143,7 @@ export class NotasComponent implements OnInit {
       this.idPeriodoReporte === null
     ) {
       this.errorReporte =
-        'Selecciona un periodo.';
+        'Selecciona un periodo y al menos un estudiante.';
 
       return;
     }
@@ -1008,11 +1181,20 @@ export class NotasComponent implements OnInit {
           )
           .pipe(
             map(notas => {
+              const notasPeriodo =
+                notas.filter(
+                  nota =>
+                    Number(
+                      nota.idPeriod
+                    ) ===
+                    Number(idPeriodo)
+                );
+
               const promedio =
-                notas.length
+                notasPeriodo.length
                   ? Math.round(
                       (
-                        notas.reduce(
+                        notasPeriodo.reduce(
                           (acc, n) =>
                             acc +
                             Number(
@@ -1020,14 +1202,15 @@ export class NotasComponent implements OnInit {
                             ),
                           0
                         ) /
-                        notas.length
+                        notasPeriodo.length
                       ) * 100
                     ) / 100
                   : 0;
 
               return {
                 estudiante,
-                notas,
+                notas:
+                  notasPeriodo,
                 promedio
               };
             }),
@@ -1054,6 +1237,7 @@ export class NotasComponent implements OnInit {
           this.cargandoVistaPrevia =
             false;
         },
+
         error: () => {
           this.errorReporte =
             'No se pudo generar la vista previa del reporte.';
@@ -1135,20 +1319,21 @@ export class NotasComponent implements OnInit {
                   nombreArchivo
                 );
               }),
+
               catchError(() => {
                 this.errorReporte =
                   'No se pudo generar el PDF de uno o más estudiantes.';
 
                 return of(null);
               }),
+
               delay(250)
             )
         )
       )
       .subscribe({
         complete: () => {
-          this.descargandoPdf =
-            false;
+          this.descargandoPdf = false;
         }
       });
   }
@@ -1187,6 +1372,7 @@ export class NotasComponent implements OnInit {
             this.descargandoPdfCurso =
               false;
           },
+
           error: () => {
             this.errorPdfCurso =
               'No se pudo generar tu reporte de notas.';
@@ -1253,6 +1439,7 @@ export class NotasComponent implements OnInit {
           this.descargandoPdfCurso =
             false;
         },
+
         error: () => {
           this.errorPdfCurso =
             `No se pudo generar el PDF del curso ${nombreCurso}.`;
@@ -1268,25 +1455,34 @@ export class NotasComponent implements OnInit {
     nombreArchivo: string
   ): void {
     const url =
-      window.URL.createObjectURL(blob);
+      window.URL.createObjectURL(
+        blob
+      );
 
     const a =
       document.createElement('a');
 
     a.href = url;
-    a.download =
-      nombreArchivo;
+    a.download = nombreArchivo;
 
     document.body.appendChild(a);
+
     a.click();
+
     document.body.removeChild(a);
 
     setTimeout(() => {
-      window.URL.revokeObjectURL(url);
+      window.URL.revokeObjectURL(
+        url
+      );
     }, 100);
   }
 
   cargarNotas(): void {
+    if (this.esDirectivo) {
+      return;
+    }
+
     if (
       this.idCursoSeleccionado === null ||
       this.idPeriodoSeleccionado === null
@@ -1308,6 +1504,7 @@ export class NotasComponent implements OnInit {
     this.cargandoNotas = true;
     this.errorNotas = null;
     this.notasConsultadas = true;
+
     this.celdas.clear();
 
     const idCurso =
@@ -1375,10 +1572,9 @@ export class NotasComponent implements OnInit {
             }))
             .sort(
               (a, b) =>
-                a.nombreCompleto
-                  .localeCompare(
-                    b.nombreCompleto
-                  )
+                a.nombreCompleto.localeCompare(
+                  b.nombreCompleto
+                )
             );
 
         const carga =
@@ -1442,43 +1638,48 @@ export class NotasComponent implements OnInit {
         this.estudiantesNotas
           .forEach(fila => {
             this.actividadesNotasColumnas
-              .forEach(actividad => {
-                const clave =
-                  this.claveCelda(
-                    fila.estudiante.idUser,
-                    actividad.idEvaluative
-                  );
+              .forEach(
+                actividad => {
+                  const clave =
+                    this.claveCelda(
+                      fila.estudiante.idUser,
+                      actividad.idEvaluative
+                    );
 
-                const notaExistente =
-                  notas.find(
-                    n =>
-                      n.idStudent ===
-                        fila.estudiante.idUser &&
-                      n.idEvaluative ===
-                        actividad.idEvaluative
-                  );
+                  const notaExistente =
+                    notas.find(
+                      n =>
+                        n.idStudent ===
+                          fila.estudiante.idUser &&
+                        n.idEvaluative ===
+                          actividad.idEvaluative
+                    );
 
-                this.celdas.set(
-                  clave,
-                  {
-                    valor:
-                      notaExistente
-                        ? String(
-                            notaExistente.gradeValue
-                          )
-                        : '',
-                    idGrade:
-                      notaExistente?.idGrade ??
-                      null,
-                    guardando: false,
-                    error: null
-                  }
-                );
-              });
+                  this.celdas.set(
+                    clave,
+                    {
+                      valor:
+                        notaExistente
+                          ? String(
+                              notaExistente.gradeValue
+                            )
+                          : '',
+
+                      idGrade:
+                        notaExistente?.idGrade ??
+                        null,
+
+                      guardando: false,
+                      error: null
+                    }
+                  );
+                }
+              );
           });
 
         this.cargandoNotas = false;
       },
+
       error: err => {
         if (
           err?.status === 403
@@ -1512,6 +1713,7 @@ export class NotasComponent implements OnInit {
     this.errorNotas = null;
     this.errorGuardado = null;
     this.notasConsultadas = true;
+
     this.celdas.clear();
 
     const idEstudiante =
@@ -1642,15 +1844,14 @@ export class NotasComponent implements OnInit {
                     .length === 0
                 ) {
                   this.actividadesNotasColumnas =
-                    this.actividadesEvaluativas
-                      .filter(
-                        actividad =>
-                          actividad.idPeriod ===
-                            idPeriodo &&
-                          idsActividadesConNota.has(
-                            actividad.idEvaluative
-                          )
-                      );
+                    this.actividadesEvaluativas.filter(
+                      actividad =>
+                        actividad.idPeriod ===
+                          idPeriodo &&
+                        idsActividadesConNota.has(
+                          actividad.idEvaluative
+                        )
+                    );
                 }
 
                 this.actividadesNotasColumnas
@@ -1678,9 +1879,11 @@ export class NotasComponent implements OnInit {
                                   notaExistente.gradeValue
                                 )
                               : '',
+
                           idGrade:
                             notaExistente?.idGrade ??
                             null,
+
                           guardando: false,
                           error: null
                         }
@@ -1690,6 +1893,7 @@ export class NotasComponent implements OnInit {
 
                 this.cargandoNotas = false;
               },
+
               error: () => {
                 this.errorNotas =
                   'No se pudieron cargar tus notas para el periodo seleccionado.';
@@ -1698,6 +1902,7 @@ export class NotasComponent implements OnInit {
               }
             });
         },
+
         error: () => {
           this.errorNotas =
             'No se pudieron cargar las asignaturas de tu curso.';
@@ -1725,8 +1930,7 @@ export class NotasComponent implements OnInit {
       );
 
     return (
-      this.celdas.get(clave) ??
-      {
+      this.celdas.get(clave) ?? {
         valor: '',
         idGrade: null,
         guardando: false,
@@ -1740,7 +1944,10 @@ export class NotasComponent implements OnInit {
     idEvaluative: number,
     valor: string | number
   ): void {
-    if (this.esEstudiante) {
+    if (
+      this.esEstudiante ||
+      this.esDirectivo
+    ) {
       return;
     }
 
@@ -1751,8 +1958,7 @@ export class NotasComponent implements OnInit {
       );
 
     const actual =
-      this.celdas.get(clave) ??
-      {
+      this.celdas.get(clave) ?? {
         valor: '',
         idGrade: null,
         guardando: false,
@@ -1777,7 +1983,10 @@ export class NotasComponent implements OnInit {
     fila: FilaNotas,
     actividad: EvaluativeActivityResponseDTO
   ): void {
-    if (this.esEstudiante) {
+    if (
+      this.esEstudiante ||
+      this.esDirectivo
+    ) {
       return;
     }
 
@@ -1796,7 +2005,10 @@ export class NotasComponent implements OnInit {
     fila: FilaNotas,
     actividad: EvaluativeActivityResponseDTO
   ): void {
-    if (this.esEstudiante) {
+    if (
+      this.esEstudiante ||
+      this.esDirectivo
+    ) {
       return;
     }
 
@@ -1967,13 +2179,16 @@ export class NotasComponent implements OnInit {
               String(
                 resultado.gradeValue
               ),
+
             idGrade:
               resultado.idGrade,
+
             guardando: false,
             error: null
           }
         );
       },
+
       error: err => {
         const mensaje =
           err?.error?.message ??
@@ -2050,7 +2265,10 @@ export class NotasComponent implements OnInit {
   }
 
   guardarEscala(): void {
-    if (this.esEstudiante) {
+    if (
+      this.esEstudiante ||
+      this.esDirectivo
+    ) {
       return;
     }
 
@@ -2095,11 +2313,9 @@ export class NotasComponent implements OnInit {
 
     peticion.subscribe({
       next: escala => {
-        this.escalaActual =
-          escala;
+        this.escalaActual = escala;
 
-        this.guardandoEscala =
-          false;
+        this.guardandoEscala = false;
 
         this.formEscala = {
           minimumValue:
@@ -2114,13 +2330,13 @@ export class NotasComponent implements OnInit {
           'Los cambios en la escala de calificación se guardaron correctamente.'
         );
       },
+
       error: err => {
         this.errorEscala =
           err?.error?.message ??
           'No se pudo guardar la escala de calificación.';
 
-        this.guardandoEscala =
-          false;
+        this.guardandoEscala = false;
 
         alert(
           'No se pudo guardar la escala de calificación. Revisa los datos e intenta de nuevo.'
@@ -2130,7 +2346,10 @@ export class NotasComponent implements OnInit {
   }
 
   guardarCambiosCalificacion(): void {
-    if (this.esEstudiante) {
+    if (
+      this.esEstudiante ||
+      this.esDirectivo
+    ) {
       return;
     }
 
@@ -2142,7 +2361,10 @@ export class NotasComponent implements OnInit {
   }
 
   descartarCambiosCalificacion(): void {
-    if (this.esEstudiante) {
+    if (
+      this.esEstudiante ||
+      this.esDirectivo
+    ) {
       return;
     }
 
@@ -2155,10 +2377,8 @@ export class NotasComponent implements OnInit {
       this.formEscala = {
         minimumValue:
           this.escalaActual.minimumValue,
-
         maximumValue:
           this.escalaActual.maximumValue,
-
         minimumPassGrade:
           this.escalaActual.minimumPassGrade
       };
@@ -2181,7 +2401,10 @@ export class NotasComponent implements OnInit {
   }
 
   guardarNuevoTipo(): void {
-    if (this.esEstudiante) {
+    if (
+      this.esEstudiante ||
+      this.esDirectivo
+    ) {
       return;
     }
 
@@ -2230,6 +2453,7 @@ export class NotasComponent implements OnInit {
 
           this.guardandoTipo = false;
         },
+
         error: err => {
           this.errorTipo =
             err?.error?.message ??
@@ -2241,7 +2465,10 @@ export class NotasComponent implements OnInit {
   }
 
   onCambioPeriodoPasos(): void {
-    if (this.esEstudiante) {
+    if (
+      this.esEstudiante ||
+      this.esDirectivo
+    ) {
       return;
     }
 
@@ -2280,19 +2507,22 @@ export class NotasComponent implements OnInit {
       this.pasosPeriodo = [
         {
           idEvaluative: null,
-          evaluationName: 'Actividades',
+          evaluationName:
+            'Actividades',
           weightPercentage: 30,
           existente: false
         },
         {
           idEvaluative: null,
-          evaluationName: 'Evaluación',
+          evaluationName:
+            'Evaluación',
           weightPercentage: 50,
           existente: false
         },
         {
           idEvaluative: null,
-          evaluationName: 'Examen final',
+          evaluationName:
+            'Examen final',
           weightPercentage: 20,
           existente: false
         }
@@ -2308,6 +2538,7 @@ export class NotasComponent implements OnInit {
   ): void {
     if (
       this.esEstudiante ||
+      this.esDirectivo ||
       paso.existente
     ) {
       return;
@@ -2339,7 +2570,10 @@ export class NotasComponent implements OnInit {
   }
 
   descartarPasos(): void {
-    if (this.esEstudiante) {
+    if (
+      this.esEstudiante ||
+      this.esDirectivo
+    ) {
       return;
     }
 
@@ -2347,7 +2581,10 @@ export class NotasComponent implements OnInit {
   }
 
   guardarPasos(): void {
-    if (this.esEstudiante) {
+    if (
+      this.esEstudiante ||
+      this.esDirectivo
+    ) {
       return;
     }
 
@@ -2429,6 +2666,7 @@ export class NotasComponent implements OnInit {
             'Los pasos del periodo se guardaron correctamente.'
           );
         },
+
         error: err => {
           this.errorPasos =
             err?.error?.message ??
