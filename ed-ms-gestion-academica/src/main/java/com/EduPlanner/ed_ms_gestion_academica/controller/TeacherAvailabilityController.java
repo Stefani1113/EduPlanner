@@ -29,7 +29,6 @@ public class TeacherAvailabilityController {
      * @param idTeacher
      * @return
      */
-    @RequireRole(RolEnum.ADMINISTRADOR)
     @GetMapping
     public ResponseEntity<HttpGlobalResponse<List<TeacherAvailabilityResponseDTO>>> getAll(
             @RequestParam(required = false) Integer idTeacher) {
@@ -47,7 +46,6 @@ public class TeacherAvailabilityController {
      * @param id
      * @return
      */
-    @RequireRole(RolEnum.ADMINISTRADOR)
     @GetMapping("/{id}")
     public ResponseEntity<HttpGlobalResponse<TeacherAvailabilityResponseDTO>> getById(@PathVariable Integer id) {
         HttpGlobalResponse<TeacherAvailabilityResponseDTO> response = new HttpGlobalResponse<>();

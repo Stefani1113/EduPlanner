@@ -26,7 +26,6 @@ public class TimeSlotController {
 
     // GET /time-slots            -> todos
     // GET /time-slots?idShift=2  -> filtrado por jornada
-    @RequireRole(RolEnum.ADMINISTRADOR)
     @GetMapping
     public ResponseEntity<HttpGlobalResponse<List<TimeSlotResponseDTO>>> getAll(
             @RequestParam(required = false) Integer idShift) {
@@ -42,7 +41,6 @@ public class TimeSlotController {
      * @param id
      * @return
      */
-    @RequireRole(RolEnum.ADMINISTRADOR)
     @GetMapping("/{id}")
     public ResponseEntity<HttpGlobalResponse<TimeSlotResponseDTO>> getById(@PathVariable Integer id) {
         HttpGlobalResponse<TimeSlotResponseDTO> response = new HttpGlobalResponse<>();

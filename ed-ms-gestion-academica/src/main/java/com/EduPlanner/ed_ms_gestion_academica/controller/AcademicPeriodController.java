@@ -30,7 +30,6 @@ public class AcademicPeriodController {
      * academic-periods?active=true - Solo activos
      * @return
      */
-    @RequireRole(RolEnum.ADMINISTRADOR)
     @GetMapping
     public ResponseEntity<HttpGlobalResponse<List<AcademicPeriodResponseDTO>>> getAll(
         @RequestParam(required = false) Boolean active) {
@@ -46,7 +45,6 @@ public class AcademicPeriodController {
      * @param id
      * @return
      */
-    @RequireRole(RolEnum.ADMINISTRADOR)
     @GetMapping("/{id}")
     public ResponseEntity<HttpGlobalResponse<AcademicPeriodResponseDTO>> getById(@PathVariable Integer id) {
         HttpGlobalResponse<AcademicPeriodResponseDTO> response = new HttpGlobalResponse<>();
