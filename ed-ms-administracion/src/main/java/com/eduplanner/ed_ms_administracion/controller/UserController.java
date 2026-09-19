@@ -50,7 +50,7 @@ public class UserController {
      * @param idCourse
      * @return
      */
-    @RequireRole(RolEnum.ADMINISTRADOR)
+    @RequireRole({RolEnum.ADMINISTRADOR, RolEnum.DOCENTE, RolEnum.DIRECTIVO})
     @GetMapping("/course/{idCourse}")
     public ResponseEntity<HttpGlobalResponse<List<UserResponseDTO>>> getUsersByCourse(
             @PathVariable Integer idCourse) {

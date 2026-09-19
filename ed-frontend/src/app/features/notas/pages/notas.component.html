@@ -5,346 +5,1047 @@
     <p>Gestiona el historial, los reportes, el registro y la escala de calificación de tu institución.</p>
   </div>
 
-  <div class="loading" *ngIf="cargandoBase">Cargando información académica…</div>
-  <div class="error" *ngIf="errorBase">{{ errorBase }}</div>
+  <div class="loading" *ngIf="cargandoBase">
+    Cargando información académica…
+  </div>
+
+  <div class="error" *ngIf="errorBase">
+    {{ errorBase }}
+  </div>
 
   <ng-container *ngIf="!cargandoBase && !errorBase">
 
     <div class="tabs-row">
+
       <div class="tabs">
-        <button type="button" class="tab" [class.active]="tabActiva === 'historial'" (click)="cambiarTab('historial')">Ver Historial</button>
-        <button type="button" class="tab" [class.active]="tabActiva === 'reportes'" (click)="cambiarTab('reportes')">Reportes/Exportar</button>
-        <button type="button" class="tab" [class.active]="tabActiva === 'notas'" (click)="cambiarTab('notas')">Notas</button>
-        <button type="button" class="tab" [class.active]="tabActiva === 'calificacion'" (click)="cambiarTab('calificacion')">Calificación</button>
+
+        <button
+          type="button"
+          class="tab"
+          [class.active]="tabActiva === 'historial'"
+          (click)="cambiarTab('historial')">
+          Ver Historial
+        </button>
+
+        <button
+          *ngIf="!esEstudiante && !esDirectivo"
+          type="button"
+          class="tab"
+          [class.active]="tabActiva === 'notas'"
+          (click)="cambiarTab('notas')">
+          Notas
+        </button>
+
+        <button
+          *ngIf="!esEstudiante && !esDirectivo"
+          type="button"
+          class="tab"
+          [class.active]="tabActiva === 'calificacion'"
+          (click)="cambiarTab('calificacion')">
+          Calificación
+        </button>
+
+        <button
+          type="button"
+          class="tab"
+          [class.active]="tabActiva === 'reportes'"
+          (click)="cambiarTab('reportes')">
+          Reportes/Exportar
+        </button>
+
       </div>
 
-      <div class="curso-pill" *ngIf="tabActiva === 'historial' || tabActiva === 'notas'">
-        <select [(ngModel)]="idCursoSeleccionado" (ngModelChange)="onCambioCursoGlobal()">
-          <option *ngFor="let c of cursos" [ngValue]="c.idCourse">{{ c.name }}</option>
+      <div
+        class="curso-pill"
+        *ngIf="tabActiva === 'historial' || tabActiva === 'notas'">
+
+        <select
+          *ngIf="esEstudiante"
+          [ngModel]="idCursoSeleccionado"
+          disabled>
+
+          <option [ngValue]="idCursoSeleccionado">
+            {{ cursoSeleccionadoNombre }}
+          </option>
+
         </select>
-        <select [(ngModel)]="idPeriodoSeleccionado" (ngModelChange)="onCambioPeriodoGlobal()">
-          <option *ngFor="let p of periodos" [ngValue]="p.idPeriod">{{ p.name }}</option>
+
+        <select
+          *ngIf="!esEstudiante"
+          [(ngModel)]="idCursoSeleccionado"
+          (ngModelChange)="onCambioCursoGlobal()">
+
+          <option
+            *ngFor="let c of cursos"
+            [ngValue]="c.idCourse">
+            {{ c.name }}
+          </option>
+
         </select>
+
+        <select
+          [(ngModel)]="idPeriodoSeleccionado"
+          (ngModelChange)="onCambioPeriodoGlobal()">
+
+          <option
+            *ngFor="let p of periodos"
+            [ngValue]="p.idPeriod">
+            {{ p.name }}
+          </option>
+
+        </select>
+
       </div>
+
     </div>
 
-    <!-- ================= TAB: VER HISTORIAL ================= -->
+    <div
+      class="tab-panel"
+      *ngIf="tabActiva === 'historial'">
 
-    <div class="tab-panel" *ngIf="tabActiva === 'historial'">
+      <div
+        class="loading"
+        *ngIf="cargandoHistorial">
+        Calculando promedios…
+      </div>
 
-      <div class="loading" *ngIf="cargandoHistorial">Calculando promedios…</div>
-      <div class="error" *ngIf="errorHistorial">{{ errorHistorial }}</div>
+      <div
+        class="error"
+        *ngIf="errorHistorial">
+        {{ errorHistorial }}
+      </div>
 
       <ng-container *ngIf="!cargandoHistorial">
 
         <div class="historial-grid">
 
           <div class="panel promedio-panel">
-            <p class="panel-label">Promedio General</p>
-            <p class="promedio-valor">{{ promedioGeneral | number:'1.2-2' }}<span>/{{ maximoEscala }}.0</span></p>
-            <p class="panel-hint">Curso {{ cursoSeleccionadoNombre }}</p>
+
+            <p class="panel-label">
+              Promedio General
+            </p>
+
+            <p class="promedio-valor">
+              {{ promedioGeneral | number:'1.2-2' }}
+              <span>/{{ maximoEscala }}.0</span>
+            </p>
+
+            <p class="panel-hint">
+              Curso {{ cursoSeleccionadoNombre }}
+            </p>
+
           </div>
 
           <div class="panel notas-finales-panel">
-            <p class="panel-subtitle">Notas Finales</p>
-            <p class="panel-title">Las calificaciones del periodo seleccionado ya están disponibles</p>
-            <button type="button" class="btn-verde" (click)="cambiarTab('notas')">VER AHORA</button>
+
+            <p class="panel-subtitle">
+              Notas Finales
+            </p>
+
+            <p class="panel-title">
+              Las calificaciones del periodo seleccionado ya están disponibles
+            </p>
+
+            <button
+              *ngIf="!esDirectivo"
+              type="button"
+              class="btn-verde"
+              (click)="cambiarTab('notas')">
+              VER AHORA
+            </button>
+
+            <button
+              *ngIf="esDirectivo"
+              type="button"
+              class="btn-verde"
+              (click)="cambiarTab('reportes')">
+              VER REPORTES
+            </button>
+
           </div>
 
         </div>
 
-        <h3 class="seccion-titulo">Asignaturas</h3>
+        <h3 class="seccion-titulo">
+          Asignaturas
+        </h3>
 
-        <div class="asignaturas-list" *ngIf="resumenAsignaturas.length; else sinAsignaturas">
-          <div class="asignatura-row" *ngFor="let a of resumenAsignaturas">
-            <div class="asignatura-nombre">{{ a.nombre }}</div>
-            <div class="barra-wrap">
-              <div class="barra-fondo">
-                <div class="barra-relleno" [style.width.%]="a.porcentaje"></div>
-              </div>
-              <span class="barra-valor">{{ a.totalNotas ? (a.promedio | number:'1.2-2') + ' / ' + maximoEscala : 'Sin notas' }}</span>
+        <div
+          class="asignaturas-list"
+          *ngIf="resumenAsignaturas.length; else sinAsignaturas">
+
+          <div
+            class="asignatura-row"
+            *ngFor="let a of resumenAsignaturas">
+
+            <div class="asignatura-nombre">
+              {{ a.nombre }}
             </div>
+
+            <div class="barra-wrap">
+
+              <div class="barra-fondo">
+
+                <div
+                  class="barra-relleno"
+                  [style.width.%]="a.porcentaje">
+                </div>
+
+              </div>
+
+              <span class="barra-valor">
+
+                {{
+                  a.totalNotas
+                    ? (a.promedio | number:'1.2-2') + ' / ' + maximoEscala
+                    : 'Sin notas'
+                }}
+
+              </span>
+
+            </div>
+
           </div>
+
         </div>
 
         <ng-template #sinAsignaturas>
-          <p class="vacio">Este curso todavía no tiene asignaturas con notas registradas en el periodo seleccionado.</p>
+
+          <p class="vacio">
+            Este curso todavía no tiene asignaturas con notas registradas en el periodo seleccionado.
+          </p>
+
         </ng-template>
 
       </ng-container>
 
     </div>
 
-
-    <div class="tab-panel" *ngIf="tabActiva === 'reportes'">
-
-      <div class="reportes-grid">
-
-        <div class="panel config-panel">
-          <p class="panel-subtitle-green">Configuración de REPORTES</p>
-
-          <label class="campo">
-            <span>Nivel académico</span>
-            <select [(ngModel)]="idNivelReporte" (ngModelChange)="onCambioNivelReporte()">
-              <option [ngValue]="null" disabled>Selecciona un nivel</option>
-              <option *ngFor="let n of niveles" [ngValue]="n.idLevel">{{ n.name }}</option>
-            </select>
-          </label>
-
-          <label class="campo" *ngIf="cursosReporte.length">
-            <span>Curso y sección</span>
-            <select [(ngModel)]="idCursoReporte" (ngModelChange)="onCambioCursoReporte()">
-              <option *ngFor="let c of cursosReporte" [ngValue]="c.idCourse">{{ c.name }}</option>
-            </select>
-          </label>
-
-          <label class="campo" *ngIf="periodos.length">
-            <span>Periodo</span>
-            <select [(ngModel)]="idPeriodoReporte">
-              <option *ngFor="let p of periodos" [ngValue]="p.idPeriod">{{ p.name }}</option>
-            </select>
-          </label>
-
-          <div class="error" *ngIf="errorReporte">{{ errorReporte }}</div>
-
-          <div class="listado-estudiantes" *ngIf="estudiantesReporte.length">
-            <div class="listado-header">
-              <span>Listado de estudiantes</span>
-              <label class="seleccionar-todos">
-                <input type="checkbox" [checked]="todosSeleccionadosReporte" (change)="toggleTodosReporte()">
-                Seleccionar todos
-              </label>
-            </div>
-
-            <div class="estudiante-item" *ngFor="let e of estudiantesReporte">
-              <input type="checkbox"
-                     [checked]="seleccionadosReporte.has(e.idUser)"
-                     (change)="toggleEstudianteReporte(e.idUser)">
-              <span class="estudiante-nombre">{{ e.name }} {{ e.surnames }}</span>
-            </div>
-          </div>
-
-          <div class="loading" *ngIf="cargandoEstudiantesReporte">Cargando estudiantes…</div>
-
-          <button type="button" class="btn-verde full" [disabled]="!seleccionadosReporte.size || cargandoVistaPrevia" (click)="regenerarVistaPrevia()">
-            {{ cargandoVistaPrevia ? 'Generando…' : 'REGENERAR VISTA PREVIA' }}
-          </button>
-        </div>
-
-        <div class="panel preview-panel">
-          <p class="panel-subtitle-green">Vista previa: reporte_consolidado.pdf</p>
-
-          <div class="preview-vacio" *ngIf="!vistaPreviaGenerada">
-            Selecciona un nivel, un curso y los estudiantes, luego genera la vista previa.
-          </div>
-
-          <div class="preview-card" *ngIf="vistaPreviaGenerada">
-
-            <div class="preview-card-head">
-              <div class="preview-logo">Edu<br>Planner</div>
-              <div>
-                <p class="preview-inst">INSTITUCIÓN<br>EDUCATIVA</p>
-                <p class="preview-sub">Reporte consolidado de calificaciones</p>
-              </div>
-            </div>
-
-            <div class="preview-meta">
-              <p><strong>Curso:</strong> {{ nombreCursoReporte }}</p>
-              <p><strong>Periodo:</strong> {{ nombrePeriodoReporte }}</p>
-              <p><strong>Estudiantes:</strong> {{ vistaPrevia.length }}</p>
-            </div>
-
-            <table class="preview-tabla">
-              <thead>
-                <tr><th>Estudiante</th><th>Notas registradas</th><th>Promedio</th></tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let r of vistaPrevia">
-                  <td>{{ r.estudiante.name }} {{ r.estudiante.surnames }}</td>
-                  <td>{{ r.notas.length }}</td>
-                  <td>{{ r.notas.length ? (r.promedio | number:'1.2-2') : '—' }}</td>
-                </tr>
-              </tbody>
-            </table>
-
-            <button type="button" class="btn-verde full" [disabled]="descargandoPdf" (click)="descargarReportePdf()">
-              {{ descargandoPdf ? 'Generando PDF…' : 'DESCARGAR PDF' }}
-            </button>
-          </div>
-        </div>
-
-      </div>
-
-    </div>
-
-
-    <div class="tab-panel" *ngIf="tabActiva === 'notas'">
+    <div
+      class="tab-panel"
+      *ngIf="tabActiva === 'notas' && !esEstudiante && !esDirectivo">
 
       <div class="panel filtros-notas">
+
         <label class="campo">
-          <span>Asignatura</span>
-          <select [(ngModel)]="idAsignaturaNotas" (ngModelChange)="cargarNotas()">
-            <option *ngFor="let a of asignaturas" [ngValue]="a.idSubject">{{ a.name }}</option>
+
+          <span>
+            Asignatura
+          </span>
+
+          <select
+            [(ngModel)]="idAsignaturaNotas"
+            (ngModelChange)="cargarNotas()">
+
+            <option
+              *ngFor="let a of asignaturas"
+              [ngValue]="a.idSubject">
+
+              {{ a.name }}
+
+            </option>
+
           </select>
+
         </label>
 
-        <button type="button" class="btn-outline"
-                [disabled]="descargandoPdfCurso || !estudiantesNotas.length"
-                (click)="descargarPdfCurso()">
-          {{ descargandoPdfCurso ? 'Generando PDF…' : 'DESCARGAR PDF DEL CURSO' }}
+        <button
+          type="button"
+          class="btn-outline"
+          [disabled]="descargandoPdfCurso || !estudiantesNotas.length"
+          (click)="descargarPdfCurso()">
+
+          {{
+            descargandoPdfCurso
+              ? 'Generando PDF…'
+              : 'DESCARGAR PDF DEL CURSO'
+          }}
+
         </button>
+
       </div>
 
-      <div class="error" *ngIf="errorPdfCurso">{{ errorPdfCurso }}</div>
-      <div class="error error-guardado" *ngIf="errorGuardado">{{ errorGuardado }}</div>
+      <div
+        class="error"
+        *ngIf="errorPdfCurso">
+        {{ errorPdfCurso }}
+      </div>
 
-      <div class="loading" *ngIf="cargandoNotas">Cargando notas…</div>
-      <div class="error" *ngIf="errorNotas">{{ errorNotas }}</div>
+      <div
+        class="error error-guardado"
+        *ngIf="errorGuardado">
+        {{ errorGuardado }}
+      </div>
 
-      <div class="grid-notas-wrap" *ngIf="!cargandoNotas && actividadesNotasColumnas.length && estudiantesNotas.length">
+      <div
+        class="loading"
+        *ngIf="cargandoNotas">
+        Cargando notas desde la base de datos…
+      </div>
+
+      <div
+        class="error"
+        *ngIf="errorNotas">
+        {{ errorNotas }}
+      </div>
+
+      <div
+        class="grid-notas-wrap"
+        *ngIf="
+          !cargandoNotas &&
+          actividadesNotasColumnas.length &&
+          estudiantesNotas.length
+        ">
 
         <table class="grid-notas">
-          <thead>
-            <tr>
-              <th class="col-estudiante">Estudiante</th>
-              <th *ngFor="let act of actividadesNotasColumnas">
-                {{ act.evaluationName }}
-                <span class="peso">{{ act.weightPercentage }}%</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let fila of estudiantesNotas">
-              <td class="col-estudiante">{{ fila.nombreCompleto }}</td>
-              <td *ngFor="let act of actividadesNotasColumnas">
 
-                <ng-container *ngIf="obtenerCelda(fila.estudiante.idUser, act.idEvaluative) as celda">
+          <thead>
+
+            <tr>
+
+              <th class="col-estudiante">
+                Estudiante
+              </th>
+
+              <th
+                *ngFor="let act of actividadesNotasColumnas">
+
+                {{ act.evaluationName }}
+
+                <span class="peso">
+                  {{ act.weightPercentage }}%
+                </span>
+
+              </th>
+
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+            <tr
+              *ngFor="let fila of estudiantesNotas">
+
+              <td class="col-estudiante">
+                {{ fila.nombreCompleto }}
+              </td>
+
+              <td
+                *ngFor="let act of actividadesNotasColumnas">
+
+                <ng-container
+                  *ngIf="
+                    obtenerCelda(
+                      fila.estudiante.idUser,
+                      act.idEvaluative
+                    ) as celda
+                  ">
+
                   <input
                     type="number"
                     class="celda-input"
                     [class.con-error]="celda.error"
                     [ngModel]="celda.valor"
-                    (ngModelChange)="onCambioCelda(fila.estudiante.idUser, act.idEvaluative, $event)"
+                    (ngModelChange)="
+                      onCambioCelda(
+                        fila.estudiante.idUser,
+                        act.idEvaluative,
+                        $event
+                      )
+                    "
                     (blur)="guardarCelda(fila, act)"
                     [disabled]="celda.guardando"
                     [min]="escalaActual?.minimumValue ?? 0"
                     [max]="escalaActual?.maximumValue ?? 5"
                     step="0.1">
-                  <span class="celda-estado" *ngIf="celda.guardando">…</span>
-                  <span class="celda-error" *ngIf="celda.error">{{ celda.error }}</span>
+
+                  <span
+                    class="celda-estado"
+                    *ngIf="celda.guardando">
+                    …
+                  </span>
+
+                  <span
+                    class="celda-error"
+                    *ngIf="celda.error">
+                    {{ celda.error }}
+                  </span>
+
                 </ng-container>
 
               </td>
+
             </tr>
+
           </tbody>
+
         </table>
 
       </div>
 
-      <p class="vacio" *ngIf="!cargandoNotas && !errorNotas && estudiantesNotas.length === 0">
+      <p
+        class="vacio"
+        *ngIf="
+          !cargandoNotas &&
+          !errorNotas &&
+          estudiantesNotas.length === 0
+        ">
+
         Este curso todavía no tiene estudiantes matriculados.
+
       </p>
 
     </div>
 
-    <!-- ================= TAB: CALIFICACIÓN ================= -->
+    <div
+      class="tab-panel"
+      *ngIf="tabActiva === 'calificacion' && !esEstudiante && !esDirectivo">
 
-    <div class="tab-panel" *ngIf="tabActiva === 'calificacion'">
+      <p class="config-titulo">
+        CONFIGURACIÓN
+      </p>
 
-      <p class="config-titulo">CONFIGURACIÓN</p>
-      <h2 class="escala-titulo">Escala de calificación</h2>
-      <p class="escala-desc">Define los parámetros globales para la evaluación de los estudiantes. Estos valores afectan los cálculos de promedios y reportes finales del periodo.</p>
+      <h2 class="escala-titulo">
+        Escala de calificación
+      </h2>
+
+      <p class="escala-desc">
+        Define los parámetros globales para la evaluación de los estudiantes. Estos valores afectan los cálculos de promedios y reportes finales del periodo.
+      </p>
 
       <div class="calificacion-grid">
 
         <div class="panel">
-          <p class="panel-subtitle-green">Rango de calificación</p>
+
+          <p class="panel-subtitle-green">
+            Rango de calificación
+          </p>
 
           <div class="rango-fields">
+
             <label>
-              <span>Escala (0,0 - 5,0)</span>
-              <input type="number" step="0.1" [(ngModel)]="formEscala.minimumValue">
+
+              <span>
+                Escala (0,0 - 5,0)
+              </span>
+
+              <input
+                type="number"
+                step="0.1"
+                [(ngModel)]="formEscala.minimumValue">
+
             </label>
+
             <label>
-              <span>Valor máximo</span>
-              <input type="number" step="0.1" [(ngModel)]="formEscala.maximumValue">
+
+              <span>
+                Valor máximo
+              </span>
+
+              <input
+                type="number"
+                step="0.1"
+                [(ngModel)]="formEscala.maximumValue">
+
             </label>
+
           </div>
 
-          <input type="range" class="escala-slider"
-                 [min]="formEscala.minimumValue" [max]="formEscala.maximumValue" step="0.1"
-                 [(ngModel)]="formEscala.minimumPassGrade">
+          <input
+            type="range"
+            class="escala-slider"
+            [min]="formEscala.minimumValue"
+            [max]="formEscala.maximumValue"
+            step="0.1"
+            [(ngModel)]="formEscala.minimumPassGrade">
+
         </div>
 
         <div class="panel">
-          <p class="panel-subtitle-green">Meta de Aprobación</p>
-          <input type="number" step="0.1" [(ngModel)]="formEscala.minimumPassGrade" class="meta-input">
-          <input type="range" class="escala-slider"
-                 [min]="formEscala.minimumValue" [max]="formEscala.maximumValue" step="0.1"
-                 [(ngModel)]="formEscala.minimumPassGrade">
+
+          <p class="panel-subtitle-green">
+            Meta de Aprobación
+          </p>
+
+          <input
+            type="number"
+            step="0.1"
+            [(ngModel)]="formEscala.minimumPassGrade"
+            class="meta-input">
+
+          <input
+            type="range"
+            class="escala-slider"
+            [min]="formEscala.minimumValue"
+            [max]="formEscala.maximumValue"
+            step="0.1"
+            [(ngModel)]="formEscala.minimumPassGrade">
+
         </div>
 
       </div>
 
       <div class="panel tipos-panel">
-        <p class="panel-subtitle-green">Tipos de calificación (letra / concepto)</p>
-        <p class="panel-hint">Se usan para registrar cada nota numérica del grid de la pestaña "Notas".</p>
 
-        <div class="tipo-row" *ngFor="let t of tiposDeLaEscala">
-          <span class="tipo-letra">{{ t.letterGrade }}</span>
-          <span class="tipo-valor">{{ t.numericGrade }}</span>
+        <p class="panel-subtitle-green">
+          Tipos de calificación (letra / concepto)
+        </p>
+
+        <p class="panel-hint">
+          Se usan para registrar cada nota numérica del grid de la pestaña "Notas".
+        </p>
+
+        <div
+          class="tipo-row"
+          *ngFor="let t of tiposDeLaEscala">
+
+          <span class="tipo-letra">
+            {{ t.letterGrade }}
+          </span>
+
+          <span class="tipo-valor">
+            {{ t.numericGrade }}
+          </span>
+
         </div>
 
         <div class="tipo-form">
-          <input type="text" placeholder="Nombre (ej. Excelente)" [(ngModel)]="nuevoTipo.letterGrade">
-          <input type="number" step="0.1" placeholder="Valor" [(ngModel)]="nuevoTipo.numericGrade">
-          <button type="button" class="btn-verde" [disabled]="guardandoTipo" (click)="guardarNuevoTipo()">Agregar</button>
+
+          <input
+            type="text"
+            placeholder="Nombre (ej. Excelente)"
+            [(ngModel)]="nuevoTipo.letterGrade">
+
+          <input
+            type="number"
+            step="0.1"
+            placeholder="Valor"
+            [(ngModel)]="nuevoTipo.numericGrade">
+
+          <button
+            type="button"
+            class="btn-verde"
+            [disabled]="guardandoTipo"
+            (click)="guardarNuevoTipo()">
+
+            Agregar
+
+          </button>
+
         </div>
-        <div class="error" *ngIf="errorTipo">{{ errorTipo }}</div>
+
+        <div
+          class="error"
+          *ngIf="errorTipo">
+          {{ errorTipo }}
+        </div>
+
       </div>
 
       <div class="panel pasos-panel">
-        <p class="panel-subtitle-green">Pasos por periodo</p>
 
-        <label class="campo">
-          <span>Periodo</span>
-          <select [(ngModel)]="idPeriodoPasos" (ngModelChange)="onCambioPeriodoPasos()">
-            <option *ngFor="let p of periodos" [ngValue]="p.idPeriod">{{ p.name }}</option>
-          </select>
-        </label>
+        <div class="pasos-header">
 
-        <p class="panel-hint" *ngIf="pasosYaDefinidos">
-          Este periodo ya tiene actividades evaluativas configuradas (no se pueden editar desde aquí; el backend no expone edición).
-        </p>
+          <div class="pasos-header-texto">
 
-        <div class="paso-row" *ngFor="let paso of pasosPeriodo">
-          <span class="paso-nombre">{{ paso.evaluationName }}</span>
-          <span class="paso-porcentaje">{{ paso.weightPercentage }}%</span>
-          <div class="paso-botones" *ngIf="!paso.existente">
-            <button type="button" (click)="ajustarPaso(paso, -5)">−</button>
-            <button type="button" (click)="ajustarPaso(paso, 5)">+</button>
+            <p class="panel-subtitle-green">
+              Pasos por periodo
+            </p>
+
+            <p class="panel-hint">
+              Define cómo se reparte el 100% entre las actividades evaluativas del periodo.
+            </p>
+
           </div>
+
+          <span
+            class="pasos-badge"
+            [class.completo]="totalPorcentajePasos === 100">
+
+            {{ totalPorcentajePasos }}%
+
+          </span>
+
         </div>
 
-        <p class="paso-total" [class.paso-total-error]="totalPorcentajePasos !== 100">
-          Total: {{ totalPorcentajePasos }}%
+        <label class="campo pasos-select-periodo">
+
+          <span>
+            Periodo
+          </span>
+
+          <select
+            [(ngModel)]="idPeriodoPasos"
+            (ngModelChange)="onCambioPeriodoPasos()">
+
+            <option
+              *ngFor="let p of periodos"
+              [ngValue]="p.idPeriod">
+
+              {{ p.name }}
+
+            </option>
+
+          </select>
+
+        </label>
+
+        <p
+          class="pasos-aviso-bloqueado"
+          *ngIf="pasosYaDefinidos">
+
+          Este periodo ya tiene sus actividades configuradas. Si necesitas cambiar los porcentajes, comunícate con soporte.
+
         </p>
 
-        <div class="error" *ngIf="errorPasos">{{ errorPasos }}</div>
+        <div class="pasos-lista">
+
+          <div
+            class="paso-card"
+            *ngFor="let paso of pasosPeriodo; let i = index"
+            [class.bloqueado]="paso.existente">
+
+            <span class="paso-indice">
+              {{ i + 1 }}
+            </span>
+
+            <div class="paso-info">
+
+              <span class="paso-nombre">
+                {{ paso.evaluationName }}
+              </span>
+
+              <div class="paso-barra">
+
+                <div
+                  class="paso-barra-relleno"
+                  [style.width.%]="paso.weightPercentage">
+                </div>
+
+              </div>
+
+            </div>
+
+            <span class="paso-porcentaje">
+              {{ paso.weightPercentage }}%
+            </span>
+
+            <div
+              class="paso-botones"
+              *ngIf="!paso.existente">
+
+              <button
+                type="button"
+                (click)="ajustarPaso(paso, -5)"
+                aria-label="Disminuir porcentaje">
+                −
+              </button>
+
+              <button
+                type="button"
+                (click)="ajustarPaso(paso, 5)"
+                aria-label="Aumentar porcentaje">
+                +
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <div class="pasos-total-wrap">
+
+          <div class="pasos-total-barra">
+
+            <div
+              class="pasos-total-relleno"
+              [class.error]="totalPorcentajePasos !== 100"
+              [style.width.%]="totalPorcentajePasos">
+            </div>
+
+          </div>
+
+          <p
+            class="paso-total"
+            [class.paso-total-error]="totalPorcentajePasos !== 100">
+
+            <ng-container
+              *ngIf="totalPorcentajePasos === 100; else pasosIncompletos">
+
+              ✓ Total: 100% — listo para guardar
+
+            </ng-container>
+
+            <ng-template #pasosIncompletos>
+
+              Total: {{ totalPorcentajePasos }}% (debe sumar 100%)
+
+            </ng-template>
+
+          </p>
+
+        </div>
+
+        <div
+          class="error"
+          *ngIf="errorPasos">
+
+          {{ errorPasos }}
+
+        </div>
+
       </div>
 
-      <p class="nota-aplicacion">Los cambios se aplicarán a todos los grupos del docente.</p>
+      <p class="nota-aplicacion">
+        Los cambios se aplicarán a todos los grupos del docente.
+      </p>
 
       <div class="botones-finales">
-        <button type="button" class="btn-outline" (click)="descartarCambiosCalificacion()">DESCARTAR</button>
-        <button type="button" class="btn-verde"
-                [disabled]="guardandoEscala || guardandoPasos"
-                (click)="guardarCambiosCalificacion()">
-          GUARDAR CAMBIOS
+
+        <button
+          type="button"
+          class="btn-outline"
+          (click)="descartarCambiosCalificacion()">
+
+          DESCARTAR
+
         </button>
+
+        <button
+          type="button"
+          class="btn-verde"
+          [disabled]="guardandoEscala || guardandoPasos"
+          (click)="guardarCambiosCalificacion()">
+
+          {{
+            (guardandoEscala || guardandoPasos)
+              ? 'GUARDANDO…'
+              : 'GUARDAR CAMBIOS'
+          }}
+
+        </button>
+
       </div>
 
-      <div class="error" *ngIf="errorEscala">{{ errorEscala }}</div>
+      <div
+        class="error"
+        *ngIf="errorEscala">
+
+        {{ errorEscala }}
+
+      </div>
+
+    </div>
+
+    <div
+      class="tab-panel"
+      *ngIf="tabActiva === 'reportes'">
+
+      <div class="reportes-grid">
+
+        <div class="panel config-panel">
+
+          <p class="panel-subtitle-green">
+            Configuración de REPORTES
+          </p>
+
+          <label class="campo">
+
+            <span>
+              Nivel académico
+            </span>
+
+            <select
+              [(ngModel)]="idNivelReporte"
+              (ngModelChange)="onCambioNivelReporte()"
+              [disabled]="esEstudiante">
+
+              <option
+                *ngFor="let n of niveles"
+                [ngValue]="n.idLevel">
+
+                {{ n.name }}
+
+              </option>
+
+            </select>
+
+          </label>
+
+          <label
+            class="campo"
+            *ngIf="cursosReporte.length">
+
+            <span>
+              Curso y sección
+            </span>
+
+            <select
+              [(ngModel)]="idCursoReporte"
+              (ngModelChange)="onCambioCursoReporte()"
+              [disabled]="esEstudiante">
+
+              <option
+                *ngFor="let c of cursosReporte"
+                [ngValue]="c.idCourse">
+
+                {{ c.name }}
+
+              </option>
+
+            </select>
+
+          </label>
+
+          <label
+            class="campo"
+            *ngIf="periodos.length">
+
+            <span>
+              Periodo
+            </span>
+
+            <select
+              [(ngModel)]="idPeriodoReporte"
+              (ngModelChange)="regenerarVistaPrevia()">
+
+              <option
+                *ngFor="let p of periodos"
+                [ngValue]="p.idPeriod">
+
+                {{ p.name }}
+
+              </option>
+
+            </select>
+
+          </label>
+
+          <div
+            class="error"
+            *ngIf="errorReporte">
+
+            {{ errorReporte }}
+
+          </div>
+
+          <div
+            class="listado-estudiantes"
+            *ngIf="estudiantesReporte.length && !esEstudiante">
+
+            <div class="listado-header">
+
+              <span>
+                Listado de estudiantes
+              </span>
+
+              <label class="seleccionar-todos">
+
+                <input
+                  type="checkbox"
+                  [checked]="todosSeleccionadosReporte"
+                  (change)="toggleTodosReporte()">
+
+                Seleccionar todos
+
+              </label>
+
+            </div>
+
+            <div
+              class="estudiante-item"
+              *ngFor="let e of estudiantesReporte">
+
+              <input
+                type="checkbox"
+                [checked]="seleccionadosReporte.has(e.idUser)"
+                (change)="toggleEstudianteReporte(e.idUser)">
+
+              <span class="estudiante-nombre">
+                {{ e.name }} {{ e.surnames }}
+              </span>
+
+            </div>
+
+          </div>
+
+          <div
+            class="panel-hint"
+            *ngIf="esEstudiante && estudiantesReporte.length">
+
+            Este reporte corresponde únicamente a tu información académica.
+
+          </div>
+
+          <div
+            class="loading"
+            *ngIf="cargandoEstudiantesReporte">
+
+            Cargando estudiantes…
+
+          </div>
+
+          <button
+            type="button"
+            class="btn-verde full"
+            [disabled]="
+              (!esEstudiante && !seleccionadosReporte.size) ||
+              (esEstudiante && !perfilActual?.idUser) ||
+              cargandoVistaPrevia
+            "
+            (click)="regenerarVistaPrevia()">
+
+            {{
+              cargandoVistaPrevia
+                ? 'Generando…'
+                : 'REGENERAR VISTA PREVIA'
+            }}
+
+          </button>
+
+        </div>
+
+        <div class="panel preview-panel">
+
+          <p class="panel-subtitle-green">
+            Vista previa: reporte_consolidado.pdf
+          </p>
+
+          <div
+            class="preview-vacio"
+            *ngIf="!vistaPreviaGenerada">
+
+            {{
+              esEstudiante
+                ? 'Selecciona el periodo y genera tu vista previa.'
+                : 'Selecciona un nivel, un curso y los estudiantes, luego genera la vista previa.'
+            }}
+
+          </div>
+
+          <div
+            class="preview-card"
+            *ngIf="vistaPreviaGenerada">
+
+            <div class="preview-card-head">
+
+              <div class="preview-logo">
+                Edu<br>Planner
+              </div>
+
+              <div>
+
+                <p class="preview-inst">
+                  INSTITUCIÓN<br>EDUCATIVA
+                </p>
+
+                <p class="preview-sub">
+                  Reporte consolidado de calificaciones
+                </p>
+
+              </div>
+
+            </div>
+
+            <div class="preview-meta">
+
+              <p>
+                <strong>Nivel:</strong>
+                {{ nombreNivelReporte }}
+              </p>
+
+              <p>
+                <strong>Curso:</strong>
+                {{ nombreCursoReporte }}
+              </p>
+
+              <p>
+                <strong>Periodo:</strong>
+                {{ nombrePeriodoReporte }}
+              </p>
+
+              <p *ngIf="esEstudiante">
+
+                <strong>Estudiante:</strong>
+                {{ perfilActual?.name }}
+                {{ perfilActual?.surnames }}
+
+              </p>
+
+              <p *ngIf="!esEstudiante">
+
+                <strong>Estudiantes:</strong>
+                {{ vistaPrevia.length }}
+
+              </p>
+
+            </div>
+
+            <table class="preview-tabla">
+
+              <thead>
+
+                <tr>
+                  <th>Estudiante</th>
+                  <th>Notas registradas</th>
+                  <th>Promedio</th>
+                </tr>
+
+              </thead>
+
+              <tbody>
+
+                <tr
+                  *ngFor="let r of vistaPrevia">
+
+                  <td>
+                    {{ r.estudiante.name }}
+                    {{ r.estudiante.surnames }}
+                  </td>
+
+                  <td>
+                    {{ r.notas.length }}
+                  </td>
+
+                  <td>
+
+                    {{
+                      r.notas.length
+                        ? (r.promedio | number:'1.2-2')
+                        : '—'
+                    }}
+
+                  </td>
+
+                </tr>
+
+              </tbody>
+
+            </table>
+
+            <button
+              type="button"
+              class="btn-verde full"
+              [disabled]="descargandoPdf"
+              (click)="descargarReportePdf()">
+
+              {{
+                descargandoPdf
+                  ? 'Generando PDF…'
+                  : (esEstudiante
+                      ? 'DESCARGAR MI REPORTE'
+                      : 'DESCARGAR PDF')
+              }}
+
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
 
     </div>
 
