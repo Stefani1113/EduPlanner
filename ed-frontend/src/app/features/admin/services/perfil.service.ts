@@ -43,12 +43,9 @@ export interface MiPerfilDTO {
   providedIn: 'root'
 })
 export class PerfilService {
-
   private api = '/administracion/eduplanner/users/me';
 
-  private perfilCache$: Observable<
-    HttpGlobalResponse<MiPerfilDTO>
-  > | null = null;
+  private perfilCache$: Observable<HttpGlobalResponse<MiPerfilDTO>> | null = null;
 
   private perfilActual: MiPerfilDTO | null = null;
 
@@ -57,7 +54,6 @@ export class PerfilService {
   obtenerMiPerfil(
     forzar: boolean = false
   ): Observable<HttpGlobalResponse<MiPerfilDTO>> {
-
     if (forzar || !this.perfilCache$) {
       this.perfilCache$ = this.http
         .get<HttpGlobalResponse<MiPerfilDTO>>(this.api)
@@ -79,7 +75,6 @@ export class PerfilService {
   actualizarFoto(
     archivo: File
   ): Observable<HttpGlobalResponse<string>> {
-
     const formData = new FormData();
 
     formData.append(
@@ -99,7 +94,9 @@ export class PerfilService {
     this.perfilActual = null;
   }
 
-  actualizarFotoEnCache(photoUrl: string): void {
+  actualizarFotoEnCache(
+    photoUrl: string
+  ): void {
     if (this.perfilActual) {
       this.perfilActual = {
         ...this.perfilActual,
