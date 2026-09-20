@@ -2,6 +2,7 @@ import { Component, ElementRef, HostListener, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PerfilService, MiPerfilDTO } from '../../services/perfil.service';
 import { InstitutionSettingsService } from '../../services/institution-settings.service';
+import { AsistenciaService, AttendanceSummaryDTO } from '../../../asistencias/services/Asistencia.service';
 
 @Component({
   selector: 'app-profile-menu',
@@ -22,11 +23,16 @@ export class ProfileMenuComponent implements OnInit {
   subiendoFoto = false;
   errorFoto: string | null = null;
 
+  resumenAsistencia: AttendanceSummaryDTO | null = null;
+  cargandoAsistencia = false;
+  errorAsistencia: string | null = null;
+
   private readonly avatarPorDefecto = 'assets/img/profile.png';
 
   constructor(
     private perfilService: PerfilService,
     private institutionSettingsService: InstitutionSettingsService,
+    private asistenciaService: AsistenciaService,
     private elementRef: ElementRef
   ) {}
 
@@ -121,6 +127,30 @@ export class ProfileMenuComponent implements OnInit {
       || 'No asignada';
   }
 
+  get tieneRegistrosAsistencia(): boolean {
+    return !!this.resumenAsistencia && this.resumenAsistencia.totalRecords > 0;
+  }
+
+  get porcentajePresente(): number {
+    if (!this.tieneRegistrosAsistencia) return 0;
+    const r = this.resumenAsistencia!;
+    return Math.round((r.presentCount / r.totalRecords) * 100);
+  }
+
+  get porcentajeTardanza(): number {
+    if (!this.tieneRegistrosAsistencia) return 0;
+    const r = this.resumenAsistencia!;
+    return Math.round((r.lateCount / r.totalRecords) * 100);
+  }
+
+  get porcentajeFalta(): number {
+    if (!this.tieneRegistrosAsistencia) return 0;
+    const r = this.resumenAsistencia!;
+    return Math.round(
+      ((r.justifiedAbsenceCount + r.unjustifiedAbsenceCount) / r.totalRecords) * 100
+    );
+  }
+
   toggle(): void {
     this.abierto = !this.abierto;
 
@@ -158,6 +188,10 @@ export class ProfileMenuComponent implements OnInit {
         this.perfil = respuesta.data;
         this.cargando = false;
         console.log('[PERFIL] Perfil cargado exitosamente');
+
+        if (this.esEstudiante && this.perfil?.idUser) {
+          this.cargarResumenAsistencia(this.perfil.idUser);
+        }
       },
       error: (err) => {
         this.cargando = false;
@@ -165,6 +199,30 @@ export class ProfileMenuComponent implements OnInit {
         console.error('[PERFIL] Error al consultar /users/me:', err);
       }
     });
+  }
+
+  private cargarResumenAsistencia(idStudent: number): void {
+    this.cargandoAsistencia = true;
+    this.errorAsistencia = null;
+
+    const hoy = new Date();
+    const hace30Dias = new Date();
+    hace30Dias.setDate(hoy.getDate() - 30);
+
+    const aISO = (d: Date) => d.toISOString().slice(0, 10);
+
+    this.asistenciaService
+      .obtenerResumenPorEstudiante(idStudent, aISO(hace30Dias), aISO(hoy))
+      .subscribe({
+        next: resumen => {
+          this.resumenAsistencia = resumen;
+          this.cargandoAsistencia = false;
+        },
+        error: () => {
+          this.errorAsistencia = 'No se pudo cargar tu asistencia.';
+          this.cargandoAsistencia = false;
+        }
+      });
   }
 
   seleccionarFoto(input: HTMLInputElement): void {
