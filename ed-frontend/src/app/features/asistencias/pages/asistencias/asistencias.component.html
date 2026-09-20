@@ -31,7 +31,7 @@
       <button
         type="button"
         class="tab"
-        *ngIf="!esEstudiante"
+        *ngIf="!esEstudiante && !esDirectivo"
         [class.active]="tabActiva === 'tomar'"
         (click)="cambiarTab('tomar')"
       >
@@ -797,7 +797,7 @@
 
               </div>
 
-              <div class="justificacion-form">
+              <div class="justificacion-form" *ngIf="!esDirectivo">
 
                 <textarea
                   rows="2"
@@ -855,7 +855,7 @@
 
             </div>
 
-            <div class="excusa-acciones" *ngIf="!esEstudiante && excusa.justificationStatus === 'PENDING'">
+            <div class="excusa-acciones" *ngIf="!esEstudiante && !esDirectivo && excusa.justificationStatus === 'PENDING'">
 
               <button
                 type="button"
