@@ -952,6 +952,20 @@
   border: 1px solid transparent;
 }
 
+.aviso-solo-lectura {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: color-mix(in srgb, var(--inst-accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--inst-accent) 30%, transparent);
+  color: var(--inst-text);
+  font-size: 12.5px;
+  line-height: 1.5;
+  padding: 10px 14px;
+  border-radius: 10px;
+  margin: 0 0 16px;
+}
+
 .listado-vacio {
   display: flex;
   flex-direction: column;

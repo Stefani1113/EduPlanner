@@ -25,6 +25,7 @@ public class RegisterController {
 
     private final RegisterService registerService;
 
+    @RequireRole(RolEnum.ADMINISTRADOR)
     @PostMapping("/student")
     public ResponseEntity<HttpGlobalResponse<Void>> resgisterStudent(@RequestBody RegisterStudentDTO dto) {
         HttpGlobalResponse<Void> response = new HttpGlobalResponse<>();
@@ -60,7 +61,7 @@ public class RegisterController {
         }
     }
 
-
+    @RequireRole(RolEnum.ADMINISTRADOR)
     @PostMapping("/staff")
     public ResponseEntity<HttpGlobalResponse<Void>> registerStaff(@RequestBody RegisterStaffDTO dto) {
         HttpGlobalResponse<Void> response = new HttpGlobalResponse<>();

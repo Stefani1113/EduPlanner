@@ -53,3 +53,7 @@ venv/
 
 # Agent test history
 ed-ms-ia/data/history/
+
+# Archivos de python
+__pycache__/
+*.pyc

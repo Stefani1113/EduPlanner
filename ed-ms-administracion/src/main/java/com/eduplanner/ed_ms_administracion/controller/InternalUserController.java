@@ -35,7 +35,7 @@ public class InternalUserController {
                 .map(role -> ResponseEntity.ok(role.getName()))
                 .orElse(ResponseEntity.notFound().build());
     }
-  
+
     @GetMapping("/{id}")
     public ResponseEntity<HttpGlobalResponse<UserInfoDTO>> getUserInfo(@PathVariable Integer id) {
         return userRepository.findById(id)
@@ -63,13 +63,30 @@ public class InternalUserController {
                 .map(user -> ResponseEntity.ok(user.getName() + " " + user.getSurnames()))
                 .orElse(ResponseEntity.notFound().build());
     }
-     
+    
+    /**
+     * Devuelve el curso del usuario 
+     * @param idCourse
+     * @return
+     */
     @GetMapping("/course/{idCourse}")
     public ResponseEntity<List<UserResponseDTO>> getUsersByCourse(@PathVariable Integer idCourse) {
         List<UserResponseDTO> users = userRepository.findByIdCourse(idCourse).stream()
                 .map(UserResponseDTO::fromEntity)
                 .toList();
         return ResponseEntity.ok(users);
+    }
 
+    /**
+     * Devueve los usuarios que pertenecen a dicho curso
+     * @param id
+     * @return
+     */
+    @GetMapping("/{id}/course")
+    public ResponseEntity<Integer> getUserCourse(@PathVariable Integer id) {
+        return userRepository.findById(id)
+                .map(User::getIdCourse)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 }

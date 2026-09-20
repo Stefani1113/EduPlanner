@@ -30,7 +30,6 @@ public class AcademicLevelController {
      * academic-levels?active=true - Solo activos
      * @return
      */
-    @RequireRole(RolEnum.ADMINISTRADOR)
     @GetMapping
     public ResponseEntity<HttpGlobalResponse<List<AcademicLevelResponseDTO>>> getAll(
         @RequestParam(required = false) Boolean active) {
@@ -46,7 +45,6 @@ public class AcademicLevelController {
      * @param id
      * @return
      */
-    @RequireRole(RolEnum.ADMINISTRADOR)
     @GetMapping("/{id}")
     public ResponseEntity<HttpGlobalResponse<AcademicLevelResponseDTO>> getById(@PathVariable Integer id) {
         HttpGlobalResponse<AcademicLevelResponseDTO> response = new HttpGlobalResponse<>();
@@ -78,7 +76,6 @@ public class AcademicLevelController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
         }
     }
-
 
     /**
      * Editar nivel

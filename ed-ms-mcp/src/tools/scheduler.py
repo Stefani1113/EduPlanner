@@ -14,18 +14,22 @@ def create_scheduler_tool(server, client):
     @server.tool(
         name="generate_schedule",
         description=(
-            "Genera el horario académico completo consultando docentes, cursos, "
-            "bloques horarios, cargas académicas y disponibilidad docente reales "
-            "desde EduPlanner, ejecuta el algoritmo de asignación con backtracking, "
-            "y valida el resultado antes de devolverlo."
+            "Genera el horario académico de uno o varios cursos específicos "
+            "o de todos los cursos si no se especifican. "
+            "Consulta docentes, cursos, bloques horarios, cargas académicas "
+            "y disponibilidad docente reales desde EduPlanner, ejecuta el "
+            "algoritmo de asignación con backtracking y valida el resultado "
+            "antes de devolverlo. "
+            "El parámetro course_names permite indicar los nombres de los cursos, "
+            "por ejemplo ['1A'] o ['1A', '2A']."
         ),
     )
-    def generate_schedule_tool() -> dict[str, Any]:
+    def generate_schedule_tool(course_names : list[str] | None = None) -> dict[str, Any]:
         print(f"👉 [MCP Tool] Ejecutando generación de horario")
         try:
 
             # Cargar datos reales 
-            data = load_scheduler_data(client)
+            data = load_scheduler_data(client, course_names)
 
             print("Datos cargador correctamente")
 
@@ -40,12 +44,91 @@ def create_scheduler_tool(server, client):
             
             if errors:
 
-                print("El horario no pudo ser validado")
-                return {"success": False, "errors": errors}
+                print("❌ El horario no pudo ser generado/validado")
+                print(f"Conflictos encontrados: {len(errors)}")
 
-            print(f"Horario generado correctamente :" f"{len(schedule)} clases")
+                return {
+                    "success": False,
+                    "conflicts": errors,
+                    "total_conflicts": len(errors),
+                    "message": (
+                        "No fue posible generar un horario válido "
+                        "debido a los conflictos encontrados."
+                    )
+                }
+
+            # Verificar que existe el horario
+            if not schedule:
+
+                print("❌ El algoritmo no generó clases")
+
+                return {
+                    "success": False,
+                    "conflicts": [
+                        {
+                            "type": "NO_SCHEDULE",
+                            "message": (
+                                "El algoritmo no pudo generar ninguna "
+                                "asignación para el horario."
+                            )
+                        }
+                    ],
+                    "total_conflicts": 1,
+                    "message": "No se pudo generar el horario."
+                }
+
+            print(
+                f"✅ Horario generado correctamente: "
+                f"{len(schedule)} clases"
+            )
+
+            # Obtener el curso 
+            courses = data["courses"]
+
+            if not courses:
+
+                return {
+                    "success": False,
+                    "conflicts": [
+                        {
+                            "type": "NO_COURSES",
+                            "message": (
+                                "No existen cursos disponibles "
+                                "para generar el horario."
+                            )
+                        }
+                    ],
+                    "total_conflicts": 1,
+                    "message": "No existen cursos para generar el horario."
+                }
 
             # Obtener el periodo
+            periods = {
+                course["id_period"]
+                for course in courses
+                if course.get("id_period") is not None
+            }
+
+            if not periods:
+
+                return {
+                    "success": False,
+                    "conflicts": [
+                        {
+                            "type": "NO_PERIOD",
+                            "message": (
+                                "No se pudo obtener el periodo académico "
+                                "de los cursos."
+                            )
+                        }
+                    ],
+                    "total_conflicts": 1,
+                    "message": (
+                        "No se pudo obtener el periodo académico "
+                        "de los cursos."
+                    )
+                }
+
             courses = data["courses"]
 
             if not courses :
@@ -66,12 +149,24 @@ def create_scheduler_tool(server, client):
                     "error" : "No se pudo obtener el periodo académico de los cursos"
                 }
 
+            # Verifica que todos pertenezcan al mismo periodo
             if len(periods) > 1 :
                 return {
-                    "success" : False,
-                    "error" : (
-                        "Los cursos pertenecen a diferentes periodos académicos "
-                        "No se puede guardar una generación con varios periodos "
+                    "success": False,
+                    "conflicts": [
+                        {
+                            "type": "MULTIPLE_PERIODS",
+                            "message": (
+                                "Los cursos pertenecen a diferentes "
+                                "periodos académicos. No se puede guardar "
+                                "una generación con varios periodos."
+                            )
+                        }
+                    ],
+                    "total_conflicts": 1,
+                    "message": (
+                        "Los cursos pertenecen a diferentes "
+                        "periodos académicos."
                     )
                 }
 
@@ -116,11 +211,35 @@ def create_scheduler_tool(server, client):
             return {
                 "success" : True,
                 "generation_id" : generation_id,
+                "courses" :[
+                    course["name"]
+                    for course in data["courses"]
+                ],
                 "total_clases" : len(schedule),
-                "schedule" : schedule
+                "schedule" : schedule,
+                "message": (
+                    "El horario fue generado, validado y guardado "
+                    "correctamente."
+                )
             }
 
         except Exception as exc:
-            print(f"Error generando o guardando horario: {exc}")
 
-            return {"success": False, "error": str(exc)}
+            print(
+                f"❌ Error generando o guardando horario: {exc}"
+            )
+
+            return {
+                "success": False,
+                "conflicts": [
+                    {
+                        "type": "SYSTEM_ERROR",
+                        "message": str(exc)
+                    }
+                ],
+                "total_conflicts": 1,
+                "message": (
+                    "Ocurrió un error durante la generación "
+                    "o almacenamiento del horario."
+                )
+            }

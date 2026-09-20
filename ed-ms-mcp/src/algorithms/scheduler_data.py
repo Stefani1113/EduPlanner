@@ -22,6 +22,7 @@ def adapt_courses(data: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return [
         {
             "id_course": course["idCourse"],
+            "name": course["name"],
             "id_shift": course["idShift"],
             "id_period": course["idPeriod"],
             "status": course["status"]
@@ -72,7 +73,7 @@ def adapt_time_slots(
     ]
 
 
-def load_scheduler_data(client):
+def load_scheduler_data(client, course_names: list[str] | None = None):
 
     # Cargas acdémicas
     academic_loads_response = client.get(
@@ -96,7 +97,69 @@ def load_scheduler_data(client):
         courses_data
     )
 
-        # Periodos
+    # Filtrar cursos
+    if course_names :
+
+        requested_names = set()
+
+        for name in course_names:
+
+            # Si llega una lista dentro de la lista
+            if isinstance(name, list):
+
+                for nested_name in name:
+                    requested_names.add(
+                        str(nested_name).strip().upper()
+                    )
+
+            else:
+
+                requested_names.add(
+                    str(name).strip().upper()
+                )
+
+        # Busca los cursos solicitados 
+        select_courses = [
+            course 
+            for course in courses
+            if course["status"]
+            and course["name"].strip().upper() in requested_names
+        ]
+
+        # Verifica que los cursos solicitados existan
+        found_names = {
+            course["name"].strip().upper()
+            for course in select_courses
+        }
+
+        not_found = requested_names - found_names
+
+        if not_found :
+            raise ValueError(
+                "No se encuentra los siguientes cursos: " + ", ".join(sorted(not_found))
+            )
+
+        courses = select_courses
+
+    else : 
+        # si no se especifican cursos se utilizan todos los cursos activos 
+        courses = [
+            course
+            for course in courses
+            if course["status"]
+        ]
+
+    # Verificar que existen cursos
+    if not courses :
+        raise ValueError(
+            "No existen cursos activos para generar horario"
+        )
+
+    print("Cursos seleccionados:")
+    for course in courses :
+        print (f"-{course['name']}" f"(ID: {course['id_course']})")
+
+    # Periodos
     period_ids = {
         course["id_period"]
         for course in courses
@@ -109,6 +172,27 @@ def load_scheduler_data(client):
         )
 
     id_period =  next(iter(period_ids))
+
+    # Filtrar cargas académica
+
+    selected_course_ids = {
+        course["id_course"]
+        for course in courses
+    }
+
+    academic_loads = [
+        load 
+        for load in academic_loads
+        if load["status"]
+        and load["id_course"] in selected_course_ids
+    ]
+
+    if not academic_loads :
+        raise ValueError(
+            "Los cursos seleccionados no tienen carga académica activa"
+        )
+
+    print(f"Cargas académicas seleccionadas: " f"{len(academic_loads)}")
 
     # Docentes necesarios
     teacher_ids = {

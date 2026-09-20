@@ -65,7 +65,7 @@ public class CloudinaryService {
             Map<?, ?> uploadResult = cloudinary.uploader().upload(
                     file.getBytes(),
                     ObjectUtils.asMap(
-                            "folder", folder,
+                            "folder", "eduplanner/Images-institution",
                             "public_id", UUID.randomUUID().toString(),
                             "resource_type", "auto",
                             "overwrite", true
