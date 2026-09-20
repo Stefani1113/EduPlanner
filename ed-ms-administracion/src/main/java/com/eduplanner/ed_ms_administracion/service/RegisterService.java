@@ -187,11 +187,11 @@ public class RegisterService {
 
         // Contraseña temporal aleatoria: el usuario la define al activar la cuenta
         user.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
-
         // La cuenta nace desactivada, pendiente de que el usuario la active por correo
         user.setStatus(false);
 
         return user;
+
     }
 
     /**

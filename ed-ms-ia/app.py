@@ -34,6 +34,11 @@ def chat():
 
     data = request.get_json() or {}
 
+    data = request.get_json(silent=True) or {}
+
+    print("📩 DATOS RECIBIDOS:", data)
+    print("📩 CONTENT-TYPE:", request.content_type)
+
     message = data.get("message", "").strip()
 
     if not message:

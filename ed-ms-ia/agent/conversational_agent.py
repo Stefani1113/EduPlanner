@@ -20,6 +20,15 @@ load_dotenv(
     dotenv_path=os.path.abspath(env_path)
 )
 
+print("================================")
+print("VERIFICACIÓN DEL .ENV")
+print("RUTA:", os.path.abspath(env_path))
+print("EXISTE:", os.path.exists(os.path.abspath(env_path)))
+print("GEMINI_API_KEY CARGADA:", bool(os.getenv("GEMINI_API_KEY")))
+print("LLM_MODEL:", os.getenv("LLM_MODEL"))
+print("MCP_SERVER_URL:", os.getenv("MCP_SERVER_URL"))
+print("================================")
+
 
 # ============================================================
 # FILTRO DE HERRAMIENTAS MCP
@@ -109,21 +118,36 @@ try:
 
     for tool in mcp_tools:
 
-        print(f"\n🔧 ANTES:")
-        print(f"   name: {tool.name}")
-        print(f"   original: {tool.original_tool_name}")
+        print("\n🔧 Herramienta encontrada:")
+        print(f"   name original: {tool.name}")
+        print(f"   original_tool_name: {tool.original_tool_name}")
 
-        # Cambiamos el nombre para que OpenAI lo acepte
-        tool.name = tool.original_tool_name
+        if tool.original_tool_name == "generate_schedule":
+            tool.name = "generate_schedule"
 
-        print(f"\n🔧 DESPUÉS:")
-        print(f"   name: {tool.name}")
-        print(f"   original: {tool.original_tool_name}")
+        print(f"   name final: {tool.name}")
 
     # Agregamos las herramientas al agente
     agent.tools.extend(mcp_tools)
 
     print("\n✅ Herramientas MCP agregadas al agente.")
+
+    print("\n==============================")
+    print("HERRAMIENTAS DEL AGENTE")
+    print("==============================")
+
+    for tool in agent.tools:
+
+        print("Nombre:", tool.name)
+        print("Tipo:", type(tool))
+        print(
+            "Original:",
+            getattr(tool, "original_tool_name", "NO TIENE")
+        )
+        print("Tiene run:", hasattr(tool, "run"))
+        print("Tiene execute:", hasattr(tool, "execute"))
+
+    print("==============================")
 
 except Exception as e:
 
@@ -139,10 +163,26 @@ def process_message(user_input: str) -> str:
             f"{user_input}\n\n"
             "Analiza la solicitud. "
             "Si el usuario solicita generar un horario académico, "
-            "debes utilizar la herramienta generate_schedule "
-            "disponible mediante el MCP de EduPlanner. "
-            "Después de ejecutar la herramienta, explica claramente "
-            "el resultado al usuario."
+            "debes utilizar la herramienta generate_schedule disponible "
+            "mediante el MCP de EduPlanner. "
+
+            "Si el usuario menciona uno o varios cursos específicos, "
+            "debes pasar sus nombres al parámetro course_names de la herramienta. "
+            "Por ejemplo, si solicita 'generar el horario de 1A', "
+            "debes utilizar course_names=['1A']. "
+
+            "Si solicita 'generar los horarios de 1A y 2A', "
+            "debes utilizar course_names=['1A', '2A']. "
+
+            "No debes generar todos los cursos cuando el usuario haya "
+            "especificado cursos concretos. "
+
+            "Si el usuario solicita generar el horario académico sin indicar "
+            "ningún curso específico, puedes generar el horario de todos "
+            "los cursos. "
+
+            "No utilices la herramienta para responder saludos, agradecimientos "
+            "o conversaciones que no impliquen generar un horario."
         ),
 
         expected_output=(

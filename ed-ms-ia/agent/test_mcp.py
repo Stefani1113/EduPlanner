@@ -36,9 +36,9 @@ mcp_server = MCPServerHTTP(
 llm = LLM(
     model=os.getenv(
         "LLM_MODEL",
-        "gpt-4o-mini"
+        "gemini-3.5-flash-lite"
     ),
-    api_key=os.getenv("OPENAI_API_KEY")
+    api_key=os.getenv("GEMINI_API_KEY")
 )
 
 

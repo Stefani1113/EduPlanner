@@ -79,9 +79,9 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-    		<groupId>org.apache.pdfbox</groupId>
-    		<artifactId>pdfbox</artifactId>
-    		<version>3.0.3</version>
+			<groupId>org.apache.pdfbox</groupId>
+			<artifactId>pdfbox</artifactId>
+			<version>2.0.24</version>
 		</dependency>
 
 		<!-- OpenFeign para clientes HTTP declarativos -->
@@ -99,6 +99,32 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+
+		<!-- Thymeleaf -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-thymeleaf</artifactId>
+		</dependency>
+
+		<!-- Conversión de HTML a PDF -->
+		<dependency>
+			<groupId>com.openhtmltopdf</groupId>
+			<artifactId>openhtmltopdf-pdfbox</artifactId>
+			<version>1.0.10</version>
+		</dependency>
+
+		<!-- Soporte para CSS -->
+		<dependency>
+			<groupId>com.openhtmltopdf</groupId>
+			<artifactId>openhtmltopdf-slf4j</artifactId>
+			<version>1.0.10</version>
+		</dependency>
+
+		<!-- WebSocket -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-websocket</artifactId>
 		</dependency>
 	</dependencies>
 
