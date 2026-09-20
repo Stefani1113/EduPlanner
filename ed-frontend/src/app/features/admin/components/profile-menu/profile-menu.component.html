@@ -149,23 +149,37 @@
           <svg class="info-icono" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M4 7h16M4 12h10M4 17h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
           </svg>
-          <span class="info-label">Asistencias</span>
+          <span class="info-label">Mi asistencia (últimos 30 días)</span>
         </div>
-        
-        <div class="asistencias-lista">
-          <div class="asistencia-item">
-            <span class="asistencia-indicador verde"></span>
-            <span class="asistencia-valor">100%</span>
+
+        <div class="asistencia-estado" *ngIf="cargandoAsistencia">Cargando...</div>
+        <div class="asistencia-estado" *ngIf="errorAsistencia && !cargandoAsistencia">{{ errorAsistencia }}</div>
+
+        <ng-container *ngIf="!cargandoAsistencia && !errorAsistencia">
+
+          <div class="asistencias-lista" *ngIf="tieneRegistrosAsistencia">
+            <div class="asistencia-item">
+              <span class="asistencia-indicador verde"></span>
+              <span class="asistencia-etiqueta">Presente</span>
+              <span class="asistencia-valor">{{ porcentajePresente }}%</span>
+            </div>
+            <div class="asistencia-item">
+              <span class="asistencia-indicador blanco"></span>
+              <span class="asistencia-etiqueta">Tardanza</span>
+              <span class="asistencia-valor">{{ porcentajeTardanza }}%</span>
+            </div>
+            <div class="asistencia-item">
+              <span class="asistencia-indicador negro"></span>
+              <span class="asistencia-etiqueta">Falta</span>
+              <span class="asistencia-valor">{{ porcentajeFalta }}%</span>
+            </div>
           </div>
-          <div class="asistencia-item">
-            <span class="asistencia-indicador blanco"></span>
-            <span class="asistencia-valor">100%</span>
+
+          <div class="asistencia-estado" *ngIf="!tieneRegistrosAsistencia">
+            Sin registros de asistencia en los últimos 30 días.
           </div>
-          <div class="asistencia-item">
-            <span class="asistencia-indicador negro"></span>
-            <span class="asistencia-valor">100%</span>
-          </div>
-        </div>
+
+        </ng-container>
       </div>
 
     </ng-container>

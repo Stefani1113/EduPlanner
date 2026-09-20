@@ -340,6 +340,11 @@ export class AsistenciaComponent implements OnInit, OnDestroy {
       return;
     }
 
+    // El Estudiante no tiene la pestaña "Historial" (solo Resumen, Listado y Justificaciones).
+    if (tab === 'historial' && this.esEstudiante) {
+      return;
+    }
+
     this.tabActiva = tab;
 
     this.breadcrumbService.setExtra(

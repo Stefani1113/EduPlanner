@@ -50,6 +50,7 @@
       <button
         type="button"
         class="tab"
+        *ngIf="!esEstudiante"
         [class.active]="tabActiva === 'historial'"
         (click)="cambiarTab('historial')"
       >
