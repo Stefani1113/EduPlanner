@@ -86,7 +86,9 @@ export class AsistenciaComponent implements OnInit, OnDestroy {
   idCursoEstudiante: number | null = null;
 
   get tabPorDefecto(): Tab {
-    return this.esEstudiante ? 'resumen' : 'tomar';
+    if (this.esEstudiante) return 'resumen';
+    if (this.esDirectivo) return 'listado';
+    return 'tomar';
   }
 
   tomaCurso: number | null = null;
@@ -298,6 +300,10 @@ export class AsistenciaComponent implements OnInit, OnDestroy {
           this.filtroListadoCurso = primerCurso;
           this.filtroExcusasCurso = primerCurso;
           this.tomaCurso = primerCurso;
+
+          if (this.esDirectivo) {
+            this.tabActiva = 'listado';
+          }
         }
 
         this.cargandoBase = false;
@@ -329,7 +335,8 @@ export class AsistenciaComponent implements OnInit, OnDestroy {
 
   cambiarTab(tab: Tab): void {
     // El Estudiante no puede tomar asistencia.
-    if (tab === 'tomar' && this.esEstudiante) {
+    // El Directivo tampoco: solo puede consultar (resumen, historial, listado, justificaciones).
+    if (tab === 'tomar' && (this.esEstudiante || this.esDirectivo)) {
       return;
     }
 
@@ -445,6 +452,11 @@ export class AsistenciaComponent implements OnInit, OnDestroy {
   }
 
   guardarToma(): void {
+    // Un Directivo no puede tomar asistencia (el tab ya está oculto para él, esto es un respaldo).
+    if (this.esDirectivo) {
+      return;
+    }
+
     if (this.guardandoToma) {
       return;
     }
@@ -2198,6 +2210,11 @@ export class AsistenciaComponent implements OnInit, OnDestroy {
   guardarJustificacion(
     registro: AttendanceResponseDTO
   ): void {
+    // Solo Administrador/Docente pueden escribir la justificación (el Directivo solo consulta).
+    if (this.esDirectivo) {
+      return;
+    }
+
     const texto =
       this.textoJustificacionDe(
         registro.idAttendance
@@ -2251,9 +2268,10 @@ export class AsistenciaComponent implements OnInit, OnDestroy {
           this.guardandoJustificacionId =
             null;
         },
-        error: () => {
-          this.errorGuardarJustificacion =
-            'No se pudo guardar la justificación. Intenta nuevamente.';
+        error: (err: HttpErrorResponse) => {
+          this.errorGuardarJustificacion = err?.status === 403
+            ? 'Solo un docente o un administrador puede guardar la justificación de una falta.'
+            : 'No se pudo guardar la justificación. Intenta nuevamente.';
           this.guardandoJustificacionId =
             null;
         }
@@ -2264,8 +2282,8 @@ export class AsistenciaComponent implements OnInit, OnDestroy {
     registro: AttendanceResponseDTO,
     aprobar: boolean
   ): void {
-    // Solo Administrador/Directivo/Docente pueden revisar justificaciones.
-    if (this.esEstudiante) {
+    // Solo Administrador/Docente pueden revisar justificaciones (el Directivo solo consulta).
+    if (this.esEstudiante || this.esDirectivo) {
       return;
     }
 
@@ -2304,9 +2322,10 @@ export class AsistenciaComponent implements OnInit, OnDestroy {
           this.revisandoId =
             null;
         },
-        error: () => {
-          this.errorExcusas =
-            'No se pudo registrar la revisión de la justificación.';
+        error: (err: HttpErrorResponse) => {
+          this.errorExcusas = err?.status === 403
+            ? 'Solo un docente o un administrador puede aprobar o rechazar justificaciones.'
+            : 'No se pudo registrar la revisión de la justificación.';
           this.revisandoId =
             null;
         }
