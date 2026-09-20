@@ -614,12 +614,13 @@
   padding: 4px;
   width: fit-content;
   margin: 0 0 18px;
+  border: 1px solid var(--inst-border);
 }
 
 .theme-mode-btn {
   border: 0;
   background: transparent;
-  color: #8a8c8a;
+  color: var(--inst-muted);
   font-size: 13px;
   font-weight: 500;
   padding: 8px 18px;
@@ -629,12 +630,12 @@
 }
 
 .theme-mode-btn:hover {
-  color: #cfcfcf;
+  color: var(--inst-text);
 }
 
 .theme-mode-btn.active {
-  background: #292a29;
-  color: #53bb1b;
+  background: var(--inst-surface);
+  color: var(--inst-secondary);
   font-weight: 600;
-  box-shadow: inset 0 0 0 1px rgba(83, 187, 27, .35);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--inst-secondary) 35%, transparent);
 }

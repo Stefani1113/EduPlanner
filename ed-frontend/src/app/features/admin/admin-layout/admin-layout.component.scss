@@ -18,7 +18,10 @@ header.navar {
   width: 100%;
   overflow: hidden;
   background: var(--inst-dark);
-  background-image: radial-gradient(color-mix(in srgb, var(--inst-text) 8%, transparent) 1px, transparent 1px);
+  background-image: radial-gradient(
+    color-mix(in srgb, var(--inst-text) 8%, transparent) 1px,
+    transparent 1px
+  );
   background-size: 18px 18px;
 }
 
@@ -42,53 +45,197 @@ main.admin-body {
 }
 
 footer {
+  flex-shrink: 0;
   background: var(--inst-surface-alt);
   display: flex;
-  justify-content: space-between;  
+  justify-content: space-between;
   align-items: center;
+  min-height: 70px;
   padding: 10px 60px;
-  
+}
+
+.logo-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
 
 .logo-footer img {
   background: var(--inst-surface-alt);
   height: 50px;
+  width: auto;
   display: block;
+  object-fit: contain;
 }
-
 
 .footer-right {
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: center;
+  gap: 12px;
+}
+
+.footer-theme-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.footer-theme-btn {
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  margin: 0;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.footer-theme-btn img {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  display: block;
+}
+
+.footer-theme-btn:hover {
+  transform: translateY(-1px) scale(1.08);
+  background: color-mix(
+    in srgb,
+    var(--inst-text) 7%,
+    transparent
+  );
+}
+
+.footer-theme-btn.active {
+  background: color-mix(
+    in srgb,
+    var(--inst-secondary) 14%,
+    transparent
+  );
+  border-color: color-mix(
+    in srgb,
+    var(--inst-secondary) 45%,
+    transparent
+  );
 }
 
 .footer-settings-btn {
   display: grid;
   place-items: center;
-  width: 66px;
-  height: 26px;
-  border-radius: 50%;
+  min-width: 66px;
+  height: 36px;
+  padding: 0;
+  border-radius: 10px;
   border: 1px solid transparent;
   background: transparent;
   cursor: pointer;
-  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    transform 0.2s ease;
 }
 
-.footer-version:hover {
-  color: #3cf902a4;
+.footer-settings-btn:hover {
+  background: color-mix(
+    in srgb,
+    var(--inst-secondary) 8%,
+    transparent
+  );
   transform: translateY(-1px);
 }
 
-.footer-settings-icon {
-  font-size: 12px;
-  line-height: 1;
+.footer-settings-btn.active {
+  background: color-mix(
+    in srgb,
+    var(--inst-secondary) 14%,
+    transparent
+  );
+  border-color: color-mix(
+    in srgb,
+    var(--inst-secondary) 45%,
+    transparent
+  );
 }
 
 .footer-version {
   color: var(--inst-secondary);
   font-size: 13px;
-  padding: 10px;
+  padding: 8px 10px;
   border-radius: 10px;
+  white-space: nowrap;
 }
 
+@media (max-width: 850px) {
+  footer {
+    padding: 10px 25px;
+  }
+
+  .logo-footer img {
+    height: 45px;
+  }
+
+  .footer-right {
+    gap: 8px;
+  }
+
+  .footer-theme-controls {
+    gap: 5px;
+  }
+
+  .footer-theme-btn {
+    width: 38px;
+    height: 38px;
+  }
+
+  .footer-theme-btn img {
+    width: 22px;
+    height: 22px;
+  }
+}
+
+@media (max-width: 650px) {
+  footer {
+    padding: 8px 16px;
+  }
+
+  .logo-footer img {
+    height: 40px;
+  }
+
+  .footer-right {
+    gap: 6px;
+  }
+
+  .footer-theme-controls {
+    gap: 3px;
+  }
+
+  .footer-theme-btn {
+    width: 36px;
+    height: 36px;
+  }
+
+  .footer-theme-btn img {
+    width: 20px;
+    height: 20px;
+  }
+
+  .footer-settings-btn {
+    min-width: auto;
+  }
+
+  .footer-version {
+    font-size: 11px;
+    padding: 6px;
+  }
 }
