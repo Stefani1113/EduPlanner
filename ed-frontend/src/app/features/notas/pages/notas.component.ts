@@ -2328,7 +2328,7 @@ export class NotasComponent implements OnInit {
             escala.minimumPassGrade
         };
 
-        alert(
+        this.modalService.success(
           'Los cambios en la escala de calificación se guardaron correctamente.'
         );
       },
@@ -2340,7 +2340,7 @@ export class NotasComponent implements OnInit {
 
         this.guardandoEscala = false;
 
-        alert(
+        this.modalService.error(
           'No se pudo guardar la escala de calificación. Revisa los datos e intenta de nuevo.'
         );
       }
@@ -2668,7 +2668,7 @@ export class NotasComponent implements OnInit {
 
           this.actualizarPasosPeriodo();
 
-          alert(
+          this.modalService.success(
             'Los pasos del periodo se guardaron correctamente.'
           );
         },
@@ -2680,7 +2680,7 @@ export class NotasComponent implements OnInit {
 
           this.guardandoPasos = false;
 
-          alert(
+          this.modalService.error(
             'No se pudieron guardar los pasos del periodo. Revisa que sumen 100% e intenta de nuevo.'
           );
         }
