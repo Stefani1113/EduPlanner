@@ -3,6 +3,7 @@ package com.eduplanner.ed_ms_administracion.service;
 import com.eduplanner.ed_lib_common.entity.User;
 import com.eduplanner.ed_ms_administracion.repository.UserRepository;
 import com.opencsv.CSVWriter;
+import com.opencsv.ICSVWriter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +24,7 @@ public class ExportService {
             "tipo_documento", "lugar_expedicion_documento", "genero", "fecha_nacimiento",
             "direccion", "tipo_sangre", "discapacidades", "estrato", "tipo_poblacion",
             "regimen_salud", "eps", "cargo", "titulos_profesionales", "descripcion_cualificaciones",
-            "rol", "estado", "fecha_creacion", "fecha_actualizacion", "ultimo_acceso"
+            "rol", "estado", "fecha_creacion", "fecha_actualizacion", "ultimo_acceso", "id_curso"
     };
 
     public byte[] exportUsersToCsv() throws IOException {
@@ -31,12 +32,18 @@ public class ExportService {
 
         ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
 
-        // BOM UTF-8: evita que Excel muestre mal las tildes/ñ al abrir el CSV
+        // BOM UTF-8 PRIMERO: evita que Excel muestre mal las tildes/ñ al abrir el CSV
         byteStream.write(0xEF);
         byteStream.write(0xBB);
         byteStream.write(0xBF);
 
-        try (CSVWriter writer = new CSVWriter(new OutputStreamWriter(byteStream, StandardCharsets.UTF_8))) {
+        try (CSVWriter writer = new CSVWriter(
+                new OutputStreamWriter(byteStream, StandardCharsets.UTF_8),
+                ';',                              // separador: punto y coma
+                ICSVWriter.NO_QUOTE_CHARACTER,     // sin comillas envolviendo cada valor
+                ICSVWriter.DEFAULT_ESCAPE_CHARACTER,
+                ICSVWriter.DEFAULT_LINE_END)) {
+
             writer.writeNext(HEADERS);
 
             for (User user : users) {
@@ -73,14 +80,11 @@ public class ExportService {
                 nullSafe(user.getStatus()),
                 nullSafe(user.getCreationDate()),
                 nullSafe(user.getUpdateDate()),
-                nullSafe(user.getLastAccess())
+                nullSafe(user.getLastAccess()),
+                nullSafe(user.getIdCourse())
         };
     }
 
-    /**
-     * Convierte cualquier valor a String, evitando "null" literal en el CSV
-     * cuando el campo no aplica para ese rol (queda vacío en su lugar).
-     */
     private String nullSafe(Object value) {
         return value != null ? value.toString() : "";
     }
