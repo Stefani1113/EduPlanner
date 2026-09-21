@@ -10,8 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.eduplanner.ed_lib_common.dto.HttpGlobalResponse;
 import com.eduplanner.ed_lib_common.dto.UserInfoDTO;
-import com.eduplanner.ed_lib_common.dto.UserResponseDTO
-;
+import com.eduplanner.ed_lib_common.dto.UserResponseDTO;
 /**
  * Endpoints internos: solo deben ser llamados por otros microservicios, 
  * en este caso por gestion academica y por notas
