@@ -28,6 +28,7 @@ import {
   PerfilService,
   MiPerfilDTO
 } from '../../admin/services/perfil.service';
+import { ModalService } from '../../../core/services/modal.service';
 
 type Tab =
   | 'historial'
@@ -176,7 +177,8 @@ export class NotasComponent implements OnInit {
 
   constructor(
     private notasService: NotasService,
-    private perfilService: PerfilService
+    private perfilService: PerfilService,
+    private modalService: ModalService
   ) {}
 
   ngOnInit(): void {
@@ -2452,6 +2454,10 @@ export class NotasComponent implements OnInit {
           };
 
           this.guardandoTipo = false;
+
+          this.modalService.success(
+            'El tipo de calificación se agregó correctamente.'
+          );
         },
 
         error: err => {
