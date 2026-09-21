@@ -22,6 +22,10 @@ export class ForgotPasswordPageComponent {
 
   enviarEnlace(): void {
 
+    if (this.loading) {
+      return;
+    }
+
     this.mensaje = '';
     this.error = '';
 

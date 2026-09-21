@@ -638,74 +638,86 @@ if (
   return;
 }
 
-
 const nuevoEstado =
   usuario.estado !== 'Activo';
 
+this.modalService.confirm(
+  nuevoEstado
+    ? `¿Está seguro de activar al usuario ${usuario.nombre}?`
+    : `¿Está seguro de inactivar al usuario ${usuario.nombre}?`,
+  nuevoEstado
+    ? 'Confirmar activación'
+    : 'Confirmar inactivación',
+  nuevoEstado
+    ? 'Activar'
+    : 'Inactivar',
+  'Cancelar'
+).then(confirmado => {
 
-this.cambiandoEstado.add(
-  usuario.id
-);
+  if (!confirmado) {
+    return;
+  }
 
+  this.cambiandoEstado.add(
+    usuario.id
+  );
 
-this.usuariosService
-  .actualizarEstado(
-    usuario.id,
-    nuevoEstado
-  )
-  .pipe(
-
-    finalize(() =>
-      this.cambiandoEstado.delete(
-        usuario.id
+  this.usuariosService
+    .actualizarEstado(
+      usuario.id,
+      nuevoEstado
+    )
+    .pipe(
+      finalize(() =>
+        this.cambiandoEstado.delete(
+          usuario.id
+        )
       )
     )
+    .subscribe({
 
-  )
-  .subscribe({
+      next: res => {
 
-    next: res => {
-
-      usuario.estado =
-        nuevoEstado
-          ? 'Activo'
-          : 'Inactivo';
-
-
-      usuario.detalle.status =
-        nuevoEstado;
-
-
-      this.modalService.success(
-        res.message ||
-        (
+        usuario.estado =
           nuevoEstado
-            ? 'El usuario fue activado exitosamente.'
-            : 'El usuario fue desactivado exitosamente.'
-        )
-      );
+            ? 'Activo'
+            : 'Inactivo';
 
-    },
+        usuario.detalle.status =
+          nuevoEstado;
 
+        if (nuevoEstado) {
+          this.modalService.success(
+            res.message ||
+            'El usuario fue activado exitosamente.'
+          );
+        } else {
+          this.modalService.warning(
+            res.message ||
+            'El usuario fue inactivado exitosamente.',
+            'Usuario inactivado'
+          );
+        }
 
-    error: err => {
+      },
 
-      console.error(err);
+      error: err => {
 
+        console.error(err);
 
-      this.modalService.error(
-        this.obtenerMensajeError(
-          err,
-          'No se pudo actualizar el estado del usuario. Intenta de nuevo.'
-        )
-      );
+        this.modalService.error(
+          this.obtenerMensajeError(
+            err,
+            'No se pudo actualizar el estado del usuario. Intenta de nuevo.'
+          )
+        );
 
-    }
+      }
 
-  });
+    });
 
+});
 }
-
 estaCambiandoEstado(
 id: number
 ): boolean {

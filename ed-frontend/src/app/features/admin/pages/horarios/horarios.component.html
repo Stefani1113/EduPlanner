@@ -246,37 +246,6 @@
 
   </div>
 
-  <div
-    class="publication-alert clickable"
-    *ngIf="!esVistaRestringida && notificacionActual"
-    (click)="alternarVista('conflictos')"
-  >
-
-    <div class="alert-icon">
-      ✿
-    </div>
-
-    <div class="alert-content">
-
-      <strong>
-        {{ notificacionActual.titulo }}
-      </strong>
-
-      <span>
-        {{ notificacionActual.mensaje }}
-      </span>
-
-    </div>
-
-    <button
-      type="button"
-      class="history-button"
-      (click)="alternarVista('conflictos'); $event.stopPropagation()"
-    >
-      Ver historial
-    </button>
-
-  </div>
 
   <ng-container *ngIf="vistaActual === 'horario'">
 
