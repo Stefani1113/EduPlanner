@@ -59,7 +59,9 @@ public class JwtValidationFilter extends OncePerRequestFilter {
         String path = request.getRequestURI();
         // Rutas internas: llamadas entre microservicios, sin token de usuario
         return path.startsWith("/eduplanner/actuator/health")
-                || path.startsWith("/eduplanner/internal/");
+                || path.startsWith("/eduplanner/internal/")
+                || path.startsWith("/eduplanner/ws")
+                || path.startsWith("/eduplanner/test/notifications/");
     }
 
     private void sendError(HttpServletResponse res, int status, String msg) throws IOException {
