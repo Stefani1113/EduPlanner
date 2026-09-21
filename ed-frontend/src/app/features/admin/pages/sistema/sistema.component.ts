@@ -43,7 +43,7 @@ export class PanelControlComponent implements OnInit, OnDestroy {
   info!: InstitutionInfo;
   savedMessage = '';
   colorError = '';
-  modoTema: 'dark' | 'light' = 'dark';
+  modoTema: 'dark' | 'light' | 'custom' = 'dark';
   private lastValidPalette!: InstitutionPalette;
   private savedTimeout?: ReturnType<typeof setTimeout>;
   private colorErrorTimeout?: ReturnType<typeof setTimeout>;
@@ -73,7 +73,7 @@ export class PanelControlComponent implements OnInit, OnDestroy {
     });
   }
 
-  cambiarModoTema(modo: 'dark' | 'light'): void {
+  cambiarModoTema(modo: 'dark' | 'light' | 'custom'): void {
     if (modo === this.modoTema) {
       return;
     }
@@ -111,7 +111,13 @@ export class PanelControlComponent implements OnInit, OnDestroy {
 
     this.colorError = '';
     this.lastValidPalette = { ...this.palette };
+
+    const veniaDeTemaFijo = this.modoTema !== 'custom';
     this.settingsService.updateSettings(this.palette, this.info);
+
+    if (veniaDeTemaFijo) {
+      this.flashSaved('Cambiaste a modo Personalizado');
+    }
   }
 
   private flashColorError(message: string): void {
@@ -136,6 +142,17 @@ export class PanelControlComponent implements OnInit, OnDestroy {
       this.cdr.detectChanges();
     };
     reader.readAsDataURL(file);
+
+    this.settingsService.subirLogo(file).subscribe(logoUrl => {
+      if (logoUrl) {
+        this.info.logoUrl = logoUrl;
+        this.flashSaved('Logo actualizado');
+      } else {
+        this.flashColorError('No se pudo subir el logo al servidor. Intenta de nuevo.');
+      }
+      this.cdr.detectChanges();
+    });
+
     input.value = '';
   }
 

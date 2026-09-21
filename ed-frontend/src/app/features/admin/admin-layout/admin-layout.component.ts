@@ -11,6 +11,8 @@ import { InstitutionSettingsService } from '../services/institution-settings.ser
 export class AdminLayoutComponent implements OnInit, OnDestroy {
 
   esAdministrador = false;
+  perfilCargado = false;
+  modoTema: 'dark' | 'light' | 'custom' = 'dark';
 
   constructor(
     private perfilService: PerfilService,
@@ -18,22 +20,29 @@ export class AdminLayoutComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
- 
     this.institutionSettingsService.activarTemaSesion();
+    this.modoTema = this.institutionSettingsService.currentMode;
 
     this.perfilService.obtenerMiPerfil().subscribe({
       next: respuesta => {
         const rol = (respuesta.data?.roleName || '').toLowerCase();
         this.esAdministrador = rol.includes('admin') && !rol.includes('direct');
+        this.perfilCargado = true;
       },
       error: () => {
         this.esAdministrador = false;
+        this.perfilCargado = true;
       }
     });
   }
 
-  ngOnDestroy(): void {
+  cambiarTema(modo: 'dark' | 'light' | 'custom'): void {
+    this.institutionSettingsService.setMode(modo);
+    this.modoTema = modo;
+  }
 
-    this.institutionSettingsService.restaurarTemaPorDefecto();
+  ngOnDestroy(): void {
+    this.institutionSettingsService.detenerSincronizacion();
+    this.institutionSettingsService.restaurarTemaPublico();
   }
 }

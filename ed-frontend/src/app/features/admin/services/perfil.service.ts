@@ -33,6 +33,7 @@ export interface MiPerfilDTO {
   position?: string;
   roleName: string;
   idRole: number;
+  idCourse?: number;
   idInstitution?: number;
   guardianName?: string;
   guardianPhone?: string;
@@ -42,21 +43,24 @@ export interface MiPerfilDTO {
   providedIn: 'root'
 })
 export class PerfilService {
-
   private api = '/administracion/eduplanner/users/me';
 
   private perfilCache$: Observable<HttpGlobalResponse<MiPerfilDTO>> | null = null;
+
   private perfilActual: MiPerfilDTO | null = null;
 
   constructor(private http: HttpClient) {}
 
-
-  obtenerMiPerfil(forzar: boolean = false): Observable<HttpGlobalResponse<MiPerfilDTO>> {
+  obtenerMiPerfil(
+    forzar: boolean = false
+  ): Observable<HttpGlobalResponse<MiPerfilDTO>> {
     if (forzar || !this.perfilCache$) {
       this.perfilCache$ = this.http
         .get<HttpGlobalResponse<MiPerfilDTO>>(this.api)
         .pipe(
-          tap(respuesta => (this.perfilActual = respuesta.data)),
+          tap(respuesta => {
+            this.perfilActual = respuesta.data;
+          }),
           shareReplay(1)
         );
     }
@@ -68,9 +72,16 @@ export class PerfilService {
     return this.perfilActual;
   }
 
-  actualizarFoto(archivo: File): Observable<HttpGlobalResponse<string>> {
+  actualizarFoto(
+    archivo: File
+  ): Observable<HttpGlobalResponse<string>> {
     const formData = new FormData();
-    formData.append('file', archivo, archivo.name);
+
+    formData.append(
+      'file',
+      archivo,
+      archivo.name
+    );
 
     return this.http.post<HttpGlobalResponse<string>>(
       `${this.api}/photo`,
@@ -83,9 +94,14 @@ export class PerfilService {
     this.perfilActual = null;
   }
 
-  actualizarFotoEnCache(photoUrl: string): void {
+  actualizarFotoEnCache(
+    photoUrl: string
+  ): void {
     if (this.perfilActual) {
-      this.perfilActual = { ...this.perfilActual, photoUrl };
+      this.perfilActual = {
+        ...this.perfilActual,
+        photoUrl
+      };
     }
   }
 }

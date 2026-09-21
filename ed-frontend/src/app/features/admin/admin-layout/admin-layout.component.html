@@ -1,33 +1,87 @@
 <header class="navar">
-    <app-topbar></app-topbar>
+  <app-topbar></app-topbar>
 </header>
 
 <div class="admin-container">
+  <nav class="sidebar-slot">
+    <app-sidebar></app-sidebar>
+  </nav>
 
-    <nav class="sidebar-slot">
-        <app-sidebar></app-sidebar>
-    </nav>
-
-    <main class="admin-body">
-        <div class="admin-page">
-            <router-outlet></router-outlet>
-        </div>
-    </main>
-
+  <main class="admin-body">
+    <div class="admin-page">
+      <router-outlet></router-outlet>
+    </div>
+  </main>
 </div>
 
 <footer>
   <div class="logo-footer">
-    <img src="assets/img/logo-footer.png" alt="Logo">
+    <img
+      src="assets/img/logo-footer.png"
+      alt="Logo de EduPlanner">
   </div>
-<div class="footer-right">
+
+  <div class="footer-right">
+
+    <div
+      *ngIf="perfilCargado && !esAdministrador"
+      class="footer-theme-controls"
+      aria-label="Seleccionar tema">
+
+      <button
+        type="button"
+        class="footer-theme-btn"
+        [class.active]="modoTema === 'dark'"
+        (click)="cambiarTema('dark')"
+        title="Tema oscuro"
+        aria-label="Activar tema oscuro">
+        <span
+          class="theme-icon"
+          style="--icon: url('assets/img/moon.png')"
+          aria-hidden="true"></span>
+      </button>
+
+      <button
+        type="button"
+        class="footer-theme-btn"
+        [class.active]="modoTema === 'light'"
+        (click)="cambiarTema('light')"
+        title="Tema claro"
+        aria-label="Activar tema claro">
+        <span
+          class="theme-icon"
+          style="--icon: url('assets/img/sunny.png')"
+          aria-hidden="true"></span>
+      </button>
+
+      <button
+        type="button"
+        class="footer-theme-btn"
+        [class.active]="modoTema === 'custom'"
+        (click)="cambiarTema('custom')"
+        title="Tema personalizado"
+        aria-label="Activar tema personalizado">
+        <span
+          class="theme-icon"
+          style="--icon: url('assets/img/smash.png')"
+          aria-hidden="true"></span>
+      </button>
+
+    </div>
+
     <button
+      *ngIf="esAdministrador"
       type="button"
       class="footer-settings-btn"
-      *ngIf="esAdministrador"
       routerLink="/admin/sistema"
-      title="Panel de control · Personalizar colores">
-      <span class="footer-version">Sistema</span>
+      title="Panel de control · Personalizar colores"
+      aria-label="Abrir Sistema">
+
+      <span class="footer-version">
+        Sistema
+      </span>
+
     </button>
+
   </div>
-</footer> 
+</footer>
