@@ -6,13 +6,13 @@ import {
   MensajeIA,
   BloqueHorario,
   ConflictoHorario,
-  NotificacionHorario,
   CursoDTO,
   DocenteDTO,
   ScheduleResponseDTO
 } from '../../services/horarios.service';
 import { PerfilService } from '../../services/perfil.service';
 import { BreadcrumbService } from '../../services/breadcrumb.service';
+import { ModalService } from '../../../../core/services/modal.service';
 
 @Component({
   selector: 'app-horarios',
@@ -39,15 +39,6 @@ export class HorariosComponent implements OnInit, OnDestroy {
   horarioDisponible = true;
 
   conflictos: ConflictoHorario[] = [];
-
-  notificaciones: NotificacionHorario[] = [];
-
-  get notificacionActual(): NotificacionHorario | null {
-    if (this.esVistaRestringida) {
-      return null;
-    }
-    return this.notificaciones[0] || null;
-  }
 
   cursosDisponibles: string[] = [];
   cursoSeleccionado = '';
@@ -99,7 +90,8 @@ export class HorariosComponent implements OnInit, OnDestroy {
   constructor(
     private horariosService: HorariosService,
     private perfilService: PerfilService,
-    private breadcrumbService: BreadcrumbService
+    private breadcrumbService: BreadcrumbService,
+    private modalService: ModalService
   ) {}
 
   ngOnInit(): void {
@@ -110,7 +102,6 @@ export class HorariosComponent implements OnInit, OnDestroy {
     }, 1000);
 
     this.conflictos = this.horariosService.obtenerConflictos();
-    this.notificaciones = this.horariosService.obtenerNotificaciones();
 
     this.perfilService.obtenerMiPerfil().subscribe({
       next: respuesta => {
@@ -428,7 +419,12 @@ export class HorariosComponent implements OnInit, OnDestroy {
           this.idGeneracionActual = respuesta.idGeneration ?? this.idGeneracionActual;
           this.mostrandoPrevia = false;
           this.horarioPrevisualizado = [];
-          this.actualizarHorarioTrasIA();
+          this.mensajeAccionHorario = 'La IA generó el horario. Revísalo y pulsa Publicar horario para hacerlo visible.';
+          this.errorAccionHorario = null;
+
+          if (this.idGeneracionActual !== null) {
+            this.previsualizarGeneracion();
+          }
         }
       },
       error: () => {
@@ -442,22 +438,6 @@ export class HorariosComponent implements OnInit, OnDestroy {
     });
   }
 
-  private actualizarHorarioTrasIA(): void {
-    if (this.modoConsulta === 'docente') {
-      this.cargarHorarioPorDocente(this.docenteSeleccionado?.idUser ?? null);
-    } else {
-      const idCourse = this.idCursoPorNombre[this.cursoSeleccionado] ?? null;
-      this.cargarHorarioPorCurso(idCourse);
-    }
-
-    this.horariosService.registrarNotificacion({
-      titulo: 'La IA generó un nuevo horario.',
-      mensaje: 'El horario mostrado ya refleja la última generación disponible.',
-      fecha: new Date().toLocaleDateString('es-CO', { day: 'numeric', month: 'long' })
-    });
-
-    this.notificaciones = this.horariosService.obtenerNotificaciones();
-  }
 
   obtenerImagenIA(): string {
     return `/assets/ia/ia-ordinary.png`;
@@ -513,11 +493,7 @@ export class HorariosComponent implements OnInit, OnDestroy {
         this.horarioPrevisualizado = [];
         this.mensajeAccionHorario = 'El horario se publicó correctamente.';
 
-        if (this.modoConsulta === 'docente') {
-          this.cargarHorarioPorDocente(this.docenteSeleccionado?.idUser ?? null);
-        } else {
-          this.cargarHorarioPorCurso(this.idCursoPorNombre[this.cursoSeleccionado] ?? null);
-        }
+        this.refrescarHorarioVisible();
       },
       error: (err) => {
         this.errorAccionHorario = err?.error?.message ?? 'No se pudo publicar el horario.';
@@ -526,9 +502,20 @@ export class HorariosComponent implements OnInit, OnDestroy {
     });
   }
 
-  eliminarGeneracion(): void {
+  async eliminarGeneracion(): Promise<void> {
     if (this.idGeneracionActual === null) {
       this.errorAccionHorario = 'No hay una generación reciente para eliminar.';
+      return;
+    }
+
+    const confirmado = await this.modalService.confirm(
+      '¿Seguro quieres eliminar este horario?',
+      'Eliminar horario',
+      'Eliminar',
+      'Cancelar'
+    );
+
+    if (!confirmado) {
       return;
     }
 
@@ -544,11 +531,7 @@ export class HorariosComponent implements OnInit, OnDestroy {
         this.idGeneracionActual = null;
         this.mensajeAccionHorario = 'El horario se eliminó correctamente.';
 
-        if (this.modoConsulta === 'docente') {
-          this.cargarHorarioPorDocente(this.docenteSeleccionado?.idUser ?? null);
-        } else {
-          this.cargarHorarioPorCurso(this.idCursoPorNombre[this.cursoSeleccionado] ?? null);
-        }
+        this.refrescarHorarioVisible();
       },
       error: (err) => {
         this.errorAccionHorario = err?.error?.message ?? 'No se pudo eliminar el horario.';
