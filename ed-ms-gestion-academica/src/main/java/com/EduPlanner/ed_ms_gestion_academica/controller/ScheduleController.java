@@ -8,6 +8,7 @@ import com.eduplanner.ed_lib_common.entity.AcademicPeriod;
 import com.eduplanner.ed_lib_common.entity.Course;
 import com.eduplanner.ed_lib_common.enums.RolEnum;
 import com.EduPlanner.ed_ms_gestion_academica.client.AdministracionServiceClient;
+import com.EduPlanner.ed_ms_gestion_academica.notifications.NotificationFactory;
 import com.EduPlanner.ed_ms_gestion_academica.security.RequireRole;
 import com.EduPlanner.ed_ms_gestion_academica.service.SchedulePdfService;
 import com.EduPlanner.ed_ms_gestion_academica.service.ScheduleService;
@@ -31,6 +32,7 @@ public class ScheduleController {
         private final ScheduleService service;
         private final SchedulePdfService pdfService;
         private final AdministracionServiceClient administracionServiceClient;
+        private final NotificationFactory notificationFactory;
 
         /**
          * Guardar una generación de horario
