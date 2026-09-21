@@ -111,7 +111,13 @@ export class PanelControlComponent implements OnInit, OnDestroy {
 
     this.colorError = '';
     this.lastValidPalette = { ...this.palette };
+
+    const veniaDeTemaFijo = this.modoTema !== 'custom';
     this.settingsService.updateSettings(this.palette, this.info);
+
+    if (veniaDeTemaFijo) {
+      this.flashSaved('Cambiaste a modo Personalizado');
+    }
   }
 
   private flashColorError(message: string): void {

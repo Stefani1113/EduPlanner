@@ -1,15 +1,4 @@
 :host {
-  --inst-primary: #0d790b;
-  --inst-secondary: #4ed10b;
-  --inst-accent: #b9e5b9;
-  --inst-dark: #161616;
-  --inst-light: #ffffff;
-  --inst-surface: #161616;
-  --inst-surface-alt: #1b1c1c;
-  --inst-text: #ffffff;
-  --inst-muted: #a5a5a5;
-  --inst-border: #3a3a3a;
-
   display: block;
   width: 100%;
 }
@@ -23,7 +12,7 @@
 
 .importacion-card {
   width: 480px;
-  background: var(--inst-dark);
+  background: var(--inst-surface);
   border: 1px solid transparent;
   border-radius: 8px;
   overflow: hidden;
@@ -31,7 +20,7 @@
 }
 
 .card-header {
-  background: #202020;
+  background: var(--inst-surface-alt);
   color: var(--inst-secondary);
   font-weight: 700;
   text-transform: uppercase;
@@ -61,7 +50,7 @@
 }
 
 .campo-curso label {
-  color: #cfcfcf;
+  color: var(--inst-text);
   font-size: 13px;
   font-weight: 600;
 }
@@ -71,19 +60,19 @@
   border: 1px solid transparent;
   border-radius: 6px;
   padding: 10px 12px;
-  color: var(--inst-light);
+  color: var(--inst-text);
   font-size: 13px;
   outline: none;
 }
 
 .campo-curso select:hover {
   border-color: transparent;
-  background: #202121;
+  background: color-mix(in srgb, var(--inst-surface-alt) 90%, var(--inst-text) 10%);
 }
 
 .campo-curso select:focus {
   border-color: transparent;
-  box-shadow: 0 0 0 3px rgba(78, 209, 11, 0.1);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--inst-secondary) 15%, transparent);
 }
 
 .campo-curso select:disabled {
@@ -92,12 +81,12 @@
 }
 
 .campo-ayuda {
-  color: #7c7c7c;
+  color: var(--inst-muted);
   font-size: 11.5px;
 }
 
 .drop-zone {
-  background: rgba(46, 79, 33, 0.45);
+  background: color-mix(in srgb, var(--inst-secondary) 14%, transparent);
   border: 2px dashed transparent;
   border-radius: 6px;
   height: 160px;
@@ -110,7 +99,7 @@
 }
 
 .drop-zone:hover {
-  background: #223a18;
+  background: color-mix(in srgb, var(--inst-secondary) 22%, transparent);
   border-color: transparent;
 }
 
@@ -127,7 +116,7 @@
 }
 
 .drop-zone span {
-  color: var(--inst-light);
+  color: var(--inst-text);
   font-weight: bold;
 }
 
@@ -142,10 +131,10 @@ input[type="file"] {
   padding: 10px 12px;
   margin-top: 15px;
   margin-bottom: 14px;
-  background: #202020;
+  background: var(--inst-surface-alt);
   border: 1px solid transparent;
   border-radius: 6px;
-  color: var(--inst-light);
+  color: var(--inst-text);
 }
 
 .archivo i {
@@ -168,21 +157,21 @@ input[type="file"] {
 }
 
 .archivo-info span {
-  color: #888888;
+  color: var(--inst-muted);
   font-size: 11px;
 }
 
 .btn-quitar {
   border: 1px solid transparent;
   background: transparent;
-  color: #aaaaaa;
+  color: var(--inst-muted);
   font-size: 22px;
   cursor: pointer;
   line-height: 1;
 }
 
 .btn-quitar:hover:not(:disabled) {
-  color: var(--inst-light);
+  color: var(--inst-text);
 }
 
 .btn-quitar:disabled {
@@ -198,7 +187,7 @@ input[type="file"] {
   width: 100%;
   margin-top: 20px;
   border: 1px solid transparent;
-  background: rgba(78, 209, 11, 0.6);
+  background: color-mix(in srgb, var(--inst-secondary) 60%, transparent);
   color: var(--inst-light);
   font-size: 15px;
   font-weight: bold;
@@ -231,14 +220,14 @@ input[type="file"] {
 }
 
 .formato-ayuda {
-  color: #8f8f8f;
+  color: var(--inst-muted);
   font-size: 12px;
   margin: 10px 0 14px;
   text-align: center;
 }
 
 .drop-zone.arrastrando {
-  background: #29491f;
+  background: color-mix(in srgb, var(--inst-secondary) 30%, transparent);
   border-color: transparent;
   transform: scale(1.01);
 }
@@ -257,7 +246,7 @@ input[type="file"] {
 
 .reporte-card {
   width: 100%;
-  background: var(--inst-dark);
+  background: var(--inst-surface);
   border: 1px solid transparent;
   border-radius: 8px;
   overflow: hidden;
@@ -291,7 +280,7 @@ input[type="file"] {
 }
 
 .reporte-subtitulo {
-  color: #aaaaaa;
+  color: var(--inst-muted);
   font-size: 13px;
   margin-top: 4px;
   margin-bottom: 18px;
@@ -301,17 +290,17 @@ input[type="file"] {
   display: flex;
   flex-wrap: wrap;
   gap: 20px;
-  background: #222222;
+  background: var(--inst-surface-alt);
   border: 1px solid transparent;
   border-radius: 6px;
   padding: 12px 16px;
   margin-bottom: 22px;
   font-size: 13px;
-  color: #cccccc;
+  color: var(--inst-text);
 }
 
 .reporte-meta strong {
-  color: var(--inst-light);
+  color: var(--inst-text);
   font-weight: 600;
 }
 
@@ -324,7 +313,7 @@ input[type="file"] {
 }
 
 .resumen-card {
-  background: rgba(34, 34, 34, 0.13);
+  background: color-mix(in srgb, var(--inst-surface-alt) 60%, transparent);
   max-width: 150px;
   padding: 16px;
   display: flex;
@@ -336,14 +325,14 @@ input[type="file"] {
 }
 
 .resumen-card .resumen-label {
-  color: #999999;
+  color: var(--inst-muted);
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .resumen-card .resumen-valor {
-  color: var(--inst-light);
+  color: var(--inst-text);
   font-size: 28px;
   font-weight: 700;
 }
@@ -357,7 +346,7 @@ input[type="file"] {
 }
 
 .resumen-card.exitosos .resumen-valor {
-  color: #7cff45;
+  color: var(--inst-secondary);
 }
 
 .resumen-card.errores {
@@ -373,7 +362,7 @@ input[type="file"] {
 }
 
 .tabla-errores-titulo {
-  color: var(--inst-light);
+  color: var(--inst-text);
   font-weight: 600;
   font-size: 15px;
   margin-bottom: 10px;
@@ -383,7 +372,7 @@ input[type="file"] {
   width: 100%;
   overflow-x: auto;
   border-radius: 10px;
-  background: #151515;
+  background: var(--inst-dark);
   border: 1px solid transparent;
   padding: 4px;
   margin-bottom: 20px;
@@ -398,7 +387,7 @@ input[type="file"] {
 
 .errores-table thead th {
   background: transparent;
-  color: #888888;
+  color: var(--inst-muted);
   padding: 12px 14px;
   text-align: left;
   font-weight: 600;
@@ -409,26 +398,26 @@ input[type="file"] {
 }
 
 .errores-table tbody tr {
-  background: #222222;
+  background: var(--inst-surface-alt);
   transition: background 0.2s ease;
 }
 
 .errores-table tbody tr:hover {
-  background: #282828;
+  background: color-mix(in srgb, var(--inst-surface-alt) 92%, var(--inst-text) 8%);
 }
 
 .errores-table tbody td {
   padding: 12px 14px;
   text-align: left;
   font-size: 13px;
-  color: #dddddd;
+  color: var(--inst-text);
   vertical-align: middle;
   border: 1px solid transparent;
 }
 
 .errores-table tbody td:first-child {
   border-radius: 8px 0 0 8px;
-  color: var(--inst-light);
+  color: var(--inst-text);
   font-weight: 600;
 }
 
@@ -437,7 +426,7 @@ input[type="file"] {
 }
 
 .detalle-cell {
-  color: #eeeeee !important;
+  color: var(--inst-text) !important;
   font-size: 13px;
   line-height: 1.5;
   min-width: 250px;
@@ -481,7 +470,7 @@ input[type="file"] {
 
 .badge-otro {
   background: rgba(153, 153, 153, 0.18);
-  color: #bbbbbb;
+  color: var(--inst-muted);
 }
 
 .badge-restriccion {
@@ -490,9 +479,9 @@ input[type="file"] {
 }
 
 .sin-errores {
-  background: #1f3d1a;
+  background: color-mix(in srgb, var(--inst-secondary) 16%, var(--inst-surface));
   border: 1px solid transparent;
-  color: #7cff45;
+  color: var(--inst-secondary);
   padding: 16px;
   border-radius: 6px;
   text-align: center;
@@ -503,8 +492,8 @@ input[type="file"] {
 .btn-nueva-importacion {
   width: 100%;
   border: 1px solid transparent;
-  background: rgba(78, 209, 11, 0.68);
-  color: #eeeeee;
+  background: color-mix(in srgb, var(--inst-secondary) 68%, transparent);
+  color: var(--inst-text);
   font-size: 14px;
   font-weight: 700;
   padding: 12px;

@@ -35,9 +35,10 @@
         (click)="cambiarTema('dark')"
         title="Tema oscuro"
         aria-label="Activar tema oscuro">
-        <img
-          src="assets/img/moon.png"
-          alt="Tema oscuro">
+        <span
+          class="theme-icon"
+          style="--icon: url('assets/img/moon.png')"
+          aria-hidden="true"></span>
       </button>
 
       <button
@@ -47,9 +48,10 @@
         (click)="cambiarTema('light')"
         title="Tema claro"
         aria-label="Activar tema claro">
-        <img
-          src="assets/img/sunny.png"
-          alt="Tema claro">
+        <span
+          class="theme-icon"
+          style="--icon: url('assets/img/sunny.png')"
+          aria-hidden="true"></span>
       </button>
 
       <button
@@ -59,9 +61,10 @@
         (click)="cambiarTema('custom')"
         title="Tema personalizado"
         aria-label="Activar tema personalizado">
-        <img
-          src="assets/img/smash.png"
-          alt="Tema personalizado">
+        <span
+          class="theme-icon"
+          style="--icon: url('assets/img/smash.png')"
+          aria-hidden="true"></span>
       </button>
 
     </div>
