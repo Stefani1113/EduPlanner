@@ -820,7 +820,6 @@ export class RegistroComponent implements OnInit {
       !formulario.idUser ||
       !formulario.idCourse ||
       !formulario.idSubject ||
-      !formulario.horasSemanaArea ||
       !formulario.maxDailyHours ||
       !formulario.maxWeeklyHours
     ) {
@@ -857,13 +856,6 @@ export class RegistroComponent implements OnInit {
     ) {
       this.errorFormularioDocente =
         'Las horas máximas semanales no son válidas.';
-      return;
-    }
-
-
-    if (formulario.horasSemanaArea <= 0) {
-      this.errorFormularioDocente =
-        'Las horas semanales de la asignatura deben ser mayores que 0.';
       return;
     }
 
@@ -920,7 +912,11 @@ export class RegistroComponent implements OnInit {
           idTeacher: idAcademicTeacher,
           idCourse: formulario.idCourse,
           idSubject: formulario.idSubject,
-          weeklyHours: formulario.horasSemanaArea
+          // El backend exige >= 1. Al editar se conserva el valor ya guardado;
+          // al crear se envía el mínimo, porque el campo ya no se pide en el formulario.
+          weeklyHours: formulario.horasSemanaArea > 0
+            ? formulario.horasSemanaArea
+            : 1
         };
 
 
@@ -946,6 +942,11 @@ export class RegistroComponent implements OnInit {
             this.docenteSeleccionado = null;
 
             this.cargarDatos();
+        this.modalService.success(
+          this.editandoDocente
+            ? 'La asignación del docente se actualizó correctamente.'
+            : 'La asignación del docente se agregó correctamente.'
+        );
           },
 
 
@@ -1146,6 +1147,11 @@ export class RegistroComponent implements OnInit {
         this.asignaturaSeleccionada = null;
 
         this.cargarDatos();
+        this.modalService.success(
+          this.editandoAsignatura
+            ? 'La asignatura se actualizó correctamente.'
+            : 'La asignatura se agregó correctamente.'
+        );
       },
 
 
@@ -1555,6 +1561,11 @@ export class RegistroComponent implements OnInit {
         this.cursoSeleccionado = null;
 
         this.cargarDatos();
+        this.modalService.success(
+          this.editandoCurso
+            ? 'El curso se actualizó correctamente.'
+            : 'El curso se agregó correctamente.'
+        );
       },
 
 
@@ -1762,6 +1773,11 @@ export class RegistroComponent implements OnInit {
         this.mostrarFormularioNivel = false;
         this.nivelSeleccionado = null;
         this.cargarDatos();
+        this.modalService.success(
+          this.editandoNivel
+            ? 'El nivel académico se actualizó correctamente.'
+            : 'El nivel académico se agregó correctamente.'
+        );
       },
       error: err => {
         console.error('Error guardando nivel:', err);
@@ -1892,6 +1908,11 @@ export class RegistroComponent implements OnInit {
         this.mostrarFormularioPeriodo = false;
         this.periodoSeleccionado = null;
         this.cargarDatos();
+        this.modalService.success(
+          this.editandoPeriodo
+            ? 'El período académico se actualizó correctamente.'
+            : 'El período académico se agregó correctamente.'
+        );
       },
       error: err => {
         console.error('Error guardando período:', err);
@@ -2017,6 +2038,11 @@ export class RegistroComponent implements OnInit {
         this.mostrarFormularioJornada = false;
         this.jornadaSeleccionada = null;
         this.cargarDatos();
+        this.modalService.success(
+          this.editandoJornada
+            ? 'La jornada académica se actualizó correctamente.'
+            : 'La jornada académica se agregó correctamente.'
+        );
       },
       error: err => {
         console.error('Error guardando jornada:', err);
@@ -2153,6 +2179,11 @@ export class RegistroComponent implements OnInit {
         this.mostrarFormularioFranja = false;
         this.franjaSeleccionada = null;
         this.cargarDatos();
+        this.modalService.success(
+          this.editandoFranja
+            ? 'La franja horaria se actualizó correctamente.'
+            : 'La franja horaria se agregó correctamente.'
+        );
       },
       error: err => {
         console.error('Error guardando franja:', err);
@@ -2285,6 +2316,11 @@ export class RegistroComponent implements OnInit {
         this.mostrarFormularioDisponibilidad = false;
         this.disponibilidadSeleccionada = null;
         this.cargarDatos();
+        this.modalService.success(
+          this.editandoDisponibilidad
+            ? 'La disponibilidad del docente se actualizó correctamente.'
+            : 'La disponibilidad del docente se agregó correctamente.'
+        );
       },
       error: err => {
         console.error('Error guardando disponibilidad:', err);
