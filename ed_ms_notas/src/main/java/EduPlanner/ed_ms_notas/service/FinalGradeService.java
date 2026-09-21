@@ -2,6 +2,7 @@ package EduPlanner.ed_ms_notas.service;
 
 import EduPlanner.ed_ms_notas.client.AdministracionServiceClient;
 import EduPlanner.ed_ms_notas.client.GestionAcademicaServiceClient;
+import EduPlanner.ed_ms_notas.notification.EmailTemplateService;
 import EduPlanner.ed_ms_notas.repository.EvaluationTypeRepository;
 import EduPlanner.ed_ms_notas.repository.EvaluativeActivityRepository;
 import EduPlanner.ed_ms_notas.repository.FinalGradeRepository;
@@ -43,6 +44,7 @@ public class FinalGradeService {
     private final AdministracionServiceClient administracionServiceClient;
     private final GestionAcademicaServiceClient gestionAcademicaServiceClient;
     private final Notifier notifier;
+    private final EmailTemplateService emailTemplateService;
 
     /**
      * Calcula (o recalcula) la nota definitiva de un estudiante para una
