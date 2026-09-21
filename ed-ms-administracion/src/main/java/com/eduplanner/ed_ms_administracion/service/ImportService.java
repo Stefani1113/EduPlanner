@@ -54,8 +54,9 @@ public class ImportService {
     private static final int COL_EPS = 15;
     private static final int COL_NOMBRE_ACUDIENTE = 16;
     private static final int COL_TELEFONO_ACUDIENTE = 17;
+    private static final int COL_ID_CURSO = 18;
 
-    private static final int EXPECTED_COLUMNS = 18;
+    private static final int EXPECTED_COLUMNS = 19;
 
     //Formato de fecha
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -158,6 +159,7 @@ public class ImportService {
         dto.setPopulationType(row[COL_TIPO_POBLACION].trim());
         dto.setHealthRegime(row[COL_REGIMEN_SALUD].trim());
         dto.setEps(row[COL_EPS].trim());
+        dto.setIdCourse(Integer.parseInt(row[COL_ID_CURSO].trim()));
 
         GuardianDTO guardian = new GuardianDTO();
         guardian.setGuardianName(row[COL_NOMBRE_ACUDIENTE].trim());
