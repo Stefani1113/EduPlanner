@@ -9,6 +9,7 @@ import {
 } from '../../services/docentes.service';
 
 import { PerfilService } from '../../services/perfil.service';
+import { ModalService } from '../../../../core/services/modal.service';
 
 const ID_INSTITUCION_FIJO = 1;
 const API_BASE_URL = 'http://localhost:8080';
@@ -108,7 +109,8 @@ export class DocentesComponent implements OnInit {
 
   constructor(
     private docentesService: DocentesService,
-    private perfilService: PerfilService
+    private perfilService: PerfilService,
+    private modalService: ModalService
   ) {}
 
   ngOnInit(): void {
@@ -369,6 +371,8 @@ export class DocentesComponent implements OnInit {
           this.form
         );
 
+    const eraEdicion = !!this.docenteEnEdicion;
+
     peticion.subscribe({
       next: () => {
         this.guardando = false;
@@ -376,6 +380,11 @@ export class DocentesComponent implements OnInit {
         this.docenteEnEdicion = null;
         this.form = emptyForm();
         this.cargarDocentes();
+        this.modalService.success(
+          eraEdicion
+            ? 'El docente se actualizó correctamente.'
+            : 'El docente se agregó correctamente.'
+        );
       },
       error: (err) => {
         this.guardando = false;
