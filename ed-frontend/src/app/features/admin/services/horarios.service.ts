@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 export interface MensajeIA {
@@ -51,23 +51,31 @@ export interface CursoDTO {
   status: boolean;
 }
 
-export interface ClaseHorarioDTO {
+export interface DocenteDTO {
+  idUser: number;
+  name: string;
+  surnames: string;
+}
+
+export interface ScheduleResponseDTO {
   idSchedule: number;
-  dayOfWeek: number;
+  idCourse: number;
+  idSubject: number;
+  subjectName: string;
+  idTeacher: number;
+  teacherName: string;
   idTimeSlot: number;
+  slotOrder: number;
   startTime: string;
   endTime: string;
-  isBreak: boolean;
-  idCourse: number;
-  courseName: string;
-  subjectName: string;
-  teacherName: string;
+  dayOfWeek: number;
 }
 
 export interface RespuestaChatIA {
   success: boolean;
   response?: string;
   error?: string;
+  idGeneration?: number;
 }
 
 @Injectable({
@@ -76,6 +84,7 @@ export interface RespuestaChatIA {
 export class HorariosService {
 
   private apiGestionAcademica = '/gestion-academica/eduplanner';
+  private apiAdministracion = '/administracion/eduplanner';
   private apiIa = '/ia/api';
 
   private conflictos: ConflictoHorario[] = [];
@@ -105,16 +114,46 @@ export class HorariosService {
     );
   }
 
-  obtenerMiHorario(idCourse?: number | null): Observable<HttpGlobalResponse<ClaseHorarioDTO[]>> {
-    let params = new HttpParams();
+  obtenerDocentes(): Observable<HttpGlobalResponse<DocenteDTO[]>> {
+    return this.http.get<HttpGlobalResponse<DocenteDTO[]>>(
+      `${this.apiAdministracion}/users?idRole=2`
+    );
+  }
 
-    if (idCourse !== null && idCourse !== undefined) {
-      params = params.set('idCourse', idCourse);
-    }
+  obtenerMiHorario(): Observable<HttpGlobalResponse<ScheduleResponseDTO[]>> {
+    return this.http.get<HttpGlobalResponse<ScheduleResponseDTO[]>>(
+      `${this.apiGestionAcademica}/schedules/my-schedule`
+    );
+  }
 
-    return this.http.get<HttpGlobalResponse<ClaseHorarioDTO[]>>(
-      `${this.apiGestionAcademica}/schedules/mi-horario`,
-      { params }
+  obtenerHorarioPorCurso(idCourse: number): Observable<HttpGlobalResponse<ScheduleResponseDTO[]>> {
+    return this.http.get<HttpGlobalResponse<ScheduleResponseDTO[]>>(
+      `${this.apiGestionAcademica}/schedules/course/${idCourse}`
+    );
+  }
+
+  obtenerHorarioPorDocente(idTeacher: number): Observable<HttpGlobalResponse<ScheduleResponseDTO[]>> {
+    return this.http.get<HttpGlobalResponse<ScheduleResponseDTO[]>>(
+      `${this.apiGestionAcademica}/schedules/teacher/${idTeacher}`
+    );
+  }
+
+  previsualizarGeneracion(idGeneration: number): Observable<HttpGlobalResponse<ScheduleResponseDTO[]>> {
+    return this.http.get<HttpGlobalResponse<ScheduleResponseDTO[]>>(
+      `${this.apiGestionAcademica}/schedules/generations/${idGeneration}`
+    );
+  }
+
+  publicarGeneracion(idGeneration: number): Observable<HttpGlobalResponse<void>> {
+    return this.http.put<HttpGlobalResponse<void>>(
+      `${this.apiGestionAcademica}/schedules/generations/${idGeneration}/publish`,
+      {}
+    );
+  }
+
+  eliminarGeneracion(idGeneration: number): Observable<HttpGlobalResponse<void>> {
+    return this.http.delete<HttpGlobalResponse<void>>(
+      `${this.apiGestionAcademica}/schedules/generations/${idGeneration}`
     );
   }
 

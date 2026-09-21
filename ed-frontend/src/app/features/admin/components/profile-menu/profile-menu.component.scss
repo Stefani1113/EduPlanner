@@ -284,8 +284,8 @@
 
   .asistencias-lista {
     display: flex;
-    gap: 24px;
-    justify-content: flex-start;
+    flex-direction: column;
+    gap: 8px;
     margin-top: 4px;
     padding-left: 24px;
   }
@@ -302,6 +302,7 @@
     height: 12px;
     border-radius: 50%;
     border: 1px solid rgba(255, 255, 255, 0.1);
+    flex: 0 0 auto;
 
     &.verde {
       background: var(--inst-secondary);
@@ -319,10 +320,23 @@
     }
   }
 
+  .asistencia-etiqueta {
+    flex: 1 1 auto;
+    font-size: 12.5px;
+    color: color-mix(in srgb, var(--inst-text) 65%, transparent);
+  }
+
   .asistencia-valor {
     font-size: 13px;
-    font-weight: 600;
+    font-weight: 700;
     color: color-mix(in srgb, var(--inst-text) 90%, transparent);
+  }
+
+  .asistencia-estado {
+    padding-left: 24px;
+    font-size: 12px;
+    color: var(--inst-muted);
+    margin-top: 4px;
   }
 }
 

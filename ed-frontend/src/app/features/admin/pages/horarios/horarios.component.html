@@ -27,10 +27,33 @@
 
     </div>
 
+    <div class="query-toggle" *ngIf="!esVistaRestringida">
+
+      <button
+        type="button"
+        class="query-toggle-btn"
+        [class.active]="modoConsulta === 'curso'"
+        (click)="cambiarModoConsulta('curso')"
+      >
+        Por curso
+      </button>
+
+      <button
+        type="button"
+        class="query-toggle-btn"
+        [class.active]="modoConsulta === 'docente'"
+        (click)="cambiarModoConsulta('docente')"
+      >
+        Por docente
+      </button>
+
+    </div>
+
     <div class="toolbar-bar">
 
       <div
         class="course-picker"
+        *ngIf="modoConsulta === 'curso'"
         [class.disabled]="esVistaRestringida"
         (click)="alternarSelectorCursos()"
       >
@@ -63,6 +86,38 @@
 
       </div>
 
+      <div
+        class="course-picker"
+        *ngIf="modoConsulta === 'docente' && !esVistaRestringida"
+        (click)="alternarSelectorDocentes()"
+      >
+
+        <div class="picker-icon"><img src="/assets/img/user.png" alt=""></div>
+
+        <div class="picker-text">
+          <span class="picker-label">Docente seleccionado</span>
+          <strong>{{ nombreDocenteSeleccionado() }}</strong>
+        </div>
+
+        <span class="picker-badge">
+          {{ docentesDisponibles.length }}
+        </span>
+
+        <span class="picker-chevron">⌄</span>
+
+        <div class="course-dropdown" *ngIf="selectorDocentesAbierto">
+          <button
+            type="button"
+            *ngFor="let docente of docentesDisponibles"
+            [class.active]="docenteSeleccionado?.idUser === docente.idUser"
+            (click)="seleccionarDocente(docente); $event.stopPropagation()"
+          >
+            {{ nombreDocente(docente) }}
+          </button>
+        </div>
+
+      </div>
+
       <div class="clock-block">
         <span class="clock-dot"></span>
         <div class="clock-text">
@@ -89,13 +144,81 @@
     <p>Consulta la distribución de clases de cada curso.</p>
   </div>
 
+  <div class="horario-actions" *ngIf="!esVistaRestringida">
+
+    <button
+      type="button"
+      class="action-button preview"
+      [disabled]="idGeneracionActual === null || previsualizando"
+      (click)="previsualizarGeneracion()"
+    >
+      {{ previsualizando ? 'Cargando...' : 'Previsualizar' }}
+    </button>
+
+    <button
+      type="button"
+      class="action-button publish"
+      [disabled]="idGeneracionActual === null || publicando"
+      (click)="publicarGeneracion()"
+    >
+      {{ publicando ? 'Publicando...' : 'Publicar horario' }}
+    </button>
+
+    <button
+      type="button"
+      class="action-button delete"
+      [disabled]="idGeneracionActual === null || eliminando"
+      (click)="eliminarGeneracion()"
+    >
+      {{ eliminando ? 'Eliminando...' : 'Eliminar horario' }}
+    </button>
+
+  </div>
+
+  <p class="accion-mensaje ok" *ngIf="mensajeAccionHorario">{{ mensajeAccionHorario }}</p>
+  <p class="accion-mensaje error" *ngIf="errorAccionHorario">{{ errorAccionHorario }}</p>
+
+  <section class="preview-panel" *ngIf="mostrandoPrevia">
+
+    <div class="preview-header">
+      <h3>Previsualización del horario generado</h3>
+      <button type="button" class="close-preview" (click)="cerrarPrevisualizacion()">×</button>
+    </div>
+
+    <table class="preview-table" *ngIf="horarioPrevisualizado.length">
+      <thead>
+        <tr>
+          <th>Día</th>
+          <th>Inicio</th>
+          <th>Fin</th>
+          <th>Asignatura</th>
+          <th>Docente</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let clase of horarioPrevisualizado">
+          <td>{{ clase.dayOfWeek }}</td>
+          <td>{{ clase.startTime }}</td>
+          <td>{{ clase.endTime }}</td>
+          <td>{{ clase.subjectName }}</td>
+          <td>{{ clase.teacherName }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p class="preview-empty" *ngIf="!horarioPrevisualizado.length">
+      No hay clases en esta previsualización.
+    </p>
+
+  </section>
+
   <div class="summary-card" *ngIf="vistaActual === 'horario'">
 
     <div class="summary-icon">▦</div>
 
     <div class="summary-text">
       <span>{{ esVistaRestringida ? 'Grado del horario' : 'Horario actual' }}</span>
-      <strong>{{ cursoSeleccionado || 'Sin curso' }}</strong>
+      <strong>{{ modoConsulta === 'docente' ? nombreDocenteSeleccionado() : (cursoSeleccionado || 'Sin curso') }}</strong>
     </div>
 
     <div class="summary-right">
@@ -164,12 +287,13 @@
       <h3>No hay horario disponible</h3>
 
       <p>
-        El curso <strong>{{ cursoSeleccionado || 'seleccionado' }}</strong>
+        {{ modoConsulta === 'docente' ? 'El docente' : 'El curso' }}
+        <strong>{{ modoConsulta === 'docente' ? nombreDocenteSeleccionado() : (cursoSeleccionado || 'seleccionado') }}</strong>
         no tiene un horario registrado actualmente.
       </p>
 
       <span *ngIf="!esVistaRestringida">
-        Selecciona otro curso para consultar su horario.
+        Selecciona otro {{ modoConsulta === 'docente' ? 'docente' : 'curso' }} para consultar su horario.
       </span>
 
     </div>
@@ -276,7 +400,7 @@
 
           <div class="subject-card">
             <strong>{{ horario.lunes || '—' }}</strong>
-            <span>{{ cursoSeleccionado }}</span>
+            <span>{{ modoConsulta === 'docente' ? nombreDocenteSeleccionado() : cursoSeleccionado }}</span>
           </div>
 
         </div>
@@ -289,7 +413,7 @@
 
           <div class="subject-card">
             <strong>{{ horario.martes || '—' }}</strong>
-            <span>{{ cursoSeleccionado }}</span>
+            <span>{{ modoConsulta === 'docente' ? nombreDocenteSeleccionado() : cursoSeleccionado }}</span>
           </div>
 
         </div>
@@ -302,7 +426,7 @@
 
           <div class="subject-card">
             <strong>{{ horario.miercoles || '—' }}</strong>
-            <span>{{ cursoSeleccionado }}</span>
+            <span>{{ modoConsulta === 'docente' ? nombreDocenteSeleccionado() : cursoSeleccionado }}</span>
           </div>
 
         </div>
@@ -315,7 +439,7 @@
 
           <div class="subject-card">
             <strong>{{ horario.jueves || '—' }}</strong>
-            <span>{{ cursoSeleccionado }}</span>
+            <span>{{ modoConsulta === 'docente' ? nombreDocenteSeleccionado() : cursoSeleccionado }}</span>
           </div>
 
         </div>
@@ -328,7 +452,7 @@
 
           <div class="subject-card">
             <strong>{{ horario.viernes || '—' }}</strong>
-            <span>{{ cursoSeleccionado }}</span>
+            <span>{{ modoConsulta === 'docente' ? nombreDocenteSeleccionado() : cursoSeleccionado }}</span>
           </div>
 
         </div>

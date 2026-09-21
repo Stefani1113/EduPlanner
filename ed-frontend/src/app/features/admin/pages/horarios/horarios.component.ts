@@ -8,7 +8,8 @@ import {
   ConflictoHorario,
   NotificacionHorario,
   CursoDTO,
-  ClaseHorarioDTO
+  DocenteDTO,
+  ScheduleResponseDTO
 } from '../../services/horarios.service';
 import { PerfilService } from '../../services/perfil.service';
 import { BreadcrumbService } from '../../services/breadcrumb.service';
@@ -52,6 +53,12 @@ export class HorariosComponent implements OnInit, OnDestroy {
   cursoSeleccionado = '';
   selectorCursosAbierto = false;
 
+  docentesDisponibles: DocenteDTO[] = [];
+  docenteSeleccionado: DocenteDTO | null = null;
+  selectorDocentesAbierto = false;
+
+  modoConsulta: 'curso' | 'docente' = 'curso';
+
   cargandoPerfil = true;
   esEstudiante = false;
   esDocente = false;
@@ -67,6 +74,15 @@ export class HorariosComponent implements OnInit, OnDestroy {
 
   horaActual = new Date();
   private idIntervaloReloj: ReturnType<typeof setInterval> | null = null;
+
+  idGeneracionActual: number | null = null;
+  horarioPrevisualizado: ScheduleResponseDTO[] = [];
+  mostrandoPrevia = false;
+  previsualizando = false;
+  publicando = false;
+  eliminando = false;
+  mensajeAccionHorario: string | null = null;
+  errorAccionHorario: string | null = null;
 
   private readonly nombresDias = [
     'Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'
@@ -137,11 +153,11 @@ export class HorariosComponent implements OnInit, OnDestroy {
               .find(c => c.idCourse === this.idCursoEstudiante);
 
             this.cursoSeleccionado = curso?.name || '';
-            this.cargarHorario(this.idCursoEstudiante);
+            this.cargarMiHorario();
             this.cargandoPerfil = false;
           },
           error: () => {
-            this.cargarHorario(this.idCursoEstudiante);
+            this.cargarMiHorario();
             this.cargandoPerfil = false;
           }
         });
@@ -150,7 +166,7 @@ export class HorariosComponent implements OnInit, OnDestroy {
 
       if (this.esDocente) {
         this.cursoSeleccionado = 'Mi horario';
-        this.cargarHorario(null);
+        this.cargarMiHorario();
         this.cargandoPerfil = false;
         return;
       }
@@ -167,17 +183,26 @@ export class HorariosComponent implements OnInit, OnDestroy {
         cursos.forEach(c => this.idCursoPorNombre[c.name] = c.idCourse);
 
         this.cursoSeleccionado = this.cursosDisponibles[0] || '';
-        this.cargarHorario(this.idCursoPorNombre[this.cursoSeleccionado] ?? null);
+        this.cargarHorarioPorCurso(this.idCursoPorNombre[this.cursoSeleccionado] ?? null);
         this.cargandoPerfil = false;
       },
       error: () => {
         this.cargandoPerfil = false;
       }
     });
+
+    this.horariosService.obtenerDocentes().subscribe({
+      next: respuesta => {
+        this.docentesDisponibles = respuesta?.data || [];
+      },
+      error: () => {
+        this.docentesDisponibles = [];
+      }
+    });
   }
 
-  private cargarHorario(idCourse: number | null): void {
-    this.horariosService.obtenerMiHorario(idCourse).subscribe({
+  private cargarMiHorario(): void {
+    this.horariosService.obtenerMiHorario().subscribe({
       next: respuesta => {
         const clases = respuesta?.data || [];
         this.horarios = this.construirGrilla(clases);
@@ -190,7 +215,47 @@ export class HorariosComponent implements OnInit, OnDestroy {
     });
   }
 
-  private construirGrilla(clases: ClaseHorarioDTO[]): BloqueHorario[] {
+  private cargarHorarioPorCurso(idCourse: number | null): void {
+    if (idCourse === null) {
+      this.horarios = [];
+      this.horarioDisponible = false;
+      return;
+    }
+
+    this.horariosService.obtenerHorarioPorCurso(idCourse).subscribe({
+      next: respuesta => {
+        const clases = respuesta?.data || [];
+        this.horarios = this.construirGrilla(clases);
+        this.horarioDisponible = this.horarios.length > 0;
+      },
+      error: () => {
+        this.horarios = [];
+        this.horarioDisponible = false;
+      }
+    });
+  }
+
+  private cargarHorarioPorDocente(idTeacher: number | null): void {
+    if (idTeacher === null) {
+      this.horarios = [];
+      this.horarioDisponible = false;
+      return;
+    }
+
+    this.horariosService.obtenerHorarioPorDocente(idTeacher).subscribe({
+      next: respuesta => {
+        const clases = respuesta?.data || [];
+        this.horarios = this.construirGrilla(clases);
+        this.horarioDisponible = this.horarios.length > 0;
+      },
+      error: () => {
+        this.horarios = [];
+        this.horarioDisponible = false;
+      }
+    });
+  }
+
+  private construirGrilla(clases: ScheduleResponseDTO[]): BloqueHorario[] {
     const filas = new Map<string, BloqueHorario>();
 
     const clasesOrdenadas = [...clases].sort((a, b) =>
@@ -252,13 +317,51 @@ export class HorariosComponent implements OnInit, OnDestroy {
     if (this.esVistaRestringida) {
       return;
     }
+    this.selectorDocentesAbierto = false;
     this.selectorCursosAbierto = !this.selectorCursosAbierto;
+  }
+
+  alternarSelectorDocentes(): void {
+    if (this.esVistaRestringida) {
+      return;
+    }
+    this.selectorCursosAbierto = false;
+    this.selectorDocentesAbierto = !this.selectorDocentesAbierto;
+  }
+
+  cambiarModoConsulta(modo: 'curso' | 'docente'): void {
+    this.modoConsulta = modo;
+    this.selectorCursosAbierto = false;
+    this.selectorDocentesAbierto = false;
+
+    if (modo === 'curso') {
+      this.cargarHorarioPorCurso(this.idCursoPorNombre[this.cursoSeleccionado] ?? null);
+    } else {
+      this.cargarHorarioPorDocente(this.docenteSeleccionado?.idUser ?? null);
+    }
   }
 
   seleccionarCurso(curso: string): void {
     this.cursoSeleccionado = curso;
     this.selectorCursosAbierto = false;
-    this.cargarHorario(this.idCursoPorNombre[curso] ?? null);
+    this.cargarHorarioPorCurso(this.idCursoPorNombre[curso] ?? null);
+  }
+
+  seleccionarDocente(docente: DocenteDTO): void {
+    this.docenteSeleccionado = docente;
+    this.selectorDocentesAbierto = false;
+    this.cargarHorarioPorDocente(docente.idUser);
+  }
+
+  nombreDocenteSeleccionado(): string {
+    if (!this.docenteSeleccionado) {
+      return 'Sin docente';
+    }
+    return `${this.docenteSeleccionado.name} ${this.docenteSeleccionado.surnames}`.trim();
+  }
+
+  nombreDocente(docente: DocenteDTO): string {
+    return `${docente.name} ${docente.surnames}`.trim();
   }
 
   seleccionarDia(dia: string): void {
@@ -322,6 +425,9 @@ export class HorariosComponent implements OnInit, OnDestroy {
         this.cargando = false;
 
         if (respuesta?.success) {
+          this.idGeneracionActual = respuesta.idGeneration ?? this.idGeneracionActual;
+          this.mostrandoPrevia = false;
+          this.horarioPrevisualizado = [];
           this.actualizarHorarioTrasIA();
         }
       },
@@ -337,8 +443,12 @@ export class HorariosComponent implements OnInit, OnDestroy {
   }
 
   private actualizarHorarioTrasIA(): void {
-    const idCourse = this.idCursoPorNombre[this.cursoSeleccionado] ?? null;
-    this.cargarHorario(idCourse);
+    if (this.modoConsulta === 'docente') {
+      this.cargarHorarioPorDocente(this.docenteSeleccionado?.idUser ?? null);
+    } else {
+      const idCourse = this.idCursoPorNombre[this.cursoSeleccionado] ?? null;
+      this.cargarHorarioPorCurso(idCourse);
+    }
 
     this.horariosService.registrarNotificacion({
       titulo: 'La IA generó un nuevo horario.',
@@ -356,5 +466,94 @@ export class HorariosComponent implements OnInit, OnDestroy {
   usarPregunta(pregunta: string): void {
     this.mensaje = pregunta;
     this.enviarMensaje();
+  }
+
+  previsualizarGeneracion(): void {
+    if (this.idGeneracionActual === null) {
+      this.errorAccionHorario = 'No hay una generación reciente para previsualizar.';
+      return;
+    }
+
+    this.previsualizando = true;
+    this.errorAccionHorario = null;
+    this.mensajeAccionHorario = null;
+
+    this.horariosService.previsualizarGeneracion(this.idGeneracionActual).subscribe({
+      next: respuesta => {
+        this.horarioPrevisualizado = respuesta?.data || [];
+        this.mostrandoPrevia = true;
+        this.previsualizando = false;
+      },
+      error: (err) => {
+        this.errorAccionHorario = err?.error?.message ?? 'No se pudo cargar la previsualización del horario.';
+        this.previsualizando = false;
+      }
+    });
+  }
+
+  cerrarPrevisualizacion(): void {
+    this.mostrandoPrevia = false;
+    this.horarioPrevisualizado = [];
+  }
+
+  publicarGeneracion(): void {
+    if (this.idGeneracionActual === null) {
+      this.errorAccionHorario = 'No hay una generación reciente para publicar.';
+      return;
+    }
+
+    this.publicando = true;
+    this.errorAccionHorario = null;
+    this.mensajeAccionHorario = null;
+
+    this.horariosService.publicarGeneracion(this.idGeneracionActual).subscribe({
+      next: () => {
+        this.publicando = false;
+        this.mostrandoPrevia = false;
+        this.horarioPrevisualizado = [];
+        this.mensajeAccionHorario = 'El horario se publicó correctamente.';
+
+        if (this.modoConsulta === 'docente') {
+          this.cargarHorarioPorDocente(this.docenteSeleccionado?.idUser ?? null);
+        } else {
+          this.cargarHorarioPorCurso(this.idCursoPorNombre[this.cursoSeleccionado] ?? null);
+        }
+      },
+      error: (err) => {
+        this.errorAccionHorario = err?.error?.message ?? 'No se pudo publicar el horario.';
+        this.publicando = false;
+      }
+    });
+  }
+
+  eliminarGeneracion(): void {
+    if (this.idGeneracionActual === null) {
+      this.errorAccionHorario = 'No hay una generación reciente para eliminar.';
+      return;
+    }
+
+    this.eliminando = true;
+    this.errorAccionHorario = null;
+    this.mensajeAccionHorario = null;
+
+    this.horariosService.eliminarGeneracion(this.idGeneracionActual).subscribe({
+      next: () => {
+        this.eliminando = false;
+        this.mostrandoPrevia = false;
+        this.horarioPrevisualizado = [];
+        this.idGeneracionActual = null;
+        this.mensajeAccionHorario = 'El horario se eliminó correctamente.';
+
+        if (this.modoConsulta === 'docente') {
+          this.cargarHorarioPorDocente(this.docenteSeleccionado?.idUser ?? null);
+        } else {
+          this.cargarHorarioPorCurso(this.idCursoPorNombre[this.cursoSeleccionado] ?? null);
+        }
+      },
+      error: (err) => {
+        this.errorAccionHorario = err?.error?.message ?? 'No se pudo eliminar el horario.';
+        this.eliminando = false;
+      }
+    });
   }
 }

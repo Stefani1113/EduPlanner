@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { BehaviorSubject, Observable, of } from 'rxjs';
+import { catchError, map, tap } from 'rxjs/operators';
 
 export interface InstitutionPalette {
   primary: string;
@@ -47,6 +49,31 @@ export interface InstitutionSettings {
   info: InstitutionInfo;
 }
 
+interface BrandColors {
+  primary: string;
+  secondary: string;
+  accent: string;
+}
+
+interface ConfigurationResponse {
+  shortName: string;
+  longName: string;
+  description: string;
+  logoUrl: string;
+  primaryColor: string;
+  secondaryColor: string;
+  accentColor: string;
+  cardBackground: string;
+  secondaryBackground: string;
+  generalBackground: string;
+  institutionalWhite: string;
+  updatedAt: string;
+}
+
+interface HttpGlobalResponse<T> {
+  data: T;
+  message: string;
+}
 
 export const INFO_TEXT_LIMITS = {
   nombreCorto: 40,
@@ -69,6 +96,12 @@ const LEGACY_STORAGE_KEYS = [
   'asignaturas',
   'docentes'
 ];
+
+const STORAGE_KEY = 'eduplanner.institution-settings.v3';
+const THEME_MODE_KEY = 'eduplanner.theme-mode';
+const CUSTOM_PALETTE_KEY = 'eduplanner.custom-palette';
+const BRAND_COLORS_KEY = 'eduplanner.brand-colors';
+const SYNC_INTERVAL_MS = 15000;
 
 const DEFAULT_PALETTE: InstitutionPalette = {
   primary: '#0d790b',
@@ -96,9 +129,13 @@ const LIGHT_PALETTE: InstitutionPalette = {
   border: '#d8ddd4'
 };
 
-export type ThemeMode = 'dark' | 'light';
+const DEFAULT_BRAND_COLORS: BrandColors = {
+  primary: DEFAULT_PALETTE.primary,
+  secondary: DEFAULT_PALETTE.secondary,
+  accent: DEFAULT_PALETTE.accent
+};
 
-const THEME_MODE_KEY = 'eduplanner.theme-mode';
+export type ThemeMode = 'dark' | 'light' | 'custom';
 
 const DEFAULT_INFO: InstitutionInfo = {
   logoUrl: '',
@@ -155,6 +192,10 @@ const DEFAULT_INFO: InstitutionInfo = {
 })
 export class InstitutionSettingsService {
 
+  private readonly apiUrl = '/configuracion-institucional/configuration';
+
+  private ultimosColoresMarca: BrandColors = this.loadBrandColors();
+
   private settingsSubject =
     new BehaviorSubject<InstitutionSettings>(
       this.load()
@@ -169,7 +210,50 @@ export class InstitutionSettingsService {
   readonly mode$ =
     this.modeSubject.asObservable();
 
-  constructor() {}
+  private syncTimer?: ReturnType<typeof setInterval>;
+
+  private storageListener = (event: StorageEvent): void => {
+
+    if (event.key === BRAND_COLORS_KEY && event.newValue) {
+      try {
+        this.ultimosColoresMarca = JSON.parse(event.newValue) as BrandColors;
+        this.applyModePalette(this.currentMode);
+      } catch {
+        // Ignorar valor inválido.
+      }
+    }
+
+    if (event.key === CUSTOM_PALETTE_KEY && this.currentMode === 'custom') {
+      this.applyModePalette('custom');
+    }
+
+    if (event.key === STORAGE_KEY && event.newValue) {
+      try {
+        const parsed = JSON.parse(event.newValue) as InstitutionSettings;
+        if (parsed?.info) {
+          const next: InstitutionSettings = {
+            palette: this.settingsSubject.value.palette,
+            info: this.sanitizeInfo(parsed.info)
+          };
+          this.settingsSubject.next(next);
+        }
+      } catch {
+        // Ignorar valores locales inválidos.
+      }
+    }
+
+    if (event.key === THEME_MODE_KEY) {
+      const mode = event.newValue as ThemeMode | null;
+      if (mode === 'dark' || mode === 'light' || mode === 'custom') {
+        this.modeSubject.next(mode);
+        this.applyModePalette(mode);
+      }
+    }
+  };
+
+  constructor(private http: HttpClient) {
+    window.addEventListener('storage', this.storageListener);
+  }
 
 
   get current(): InstitutionSettings {
@@ -181,9 +265,41 @@ export class InstitutionSettingsService {
   }
 
 
-  // Cambia entre el preset claro y oscuro, y lo aplica de inmediato.
-  setMode(mode: ThemeMode): void {
+  cargarDesdeBackend(): void {
+    this.http.get<HttpGlobalResponse<ConfigurationResponse>>(this.apiUrl).pipe(
+      catchError(() => of(null))
+    ).subscribe(respuesta => {
 
+      const config = respuesta?.data;
+
+      const info: InstitutionInfo = {
+        ...this.settingsSubject.value.info,
+        nombreCorto: config?.shortName || this.settingsSubject.value.info.nombreCorto,
+        nombreLargo: config?.longName || this.settingsSubject.value.info.nombreLargo,
+        descripcion: config?.description || this.settingsSubject.value.info.descripcion,
+        logoUrl: config ? (config.logoUrl || '') : this.settingsSubject.value.info.logoUrl
+      };
+
+      if (config) {
+        this.ultimosColoresMarca = {
+          primary: config.primaryColor || this.ultimosColoresMarca.primary,
+          secondary: config.secondaryColor || this.ultimosColoresMarca.secondary,
+          accent: config.accentColor || this.ultimosColoresMarca.accent
+        };
+        this.guardarColoresMarca(this.ultimosColoresMarca);
+      }
+
+      const palette = this.getModePalette(this.currentMode, this.settingsSubject.value.palette);
+      const next: InstitutionSettings = { palette, info: this.sanitizeInfo(info) };
+
+      this.settingsSubject.next(next);
+      this.saveLocal(next);
+      this.applyPalette(palette);
+    });
+  }
+
+
+  setMode(mode: ThemeMode): void {
     this.modeSubject.next(mode);
 
     try {
@@ -192,18 +308,49 @@ export class InstitutionSettingsService {
       console.error('No se pudo guardar la preferencia de tema:', error);
     }
 
-    this.updatePalette(
-      mode === 'light' ? { ...LIGHT_PALETTE } : { ...DEFAULT_PALETTE }
-    );
+    this.applyModePalette(mode);
+  }
+
+  private applyModePalette(mode: ThemeMode): void {
+    const palette = this.getModePalette(mode, this.settingsSubject.value.palette);
+    const next = {
+      ...this.settingsSubject.value,
+      palette
+    };
+
+    this.settingsSubject.next(next);
+    this.saveLocal(next);
+    this.applyPalette(palette);
+  }
+
+  private getModePalette(
+    mode: ThemeMode,
+    institutionPalette: InstitutionPalette
+  ): InstitutionPalette {
+
+    if (mode === 'custom') {
+      return {
+        ...(this.loadCustomPalette() || institutionPalette)
+      };
+    }
+
+    const preset = mode === 'light' ? LIGHT_PALETTE : DEFAULT_PALETTE;
+
+    // Oscuro y Claro son presets completos (fondos, texto, bordes) más los
+    // 3 colores de identidad de la institución.
+    return {
+      ...preset,
+      primary: this.ultimosColoresMarca.primary,
+      secondary: this.ultimosColoresMarca.secondary,
+      accent: this.ultimosColoresMarca.accent
+    };
   }
 
 
   private loadMode(): ThemeMode {
-
     try {
-      return localStorage.getItem(THEME_MODE_KEY) === 'light'
-        ? 'light'
-        : 'dark';
+      const mode = localStorage.getItem(THEME_MODE_KEY);
+      return mode === 'light' || mode === 'custom' ? mode : 'dark';
     } catch (error) {
       return 'dark';
     }
@@ -211,39 +358,68 @@ export class InstitutionSettingsService {
 
 
   activarTemaSesion(): void {
-    this.applyPalette(this.settingsSubject.value.palette);
+    this.applyModePalette(this.currentMode);
+    this.cargarDesdeBackend();
+
+    if (!this.syncTimer) {
+      this.syncTimer = setInterval(() => this.cargarDesdeBackend(), SYNC_INTERVAL_MS);
+    }
+  }
+
+  detenerSincronizacion(): void {
+    if (this.syncTimer) {
+      clearInterval(this.syncTimer);
+      this.syncTimer = undefined;
+    }
+  }
+
+  restaurarTemaPublico(): void {
+    this.applyPalette(DEFAULT_PALETTE);
   }
 
 
-  restaurarTemaPorDefecto(): void {
-    const root = document.documentElement.style;
-
-    root.removeProperty('--inst-primary');
-    root.removeProperty('--inst-secondary');
-    root.removeProperty('--inst-accent');
-    root.removeProperty('--inst-dark');
-    root.removeProperty('--inst-light');
-    root.removeProperty('--inst-surface');
-    root.removeProperty('--inst-surface-alt');
-    root.removeProperty('--inst-text');
-    root.removeProperty('--inst-muted');
-    root.removeProperty('--inst-border');
-  }
-
-
-  updatePalette(
-    palette: InstitutionPalette
+  /**
+   * Guarda la paleta editada desde el panel de administración.
+   *
+   * Oscuro y Claro son temas fijos: si el administrador cambia cualquier
+   * color estando en uno de ellos, el sistema pasa automáticamente a
+   * "Personalizado" y conserva ese cambio (partiendo de los colores que se
+   * veían en pantalla). Guardar solo la información institucional, sin
+   * tocar colores, NO cambia el modo.
+   *
+   * La paleta personalizada vive solo en "Personalizado": no toca los
+   * colores de marca ni el backend, así no contamina Oscuro ni Claro.
+   */
+  updateSettings(
+    palette: InstitutionPalette,
+    info: InstitutionInfo
   ): void {
 
-    const next: InstitutionSettings = {
-      ...this.settingsSubject.value,
+    const infoSaneada = this.sanitizeInfo(info);
+    const cambioColores = this.paletaCambio(palette, this.settingsSubject.value.palette);
 
-      palette: {
-        ...palette
+    if (this.currentMode === 'custom' || cambioColores) {
+
+      // Guardar primero: setMode('custom') lee la paleta personalizada.
+      this.guardarPaletaPersonalizada(palette);
+
+      if (this.currentMode !== 'custom') {
+        this.setMode('custom');
       }
-    };
 
-    this.persist(next);
+      this.persist({ palette: { ...palette }, info: infoSaneada });
+      this.sincronizarInfo(infoSaneada);
+      return;
+    }
+
+    // Oscuro / Claro sin cambios de color: solo se guarda la información.
+    this.persist({ ...this.settingsSubject.value, info: infoSaneada });
+    this.sincronizarInfo(infoSaneada);
+  }
+
+  private paletaCambio(a: InstitutionPalette, b: InstitutionPalette): boolean {
+    return (Object.keys(a) as (keyof InstitutionPalette)[])
+      .some(key => (a[key] || '').toLowerCase() !== (b[key] || '').toLowerCase());
   }
 
 
@@ -252,49 +428,130 @@ export class InstitutionSettingsService {
   ): void {
 
     const next: InstitutionSettings = {
-
       ...this.settingsSubject.value,
-
       info: this.sanitizeInfo(info)
     };
 
     this.persist(next);
-  }
-
-
-  updateSettings(
-    palette: InstitutionPalette,
-    info: InstitutionInfo
-  ): void {
-
-    const next: InstitutionSettings = {
-
-      palette: {
-        ...palette
-      },
-
-      info: this.sanitizeInfo(info)
-    };
-
-    this.persist(next);
+    this.sincronizarInfo(next.info);
   }
 
 
   resetToDefaults(): void {
 
-    const paletteBase =
-      this.currentMode === 'light' ? LIGHT_PALETTE : DEFAULT_PALETTE;
+    try {
+      localStorage.removeItem(CUSTOM_PALETTE_KEY);
+      localStorage.removeItem(BRAND_COLORS_KEY);
+      localStorage.setItem(THEME_MODE_KEY, 'dark');
+    } catch (error) {
+      console.error('No se pudo limpiar la personalización guardada:', error);
+    }
+
+    this.ultimosColoresMarca = { ...DEFAULT_BRAND_COLORS };
+    this.modeSubject.next('dark');
+
+    const infoActual = this.settingsSubject.value.info;
+
+    const infoRestablecida: InstitutionInfo = {
+      ...DEFAULT_INFO,
+      logoUrl: infoActual.logoUrl,
+      carousel: infoActual.carousel.map(image => ({ ...image })),
+      comunidadImagenUrl: infoActual.comunidadImagenUrl,
+      espaciosImagenUrl: infoActual.espaciosImagenUrl
+    };
 
     const next: InstitutionSettings = {
-
-      palette: {
-        ...paletteBase
-      },
-
-      info: this.sanitizeInfo(DEFAULT_INFO)
+      palette: { ...DEFAULT_PALETTE },
+      info: this.sanitizeInfo(infoRestablecida)
     };
 
     this.persist(next);
+
+    this.http.post<HttpGlobalResponse<ConfigurationResponse>>(`${this.apiUrl}/colors/reset`, {}).pipe(
+      catchError(() => of(null))
+    ).subscribe();
+
+    this.http.put<HttpGlobalResponse<ConfigurationResponse>>(`${this.apiUrl}/info`, {
+      shortName: DEFAULT_INFO.nombreCorto,
+      longName: DEFAULT_INFO.nombreLargo,
+      description: DEFAULT_INFO.descripcion
+    }).pipe(
+      catchError(() => of(null))
+    ).subscribe();
+  }
+
+
+  subirLogo(file: File): Observable<string | null> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    return this.http.post<HttpGlobalResponse<ConfigurationResponse>>(
+      `${this.apiUrl}/logo`,
+      formData
+    ).pipe(
+      tap(respuesta => {
+        const logoUrl = respuesta?.data?.logoUrl || '';
+        const next: InstitutionSettings = {
+          ...this.settingsSubject.value,
+          info: { ...this.settingsSubject.value.info, logoUrl }
+        };
+        this.persist(next);
+      }),
+      map(respuesta => respuesta?.data?.logoUrl || null),
+      catchError(() => of(null))
+    );
+  }
+
+
+  eliminarLogo(): void {
+    this.http.delete<HttpGlobalResponse<ConfigurationResponse>>(`${this.apiUrl}/logo`).pipe(
+      catchError(() => of(null))
+    ).subscribe(() => {
+      const next: InstitutionSettings = {
+        ...this.settingsSubject.value,
+        info: { ...this.settingsSubject.value.info, logoUrl: '' }
+      };
+      this.persist(next);
+    });
+  }
+
+
+  private actualizarColoresMarcaDesde(palette: InstitutionPalette): void {
+    this.ultimosColoresMarca = {
+      primary: palette.primary,
+      secondary: palette.secondary,
+      accent: palette.accent
+    };
+    this.guardarColoresMarca(this.ultimosColoresMarca);
+  }
+
+
+
+  private sincronizarColores(palette: InstitutionPalette): void {
+    const body = {
+      primaryColor: palette.primary,
+      secondaryColor: palette.secondary,
+      accentColor: palette.accent,
+      cardBackground: palette.surface,
+      secondaryBackground: palette.surfaceAlt
+    };
+
+    this.http.put<HttpGlobalResponse<ConfigurationResponse>>(`${this.apiUrl}/colors`, body).pipe(
+      catchError(() => of(null))
+    ).subscribe();
+  }
+
+
+  private sincronizarInfo(info: InstitutionInfo): void {
+    const body = {
+      shortName: info.nombreCorto,
+      longName: info.nombreLargo,
+      description: info.descripcion
+    };
+
+    this.http.put<HttpGlobalResponse<ConfigurationResponse>>(`${this.apiUrl}/info`, body).pipe(
+      catchError(() => of(null))
+    ).subscribe();
   }
 
 
@@ -303,7 +560,7 @@ export class InstitutionSettingsService {
   ): void {
 
     this.settingsSubject.next(settings);
-
+    this.saveLocal(settings);
     this.applySettings(settings);
   }
 
@@ -370,63 +627,93 @@ export class InstitutionSettingsService {
     const root =
       document.documentElement.style;
 
-    root.setProperty(
-      '--inst-primary',
-      palette.primary
-    );
+    root.setProperty('--inst-primary', palette.primary);
+    root.setProperty('--inst-secondary', palette.secondary);
+    root.setProperty('--inst-accent', palette.accent);
+    root.setProperty('--inst-dark', palette.dark);
+    root.setProperty('--inst-light', palette.light);
+    root.setProperty('--inst-surface', palette.surface);
+    root.setProperty('--inst-surface-alt', palette.surfaceAlt);
+    root.setProperty('--inst-text', palette.text);
+    root.setProperty('--inst-muted', palette.muted);
+    root.setProperty('--inst-border', palette.border);
+  }
 
-    root.setProperty(
-      '--inst-secondary',
-      palette.secondary
-    );
 
-    root.setProperty(
-      '--inst-accent',
-      palette.accent
-    );
+  private guardarColoresMarca(colores: BrandColors): void {
+    try {
+      localStorage.setItem(BRAND_COLORS_KEY, JSON.stringify(colores));
+    } catch (error) {
+      console.error('No se pudieron guardar los colores de marca:', error);
+    }
+  }
 
-    root.setProperty(
-      '--inst-dark',
-      palette.dark
-    );
+  private loadBrandColors(): BrandColors {
+    try {
+      const raw = localStorage.getItem(BRAND_COLORS_KEY);
+      if (!raw) return { ...DEFAULT_BRAND_COLORS };
+      const parsed = JSON.parse(raw) as BrandColors;
+      if (parsed?.primary && parsed?.secondary && parsed?.accent) {
+        return { primary: parsed.primary, secondary: parsed.secondary, accent: parsed.accent };
+      }
+    } catch (error) {
+      console.error('No se pudieron leer los colores de marca guardados:', error);
+    }
+    return { ...DEFAULT_BRAND_COLORS };
+  }
 
-    root.setProperty(
-      '--inst-light',
-      palette.light
-    );
 
-    root.setProperty(
-      '--inst-surface',
-      palette.surface
-    );
+  private guardarPaletaPersonalizada(palette: InstitutionPalette): void {
+    try {
+      localStorage.setItem(CUSTOM_PALETTE_KEY, JSON.stringify(palette));
+    } catch (error) {
+      console.error('No se pudo guardar la paleta personalizada:', error);
+    }
+  }
 
-    root.setProperty(
-      '--inst-surface-alt',
-      palette.surfaceAlt
-    );
+  private loadCustomPalette(): InstitutionPalette | null {
+    try {
+      const raw = localStorage.getItem(CUSTOM_PALETTE_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw) as InstitutionPalette;
+      if (parsed?.primary && parsed?.secondary && parsed?.accent && parsed?.dark && parsed?.light && parsed?.surface && parsed?.surfaceAlt && parsed?.text && parsed?.muted && parsed?.border) {
+        return { ...parsed };
+      }
+    } catch (error) {
+      console.error('No se pudo leer la paleta personalizada:', error);
+    }
+    return null;
+  }
 
-    root.setProperty(
-      '--inst-text',
-      palette.text
-    );
-
-    root.setProperty(
-      '--inst-muted',
-      palette.muted
-    );
-
-    root.setProperty(
-      '--inst-border',
-      palette.border
-    );
+  private saveLocal(settings: InstitutionSettings): void {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+    } catch (error) {
+      console.error('No se pudo guardar la configuración institucional localmente:', error);
+    }
   }
 
 
   private load(): InstitutionSettings {
 
-
-
     this.limpiarStorageLegado();
+
+    const mode = this.loadMode();
+
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as InstitutionSettings;
+        if (parsed?.info) {
+          return {
+            palette: this.getModePalette(mode, parsed.palette || DEFAULT_PALETTE),
+            info: this.sanitizeInfo(parsed.info)
+          };
+        }
+      }
+    } catch (error) {
+      console.error('No se pudo leer la configuración institucional guardada:', error);
+    }
 
     return this.cloneDefaults();
   }
@@ -452,16 +739,17 @@ export class InstitutionSettingsService {
 
   private cloneDefaults(): InstitutionSettings {
 
-    const paletteBase =
-      this.loadMode() === 'light' ? LIGHT_PALETTE : DEFAULT_PALETTE;
+    const mode = this.loadMode();
 
     return {
-
-      palette: {
-        ...paletteBase
-      },
-
+      palette: this.getModePalette(mode, DEFAULT_PALETTE),
       info: this.sanitizeInfo(DEFAULT_INFO)
     };
   }
+
+  ngOnDestroy(): void {
+    this.detenerSincronizacion();
+    window.removeEventListener('storage', this.storageListener);
+  }
+
 }
