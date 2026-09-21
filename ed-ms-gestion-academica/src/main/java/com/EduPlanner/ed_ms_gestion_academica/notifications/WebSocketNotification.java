@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class WebSocketNotification implements Notification {
 
+
         private final SimpMessagingTemplate messagingTemplate;
 
         @Override
