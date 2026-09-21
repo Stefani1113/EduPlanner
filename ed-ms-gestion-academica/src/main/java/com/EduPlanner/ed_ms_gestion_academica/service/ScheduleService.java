@@ -1,6 +1,8 @@
 package com.EduPlanner.ed_ms_gestion_academica.service;
 
 import com.EduPlanner.ed_ms_gestion_academica.client.AdministracionServiceClient;
+import com.EduPlanner.ed_ms_gestion_academica.notifications.Notification;
+import com.EduPlanner.ed_ms_gestion_academica.notifications.NotificationFactory;
 import com.EduPlanner.ed_ms_gestion_academica.repository.AcademicLoadRepository;
 import com.EduPlanner.ed_ms_gestion_academica.repository.AcademicPeriodRepository;
 import com.EduPlanner.ed_ms_gestion_academica.repository.AcademicTeacherRepository;
@@ -13,6 +15,7 @@ import com.EduPlanner.ed_ms_gestion_academica.repository.TimeSlotRepository;
 import com.eduplanner.ed_lib_common.dto.ScheduleGenerationRequestDTO;
 import com.eduplanner.ed_lib_common.dto.ScheduleItemRequestDTO;
 import com.eduplanner.ed_lib_common.dto.ScheduleResponseDTO;
+import com.eduplanner.ed_lib_common.dto.UserResponseDTO;
 import com.eduplanner.ed_lib_common.entity.AcademicLoad;
 import com.eduplanner.ed_lib_common.entity.AcademicPeriod;
 import com.eduplanner.ed_lib_common.entity.AcademicTeacher;
@@ -33,6 +36,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+
 @Service
 @RequiredArgsConstructor
 public class ScheduleService {
@@ -47,6 +51,7 @@ public class ScheduleService {
         private final TimeSlotRepository timeSlotRepository;
         private final CourseRepository courseRepository;
         private final AcademicPeriodRepository academicPeriodRepository;
+        private final NotificationFactory notificationFactory;
 
         @Transactional
         public Integer saveGeneration(ScheduleGenerationRequestDTO dto) {
@@ -308,12 +313,13 @@ public class ScheduleService {
         return dto;
     }
 
-    /**
-     * Metodo para publicar horario
-     */
-    @Transactional
-    public void publishGeneration(Integer idGeneration) {
+        /**
+        * Metodo para publicar horario y enviar notificación de publicación
+        */
+        @Transactional
+        public void publishGeneration(Integer idGeneration) {
 
+        //Buscar la generación
         ScheduleGeneration generation =
                 generationRepository.findById(idGeneration)
                         .orElseThrow(() ->
@@ -321,66 +327,122 @@ public class ScheduleService {
                                         "No se encontró la generación"
                                 ));
 
+        //Verificar que pueda publicarse
         if (generation.getStatus()
                 != SchedulerGenerationStatus.COMPLETED) {
 
-            throw new IllegalArgumentException(
-                    "Solo se pueden publicar generaciones completadas"
-            );
+                throw new IllegalArgumentException(
+                        "Solo se pueden publicar generaciones completadas"
+                );
         }
 
+        //Publicar la generación
         generation.setStatus(
                 SchedulerGenerationStatus.PUBLISHED
         );
 
         generationRepository.save(generation);
-    }
 
-    /**
-     * Previsualización de horario antes de publicar
-     */
-    public List<ScheduleResponseDTO> previewGeneration(
-        Integer idGeneration) {
+        //Obtener los horarios de la generación publicada
+        List<Schedule> schedules =
+                scheduleRepository
+                        .findByIdScheduleGenerationAndStatusTrue(
+                                idGeneration
+                        );
 
-    ScheduleGeneration generation =
-            generationRepository.findById(idGeneration)
-                    .orElseThrow(() ->
-                            new IllegalArgumentException(
-                                    "No se encontró la generación"
-                            ));
+        // Si no hay horarios, no hay usuarios a notificar
+        if (schedules.isEmpty()) {
+                return;
+        }
 
-    if (generation.getStatus()
-            == SchedulerGenerationStatus.FAILED) {
+        //Crear el notificador
+        Notification notification =
+                notificationFactory.createNotification();
 
-        throw new IllegalArgumentException(
-                "La generación falló y no puede ser visualizada"
-        );
-    }
+        //Usuarios que ya recibieron la notificación
+        Set<Integer> notifiedUsers = new HashSet<>();
 
-    if (generation.getStatus()
-            == SchedulerGenerationStatus.PROCESSING) {
+        //Cursos que ya fueron procesados
+        Set<Integer> processedCourses = new HashSet<>();
 
-        throw new IllegalArgumentException(
-                "La generación todavía está en proceso"
-        );
-    }
+        //Recorrer los horarios
+        for (Schedule schedule : schedules) {
 
-    List<Schedule> schedules =
-            scheduleRepository
-                    .findByIdScheduleGenerationAndStatusTrue(
-                            idGeneration
-                    );
+                // Obtener carga académica
+                AcademicLoad load =
+                        academicLoadRepository
+                                .findById(schedule.getIdAcademicLoad())
+                                .orElse(null);
 
-    return schedules.stream()
-            .map(this::buildScheduleResponse)
-            .toList();
-    }
+                if (load == null) {
+                continue;
+                }
 
-    /**
-     * Eliminar horario
-     */
-    @Transactional
-    public void deleteGeneration(Integer idGeneration) {
+                Integer idCourse = load.getIdCourse();
+
+                /*
+                * Solo consultamos Administración una vez por curso.
+                */
+                if (processedCourses.add(idCourse)) {
+
+                List<UserResponseDTO> students =
+                        administracionServiceClient
+                                .getUsersByCourse(idCourse);
+
+                for (UserResponseDTO student : students) {
+
+                        Integer idUser = student.getIdUser();
+
+                        if (idUser == null) {
+                        continue;
+                        }
+
+                        // Evitar notificación duplicada
+                        if (notifiedUsers.add(idUser)) {
+
+                        notification.send(
+                                idUser,
+                                "Horario actualizado",
+                                "Tu horario académico ha sido actualizado.",
+                                schedule.getIdSchedule()
+                        );
+                        }
+                }
+                }
+                // Notificar Docente
+                AcademicTeacher teacher =
+                        academicTeacherRepository
+                                .findById(load.getIdTeacher())
+                                .orElse(null);
+
+                if (teacher == null) {
+                continue;
+                }
+
+                Integer idUserTeacher = teacher.getIdUser();
+
+                if (idUserTeacher == null) {
+                continue;
+                }
+
+                // Evitar notificación duplicada
+                if (notifiedUsers.add(idUserTeacher)) {
+
+                notification.send(
+                        idUserTeacher,
+                        "Horario actualizado",
+                        "Tu horario académico ha sido actualizado.",
+                        schedule.getIdSchedule()
+                );
+                }
+        }
+        }
+
+        /**
+         * Previsualización de horario antes de publicar
+         */
+        public List<ScheduleResponseDTO> previewGeneration(
+                Integer idGeneration) {
 
         ScheduleGeneration generation =
                 generationRepository.findById(idGeneration)
@@ -390,21 +452,61 @@ public class ScheduleService {
                                 ));
 
         if (generation.getStatus()
-                == SchedulerGenerationStatus.PUBLISHED) {
+                == SchedulerGenerationStatus.FAILED) {
 
-            throw new IllegalArgumentException(
-                    "No se puede eliminar una generación publicada"
-            );
+                throw new IllegalArgumentException(
+                        "La generación falló y no puede ser visualizada"
+                );
         }
 
-        scheduleRepository
-                .deleteByIdScheduleGeneration(idGeneration);
+        if (generation.getStatus()
+                == SchedulerGenerationStatus.PROCESSING) {
 
-        generationCourseRepository
-                .deleteByIdScheduleGeneration(idGeneration);
+                throw new IllegalArgumentException(
+                        "La generación todavía está en proceso"
+                );
+        }
 
-        generationRepository.delete(generation);
-    }
+        List<Schedule> schedules =
+                scheduleRepository
+                        .findByIdScheduleGenerationAndStatusTrue(
+                                idGeneration
+                        );
+
+        return schedules.stream()
+                .map(this::buildScheduleResponse)
+                .toList();
+        }
+
+        /**
+         * Eliminar horario
+         */
+        @Transactional
+        public void deleteGeneration(Integer idGeneration) {
+
+                ScheduleGeneration generation =
+                        generationRepository.findById(idGeneration)
+                                .orElseThrow(() ->
+                                        new IllegalArgumentException(
+                                                "No se encontró la generación"
+                                        ));
+
+                if (generation.getStatus()
+                        == SchedulerGenerationStatus.PUBLISHED) {
+
+                throw new IllegalArgumentException(
+                        "No se puede eliminar una generación publicada"
+                );
+                }
+
+                scheduleRepository
+                        .deleteByIdScheduleGeneration(idGeneration);
+
+                generationCourseRepository
+                        .deleteByIdScheduleGeneration(idGeneration);
+
+                generationRepository.delete(generation);
+        }
 
         /**
          * Obtener curso para descargar pdf

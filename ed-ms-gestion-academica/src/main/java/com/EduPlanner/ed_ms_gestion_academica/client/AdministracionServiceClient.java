@@ -26,7 +26,7 @@ public interface AdministracionServiceClient {
      * @param idCourse ID del curso
      * @return lista de usuarios
      */
-    @GetMapping("/eduplanner/internal/users/courses/{idCourse}")
+    @GetMapping("/eduplanner/internal/users/course/{idCourse}")
     List<UserResponseDTO> getUsersByCourse(
             @PathVariable("idCourse") Integer idCourse
     );
