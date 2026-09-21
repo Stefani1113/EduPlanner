@@ -100,11 +100,22 @@ footer {
     border-color 0.2s ease;
 }
 
-.footer-theme-btn img {
+.footer-theme-btn .theme-icon {
   width: 24px;
   height: 24px;
-  object-fit: contain;
   display: block;
+  background-color: var(--inst-muted);
+  -webkit-mask: var(--icon) center / contain no-repeat;
+  mask: var(--icon) center / contain no-repeat;
+  transition: background-color 0.2s ease;
+}
+
+.footer-theme-btn:hover .theme-icon {
+  background-color: var(--inst-text);
+}
+
+.footer-theme-btn.active .theme-icon {
+  background-color: var(--inst-secondary);
 }
 
 .footer-theme-btn:hover {
@@ -197,7 +208,7 @@ footer {
     height: 38px;
   }
 
-  .footer-theme-btn img {
+  .footer-theme-btn .theme-icon {
     width: 22px;
     height: 22px;
   }
@@ -225,7 +236,7 @@ footer {
     height: 36px;
   }
 
-  .footer-theme-btn img {
+  .footer-theme-btn .theme-icon {
     width: 20px;
     height: 20px;
   }

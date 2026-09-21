@@ -291,6 +291,12 @@
   cursor: pointer;
   transition: all 0.3s ease;
 
+  svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 25px color-mix(in srgb, var(--inst-primary) 30%, transparent);
@@ -311,6 +317,12 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+
+  svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
 
   &:hover {
     border-color: color-mix(in srgb, var(--inst-text) 20%, transparent);
@@ -608,34 +620,44 @@
 
 .theme-mode-toggle {
   display: flex;
+  align-items: stretch;
   gap: 6px;
-  background: #101110;
+  background: var(--inst-surface-alt);
   border-radius: 10px;
   padding: 4px;
-  width: fit-content;
+  width: 100%;
   margin: 0 0 18px;
   border: 1px solid var(--inst-border);
+  box-sizing: border-box;
 }
 
-.theme-mode-btn {
+.theme-mode-toggle .theme-mode-btn {
+  box-sizing: border-box;
+  flex: 1 1 33.333%;
+  width: 33.333%;
+  max-width: 33.333%;
+  text-align: center;
   border: 0;
   background: transparent;
   color: var(--inst-muted);
   font-size: 13px;
   font-weight: 500;
-  padding: 8px 18px;
+  padding: 8px 12px;
   border-radius: 7px;
   cursor: pointer;
   transition: .18s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.theme-mode-btn:hover {
+.theme-mode-toggle .theme-mode-btn:hover {
   color: var(--inst-text);
 }
 
-.theme-mode-btn.active {
-  background: var(--inst-surface);
-  color: var(--inst-secondary);
-  font-weight: 600;
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--inst-secondary) 35%, transparent);
+.theme-mode-toggle .theme-mode-btn.active {
+  background: var(--inst-secondary);
+  color: var(--inst-light);
+  font-weight: 700;
+  box-shadow: none;
 }
