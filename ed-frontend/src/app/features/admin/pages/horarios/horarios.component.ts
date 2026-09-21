@@ -226,6 +226,20 @@ export class HorariosComponent implements OnInit, OnDestroy {
     });
   }
 
+  private refrescarHorarioVisible(): void {
+    if (this.esVistaRestringida) {
+      this.cargarMiHorario();
+      return;
+    }
+
+    if (this.modoConsulta === 'docente') {
+      this.cargarHorarioPorDocente(this.docenteSeleccionado?.idUser ?? null);
+      return;
+    }
+
+    this.cargarHorarioPorCurso(this.idCursoPorNombre[this.cursoSeleccionado] ?? null);
+  }
+
   private cargarHorarioPorDocente(idTeacher: number | null): void {
     if (idTeacher === null) {
       this.horarios = [];
