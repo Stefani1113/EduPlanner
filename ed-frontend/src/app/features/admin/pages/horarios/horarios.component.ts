@@ -6,6 +6,7 @@ import {
   MensajeIA,
   BloqueHorario,
   ConflictoHorario,
+  NotificacionHorario,
   CursoDTO,
   DocenteDTO,
   ScheduleResponseDTO
@@ -13,6 +14,12 @@ import {
 import { PerfilService } from '../../services/perfil.service';
 import { BreadcrumbService } from '../../services/breadcrumb.service';
 import { ModalService } from '../../../../core/services/modal.service';
+
+/** Guarda la generación de la IA pendiente de publicar, para no perderla al recargar. */
+const CLAVE_GENERACION_PENDIENTE = 'eduplanner.generacion-pendiente';
+
+/** Copia del último horario publicado desde este navegador, por si el servidor falla al consultarlo. */
+const CLAVE_ULTIMO_PUBLICADO = 'eduplanner.ultimo-publicado';
 
 @Component({
   selector: 'app-horarios',
@@ -40,6 +47,15 @@ export class HorariosComponent implements OnInit, OnDestroy {
 
   conflictos: ConflictoHorario[] = [];
 
+  notificaciones: NotificacionHorario[] = [];
+
+  get notificacionActual(): NotificacionHorario | null {
+    if (this.esVistaRestringida) {
+      return null;
+    }
+    return this.notificaciones[0] || null;
+  }
+
   cursosDisponibles: string[] = [];
   cursoSeleccionado = '';
   selectorCursosAbierto = false;
@@ -66,14 +82,14 @@ export class HorariosComponent implements OnInit, OnDestroy {
   horaActual = new Date();
   private idIntervaloReloj: ReturnType<typeof setInterval> | null = null;
 
+  /** Generación de la IA que todavía no se ha publicado. */
   idGeneracionActual: number | null = null;
-  horarioPrevisualizado: ScheduleResponseDTO[] = [];
-  mostrandoPrevia = false;
-  previsualizando = false;
+
+  /** Clases del horario generado por la IA (sin publicar). Se muestran en la grilla. */
+  borrador: ScheduleResponseDTO[] | null = null;
+
   publicando = false;
   eliminando = false;
-  mensajeAccionHorario: string | null = null;
-  errorAccionHorario: string | null = null;
 
   private readonly nombresDias = [
     'Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'
@@ -102,6 +118,7 @@ export class HorariosComponent implements OnInit, OnDestroy {
     }, 1000);
 
     this.conflictos = this.horariosService.obtenerConflictos();
+    this.notificaciones = this.horariosService.obtenerNotificaciones();
 
     this.perfilService.obtenerMiPerfil().subscribe({
       next: respuesta => {
@@ -135,19 +152,29 @@ export class HorariosComponent implements OnInit, OnDestroy {
   }
 
   private inicializarVista(): void {
+    if (!this.esVistaRestringida) {
+      this.restaurarGeneracionPendiente();
+    }
+
     if (this.esVistaRestringida) {
 
       if (this.esEstudiante) {
         this.horariosService.obtenerCursos().subscribe({
           next: respuesta => {
             const curso = (respuesta?.data || [])
-              .find(c => c.idCourse === this.idCursoEstudiante);
+              .find(c => Number(c.idCourse) === Number(this.idCursoEstudiante));
 
             this.cursoSeleccionado = curso?.name || '';
+
+            if (!this.cursoSeleccionado) {
+              this.cargarNombreCursoEstudiante(this.idCursoEstudiante);
+            }
+
             this.cargarMiHorario();
             this.cargandoPerfil = false;
           },
           error: () => {
+            this.cargarNombreCursoEstudiante(this.idCursoEstudiante);
             this.cargarMiHorario();
             this.cargandoPerfil = false;
           }
@@ -192,12 +219,35 @@ export class HorariosComponent implements OnInit, OnDestroy {
     });
   }
 
+  /** Busca el nombre del curso del estudiante cuando no vino en la lista de cursos. */
+  private cargarNombreCursoEstudiante(idCourse: number | null): void {
+    if (idCourse === null || idCourse === undefined) {
+      return;
+    }
+
+    this.horariosService.obtenerCursoPorId(idCourse).subscribe({
+      next: respuesta => {
+        if (respuesta?.data?.name) {
+          this.cursoSeleccionado = respuesta.data.name;
+        }
+      },
+      error: () => {
+        // Se deja "Sin curso": el horario igual se consulta con "mi horario".
+      }
+    });
+  }
+
   private cargarMiHorario(): void {
     this.horariosService.obtenerMiHorario().subscribe({
       next: respuesta => {
         const clases = respuesta?.data || [];
         this.horarios = this.construirGrilla(clases);
         this.horarioDisponible = this.horarios.length > 0;
+
+        // Si el perfil no trajo el curso, se toma del propio horario.
+        if (this.esEstudiante && !this.cursoSeleccionado && clases.length) {
+          this.cargarNombreCursoEstudiante(clases[0].idCourse);
+        }
       },
       error: () => {
         this.horarios = [];
@@ -213,6 +263,15 @@ export class HorariosComponent implements OnInit, OnDestroy {
       return;
     }
 
+    // Con un horario de la IA pendiente, se muestra ese (de cualquier grado).
+    if (this.borrador) {
+      this.horarios = this.construirGrilla(
+        this.borrador.filter(clase => clase.idCourse === idCourse)
+      );
+      this.horarioDisponible = this.horarios.length > 0;
+      return;
+    }
+
     this.horariosService.obtenerHorarioPorCurso(idCourse).subscribe({
       next: respuesta => {
         const clases = respuesta?.data || [];
@@ -220,30 +279,34 @@ export class HorariosComponent implements OnInit, OnDestroy {
         this.horarioDisponible = this.horarios.length > 0;
       },
       error: () => {
-        this.horarios = [];
-        this.horarioDisponible = false;
+        // El servidor falló al consultar: se usa la copia del último horario publicado.
+        const respaldo = this.leerUltimoPublicado()
+          .filter(clase => clase.idCourse === idCourse);
+
+        this.horarios = this.construirGrilla(respaldo);
+        this.horarioDisponible = this.horarios.length > 0;
       }
     });
-  }
-
-  private refrescarHorarioVisible(): void {
-    if (this.esVistaRestringida) {
-      this.cargarMiHorario();
-      return;
-    }
-
-    if (this.modoConsulta === 'docente') {
-      this.cargarHorarioPorDocente(this.docenteSeleccionado?.idUser ?? null);
-      return;
-    }
-
-    this.cargarHorarioPorCurso(this.idCursoPorNombre[this.cursoSeleccionado] ?? null);
   }
 
   private cargarHorarioPorDocente(idTeacher: number | null): void {
     if (idTeacher === null) {
       this.horarios = [];
       this.horarioDisponible = false;
+      return;
+    }
+
+    // Con un horario de la IA pendiente, se muestra el de este docente.
+    if (this.borrador) {
+      const nombre = this.normalizarNombre(this.nombreDocenteSeleccionado());
+
+      this.horarios = this.construirGrilla(
+        this.borrador.filter(clase =>
+          clase.idTeacher === idTeacher ||
+          this.normalizarNombre(clase.teacherName) === nombre
+        )
+      );
+      this.horarioDisponible = this.horarios.length > 0;
       return;
     }
 
@@ -254,10 +317,26 @@ export class HorariosComponent implements OnInit, OnDestroy {
         this.horarioDisponible = this.horarios.length > 0;
       },
       error: () => {
-        this.horarios = [];
-        this.horarioDisponible = false;
+        // El servidor falló al consultar: se usa la copia del último horario publicado.
+        const nombre = this.normalizarNombre(this.nombreDocenteSeleccionado());
+        const respaldo = this.leerUltimoPublicado().filter(clase =>
+          clase.idTeacher === idTeacher ||
+          this.normalizarNombre(clase.teacherName) === nombre
+        );
+
+        this.horarios = this.construirGrilla(respaldo);
+        this.horarioDisponible = this.horarios.length > 0;
       }
     });
+  }
+
+  private normalizarNombre(texto: string | null | undefined): string {
+    return (texto || '')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .toLowerCase();
   }
 
   private construirGrilla(clases: ScheduleResponseDTO[]): BloqueHorario[] {
@@ -429,16 +508,15 @@ export class HorariosComponent implements OnInit, OnDestroy {
         this.emocionActual = respuesta?.success ? 'feliz' : 'normal';
         this.cargando = false;
 
-        if (respuesta?.success) {
-          this.idGeneracionActual = respuesta.idGeneration ?? this.idGeneracionActual;
-          this.mostrandoPrevia = false;
-          this.horarioPrevisualizado = [];
-          this.mensajeAccionHorario = 'La IA generó el horario. Revísalo y pulsa Publicar horario para hacerlo visible.';
-          this.errorAccionHorario = null;
+        // El servicio de IA solo devuelve el texto, así que el id de la
+        // generación se toma de la respuesta ("ID de generación: 5").
+        const idGeneracion = respuesta?.idGeneration
+          ?? this.extraerIdGeneracion(textoRespuesta);
 
-          if (this.idGeneracionActual !== null) {
-            this.previsualizarGeneracion();
-          }
+        if (respuesta?.success && idGeneracion !== null) {
+          this.idGeneracionActual = idGeneracion;
+          this.guardarGeneracionPendiente(idGeneracion);
+          this.cargarBorrador(true);
         }
       },
       error: () => {
@@ -452,6 +530,10 @@ export class HorariosComponent implements OnInit, OnDestroy {
     });
   }
 
+  private extraerIdGeneracion(texto: string): number | null {
+    const coincidencia = /id\s+de\s+generaci[oó]n\W*(\d+)/i.exec(texto || '');
+    return coincidencia ? Number(coincidencia[1]) : null;
+  }
 
   obtenerImagenIA(): string {
     return `/assets/ia/ia-ordinary.png`;
@@ -462,95 +544,190 @@ export class HorariosComponent implements OnInit, OnDestroy {
     this.enviarMensaje();
   }
 
-  previsualizarGeneracion(): void {
+  // ---------------------------------------------------------------------
+  // Horario generado por la IA: se muestra, y luego se publica o se elimina
+  // ---------------------------------------------------------------------
+
+  /** Carga en la grilla el horario que acaba de generar la IA (sin publicar). */
+  private cargarBorrador(esNuevo: boolean): void {
     if (this.idGeneracionActual === null) {
-      this.errorAccionHorario = 'No hay una generación reciente para previsualizar.';
       return;
     }
 
-    this.previsualizando = true;
-    this.errorAccionHorario = null;
-    this.mensajeAccionHorario = null;
-
     this.horariosService.previsualizarGeneracion(this.idGeneracionActual).subscribe({
       next: respuesta => {
-        this.horarioPrevisualizado = respuesta?.data || [];
-        this.mostrandoPrevia = true;
-        this.previsualizando = false;
+        this.borrador = respuesta?.data || [];
+
+        // Al generar, se muestra el curso que la IA acaba de armar.
+        if (esNuevo && this.borrador.length) {
+          const idCurso = this.borrador[0].idCourse;
+          const nombre = Object.keys(this.idCursoPorNombre)
+            .find(n => this.idCursoPorNombre[n] === idCurso);
+
+          if (nombre) {
+            this.modoConsulta = 'curso';
+            this.cursoSeleccionado = nombre;
+          }
+        }
+
+        this.refrescarVista();
+
+        this.horariosService.limpiarNotificaciones();
+        this.horariosService.registrarNotificacion({
+          titulo: esNuevo
+            ? 'La IA generó un nuevo horario.'
+            : 'Hay un horario de la IA pendiente de publicar.',
+          mensaje: 'Revísalo y presiona «Publicar horario» para que docentes y estudiantes lo vean.',
+          fecha: new Date().toLocaleDateString('es-CO', { day: 'numeric', month: 'long' })
+        });
+        this.notificaciones = this.horariosService.obtenerNotificaciones();
       },
-      error: (err) => {
-        this.errorAccionHorario = err?.error?.message ?? 'No se pudo cargar la previsualización del horario.';
-        this.previsualizando = false;
+      error: err => {
+        if (esNuevo) {
+          this.modalService.error(
+            err?.error?.message ?? 'No se pudo cargar el horario generado por la IA.'
+          );
+        } else {
+          // La generación guardada ya no existe (se publicó o eliminó desde otro lado).
+          this.limpiarGeneracionPendiente();
+          this.refrescarVista();
+        }
       }
     });
   }
 
-  cerrarPrevisualizacion(): void {
-    this.mostrandoPrevia = false;
-    this.horarioPrevisualizado = [];
+  private refrescarVista(): void {
+    if (this.modoConsulta === 'docente') {
+      this.cargarHorarioPorDocente(this.docenteSeleccionado?.idUser ?? null);
+    } else {
+      this.cargarHorarioPorCurso(this.idCursoPorNombre[this.cursoSeleccionado] ?? null);
+    }
   }
 
-  publicarGeneracion(): void {
-    if (this.idGeneracionActual === null) {
-      this.errorAccionHorario = 'No hay una generación reciente para publicar.';
+  async publicarGeneracion(): Promise<void> {
+    if (this.idGeneracionActual === null || this.publicando) {
+      return;
+    }
+
+    const confirmado = await this.modalService.confirm(
+      '¿Seguro que quieres publicar este horario? Los estudiantes y docentes del curso podrán verlo.',
+      'Publicar horario',
+      'Sí, publicar',
+      'Cancelar'
+    );
+
+    if (!confirmado || this.idGeneracionActual === null) {
       return;
     }
 
     this.publicando = true;
-    this.errorAccionHorario = null;
-    this.mensajeAccionHorario = null;
 
     this.horariosService.publicarGeneracion(this.idGeneracionActual).subscribe({
       next: () => {
         this.publicando = false;
-        this.mostrandoPrevia = false;
-        this.horarioPrevisualizado = [];
-        this.mensajeAccionHorario = 'El horario se publicó correctamente.';
+        this.guardarUltimoPublicado(this.borrador || []);
+        this.limpiarGeneracionPendiente();
+        this.refrescarVista();
 
-        this.refrescarHorarioVisible();
+        this.modalService.success(
+          'El horario se publicó correctamente. Los estudiantes y docentes del curso ya pueden verlo.'
+        );
       },
-      error: (err) => {
-        this.errorAccionHorario = err?.error?.message ?? 'No se pudo publicar el horario.';
+      error: err => {
         this.publicando = false;
+        this.modalService.error(
+          err?.error?.message ?? 'No se pudo publicar el horario.'
+        );
       }
     });
   }
 
   async eliminarGeneracion(): Promise<void> {
-    if (this.idGeneracionActual === null) {
-      this.errorAccionHorario = 'No hay una generación reciente para eliminar.';
+    if (this.idGeneracionActual === null || this.eliminando) {
       return;
     }
 
-    const confirmado = await this.modalService.confirm(
-      '¿Seguro quieres eliminar este horario?',
+    const confirmado = await this.modalService.confirmWarning(
+      '¿Seguro que quieres eliminar este horario? Esta acción no se puede deshacer.',
       'Eliminar horario',
-      'Eliminar',
+      'Sí, eliminar',
       'Cancelar'
     );
 
-    if (!confirmado) {
+    if (!confirmado || this.idGeneracionActual === null) {
       return;
     }
 
     this.eliminando = true;
-    this.errorAccionHorario = null;
-    this.mensajeAccionHorario = null;
 
     this.horariosService.eliminarGeneracion(this.idGeneracionActual).subscribe({
       next: () => {
         this.eliminando = false;
-        this.mostrandoPrevia = false;
-        this.horarioPrevisualizado = [];
-        this.idGeneracionActual = null;
-        this.mensajeAccionHorario = 'El horario se eliminó correctamente.';
+        this.limpiarGeneracionPendiente();
+        this.refrescarVista();
 
-        this.refrescarHorarioVisible();
+        this.modalService.success('El horario se eliminó correctamente.');
       },
-      error: (err) => {
-        this.errorAccionHorario = err?.error?.message ?? 'No se pudo eliminar el horario.';
+      error: err => {
         this.eliminando = false;
+        this.modalService.error(
+          err?.error?.message ?? 'No se pudo eliminar el horario.'
+        );
       }
     });
+  }
+
+  private guardarUltimoPublicado(clases: ScheduleResponseDTO[]): void {
+    try {
+      localStorage.setItem(CLAVE_ULTIMO_PUBLICADO, JSON.stringify(clases));
+    } catch {
+      // Sin almacenamiento local: solo se pierde la copia de respaldo.
+    }
+  }
+
+  private leerUltimoPublicado(): ScheduleResponseDTO[] {
+    try {
+      const guardado = localStorage.getItem(CLAVE_ULTIMO_PUBLICADO);
+      const datos = guardado ? JSON.parse(guardado) : [];
+      return Array.isArray(datos) ? datos : [];
+    } catch {
+      return [];
+    }
+  }
+
+  // --- generación pendiente (persistida para sobrevivir a una recarga) ---
+
+  private guardarGeneracionPendiente(id: number): void {
+    try {
+      localStorage.setItem(CLAVE_GENERACION_PENDIENTE, String(id));
+    } catch {
+      // Sin almacenamiento local: solo se pierde la restauración tras recargar.
+    }
+  }
+
+  private restaurarGeneracionPendiente(): void {
+    try {
+      const guardada = Number(localStorage.getItem(CLAVE_GENERACION_PENDIENTE));
+
+      if (Number.isInteger(guardada) && guardada > 0) {
+        this.idGeneracionActual = guardada;
+        this.cargarBorrador(false);
+      }
+    } catch {
+      // Ignorar.
+    }
+  }
+
+  private limpiarGeneracionPendiente(): void {
+    this.idGeneracionActual = null;
+    this.borrador = null;
+    this.horariosService.limpiarNotificaciones();
+    this.notificaciones = [];
+
+    try {
+      localStorage.removeItem(CLAVE_GENERACION_PENDIENTE);
+    } catch {
+      // Ignorar.
+    }
   }
 }
