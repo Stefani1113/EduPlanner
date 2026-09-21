@@ -329,7 +329,7 @@
               <!-- GRADO -->
 
               <td>
-                {{ usuario.grado ?? '--' }}
+                {{ usuario.grado ?? (usuario.rol === 'Estudiante' ? 'Sin curso' : '--') }}
               </td>
 
               <!-- ESTADO -->

@@ -304,6 +304,17 @@ export class UsuariosService {
     );
   }
 
+  asignarCurso(
+    idUser: number,
+    idCourse: number | null
+  ): Observable<HttpGlobalResponse<void>> {
+
+    return this.http.put<HttpGlobalResponse<void>>(
+      `${this.api}/users/${idUser}/course`,
+      { idCourse }
+    );
+  }
+
   actualizarStaff(
     idUser: number,
     dto: UpdateStaffDTO

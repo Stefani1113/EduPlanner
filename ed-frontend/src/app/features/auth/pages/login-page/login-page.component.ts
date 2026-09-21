@@ -63,9 +63,13 @@ export class LoginPageComponent implements OnInit {
         this.authService.iniciarRenovacionAutomatica();
 
         this.perfilService.obtenerMiPerfil(true).subscribe({
-          next: () => {
+          next: (respuesta: any) => {
             this.loading = false;
-            this.router.navigate(['/admin/dashboard']);
+
+            const rol = (respuesta?.data?.roleName || '').toLowerCase();
+            const veSuHorario = rol.includes('docente') || rol.includes('estudiante');
+
+            this.router.navigate([veSuHorario ? '/admin/horarios' : '/admin/dashboard']);
           },
           error: () => {
 

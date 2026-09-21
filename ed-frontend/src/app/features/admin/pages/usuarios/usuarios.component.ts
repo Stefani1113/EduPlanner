@@ -134,6 +134,8 @@ grados: string[] = [
 
 cursos: Curso[] = [];
 
+todosLosCursos: Curso[] = [];
+
 cargandoCursos = false;
 
 mostrarFiltroRol = false;
@@ -243,6 +245,8 @@ this.usuariosService
 
   )
   .subscribe(res => {
+
+    this.todosLosCursos = res.data ?? [];
 
     this.cursos = (res.data ?? [])
       .filter(curso => curso.status)
@@ -425,13 +429,13 @@ if (
 
 
 const curso =
-  this.cursos.find(
+  this.todosLosCursos.find(
     c =>
       c.idCourse === idCourse
   );
 
 
-return curso?.name ?? null;
+return curso?.name ?? `Curso #${idCourse}`;
 
 }
 
@@ -638,86 +642,74 @@ if (
   return;
 }
 
+
 const nuevoEstado =
   usuario.estado !== 'Activo';
 
-this.modalService.confirm(
-  nuevoEstado
-    ? `¿Está seguro de activar al usuario ${usuario.nombre}?`
-    : `¿Está seguro de inactivar al usuario ${usuario.nombre}?`,
-  nuevoEstado
-    ? 'Confirmar activación'
-    : 'Confirmar inactivación',
-  nuevoEstado
-    ? 'Activar'
-    : 'Inactivar',
-  'Cancelar'
-).then(confirmado => {
 
-  if (!confirmado) {
-    return;
-  }
+this.cambiandoEstado.add(
+  usuario.id
+);
 
-  this.cambiandoEstado.add(
-    usuario.id
-  );
 
-  this.usuariosService
-    .actualizarEstado(
-      usuario.id,
-      nuevoEstado
-    )
-    .pipe(
-      finalize(() =>
-        this.cambiandoEstado.delete(
-          usuario.id
-        )
+this.usuariosService
+  .actualizarEstado(
+    usuario.id,
+    nuevoEstado
+  )
+  .pipe(
+
+    finalize(() =>
+      this.cambiandoEstado.delete(
+        usuario.id
       )
     )
-    .subscribe({
 
-      next: res => {
+  )
+  .subscribe({
 
-        usuario.estado =
+    next: res => {
+
+      usuario.estado =
+        nuevoEstado
+          ? 'Activo'
+          : 'Inactivo';
+
+
+      usuario.detalle.status =
+        nuevoEstado;
+
+
+      this.modalService.success(
+        res.message ||
+        (
           nuevoEstado
-            ? 'Activo'
-            : 'Inactivo';
+            ? 'El usuario fue activado exitosamente.'
+            : 'El usuario fue desactivado exitosamente.'
+        )
+      );
 
-        usuario.detalle.status =
-          nuevoEstado;
+    },
 
-        if (nuevoEstado) {
-          this.modalService.success(
-            res.message ||
-            'El usuario fue activado exitosamente.'
-          );
-        } else {
-          this.modalService.warning(
-            res.message ||
-            'El usuario fue inactivado exitosamente.',
-            'Usuario inactivado'
-          );
-        }
 
-      },
+    error: err => {
 
-      error: err => {
+      console.error(err);
 
-        console.error(err);
 
-        this.modalService.error(
-          this.obtenerMensajeError(
-            err,
-            'No se pudo actualizar el estado del usuario. Intenta de nuevo.'
-          )
-        );
+      this.modalService.error(
+        this.obtenerMensajeError(
+          err,
+          'No se pudo actualizar el estado del usuario. Intenta de nuevo.'
+        )
+      );
 
-      }
+    }
 
-    });
+  });
 
-});
 }
+
 estaCambiandoEstado(
 id: number
 ): boolean {
@@ -1025,18 +1017,40 @@ if (
   evento.tipo === 'Estudiante'
 ) {
 
+  const payloadEstudiante =
+    evento.payload as UpdateStudentDTO;
+
   this.usuariosService
     .actualizarEstudiante(
       evento.id,
-      evento.payload as UpdateStudentDTO
+      payloadEstudiante
     )
     .subscribe({
 
-      next: res =>
-        this.finalizarEdicion(
-          res.message ||
-          'Estudiante actualizado correctamente.'
-        ),
+      next: res => {
+
+        const idCourseNuevo =
+          payloadEstudiante.idCourse ?? null;
+
+        this.usuariosService
+          .asignarCurso(
+            evento.id,
+            idCourseNuevo
+          )
+          .subscribe({
+
+            next: () =>
+              this.finalizarEdicion(
+                res.message ||
+                'Estudiante actualizado correctamente.'
+              ),
+
+            error: err =>
+              this.errorEdicion(err)
+
+          });
+
+      },
 
       error: err =>
         this.errorEdicion(err)

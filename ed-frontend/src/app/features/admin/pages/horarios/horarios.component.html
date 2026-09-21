@@ -144,21 +144,15 @@
     <p>Consulta la distribución de clases de cada curso.</p>
   </div>
 
-  <div class="horario-actions" *ngIf="!esVistaRestringida">
-
-    <button
-      type="button"
-      class="action-button preview"
-      [disabled]="idGeneracionActual === null || previsualizando"
-      (click)="previsualizarGeneracion()"
-    >
-      {{ previsualizando ? 'Cargando...' : 'Previsualizar' }}
-    </button>
+  <div
+    class="horario-actions"
+    *ngIf="!esVistaRestringida && idGeneracionActual !== null"
+  >
 
     <button
       type="button"
       class="action-button publish"
-      [disabled]="idGeneracionActual === null || publicando"
+      [disabled]="publicando || eliminando"
       (click)="publicarGeneracion()"
     >
       {{ publicando ? 'Publicando...' : 'Publicar horario' }}
@@ -167,50 +161,13 @@
     <button
       type="button"
       class="action-button delete"
-      [disabled]="idGeneracionActual === null || eliminando"
+      [disabled]="publicando || eliminando"
       (click)="eliminarGeneracion()"
     >
       {{ eliminando ? 'Eliminando...' : 'Eliminar horario' }}
     </button>
 
   </div>
-
-  <p class="accion-mensaje ok" *ngIf="mensajeAccionHorario">{{ mensajeAccionHorario }}</p>
-  <p class="accion-mensaje error" *ngIf="errorAccionHorario">{{ errorAccionHorario }}</p>
-
-  <section class="preview-panel" *ngIf="mostrandoPrevia">
-
-    <div class="preview-header">
-      <h3>Previsualización del horario generado</h3>
-      <button type="button" class="close-preview" (click)="cerrarPrevisualizacion()">×</button>
-    </div>
-
-    <table class="preview-table" *ngIf="horarioPrevisualizado.length">
-      <thead>
-        <tr>
-          <th>Día</th>
-          <th>Inicio</th>
-          <th>Fin</th>
-          <th>Asignatura</th>
-          <th>Docente</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let clase of horarioPrevisualizado">
-          <td>{{ clase.dayOfWeek }}</td>
-          <td>{{ clase.startTime }}</td>
-          <td>{{ clase.endTime }}</td>
-          <td>{{ clase.subjectName }}</td>
-          <td>{{ clase.teacherName }}</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <p class="preview-empty" *ngIf="!horarioPrevisualizado.length">
-      No hay clases en esta previsualización.
-    </p>
-
-  </section>
 
   <div class="summary-card" *ngIf="vistaActual === 'horario'">
 
@@ -222,6 +179,7 @@
     </div>
 
     <div class="summary-right">
+      <span class="draft-tag" *ngIf="!esVistaRestringida && borrador">Borrador sin publicar</span>
       <span *ngIf="!esVistaRestringida">{{ cursosDisponibles.length }} cursos registrados</span>
       <span class="live-dot">
         <i></i>
@@ -246,6 +204,28 @@
 
   </div>
 
+  <div
+    class="publication-alert"
+    *ngIf="!esVistaRestringida && notificacionActual"
+  >
+
+    <div class="alert-icon">
+      ✿
+    </div>
+
+    <div class="alert-content">
+
+      <strong>
+        {{ notificacionActual.titulo }}
+      </strong>
+
+      <span>
+        {{ notificacionActual.mensaje }}
+      </span>
+
+    </div>
+
+  </div>
 
   <ng-container *ngIf="vistaActual === 'horario'">
 

@@ -104,6 +104,10 @@ export class HorariosService {
     return [...this.notificaciones];
   }
 
+  limpiarNotificaciones(): void {
+    this.notificaciones = [];
+  }
+
   registrarNotificacion(notificacion: NotificacionHorario): void {
     this.notificaciones = [notificacion, ...this.notificaciones];
   }
@@ -111,6 +115,12 @@ export class HorariosService {
   obtenerCursos(): Observable<HttpGlobalResponse<CursoDTO[]>> {
     return this.http.get<HttpGlobalResponse<CursoDTO[]>>(
       `${this.apiGestionAcademica}/courses`
+    );
+  }
+
+  obtenerCursoPorId(idCourse: number): Observable<HttpGlobalResponse<CursoDTO>> {
+    return this.http.get<HttpGlobalResponse<CursoDTO>>(
+      `${this.apiGestionAcademica}/courses/${idCourse}`
     );
   }
 
