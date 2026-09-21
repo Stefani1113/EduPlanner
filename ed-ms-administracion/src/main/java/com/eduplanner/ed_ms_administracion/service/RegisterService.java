@@ -74,6 +74,10 @@ public class RegisterService {
             user.setImportEntity(importRepository.getReferenceById(idImport));
         }
 
+        if (dto.getIdCourse() == null) {
+            throw new IllegalArgumentException("El curso es obligatorio para registrar un estudiante");
+        }
+
         userRepository.save(user);
 
         //sincroniza el contador de estudiantes del curso
