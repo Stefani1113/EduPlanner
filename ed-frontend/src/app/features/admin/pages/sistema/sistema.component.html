@@ -322,6 +322,14 @@
           >
              Claro
           </button>
+          <button
+            type="button"
+            class="theme-mode-btn"
+            [class.active]="modoTema === 'custom'"
+            (click)="cambiarModoTema('custom')"
+          >
+             Personalizado
+          </button>
         </div>
 
         <div class="palette-error" *ngIf="colorError">

@@ -17,9 +17,11 @@
   font-family: 'Poppins', sans-serif;
 }
 
-html, body {   
-  min-height: 100%; 
+html, body {
+  min-height: 100%;
   background-color: var(--inst-dark);
+  color: var(--inst-text);
+  transition: background-color .2s ease, color .2s ease;
 }
 
 ::-webkit-scrollbar {
