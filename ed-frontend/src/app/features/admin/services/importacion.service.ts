@@ -1,11 +1,31 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
-import { catchError, timeout } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 
-export interface HttpImportResponse<T> {
-  data: T;
-  message: string;
+export interface ImportData {
+  idImport: number;
+  message?: string;
+  status?: string;
+}
+
+export interface ImportResponse {
+  data: ImportData;
+  message?: string;
+  status?: string;
+}
+
+export interface ImportReport {
+  data?: ImportReport;
+  idImport?: number;
+  totalRows?: number;
+  successRows?: number;
+  failedRows?: number;
+  total?: number;
+  successful?: number;
+  failed?: number;
+  message?: string;
+  status?: string;
+  errors?: any[];
 }
 
 @Injectable({
@@ -13,64 +33,27 @@ export interface HttpImportResponse<T> {
 })
 export class ImportacionService {
 
-  private readonly api =
-    '/administracion/eduplanner/users/import';
-
-  private readonly TIMEOUT_MS = 60000;
+  private readonly apiUrl = '/administracion/eduplanner';
 
   constructor(private http: HttpClient) {}
 
-  importarEstudiantes(
-    file: File
-  ): Observable<HttpImportResponse<number>> {
-
+  importarEstudiantes(file: File): Observable<ImportResponse> {
     const formData = new FormData();
+    formData.append('file', file);
 
-    formData.append('file', file, file.name);
-
-    return this.http.post<HttpImportResponse<number>>(
-      `${this.api}/students`,
+    return this.http.post<ImportResponse>(
+      `${this.apiUrl}/imports`,
       formData
-    ).pipe(
-      timeout(this.TIMEOUT_MS),
-      catchError(err => {
-
-        if (err?.name === 'TimeoutError') {
-          return throwError(() => ({
-            error: {
-              message:
-                'El servidor está tardando demasiado en responder. Verifica el reporte antes de volver a importar el mismo archivo.'
-            }
-          }));
-        }
-
-        return throwError(() => err);
-      })
     );
   }
 
-  obtenerReporte(
-    idImport: number
-  ): Observable<HttpImportResponse<ImportReport>> {
+  importarArchivo(file: File): Observable<ImportResponse> {
+    return this.importarEstudiantes(file);
+  }
 
-    return this.http.get<HttpImportResponse<ImportReport>>(
-      `${this.api}/${idImport}/report`
+  obtenerReporte(idImport: number): Observable<ImportReport> {
+    return this.http.get<ImportReport>(
+      `${this.apiUrl}/imports/${idImport}/report`
     );
   }
-}
-
-export interface ImportErrorDetail {
-  rowNumber: number;
-  rowData: string;
-  error: string;
-}
-
-export interface ImportReport {
-  idImport: number;
-  fileName: string;
-  importDate: string;
-  totalRows: number;
-  successRows: number;
-  failedRows: number;
-  errors: ImportErrorDetail[];
 }

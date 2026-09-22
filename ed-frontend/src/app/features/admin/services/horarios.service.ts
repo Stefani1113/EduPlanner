@@ -82,7 +82,6 @@ export interface RespuestaChatIA {
   providedIn: 'root'
 })
 export class HorariosService {
-
   private apiGestionAcademica = '/gestion-academica/eduplanner';
   private apiAdministracion = '/administracion/eduplanner';
   private apiIa = '/ia/api';
@@ -104,13 +103,28 @@ export class HorariosService {
     return [...this.notificaciones];
   }
 
+  limpiarNotificaciones(): void {
+    this.notificaciones = [];
+  }
+
   registrarNotificacion(notificacion: NotificacionHorario): void {
-    this.notificaciones = [notificacion, ...this.notificaciones];
+    this.notificaciones = [
+      notificacion,
+      ...this.notificaciones
+    ];
   }
 
   obtenerCursos(): Observable<HttpGlobalResponse<CursoDTO[]>> {
     return this.http.get<HttpGlobalResponse<CursoDTO[]>>(
       `${this.apiGestionAcademica}/courses`
+    );
+  }
+
+  obtenerCursoPorId(
+    idCourse: number
+  ): Observable<HttpGlobalResponse<CursoDTO>> {
+    return this.http.get<HttpGlobalResponse<CursoDTO>>(
+      `${this.apiGestionAcademica}/courses/${idCourse}`
     );
   }
 
@@ -126,41 +140,55 @@ export class HorariosService {
     );
   }
 
-  obtenerHorarioPorCurso(idCourse: number): Observable<HttpGlobalResponse<ScheduleResponseDTO[]>> {
+  obtenerHorarioPorCurso(
+    idCourse: number
+  ): Observable<HttpGlobalResponse<ScheduleResponseDTO[]>> {
     return this.http.get<HttpGlobalResponse<ScheduleResponseDTO[]>>(
       `${this.apiGestionAcademica}/schedules/course/${idCourse}`
     );
   }
 
-  obtenerHorarioPorDocente(idTeacher: number): Observable<HttpGlobalResponse<ScheduleResponseDTO[]>> {
+  obtenerHorarioPorDocente(
+    idTeacher: number
+  ): Observable<HttpGlobalResponse<ScheduleResponseDTO[]>> {
     return this.http.get<HttpGlobalResponse<ScheduleResponseDTO[]>>(
       `${this.apiGestionAcademica}/schedules/teacher/${idTeacher}`
     );
   }
 
-  previsualizarGeneracion(idGeneration: number): Observable<HttpGlobalResponse<ScheduleResponseDTO[]>> {
+  previsualizarGeneracion(
+    idGeneration: number
+  ): Observable<HttpGlobalResponse<ScheduleResponseDTO[]>> {
     return this.http.get<HttpGlobalResponse<ScheduleResponseDTO[]>>(
       `${this.apiGestionAcademica}/schedules/generations/${idGeneration}`
     );
   }
 
-  publicarGeneracion(idGeneration: number): Observable<HttpGlobalResponse<void>> {
+  publicarGeneracion(
+    idGeneration: number
+  ): Observable<HttpGlobalResponse<void>> {
     return this.http.put<HttpGlobalResponse<void>>(
       `${this.apiGestionAcademica}/schedules/generations/${idGeneration}/publish`,
       {}
     );
   }
 
-  eliminarGeneracion(idGeneration: number): Observable<HttpGlobalResponse<void>> {
+  eliminarGeneracion(
+    idGeneration: number
+  ): Observable<HttpGlobalResponse<void>> {
     return this.http.delete<HttpGlobalResponse<void>>(
       `${this.apiGestionAcademica}/schedules/generations/${idGeneration}`
     );
   }
 
-  enviarMensajeIA(mensaje: string): Observable<RespuestaChatIA> {
+  enviarMensajeIA(
+    mensaje: string
+  ): Observable<RespuestaChatIA> {
     return this.http.post<RespuestaChatIA>(
       `${this.apiIa}/chat`,
-      { message: mensaje }
+      {
+        message: mensaje
+      }
     );
   }
 
@@ -168,7 +196,8 @@ export class HorariosService {
     return [
       {
         tipo: 'ia',
-        texto: '¡Hola! Soy EduPlanner IA. Estoy aquí para ayudarte con la organización y consulta de los horarios.'
+        texto:
+          '¡Hola! Soy EduPlanner IA. Estoy aquí para ayudarte con la organización y consulta de los horarios.'
       }
     ];
   }

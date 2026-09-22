@@ -12,7 +12,7 @@ header.navar {
 }
 
 .admin-container {
-  position: relative; /* referencia del menú lateral en pantallas pequeñas */
+  position: relative;  
   flex: 1;
   min-height: 0;
   display: flex;
@@ -101,7 +101,6 @@ footer {
     border-color 0.2s ease;
 }
 
-/* El icono es una máscara: toma el color del tema (no queda negro fijo). */
 .footer-theme-btn .theme-icon {
   width: 24px;
   height: 24px;
