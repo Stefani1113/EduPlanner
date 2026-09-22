@@ -19,7 +19,7 @@
   border: 1px solid var(--inst-border);
   border-radius: 18px;
   overflow: hidden;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.75);
+  box-shadow: 0 20px 60px rgba(var(--inst-shadow-rgb), calc(0.75 * var(--inst-shadow-alpha-mult)));
   display: flex;
   flex-direction: column;
 }

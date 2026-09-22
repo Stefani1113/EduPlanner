@@ -151,7 +151,7 @@
     border-radius: 0 24px 24px 0;
     transform: translateX(-100%);
     z-index: 1200;
-    box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 40px rgba(var(--inst-shadow-rgb), calc(0.5 * var(--inst-shadow-alpha-mult)));
   }
 
   .sidebar.abierto {

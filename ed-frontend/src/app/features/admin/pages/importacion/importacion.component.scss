@@ -16,7 +16,7 @@
   border: 1px solid transparent;
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 4px 15px rgba(var(--inst-shadow-rgb), calc(0.35 * var(--inst-shadow-alpha-mult)));
 }
 
 .card-header {
@@ -199,7 +199,7 @@ input[type="file"] {
 
 .btn-importar:hover:not(:disabled) {
   background: var(--inst-secondary);
-  color: var(--inst-dark);
+  color: #0d0d0d;
 }
 
 .btn-importar:disabled {
@@ -250,7 +250,7 @@ input[type="file"] {
   border: 1px solid transparent;
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 4px 15px rgba(var(--inst-shadow-rgb), calc(0.35 * var(--inst-shadow-alpha-mult)));
   padding: 24px;
 }
 

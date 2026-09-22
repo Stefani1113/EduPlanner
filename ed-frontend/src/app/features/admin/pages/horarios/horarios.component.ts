@@ -41,7 +41,6 @@ export class HorariosComponent implements OnInit, OnDestroy {
   vistaActual: 'horario' | 'conflictos' = 'horario';
   diaSeleccionado = '';
 
-  /** Mientras sea true, el día mostrado sigue automáticamente al día real. */
   private siguiendoHoy = true;
 
   horarios: BloqueHorario[] = [];
@@ -132,7 +131,6 @@ export class HorariosComponent implements OnInit, OnDestroy {
     5: 'viernes'
   };
 
-  /** Igual que nombresDias, pero solo los días que tiene la grilla (Lunes a Viernes). */
   private readonly nombreDiaPorIndice: { [dia: number]: string } = {
     1: 'Lunes',
     2: 'Martes',
@@ -606,10 +604,7 @@ export class HorariosComponent implements OnInit, OnDestroy {
     return horas * 60 + minutos;
   }
 
-  /**
-   * True cuando el día que se ve en pantalla es HOY y la hora actual cae
-   * dentro de este bloque, para resaltar en verde la clase que está en curso.
-   */
+
   esBloqueActual(fila: BloqueHorario): boolean {
     if (fila.descanso) {
       return false;

@@ -160,21 +160,20 @@
             {{ obtenerHoraFormateada() }}
           </strong>
         </div>
- 
+
       </div>
 
-    <button
-      type="button"
-      class="pdf-button"
-      [disabled]="!horarioDisponible"
-      (click)="exportarHorario()"
-    >
-      <span class="pdf-chip">
-        CSV
-      </span>
+      <button
+        type="button"
+        class="pdf-button"
+        [disabled]="!horarioDisponible"
+      >
+        <span class="pdf-chip">
+          PDF
+        </span>
 
-      Descargar
-    </button>
+        Descargar
+      </button>
 
     </div>
 
@@ -195,7 +194,7 @@
   <div
     class="horario-actions"
     *ngIf="
-      esAdministrador &&
+      !esVistaRestringida &&
       modoConsulta === 'curso'
     "
   >
@@ -512,10 +511,7 @@
           [class.selected-day]="diaSeleccionado === 'Lunes'"
         >
 
-          <div
-            class="subject-card"
-            [class.now]="diaSeleccionado === 'Lunes' && esBloqueActual(horario)"
-          >
+          <div class="subject-card">
 
             <strong>
               {{ horario.lunes || '—' }}
@@ -539,10 +535,7 @@
           [class.selected-day]="diaSeleccionado === 'Martes'"
         >
 
-          <div
-            class="subject-card"
-            [class.now]="diaSeleccionado === 'Martes' && esBloqueActual(horario)"
-          >
+          <div class="subject-card">
 
             <strong>
               {{ horario.martes || '—' }}
@@ -566,10 +559,7 @@
           [class.selected-day]="diaSeleccionado === 'Miércoles'"
         >
 
-          <div
-            class="subject-card"
-            [class.now]="diaSeleccionado === 'Miércoles' && esBloqueActual(horario)"
-          >
+          <div class="subject-card">
 
             <strong>
               {{ horario.miercoles || '—' }}
@@ -593,10 +583,7 @@
           [class.selected-day]="diaSeleccionado === 'Jueves'"
         >
 
-          <div
-            class="subject-card"
-            [class.now]="diaSeleccionado === 'Jueves' && esBloqueActual(horario)"
-          >
+          <div class="subject-card">
 
             <strong>
               {{ horario.jueves || '—' }}
@@ -620,10 +607,7 @@
           [class.selected-day]="diaSeleccionado === 'Viernes'"
         >
 
-          <div
-            class="subject-card"
-            [class.now]="diaSeleccionado === 'Viernes' && esBloqueActual(horario)"
-          >
+          <div class="subject-card">
 
             <strong>
               {{ horario.viernes || '—' }}
@@ -740,7 +724,7 @@
   </section>
 
   <button
-    *ngIf="puedeUsarIA"
+    *ngIf="!esVistaRestringida"
     type="button"
     class="floating-ia"
     (click)="abrirChat()"
@@ -756,7 +740,7 @@
 
 </main>
 
-<ng-container *ngIf="puedeUsarIA">
+<ng-container *ngIf="!esVistaRestringida">
 
   <div
     class="chat-overlay"
@@ -838,41 +822,6 @@
         <label>
           La IA está pensando...
         </label>
-
-      </div>
-
-      <div
-        class="quick-questions"
-        *ngIf="
-          mensajes.length <= 1 &&
-          !cargando
-        "
-      >
-
-        <p>
-          También puedes preguntarme:
-        </p>
-
-        <button
-          type="button"
-          (click)="usarPregunta('¿Hay algún conflicto en el horario?')"
-        >
-          ¿Hay conflictos en el horario?
-        </button>
-
-        <button
-          type="button"
-          (click)="usarPregunta('Ayúdame a organizar un horario')"
-        >
-          Ayúdame a organizar un horario
-        </button>
-
-        <button
-          type="button"
-          (click)="usarPregunta('¿Qué profesores tienen horario ocupado?')"
-        >
-          ¿Qué profesores tienen horario ocupado?
-        </button>
 
       </div>
 
