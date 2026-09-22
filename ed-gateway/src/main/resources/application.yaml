@@ -49,6 +49,11 @@ spring:
           filters:
             - StripPrefix=1
 
+        # ── WebSocket Gestión Académica ─────────────────────────
+        - id: ed-ms-gestion-academica-websocket
+          uri: lb:ws://ed-ms-gestion-academica
+          predicates:
+            - Path=/gestion-academica/ws
         
          # ── Microservicio Gestion Academica (ACTIVO: 8083) ─────────────────────────
         - id: ed-ms-gestion-academica
@@ -73,8 +78,8 @@ spring:
             - Path=/ia/**
           filters:
             - StripPrefix=1
-        
-      # ── Microservicio Administración (ACTIVO: 8086) ─────────────────────────
+
+      # ── Microservicio Configuración Institucional (ACTIVO: 8086) ─────────────────────────
         - id: ed-ms-configuracion-institucional
           uri: lb://ed-ms-configuracion-institucional
           predicates:

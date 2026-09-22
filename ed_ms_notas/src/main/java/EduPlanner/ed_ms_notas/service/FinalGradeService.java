@@ -2,6 +2,7 @@ package EduPlanner.ed_ms_notas.service;
 
 import EduPlanner.ed_ms_notas.client.AdministracionServiceClient;
 import EduPlanner.ed_ms_notas.client.GestionAcademicaServiceClient;
+import EduPlanner.ed_ms_notas.notification.EmailTemplateService;
 import EduPlanner.ed_ms_notas.repository.EvaluationTypeRepository;
 import EduPlanner.ed_ms_notas.repository.EvaluativeActivityRepository;
 import EduPlanner.ed_ms_notas.repository.FinalGradeRepository;
@@ -43,6 +44,7 @@ public class FinalGradeService {
     private final AdministracionServiceClient administracionServiceClient;
     private final GestionAcademicaServiceClient gestionAcademicaServiceClient;
     private final Notifier notifier;
+    private final EmailTemplateService emailTemplateService;
 
     /**
      * Calcula (o recalcula) la nota definitiva de un estudiante para una
@@ -141,31 +143,72 @@ public class FinalGradeService {
     /** RF 9.5 - Notifica al estudiante que su nota definitiva ya está disponible. */
     private void notifyStudent(FinalGrade fg) {
         try {
-            UserInfoDTO student = administracionServiceClient.getUserInfo(fg.getIdStudent());
-            if (student == null || student.getEmail() == null || student.getEmail().isBlank()) {
-                log.warn("No se pudo notificar al estudiante {}: no existe o no tiene correo registrado",
-                        fg.getIdStudent());
+
+            UserInfoDTO student =
+                    administracionServiceClient.getUserInfo(fg.getIdStudent());
+
+            if (student == null
+                    || student.getEmail() == null
+                    || student.getEmail().isBlank()) {
+
+                log.warn(
+                        "No se puede notificar al estudiante {} porque no tiene correo",
+                        fg.getIdStudent()
+                );
+
                 return;
             }
 
-            String subjectName = gestionAcademicaServiceClient.getSubjectName(fg.getIdSubject());
-            String periodName = gestionAcademicaServiceClient.getAcademicPeriodName(fg.getIdPeriod());
-            String estado = Boolean.TRUE.equals(fg.getPassed()) ? "Aprobado" : "Reprobado";
+            String subjectName =
+                    gestionAcademicaServiceClient
+                            .getSubjectName(fg.getIdSubject());
 
-            String topic = "Nota definitiva disponible - "
-                    + (subjectName != null ? subjectName : ("Asignatura " + fg.getIdSubject()));
+            String periodName =
+                    gestionAcademicaServiceClient
+                            .getAcademicPeriodName(fg.getIdPeriod());
 
-            String message = "Hola " + student.getName() + ",<br><br>"
-                    + "Tu nota definitiva de <b>" + (subjectName != null ? subjectName : fg.getIdSubject())
-                    + "</b> para el periodo <b>" + (periodName != null ? periodName : fg.getIdPeriod())
-                    + "</b> ya está disponible.<br><br>"
-                    + "Nota final: <b>" + fg.getFinalGrade() + "</b> (" + estado + ")<br><br>"
-                    + "Ingresa a la plataforma EduPlanner para ver el detalle.";
+            String estado =
+                    Boolean.TRUE.equals(fg.getPassed())
+                            ? "Aprobado"
+                            : "Reprobado";
 
-            notifier.send(student.getEmail(), topic, message);
+            String topic =
+                    "Nota definitiva disponible - "
+                            + (subjectName != null
+                            ? subjectName
+                            : "Asignatura " + fg.getIdSubject());
+
+            String message =
+                    emailTemplateService.generateFinalGradeEmail(
+                            student.getName(),
+                            subjectName != null
+                                    ? subjectName
+                                    : "Asignatura " + fg.getIdSubject(),
+                            periodName != null
+                                    ? periodName
+                                    : "Periodo " + fg.getIdPeriod(),
+                            fg.getFinalGrade(),
+                            estado
+                    );
+
+            notifier.send(
+                    student.getEmail(),
+                    topic,
+                    message
+            );
+
+            log.info(
+                    "Correo de nota definitiva enviado a {}",
+                    student.getEmail()
+            );
+
         } catch (Exception e) {
-            // Un fallo al notificar no debe hacer fallar el cálculo de la nota.
-            log.error("Error notificando la nota definitiva del estudiante {}: {}", fg.getIdStudent(), e.getMessage());
+
+            log.error(
+                    "Error al notificar la nota definitiva del estudiante {}",
+                    fg.getIdStudent(),
+                    e
+            );
         }
     }
 
