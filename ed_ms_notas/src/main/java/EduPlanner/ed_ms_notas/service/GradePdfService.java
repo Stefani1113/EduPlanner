@@ -121,6 +121,27 @@ public class GradePdfService {
              * y reemplazará todas las expresiones th:*.
              */
 
+            records.forEach(g -> log.info(
+                "========== DATOS PDF ==========\n" +
+                "ID Grade: {}\n" +
+                "Estudiante: {}\n" +
+                "Curso: {}\n" +
+                "Asignatura: {}\n" +
+                "Periodo: {}\n" +
+                "Tipo evaluación: {}\n" +
+                "Nota: {}\n" +
+                "Estado: {}\n" +
+                "===============================",
+                g.getIdGrade(),
+                g.getStudentName(),
+                g.getCourseName(),
+                g.getSubjectName(),
+                g.getPeriodName(),
+                g.getIdEvaluationType(),
+                g.getGradeValue(),
+                g.getStatus()
+        ));
+
             String html = templateEngine.process(
                     "grades-pdf",
                     context
