@@ -15,6 +15,7 @@ import com.EduPlanner.ed_ms_gestion_academica.repository.TimeSlotRepository;
 import com.eduplanner.ed_lib_common.dto.ScheduleGenerationRequestDTO;
 import com.eduplanner.ed_lib_common.dto.ScheduleItemRequestDTO;
 import com.eduplanner.ed_lib_common.dto.ScheduleResponseDTO;
+import com.eduplanner.ed_lib_common.dto.TimeSlotResponseDTO;
 import com.eduplanner.ed_lib_common.dto.UserResponseDTO;
 import com.eduplanner.ed_lib_common.entity.AcademicLoad;
 import com.eduplanner.ed_lib_common.entity.AcademicPeriod;
@@ -520,5 +521,25 @@ public class ScheduleService {
                         new IllegalArgumentException(
                                 "No se encontró el periodo académico con id: " + idPeriod
                         ));
+        }
+
+        
+        /**
+         * Obtener bloques horarios activos de una jornada
+         */
+        public List<TimeSlot> getTimeSlotsByShift(Integer idShift) {
+
+                return timeSlotRepository
+                        .findByIdShiftAndStatusTrueOrderBySlotOrderAsc(idShift);
+        }
+
+        public List<TimeSlotResponseDTO> getTimeSlotResponsesByShift(Integer idShift) {
+
+                List<TimeSlot> timeSlots =
+                        getTimeSlotsByShift(idShift);
+
+                return timeSlots.stream()
+                        .map(TimeSlotResponseDTO::fromEntity)
+                        .toList();
         }
 }

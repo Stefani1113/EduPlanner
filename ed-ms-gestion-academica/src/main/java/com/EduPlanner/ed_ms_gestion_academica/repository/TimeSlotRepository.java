@@ -9,4 +9,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface TimeSlotRepository extends JpaRepository<TimeSlot, Integer> {
     boolean existsByIdShiftAndSlotOrder(Integer idShift, Short slotOrder);
     List<TimeSlot> findByIdShift(Integer idShift);
+    List<TimeSlot> findByIdShiftAndStatusTrueOrderBySlotOrderAsc(Integer idShift);
 }
