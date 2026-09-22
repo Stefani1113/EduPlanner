@@ -59,6 +59,18 @@ export interface DocenteDTO {
   surnames: string;
 }
 
+export interface TimeSlotResponseDTO {
+  idTimeSlot: number;
+  idShift: number;
+  slotOrder: number;
+  startTime: string;
+  endTime: string;
+  isBreak: boolean;
+  status: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface ScheduleResponseDTO {
   idSchedule: number;
   idCourse: number;
@@ -84,6 +96,7 @@ export interface RespuestaChatIA {
   providedIn: 'root'
 })
 export class HorariosService {
+
   private apiGestionAcademica = '/gestion-academica/eduplanner';
   private apiAdministracion = '/administracion/eduplanner';
   private apiIa = '/ia/api';
@@ -133,6 +146,32 @@ export class HorariosService {
   obtenerDocentes(): Observable<HttpGlobalResponse<DocenteDTO[]>> {
     return this.http.get<HttpGlobalResponse<DocenteDTO[]>>(
       `${this.apiAdministracion}/users?idRole=2`
+    );
+  }
+
+  obtenerFranjas(
+    idShift?: number
+  ): Observable<HttpGlobalResponse<TimeSlotResponseDTO[]>> {
+
+    const url =
+      idShift !== undefined && idShift !== null
+        ? `${this.apiGestionAcademica}/time-slots?idShift=${idShift}`
+        : `${this.apiGestionAcademica}/time-slots`;
+
+    return this.http.get<HttpGlobalResponse<TimeSlotResponseDTO[]>>(url);
+  }
+
+  descargarMiHorarioPdf(): Observable<Blob> {
+    return this.http.get(
+      `${this.apiGestionAcademica}/schedules/my-schedule/pdf`,
+      { responseType: 'blob' }
+    );
+  }
+
+  descargarHorarioCursoPdf(idCourse: number): Observable<Blob> {
+    return this.http.get(
+      `${this.apiGestionAcademica}/schedules/course/${idCourse}/pdf`,
+      { responseType: 'blob' }
     );
   }
 
