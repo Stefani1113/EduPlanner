@@ -42,7 +42,7 @@
   background: var(--inst-surface);
   border-radius: 18px;
   box-shadow: 
-    0 20px 45px rgba(0, 0, 0, 0.5),
+    0 20px 45px rgba(var(--inst-shadow-rgb), calc(0.5 * var(--inst-shadow-alpha-mult))),
     0 0 0 1px rgba(255, 255, 255, 0.02) inset;
   padding: 0 0 20px 0;
   z-index: 100;
@@ -118,7 +118,7 @@
   overflow: hidden;
   border: 2px solid var(--inst-secondary);
   background: color-mix(in srgb, var(--inst-secondary) 12%, var(--inst-surface));
-  box-shadow: 0 0 0 4px color-mix(in srgb, var(--inst-secondary) 8%, transparent), 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--inst-secondary) 8%, transparent), 0 4px 12px rgba(var(--inst-shadow-rgb), calc(0.3 * var(--inst-shadow-alpha-mult)));
 
   img {
     width: 100%;
@@ -142,7 +142,7 @@
   border-radius: 50%;
   background: var(--inst-secondary);
   border: 2.5px solid var(--inst-surface);
-  color: var(--inst-dark);
+  color: #0d0d0d;
   cursor: pointer;
   transition: transform 0.15s ease, background 0.15s ease;
 

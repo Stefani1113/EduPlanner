@@ -25,9 +25,7 @@
             font-size: 12px;
         }
 
-        /* =========================
-            HEADER
-        ========================= */
+
 
         .header {
             width: 100%;
@@ -74,9 +72,7 @@
             color: #4b5563;
         }
 
-        /* =========================
-            INFORMATION PANEL
-           ========================= */
+
 
         .info-panel {
             width: 100%;
@@ -117,9 +113,7 @@
             color: #111111;
         }
 
-        /* =========================
-            SCHEDULE TABLE
-           ========================= */
+
 
         table.schedule {
             width: 100%;
@@ -174,9 +168,7 @@
             font-style: italic;
         }
 
-        /* =========================
-            LEGEND
-        ========================= */
+
 
         .legend {
             margin-top: 14px;
@@ -196,9 +188,7 @@
             margin-right: 5px;
         }
 
-        /* =========================
-            FOOTER
-        ========================= */
+
 
         .footer {
             width: 100%;
@@ -227,9 +217,7 @@
 
 <body>
 
-<!-- =========================
-     HEADER
-     ========================= -->
+
 
 <div class="header">
 
@@ -263,9 +251,7 @@
 </div>
 
 
-<!-- =========================
-     INFORMATION PANEL
-     ========================= -->
+
 
 <div class="info-panel">
 
@@ -273,7 +259,6 @@
 
         <tr>
 
-            <!-- CURSO -->
 
             <td class="info-card">
 
@@ -289,7 +274,6 @@
             </td>
 
 
-            <!-- PERIODO -->
 
             <td class="info-card">
 
@@ -305,7 +289,6 @@
             </td>
 
 
-            <!-- DOCENTE -->
 
             <td class="info-card"
                 th:if="${docente != null and !docente.isEmpty()}">
@@ -322,7 +305,6 @@
             </td>
 
 
-            <!-- ESTUDIANTE -->
 
             <td class="info-card"
                 th:if="${estudiante != null and !estudiante.isEmpty()}">
@@ -345,9 +327,7 @@
 </div>
 
 
-<!-- =========================
-     SCHEDULE
-     ========================= -->
+
 
 <table class="schedule">
 
@@ -386,13 +366,11 @@
 
     <tbody>
 
-    <!--
-        Cada fila representa un bloque horario.
-    -->
+
 
     <tr th:each="fila : ${filas}">
 
-        <!-- HORA -->
+
 
         <td class="hour-cell">
 
@@ -411,7 +389,6 @@
         </td>
 
 
-        <!-- LUNES -->
 
         <td th:text="${fila.lunes != null and !fila.lunes.isEmpty() ? fila.lunes : '—'}"
             th:classappend="${fila.lunes == null or fila.lunes.isEmpty() ? 'empty-slot' : ''}">
@@ -419,7 +396,6 @@
         </td>
 
 
-        <!-- MARTES -->
 
         <td th:text="${fila.martes != null and !fila.martes.isEmpty() ? fila.martes : '—'}"
             th:classappend="${fila.martes == null or fila.martes.isEmpty() ? 'empty-slot' : ''}">
@@ -427,7 +403,6 @@
         </td>
 
 
-        <!-- MIÉRCOLES -->
 
         <td th:text="${fila.miercoles != null and !fila.miercoles.isEmpty() ? fila.miercoles : '—'}"
             th:classappend="${fila.miercoles == null or fila.miercoles.isEmpty() ? 'empty-slot' : ''}">
@@ -435,7 +410,6 @@
         </td>
 
 
-        <!-- JUEVES -->
 
         <td th:text="${fila.jueves != null and !fila.jueves.isEmpty() ? fila.jueves : '—'}"
             th:classappend="${fila.jueves == null or fila.jueves.isEmpty() ? 'empty-slot' : ''}">
@@ -443,7 +417,6 @@
         </td>
 
 
-        <!-- VIERNES -->
 
         <td th:text="${fila.viernes != null and !fila.viernes.isEmpty() ? fila.viernes : '—'}"
             th:classappend="${fila.viernes == null or fila.viernes.isEmpty() ? 'empty-slot' : ''}">
@@ -453,9 +426,7 @@
     </tr>
 
 
-    <!--
-        Mensaje cuando no existen horarios.
-    -->
+
 
     <tr th:if="${filas == null or filas.isEmpty()}">
 
@@ -473,9 +444,7 @@
 </table>
 
 
-<!-- =========================
-     LEGEND
-     ========================= -->
+
 
 <div class="legend">
 
@@ -498,9 +467,7 @@
 </div>
 
 
-<!-- =========================
-     FOOTER
-     ========================= -->
+
 
 <div class="footer">
 

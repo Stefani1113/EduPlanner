@@ -113,6 +113,22 @@ export class ModalService {
     });
   }
 
+  confirmWarning(
+    message: string,
+    title = 'Confirmar acción',
+    confirmText = 'Aceptar',
+    cancelText = 'Cancelar'
+  ): Promise<boolean> {
+    return this.open({
+      type: 'warning',
+      title,
+      message,
+      confirmText,
+      cancelText,
+      showCancel: true
+    });
+  }
+
   question(
     message: string,
     title = 'Pregunta',
