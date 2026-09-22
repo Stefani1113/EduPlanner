@@ -133,86 +133,169 @@ public class ScheduleService {
         generationRepository.save(savedGeneration);
 
         return generationId;
-    }
+}
+        /**
+         * Filtrar horario por curso
+         */
+        public List<ScheduleResponseDTO> getScheduleByCourse(Integer idCourse) {
 
-    /**
-     * Filtrar horario por curso
-     */
-    public List<ScheduleResponseDTO> getScheduleByCourse(Integer idCourse) {
+        List<AcademicLoad> loads =
+                academicLoadRepository.findByIdCourseAndStatusTrue(idCourse);
 
-    List<AcademicLoad> loads =
-            academicLoadRepository.findByIdCourseAndStatusTrue(idCourse);
+        List<Integer> loadIds = loads.stream()
+                .map(AcademicLoad::getIdAcademicLoad)
+                .toList();
 
-    List<Integer> loadIds = loads.stream()
-            .map(AcademicLoad::getIdAcademicLoad)
-            .toList();
+        if (loadIds.isEmpty()) {
+                return List.of();
+        }
 
-    if (loadIds.isEmpty()) {
-        return List.of();
-    }
+        /*
+        * Buscar las generaciones que pertenecen a este curso
+        */
+        List<ScheduleGenerationCourse> generationCourses =
+                generationCourseRepository.findByIdCourse(idCourse);
 
-    ScheduleGeneration publishedGeneration =
-            generationRepository
-                    .findFirstByStatusOrderByCreatedAtDesc(
-                            SchedulerGenerationStatus.PUBLISHED
-                    )
-                    .orElseThrow(() ->
-                            new IllegalArgumentException(
-                                    "No existe un horario publicado"
-                            )
-                    );
+        if (generationCourses.isEmpty()) {
+                throw new IllegalArgumentException(
+                        "El curso no tiene generaciones de horario registradas"
+                );
+        }
 
-    List<Schedule> schedules =
-            scheduleRepository
-                    .findByIdScheduleGenerationAndIdAcademicLoadInAndStatusTrue(
-                            publishedGeneration.getIdScheduleGeneration(),
-                            loadIds
-                    );
+        /*
+        * Buscar la generación publicada más reciente
+        * específicamente para este curso.
+        */
+        ScheduleGeneration publishedGeneration =
+                generationCourses.stream()
+                        .map(generationCourse ->
+                        generationRepository
+                                .findById(
+                                        generationCourse
+                                        .getIdScheduleGeneration()
+                                        )
+                                        .orElse(null)
+                        )
+                        .filter(generation -> generation != null)
+                        .filter(generation ->
+                                generation.getStatus()
+                                        == SchedulerGenerationStatus.PUBLISHED
+                        )
+                        .max(
+                                java.util.Comparator.comparing(
+                                        ScheduleGeneration::getCreatedAt
+                                )
+                        )
+                        .orElseThrow(() ->
+                                new IllegalArgumentException(
+                                        "No existe un horario publicado para este curso"
+                                )
+                        );
 
-    return schedules.stream()
-            .map(this::buildScheduleResponse)
-            .toList();
-    }
+        /*
+        * Buscar los horarios de esa generación
+        * utilizando las cargas académicas del curso.
+        */
+        List<Schedule> schedules =
+                scheduleRepository
+                        .findByIdScheduleGenerationAndIdAcademicLoadInAndStatusTrue(
+                                publishedGeneration
+                                        .getIdScheduleGeneration(),
+                                loadIds
+                        );
 
-    /**
-     * Filtrar horario por docente
-     */
-    public List<ScheduleResponseDTO> getScheduleByTeacher(Integer idTeacher) {
+        return schedules.stream()
+                .map(this::buildScheduleResponse)
+                .toList();
+        }
 
-    List<AcademicLoad> loads =
-            academicLoadRepository.findByIdTeacherAndStatusTrue(idTeacher);
+ /**
+  * Filtrar horario por docente
+  */
+ public List<ScheduleResponseDTO> getScheduleByTeacher(Integer idTeacher) {
 
-    List<Integer> loadIds = loads.stream()
-            .map(AcademicLoad::getIdAcademicLoad)
-            .toList();
+     List<AcademicLoad> loads =
+             academicLoadRepository.findByIdTeacherAndStatusTrue(idTeacher);
 
-    if (loadIds.isEmpty()) {
-        return List.of();
-    }
+     if (loads.isEmpty()) {
+         return List.of();
+     }
 
-    ScheduleGeneration publishedGeneration =
-            generationRepository
-                    .findFirstByStatusOrderByCreatedAtDesc(
-                            SchedulerGenerationStatus.PUBLISHED
-                    )
-                    .orElseThrow(() ->
-                            new IllegalArgumentException(
-                                    "No existe un horario publicado"
-                            )
-                    );
+     /*
+      * Obtener los cursos en los que trabaja el docente.
+      */
+     Set<Integer> courseIds = loads.stream()
+             .map(AcademicLoad::getIdCourse)
+             .collect(java.util.stream.Collectors.toSet());
 
-    List<Schedule> schedules =
-            scheduleRepository
-                    .findByIdScheduleGenerationAndIdAcademicLoadInAndStatusTrue(
-                            publishedGeneration.getIdScheduleGeneration(),
-                            loadIds
-                    );
+     /*
+      * Obtener los IDs de las cargas académicas del docente.
+      */
+     List<Integer> loadIds = loads.stream()
+             .map(AcademicLoad::getIdAcademicLoad)
+             .toList();
 
-    return schedules.stream()
-            .map(this::buildScheduleResponse)
-            .toList();
-    }
+     /*
+      * Buscar las generaciones publicadas que pertenecen
+      * a los cursos del docente.
+      */
+     Set<Integer> publishedGenerationIds = new HashSet<>();
 
+     for (Integer idCourse : courseIds) {
+
+         List<ScheduleGenerationCourse> generationCourses =
+                 generationCourseRepository.findByIdCourse(idCourse);
+
+         for (ScheduleGenerationCourse generationCourse :
+                 generationCourses) {
+
+             ScheduleGeneration generation =
+                     generationRepository
+                             .findById(
+                                     generationCourse
+                                             .getIdScheduleGeneration()
+                             )
+                             .orElse(null);
+
+             if (generation != null
+                     && generation.getStatus()
+                             == SchedulerGenerationStatus.PUBLISHED) {
+
+                 publishedGenerationIds.add(
+                         generation.getIdScheduleGeneration()
+                 );
+             }
+         }
+     }
+
+     if (publishedGenerationIds.isEmpty()) {
+         return List.of();
+     }
+
+     /*
+      * Buscar los horarios del docente dentro de todas
+      * las generaciones publicadas correspondientes.
+      */
+     List<ScheduleResponseDTO> result = new java.util.ArrayList<>();
+
+     for (Integer idGeneration : publishedGenerationIds) {
+
+         List<Schedule> schedules =
+                 scheduleRepository
+                         .findByIdScheduleGenerationAndIdAcademicLoadInAndStatusTrue(
+                                 idGeneration,
+                                 loadIds
+                         );
+
+         result.addAll(
+                 schedules.stream()
+                         .map(this::buildScheduleResponse)
+                         .toList()
+         );
+     }
+
+     return result;
+}
     /**
      * Listar horario de docente y estudiante
      */
@@ -292,11 +375,17 @@ public class ScheduleService {
                         teacher.getIdUser()
                 );
 
+        Course course =
+                courseRepository
+                        .findById(load.getIdCourse())
+                        .orElseThrow();
+
         ScheduleResponseDTO dto = new ScheduleResponseDTO();
 
         dto.setIdSchedule(schedule.getIdSchedule());
 
         dto.setIdCourse(load.getIdCourse());
+        dto.setCourseName(course.getName());
 
         dto.setIdSubject(subject.getIdSubject());
         dto.setSubjectName(subject.getName());
@@ -312,7 +401,7 @@ public class ScheduleService {
         dto.setDayOfWeek(schedule.getDayOfWeek());
 
         return dto;
-    }
+}
 
         /**
         * Metodo para publicar horario y enviar notificación de publicación
