@@ -490,15 +490,7 @@ public class ScheduleService {
                                         new IllegalArgumentException(
                                                 "No se encontró la generación"
                                         ));
-
-                if (generation.getStatus()
-                        == SchedulerGenerationStatus.PUBLISHED) {
-
-                throw new IllegalArgumentException(
-                        "No se puede eliminar una generación publicada"
-                );
-                }
-
+                                        
                 scheduleRepository
                         .deleteByIdScheduleGeneration(idGeneration);
 

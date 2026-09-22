@@ -31,7 +31,10 @@ public class ExportController {
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
+                .header(HttpHeaders.CACHE_CONTROL, "no-cache, no-store, must-revalidate") // NUEVO
+                .header(HttpHeaders.PRAGMA, "no-cache") 
+                .header(HttpHeaders.EXPIRES, "0") 
                 .contentType(MediaType.parseMediaType("text/csv"))
                 .body(csvBytes);
     }
-}
+    }
