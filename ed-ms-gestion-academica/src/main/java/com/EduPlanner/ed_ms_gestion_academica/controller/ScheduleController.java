@@ -4,11 +4,11 @@ import com.eduplanner.ed_lib_common.dto.HttpGlobalResponse;
 import com.eduplanner.ed_lib_common.dto.ScheduleGenerationRequestDTO;
 import com.eduplanner.ed_lib_common.dto.SchedulePdfDTO;
 import com.eduplanner.ed_lib_common.dto.ScheduleResponseDTO;
+import com.eduplanner.ed_lib_common.dto.TimeSlotResponseDTO;
 import com.eduplanner.ed_lib_common.entity.AcademicPeriod;
 import com.eduplanner.ed_lib_common.entity.Course;
 import com.eduplanner.ed_lib_common.enums.RolEnum;
 import com.EduPlanner.ed_ms_gestion_academica.client.AdministracionServiceClient;
-import com.EduPlanner.ed_ms_gestion_academica.notifications.NotificationFactory;
 import com.EduPlanner.ed_ms_gestion_academica.security.RequireRole;
 import com.EduPlanner.ed_ms_gestion_academica.service.SchedulePdfService;
 import com.EduPlanner.ed_ms_gestion_academica.service.ScheduleService;
@@ -24,6 +24,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 @RestController
 @RequestMapping("/schedules")
 @RequiredArgsConstructor
@@ -32,7 +33,6 @@ public class ScheduleController {
         private final ScheduleService service;
         private final SchedulePdfService pdfService;
         private final AdministracionServiceClient administracionServiceClient;
-        private final NotificationFactory notificationFactory;
 
         /**
          * Guardar una generación de horario
@@ -256,6 +256,8 @@ public class ScheduleController {
                         )
                 );
 
+                List<TimeSlotResponseDTO> timeSlots = null;
+
                 // Información específica del usuario
                 if ("ESTUDIANTE".equals(role)) {
 
@@ -266,6 +268,11 @@ public class ScheduleController {
 
                         Course course =
                                 service.getCourseById(idCourse);
+
+                        timeSlots =
+                                service.getTimeSlotResponsesByShift(
+                                        course.getIdShift()
+                                );
 
                         // Curso
                         pdfData.setCurso(course.getName());
@@ -279,7 +286,6 @@ public class ScheduleController {
                         pdfData.setPeriodo(period.getName());
                 }
 
-                // Estudiante
                 pdfData.setEstudiante(
                         administracionServiceClient
                                 .getUserFullName(idUser)
@@ -289,7 +295,8 @@ public class ScheduleController {
                 byte[] pdf =
                         pdfService.generateSchedulePdf(
                                 pdfData,
-                                schedules
+                                schedules,
+                                timeSlots
                         );
 
                 return ResponseEntity.ok()
@@ -340,6 +347,11 @@ public class ScheduleController {
                 Course course =
                         service.getCourseById(idCourse);
 
+                List<TimeSlotResponseDTO> timeSlots =
+                        service.getTimeSlotResponsesByShift(
+                                course.getIdShift()
+                );
+
                 pdfData.setCurso(course.getName());
 
                 // Obtener periodo académico
@@ -354,7 +366,8 @@ public class ScheduleController {
                 byte[] pdf =
                         pdfService.generateSchedulePdf(
                                 pdfData,
-                                schedules
+                                schedules,
+                                timeSlots
                         );
 
                 return ResponseEntity.ok()
