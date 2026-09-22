@@ -747,20 +747,25 @@ export class HorariosComponent implements OnInit, OnDestroy {
   exportarHorario(): void {
     if (!this.horarios || this.horarios.length === 0) {
       this.modalService.error(
-        'No hay un horario disponible para exportar.'
+        this.modoConsulta === 'docente' &&
+          !this.docenteSeleccionado
+          ? 'Selecciona un docente para exportar su horario.'
+          : 'No hay un horario disponible para exportar.'
       );
       return;
     }
 
-    const filas = this.horarios.map(fila => [
-      fila.hora || '',
-      fila.horaFin || '',
-      fila.lunes || '',
-      fila.martes || '',
-      fila.miercoles || '',
-      fila.jueves || '',
-      fila.viernes || ''
-    ]);
+    // En modo docente el título debe ser el docente, no el último
+    // curso seleccionado (cursoSeleccionado sigue con valor en ese modo).
+    const esModoDocente =
+      this.modoConsulta === 'docente' &&
+      !this.esVistaRestringida;
+
+    const etiqueta = esModoDocente ? 'Docente' : 'Curso';
+
+    const nombreTitulo = esModoDocente
+      ? this.nombreDocenteSeleccionado()
+      : (this.cursoSeleccionado?.trim() || 'Horario');
 
     const encabezado = [
       'Hora inicio',
@@ -772,25 +777,40 @@ export class HorariosComponent implements OnInit, OnDestroy {
       'Viernes'
     ];
 
-    const nombreCurso =
-      this.cursoSeleccionado?.trim() ||
-      (this.modoConsulta === 'docente'
-        ? this.nombreDocenteSeleccionado()
-        : 'horario');
+    const filas = this.horarios.map(fila =>
+      fila.descanso
+        ? [
+            fila.hora,
+            fila.horaFin,
+            'Descanso',
+            'Descanso',
+            'Descanso',
+            'Descanso',
+            'Descanso'
+          ]
+        : [
+            fila.hora,
+            fila.horaFin,
+            fila.lunes,
+            fila.martes,
+            fila.miercoles,
+            fila.jueves,
+            fila.viernes
+          ]
+    );
 
-    const escaparCsv = (valor: string): string => {
-      const texto = String(valor ?? '');
-      return `"${texto.replace(/"/g, '""')}"`;
-    };
+    const SEP = ';'; // Excel en español separa columnas con ;
 
     const contenido = [
-      ["Curso", nombreCurso].map(escaparCsv).join(';'),
-      '',
-      encabezado.map(escaparCsv).join(';'),
-      ...filas.map(fila =>
-        fila.map(escaparCsv).join(';')
+      [etiqueta, nombreTitulo],
+      [],
+      encabezado,
+      ...filas
+    ]
+      .map(fila =>
+        fila.map(v => this.escaparCsv(v)).join(SEP)
       )
-    ].join('\r\n');
+      .join('\r\n');
 
     const blob = new Blob(
       ['\uFEFF' + contenido],
@@ -799,18 +819,32 @@ export class HorariosComponent implements OnInit, OnDestroy {
 
     const url = URL.createObjectURL(blob);
     const enlace = document.createElement('a');
-    const nombreArchivo = this.normalizarNombreArchivo(
-      nombreCurso
-    );
 
     enlace.href = url;
-    enlace.download = `horario-${nombreArchivo}.csv`;
+    enlace.download =
+      `horario-${this.normalizarNombreArchivo(nombreTitulo)}.csv`;
     enlace.style.display = 'none';
 
     document.body.appendChild(enlace);
     enlace.click();
     document.body.removeChild(enlace);
-    URL.revokeObjectURL(url);
+
+    // Se difiere el revoke para que Firefox alcance a iniciar la descarga.
+    setTimeout(() => URL.revokeObjectURL(url), 0);
+  }
+
+  private escaparCsv(valor: unknown): string {
+    let texto =
+      valor === null || valor === undefined
+        ? ''
+        : String(valor);
+
+    // Evita que Excel interprete el texto como fórmula.
+    if (/^[=+\-@]/.test(texto)) {
+      texto = `'${texto}`;
+    }
+
+    return `"${texto.replace(/"/g, '""')}"`;
   }
 
   private normalizarNombreArchivo(
