@@ -122,7 +122,7 @@ public class GradePdfService {
              */
 
             String html = templateEngine.process(
-                    "grade-report",
+                    "grades-pdf",
                     context
             );
 
