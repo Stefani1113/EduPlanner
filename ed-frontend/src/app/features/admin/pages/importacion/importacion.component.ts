@@ -135,7 +135,7 @@ export class ImportacionComponent {
 
         next: resp => {
           const idImport =
-            Number(resp?.data);
+            Number(resp?.data?.idImport);
 
           if (
             !Number.isInteger(idImport) ||

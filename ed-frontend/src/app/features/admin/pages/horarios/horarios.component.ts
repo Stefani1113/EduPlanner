@@ -39,7 +39,10 @@ export class HorariosComponent implements OnInit, OnDestroy {
   emocionActual = 'normal';
 
   vistaActual: 'horario' | 'conflictos' = 'horario';
-  diaSeleccionado = 'Martes';
+  diaSeleccionado = '';
+
+  /** Mientras sea true, el día mostrado sigue automáticamente al día real. */
+  private siguiendoHoy = true;
 
   horarios: BloqueHorario[] = [];
   horarioDisponible = true;
@@ -129,6 +132,15 @@ export class HorariosComponent implements OnInit, OnDestroy {
     5: 'viernes'
   };
 
+  /** Igual que nombresDias, pero solo los días que tiene la grilla (Lunes a Viernes). */
+  private readonly nombreDiaPorIndice: { [dia: number]: string } = {
+    1: 'Lunes',
+    2: 'Martes',
+    3: 'Miércoles',
+    4: 'Jueves',
+    5: 'Viernes'
+  };
+
   get hayBorrador(): boolean {
     return (
       this.borrador !== null &&
@@ -144,6 +156,7 @@ export class HorariosComponent implements OnInit, OnDestroy {
 
   get puedePublicar(): boolean {
     return (
+      this.esAdministrador &&
       this.idGeneracionActual !== null &&
       this.hayBorrador
     );
@@ -151,8 +164,13 @@ export class HorariosComponent implements OnInit, OnDestroy {
 
   get puedeEliminar(): boolean {
     return (
+      this.esAdministrador &&
       this.idGeneracionPublicadaActual !== null
     );
+  }
+
+  get puedeUsarIA(): boolean {
+    return this.esAdministrador;
   }
 
   get existeHorarioAnteriorParaBorrador(): boolean {
@@ -172,8 +190,17 @@ export class HorariosComponent implements OnInit, OnDestroy {
     this.mensajes =
       this.horariosService.obtenerMensajeInicial();
 
+    this.diaSeleccionado =
+      this.nombreDiaPorIndice[this.horaActual.getDay()] || 'Lunes';
+
     this.idIntervaloReloj = setInterval(() => {
       this.horaActual = new Date();
+
+      if (this.siguiendoHoy) {
+        this.diaSeleccionado =
+          this.nombreDiaPorIndice[this.horaActual.getDay()] ||
+          this.diaSeleccionado;
+      }
     }, 1000);
 
     this.conflictos =
@@ -224,37 +251,8 @@ export class HorariosComponent implements OnInit, OnDestroy {
   private inicializarVista(): void {
     if (this.esVistaRestringida) {
       if (this.esEstudiante) {
-        this.horariosService.obtenerCursos().subscribe({
-          next: respuesta => {
-            const curso = (respuesta?.data || [])
-              .find(
-                c =>
-                  Number(c.idCourse) ===
-                  Number(this.idCursoEstudiante)
-              );
-
-            this.cursoSeleccionado =
-              curso?.name || '';
-
-            if (!this.cursoSeleccionado) {
-              this.cargarNombreCursoEstudiante(
-                this.idCursoEstudiante
-              );
-            }
-
-            this.cargarMiHorario();
-            this.cargandoPerfil = false;
-          },
-          error: () => {
-            this.cargarNombreCursoEstudiante(
-              this.idCursoEstudiante
-            );
-
-            this.cargarMiHorario();
-            this.cargandoPerfil = false;
-          }
-        });
-
+        // El estudiante ve automáticamente el horario de su curso.
+        this.cargarHorarioEstudiante();
         return;
       }
 
@@ -315,6 +313,36 @@ export class HorariosComponent implements OnInit, OnDestroy {
       },
       error: () => {
         this.docentesDisponibles = [];
+      }
+    });
+  }
+
+  private cargarHorarioEstudiante(): void {
+    const idCourse = this.idCursoEstudiante;
+
+    if (idCourse === null || idCourse === undefined) {
+      this.cursoSeleccionado = 'Sin curso asignado';
+      this.horarios = [];
+      this.horarioDisponible = false;
+      this.cargandoPerfil = false;
+      return;
+    }
+
+    // Mostrar el nombre real del curso, por ejemplo: 10-A.
+    this.horariosService.obtenerCursoPorId(idCourse).subscribe({
+      next: respuesta => {
+        this.cursoSeleccionado =
+          respuesta?.data?.name || `Curso ${idCourse}`;
+
+        // Cargar el horario directamente usando el curso del estudiante.
+        this.cargarHorarioPorCurso(idCourse);
+        this.cargandoPerfil = false;
+      },
+      error: () => {
+        // Aunque no se pueda obtener el nombre, el idCourse sigue siendo válido.
+        this.cursoSeleccionado = `Curso ${idCourse}`;
+        this.cargarHorarioPorCurso(idCourse);
+        this.cargandoPerfil = false;
       }
     });
   }
@@ -539,6 +567,8 @@ export class HorariosComponent implements OnInit, OnDestroy {
           horaFin: this.formatearHora(
             clase.endTime
           ),
+          minutosInicio: this.aMinutos(clase.startTime),
+          minutosFin: this.aMinutos(clase.endTime),
           lunes: '',
           martes: '',
           miercoles: '',
@@ -564,6 +594,43 @@ export class HorariosComponent implements OnInit, OnDestroy {
     }
 
     return Array.from(filas.values());
+  }
+
+  private aMinutos(horaIso: string): number {
+    if (!horaIso) {
+      return -1;
+    }
+
+    const [horas, minutos] = horaIso.split(':').map(Number);
+
+    return horas * 60 + minutos;
+  }
+
+  /**
+   * True cuando el día que se ve en pantalla es HOY y la hora actual cae
+   * dentro de este bloque, para resaltar en verde la clase que está en curso.
+   */
+  esBloqueActual(fila: BloqueHorario): boolean {
+    if (fila.descanso) {
+      return false;
+    }
+
+    const esHoy =
+      this.diaSeleccionado ===
+      (this.nombreDiaPorIndice[this.horaActual.getDay()] || '');
+
+    if (!esHoy) {
+      return false;
+    }
+
+    const minutosAhora =
+      this.horaActual.getHours() * 60 +
+      this.horaActual.getMinutes();
+
+    return (
+      minutosAhora >= fila.minutosInicio &&
+      minutosAhora < fila.minutosFin
+    );
   }
 
   private formatearHora(
@@ -714,6 +781,9 @@ export class HorariosComponent implements OnInit, OnDestroy {
 
   seleccionarDia(dia: string): void {
     this.diaSeleccionado = dia;
+
+    this.siguiendoHoy =
+      dia === (this.nombreDiaPorIndice[this.horaActual.getDay()] || '');
   }
 
   obtenerNombreDiaActual(): string {
@@ -859,7 +929,7 @@ export class HorariosComponent implements OnInit, OnDestroy {
   }
 
   abrirChat(): void {
-    if (this.esVistaRestringida) {
+    if (!this.esAdministrador) {
       return;
     }
 
@@ -1088,6 +1158,10 @@ export class HorariosComponent implements OnInit, OnDestroy {
   }
 
   async publicarGeneracion(): Promise<void> {
+    if (!this.esAdministrador) {
+      return;
+    }
+
     if (
       this.idGeneracionActual === null ||
       this.publicando ||
@@ -1278,6 +1352,10 @@ export class HorariosComponent implements OnInit, OnDestroy {
   }
 
   async eliminarGeneracion(): Promise<void> {
+    if (!this.esAdministrador) {
+      return;
+    }
+
     if (
       this.idGeneracionPublicadaActual === null ||
       this.eliminando
