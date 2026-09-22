@@ -8,7 +8,8 @@ import {
   ConflictoHorario,
   NotificacionHorario,
   DocenteDTO,
-  ScheduleResponseDTO
+  ScheduleResponseDTO,
+  TimeSlotResponseDTO
 } from '../../services/horarios.service';
 import { PerfilService } from '../../services/perfil.service';
 import { BreadcrumbService } from '../../services/breadcrumb.service';
@@ -45,6 +46,9 @@ export class HorariosComponent implements OnInit, OnDestroy {
 
   horarios: BloqueHorario[] = [];
   horarioDisponible = true;
+
+  private franjasDisponibles: TimeSlotResponseDTO[] = [];
+  private clasesActuales: ScheduleResponseDTO[] = [];
 
   conflictos: ConflictoHorario[] = [];
   notificaciones: NotificacionHorario[] = [];
@@ -209,6 +213,7 @@ export class HorariosComponent implements OnInit, OnDestroy {
 
     this.cargarGeneracionesPendientes();
     this.cargarGeneracionesPublicadas();
+    this.cargarFranjasHorarias();
 
     this.perfilService.obtenerMiPerfil().subscribe({
       next: respuesta => {
@@ -249,7 +254,6 @@ export class HorariosComponent implements OnInit, OnDestroy {
   private inicializarVista(): void {
     if (this.esVistaRestringida) {
       if (this.esEstudiante) {
-        // El estudiante ve automáticamente el horario de su curso.
         this.cargarHorarioEstudiante();
         return;
       }
@@ -326,18 +330,15 @@ export class HorariosComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Mostrar el nombre real del curso, por ejemplo: 10-A.
     this.horariosService.obtenerCursoPorId(idCourse).subscribe({
       next: respuesta => {
         this.cursoSeleccionado =
           respuesta?.data?.name || `Curso ${idCourse}`;
 
-        // Cargar el horario directamente usando el curso del estudiante.
         this.cargarHorarioPorCurso(idCourse);
         this.cargandoPerfil = false;
       },
       error: () => {
-        // Aunque no se pueda obtener el nombre, el idCourse sigue siendo válido.
         this.cursoSeleccionado = `Curso ${idCourse}`;
         this.cargarHorarioPorCurso(idCourse);
         this.cargandoPerfil = false;
@@ -540,59 +541,153 @@ export class HorariosComponent implements OnInit, OnDestroy {
       .toLowerCase();
   }
 
-  private construirGrilla(
-    clases: ScheduleResponseDTO[]
-  ): BloqueHorario[] {
-    const filas =
-      new Map<string, BloqueHorario>();
+  private cargarFranjasHorarias(): void {
+    this.horariosService.obtenerFranjas().subscribe({
+      next: respuesta => {
+        this.franjasDisponibles = respuesta?.data || [];
 
-    const clasesOrdenadas = [...clases].sort(
+        if (this.clasesActuales.length > 0) {
+          this.horarios = this.construirGrilla(this.clasesActuales);
+          this.horarioDisponible = this.horarios.length > 0;
+        }
+      },
+      error: () => {
+        this.franjasDisponibles = [];
+      }
+    });
+  }
+
+  private construirGrilla(
+  clases: ScheduleResponseDTO[]
+): BloqueHorario[] {
+
+  this.clasesActuales = [...clases];
+
+  if (!clases || clases.length === 0) {
+    return [];
+  }
+
+  const filas = new Map<string, BloqueHorario>();
+
+
+  const clasesOrdenadas = [...clases].sort(
+    (a, b) =>
+      (a.startTime || '').localeCompare(b.startTime || '')
+  );
+
+  for (const clase of clasesOrdenadas) {
+
+    const clave = `${clase.startTime}-${clase.endTime}`;
+
+    if (!filas.has(clave)) {
+      filas.set(clave, {
+        hora: this.formatearHora(clase.startTime),
+        horaFin: this.formatearHora(clase.endTime),
+
+        minutosInicio: this.aMinutos(clase.startTime),
+        minutosFin: this.aMinutos(clase.endTime),
+
+        lunes: '',
+        martes: '',
+        miercoles: '',
+        jueves: '',
+        viernes: '',
+
+        descanso: false
+      });
+    }
+
+    const fila = filas.get(clave)!;
+
+    const diaKey =
+      this.diaSemanaPorIndice[clase.dayOfWeek];
+
+    if (diaKey) {
+      (fila as any)[diaKey] =
+        clase.subjectName || '';
+    }
+  }
+
+  const idsTimeSlot = new Set(
+    clases
+      .map(clase => Number(clase.idTimeSlot))
+      .filter(id => Number.isFinite(id))
+  );
+
+  const jornadas = new Set<number>();
+
+  for (const franja of this.franjasDisponibles) {
+
+    if (
+      idsTimeSlot.has(Number(franja.idTimeSlot)) &&
+      franja.idShift !== undefined &&
+      franja.idShift !== null
+    ) {
+      jornadas.add(Number(franja.idShift));
+    }
+  }
+
+
+  const descansos = this.franjasDisponibles
+    .filter(franja => {
+
+      if (franja.status === false) {
+        return false;
+      }
+
+      if (franja.isBreak !== true) {
+        return false;
+      }
+
+
+      if (jornadas.size > 0) {
+        return jornadas.has(Number(franja.idShift));
+      }
+
+      return false;
+    })
+    .sort(
       (a, b) =>
         (a.startTime || '').localeCompare(
           b.startTime || ''
         )
     );
 
-    for (const clase of clasesOrdenadas) {
-      const clave =
-        `${clase.startTime}-${clase.endTime}`;
 
-      if (!filas.has(clave)) {
-        filas.set(clave, {
-          hora: this.formatearHora(
-            clase.startTime
-          ),
-          horaFin: this.formatearHora(
-            clase.endTime
-          ),
-          minutosInicio: this.aMinutos(clase.startTime),
-          minutosFin: this.aMinutos(clase.endTime),
-          lunes: '',
-          martes: '',
-          miercoles: '',
-          jueves: '',
-          viernes: '',
-          descanso: false
-        });
-      }
+  for (const descanso of descansos) {
 
-      const fila = filas.get(
-        clave
-      ) as BloqueHorario;
+    const clave =
+      `${descanso.startTime}-${descanso.endTime}`;
 
-      const diaKey =
-        this.diaSemanaPorIndice[
-          clase.dayOfWeek
-        ];
-
-      if (diaKey) {
-        (fila as any)[diaKey] =
-          clase.subjectName || '';
-      }
+    if (filas.has(clave)) {
+      continue;
     }
 
-    return Array.from(filas.values());
+    filas.set(clave, {
+      hora: this.formatearHora(descanso.startTime),
+      horaFin: this.formatearHora(descanso.endTime),
+
+      minutosInicio:
+        this.aMinutos(descanso.startTime),
+
+      minutosFin:
+        this.aMinutos(descanso.endTime),
+
+      lunes: '',
+      martes: '',
+      miercoles: '',
+      jueves: '',
+      viernes: '',
+
+      descanso: true
+    });
   }
+
+  return Array.from(filas.values()).sort(
+    (a, b) =>
+      a.minutosInicio - b.minutosInicio
+  );
+}
 
   private aMinutos(horaIso: string): number {
     if (!horaIso) {
@@ -812,90 +907,73 @@ export class HorariosComponent implements OnInit, OnDestroy {
   exportarHorario(): void {
     if (!this.horarios || this.horarios.length === 0) {
       this.modalService.error(
-        this.modoConsulta === 'docente' &&
-          !this.docenteSeleccionado
+        this.modoConsulta === 'docente' && !this.docenteSeleccionado
           ? 'Selecciona un docente para exportar su horario.'
           : 'No hay un horario disponible para exportar.'
       );
       return;
     }
 
-    // En modo docente el título debe ser el docente, no el último
-    // curso seleccionado (cursoSeleccionado sigue con valor en ese modo).
-    const esModoDocente =
-      this.modoConsulta === 'docente' &&
-      !this.esVistaRestringida;
+    if (this.esEstudiante || this.esDocente) {
+      this.descargarPdf(
+        this.horariosService.descargarMiHorarioPdf(),
+        this.esDocente
+          ? `horario-${this.normalizarNombreArchivo(this.nombreDocenteSeleccionado())}.pdf`
+          : `horario-${this.normalizarNombreArchivo(this.cursoSeleccionado || 'estudiante')}.pdf`
+      );
+      return;
+    }
 
-    const etiqueta = esModoDocente ? 'Docente' : 'Curso';
+    if (this.esAdministrador && this.modoConsulta === 'curso') {
+      const idCourse = this.obtenerIdCursoSeleccionado();
 
-    const nombreTitulo = esModoDocente
-      ? this.nombreDocenteSeleccionado()
-      : (this.cursoSeleccionado?.trim() || 'Horario');
+      if (idCourse === null) {
+        this.modalService.error('No se pudo identificar el curso seleccionado.');
+        return;
+      }
 
-    const encabezado = [
-      'Hora inicio',
-      'Hora fin',
-      'Lunes',
-      'Martes',
-      'Miércoles',
-      'Jueves',
-      'Viernes'
-    ];
+      this.descargarPdf(
+        this.horariosService.descargarHorarioCursoPdf(idCourse),
+        `horario-${this.normalizarNombreArchivo(this.cursoSeleccionado || 'curso')}.pdf`
+      );
+      return;
+    }
 
-    const filas = this.horarios.map(fila =>
-      fila.descanso
-        ? [
-            fila.hora,
-            fila.horaFin,
-            'Descanso',
-            'Descanso',
-            'Descanso',
-            'Descanso',
-            'Descanso'
-          ]
-        : [
-            fila.hora,
-            fila.horaFin,
-            fila.lunes,
-            fila.martes,
-            fila.miercoles,
-            fila.jueves,
-            fila.viernes
-          ]
+    this.modalService.error(
+      'El backend actual no tiene un endpoint de PDF para exportar el horario de un docente seleccionado desde la vista administrativa.'
     );
+  }
 
-    const SEP = ';'; // Excel en español separa columnas con ;
+  private descargarPdf(
+    solicitud: import('rxjs').Observable<Blob>,
+    nombreArchivo: string
+  ): void {
+    this.cargando = true;
 
-    const contenido = [
-      [etiqueta, nombreTitulo],
-      [],
-      encabezado,
-      ...filas
-    ]
-      .map(fila =>
-        fila.map(v => this.escaparCsv(v)).join(SEP)
-      )
-      .join('\r\n');
+    solicitud.subscribe({
+      next: blob => {
+        const archivo = new Blob([blob], { type: 'application/pdf' });
+        const url = URL.createObjectURL(archivo);
+        const enlace = document.createElement('a');
 
-    const blob = new Blob(
-      ['\uFEFF' + contenido],
-      { type: 'text/csv;charset=utf-8;' }
-    );
+        enlace.href = url;
+        enlace.download = nombreArchivo;
+        enlace.style.display = 'none';
 
-    const url = URL.createObjectURL(blob);
-    const enlace = document.createElement('a');
+        document.body.appendChild(enlace);
+        enlace.click();
+        document.body.removeChild(enlace);
 
-    enlace.href = url;
-    enlace.download =
-      `horario-${this.normalizarNombreArchivo(nombreTitulo)}.csv`;
-    enlace.style.display = 'none';
-
-    document.body.appendChild(enlace);
-    enlace.click();
-    document.body.removeChild(enlace);
-
-    // Se difiere el revoke para que Firefox alcance a iniciar la descarga.
-    setTimeout(() => URL.revokeObjectURL(url), 0);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        this.cargando = false;
+      },
+      error: () => {
+        this.cargando = false;
+        this.modalService.error(
+          'No se pudo generar el PDF del horario. Verifica que exista un horario publicado.'
+        );
+      }
+    });
   }
 
   private escaparCsv(valor: unknown): string {
@@ -904,7 +982,6 @@ export class HorariosComponent implements OnInit, OnDestroy {
         ? ''
         : String(valor);
 
-    // Evita que Excel interprete el texto como fórmula.
     if (/^[=+\-@]/.test(texto)) {
       texto = `'${texto}`;
     }
