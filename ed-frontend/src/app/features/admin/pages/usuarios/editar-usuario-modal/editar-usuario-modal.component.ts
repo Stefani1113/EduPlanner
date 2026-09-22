@@ -66,7 +66,7 @@ export class EditarUsuarioModalComponent implements OnInit {
       gender: [u?.gender ?? '', Validators.required],
       email: [u?.email ?? '', [Validators.required, Validators.email]],
       phoneNumber: [u?.phoneNumber ?? '', Validators.required],
-      idCourse: [''],
+      idCourse: [u?.idCourse !== null && u?.idCourse !== undefined ? String(u.idCourse) : ''],
       address: [u?.address ?? '', Validators.required],
       bloodType: [u?.bloodType ?? '', Validators.required],
       stratum: [u?.stratum ?? '', Validators.required],

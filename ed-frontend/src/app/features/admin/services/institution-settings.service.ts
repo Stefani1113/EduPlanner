@@ -53,6 +53,8 @@ interface BrandColors {
   primary: string;
   secondary: string;
   accent: string;
+  surface: string;
+  surfaceAlt: string;
 }
 
 interface ConfigurationResponse {
@@ -100,9 +102,12 @@ const LEGACY_STORAGE_KEYS = [
 const STORAGE_KEY = 'eduplanner.institution-settings.v3';
 const THEME_MODE_KEY = 'eduplanner.theme-mode';
 const CUSTOM_PALETTE_KEY = 'eduplanner.custom-palette';
-const BRAND_COLORS_KEY = 'eduplanner.brand-colors';
+const CUSTOM_BRAND_COLORS_KEY = 'eduplanner.custom-brand-colors';
 const SYNC_INTERVAL_MS = 15000;
 
+// Oscuro y Claro son temas FIJOS: iguales para todo el mundo, sin importar
+// lo que el administrador edite en la pestaña "Personalizado". Así se evita
+// que al cambiar de tema queden colores mezclados de otro tema.
 const DEFAULT_PALETTE: InstitutionPalette = {
   primary: '#0d790b',
   secondary: '#4ed10b',
@@ -129,10 +134,14 @@ const LIGHT_PALETTE: InstitutionPalette = {
   border: '#d8ddd4'
 };
 
+const DEFAULT_CUSTOM_PALETTE: InstitutionPalette = { ...DEFAULT_PALETTE };
+
 const DEFAULT_BRAND_COLORS: BrandColors = {
   primary: DEFAULT_PALETTE.primary,
   secondary: DEFAULT_PALETTE.secondary,
-  accent: DEFAULT_PALETTE.accent
+  accent: DEFAULT_PALETTE.accent,
+  surface: DEFAULT_PALETTE.surface,
+  surfaceAlt: DEFAULT_PALETTE.surfaceAlt
 };
 
 export type ThemeMode = 'dark' | 'light' | 'custom';
@@ -194,7 +203,9 @@ export class InstitutionSettingsService {
 
   private readonly apiUrl = '/configuracion-institucional/configuration';
 
-  private ultimosColoresMarca: BrandColors = this.loadBrandColors();
+  // Colores de marca del tema Personalizado, compartidos por backend
+  // (solo se aplican cuando el modo activo es "custom").
+  private coloresMarcaPersonalizado: BrandColors = this.loadCustomBrandColors();
 
   private settingsSubject =
     new BehaviorSubject<InstitutionSettings>(
@@ -214,10 +225,12 @@ export class InstitutionSettingsService {
 
   private storageListener = (event: StorageEvent): void => {
 
-    if (event.key === BRAND_COLORS_KEY && event.newValue) {
+    if (event.key === CUSTOM_BRAND_COLORS_KEY && event.newValue) {
       try {
-        this.ultimosColoresMarca = JSON.parse(event.newValue) as BrandColors;
-        this.applyModePalette(this.currentMode);
+        this.coloresMarcaPersonalizado = JSON.parse(event.newValue) as BrandColors;
+        if (this.currentMode === 'custom') {
+          this.applyModePalette('custom');
+        }
       } catch {
         // Ignorar valor inválido.
       }
@@ -265,6 +278,7 @@ export class InstitutionSettingsService {
   }
 
 
+
   cargarDesdeBackend(): void {
     this.http.get<HttpGlobalResponse<ConfigurationResponse>>(this.apiUrl).pipe(
       catchError(() => of(null))
@@ -281,15 +295,17 @@ export class InstitutionSettingsService {
       };
 
       if (config) {
-        this.ultimosColoresMarca = {
-          primary: config.primaryColor || this.ultimosColoresMarca.primary,
-          secondary: config.secondaryColor || this.ultimosColoresMarca.secondary,
-          accent: config.accentColor || this.ultimosColoresMarca.accent
+        this.coloresMarcaPersonalizado = {
+          primary: config.primaryColor || this.coloresMarcaPersonalizado.primary,
+          secondary: config.secondaryColor || this.coloresMarcaPersonalizado.secondary,
+          accent: config.accentColor || this.coloresMarcaPersonalizado.accent,
+          surface: config.cardBackground || this.coloresMarcaPersonalizado.surface,
+          surfaceAlt: config.secondaryBackground || this.coloresMarcaPersonalizado.surfaceAlt
         };
-        this.guardarColoresMarca(this.ultimosColoresMarca);
+        this.guardarColoresMarcaPersonalizado(this.coloresMarcaPersonalizado);
       }
 
-      const palette = this.getModePalette(this.currentMode, this.settingsSubject.value.palette);
+      const palette = this.getModePalette(this.currentMode);
       const next: InstitutionSettings = { palette, info: this.sanitizeInfo(info) };
 
       this.settingsSubject.next(next);
@@ -312,7 +328,7 @@ export class InstitutionSettingsService {
   }
 
   private applyModePalette(mode: ThemeMode): void {
-    const palette = this.getModePalette(mode, this.settingsSubject.value.palette);
+    const palette = this.getModePalette(mode);
     const next = {
       ...this.settingsSubject.value,
       palette
@@ -323,26 +339,25 @@ export class InstitutionSettingsService {
     this.applyPalette(palette);
   }
 
-  private getModePalette(
-    mode: ThemeMode,
-    institutionPalette: InstitutionPalette
-  ): InstitutionPalette {
+  private getModePalette(mode: ThemeMode): InstitutionPalette {
 
-    if (mode === 'custom') {
-      return {
-        ...(this.loadCustomPalette() || institutionPalette)
-      };
+    if (mode === 'light') {
+      return { ...LIGHT_PALETTE };
     }
 
-    const preset = mode === 'light' ? LIGHT_PALETTE : DEFAULT_PALETTE;
+    if (mode === 'dark') {
+      return { ...DEFAULT_PALETTE };
+    }
 
-    // Oscuro y Claro son presets completos (fondos, texto, bordes) más los
-    // 3 colores de identidad de la institución.
+    const base = this.loadCustomPalette() || DEFAULT_CUSTOM_PALETTE;
+
     return {
-      ...preset,
-      primary: this.ultimosColoresMarca.primary,
-      secondary: this.ultimosColoresMarca.secondary,
-      accent: this.ultimosColoresMarca.accent
+      ...base,
+      primary: this.coloresMarcaPersonalizado.primary,
+      secondary: this.coloresMarcaPersonalizado.secondary,
+      accent: this.coloresMarcaPersonalizado.accent,
+      surface: this.coloresMarcaPersonalizado.surface,
+      surfaceAlt: this.coloresMarcaPersonalizado.surfaceAlt
     };
   }
 
@@ -378,48 +393,36 @@ export class InstitutionSettingsService {
   }
 
 
-  /**
-   * Guarda la paleta editada desde el panel de administración.
-   *
-   * Oscuro y Claro son temas fijos: si el administrador cambia cualquier
-   * color estando en uno de ellos, el sistema pasa automáticamente a
-   * "Personalizado" y conserva ese cambio (partiendo de los colores que se
-   * veían en pantalla). Guardar solo la información institucional, sin
-   * tocar colores, NO cambia el modo.
-   *
-   * La paleta personalizada vive solo en "Personalizado": no toca los
-   * colores de marca ni el backend, así no contamina Oscuro ni Claro.
-   */
   updateSettings(
     palette: InstitutionPalette,
     info: InstitutionInfo
   ): void {
 
     const infoSaneada = this.sanitizeInfo(info);
-    const cambioColores = this.paletaCambio(palette, this.settingsSubject.value.palette);
 
-    if (this.currentMode === 'custom' || cambioColores) {
-
-      // Guardar primero: setMode('custom') lee la paleta personalizada.
-      this.guardarPaletaPersonalizada(palette);
-
-      if (this.currentMode !== 'custom') {
-        this.setMode('custom');
-      }
-
-      this.persist({ palette: { ...palette }, info: infoSaneada });
+    if (this.currentMode !== 'custom') {
+      const next: InstitutionSettings = { ...this.settingsSubject.value, info: infoSaneada };
+      this.persist(next);
       this.sincronizarInfo(infoSaneada);
       return;
     }
 
-    // Oscuro / Claro sin cambios de color: solo se guarda la información.
-    this.persist({ ...this.settingsSubject.value, info: infoSaneada });
-    this.sincronizarInfo(infoSaneada);
-  }
+    const next: InstitutionSettings = { palette: { ...palette }, info: infoSaneada };
 
-  private paletaCambio(a: InstitutionPalette, b: InstitutionPalette): boolean {
-    return (Object.keys(a) as (keyof InstitutionPalette)[])
-      .some(key => (a[key] || '').toLowerCase() !== (b[key] || '').toLowerCase());
+    this.persist(next);
+    this.guardarPaletaPersonalizada(palette);
+
+    this.coloresMarcaPersonalizado = {
+      primary: palette.primary,
+      secondary: palette.secondary,
+      accent: palette.accent,
+      surface: palette.surface,
+      surfaceAlt: palette.surfaceAlt
+    };
+    this.guardarColoresMarcaPersonalizado(this.coloresMarcaPersonalizado);
+
+    this.sincronizarColores(palette);
+    this.sincronizarInfo(infoSaneada);
   }
 
 
@@ -441,13 +444,13 @@ export class InstitutionSettingsService {
 
     try {
       localStorage.removeItem(CUSTOM_PALETTE_KEY);
-      localStorage.removeItem(BRAND_COLORS_KEY);
+      localStorage.removeItem(CUSTOM_BRAND_COLORS_KEY);
       localStorage.setItem(THEME_MODE_KEY, 'dark');
     } catch (error) {
       console.error('No se pudo limpiar la personalización guardada:', error);
     }
 
-    this.ultimosColoresMarca = { ...DEFAULT_BRAND_COLORS };
+    this.coloresMarcaPersonalizado = { ...DEFAULT_BRAND_COLORS };
     this.modeSubject.next('dark');
 
     const infoActual = this.settingsSubject.value.info;
@@ -514,17 +517,6 @@ export class InstitutionSettingsService {
       this.persist(next);
     });
   }
-
-
-  private actualizarColoresMarcaDesde(palette: InstitutionPalette): void {
-    this.ultimosColoresMarca = {
-      primary: palette.primary,
-      secondary: palette.secondary,
-      accent: palette.accent
-    };
-    this.guardarColoresMarca(this.ultimosColoresMarca);
-  }
-
 
 
   private sincronizarColores(palette: InstitutionPalette): void {
@@ -640,24 +632,24 @@ export class InstitutionSettingsService {
   }
 
 
-  private guardarColoresMarca(colores: BrandColors): void {
+  private guardarColoresMarcaPersonalizado(colores: BrandColors): void {
     try {
-      localStorage.setItem(BRAND_COLORS_KEY, JSON.stringify(colores));
+      localStorage.setItem(CUSTOM_BRAND_COLORS_KEY, JSON.stringify(colores));
     } catch (error) {
-      console.error('No se pudieron guardar los colores de marca:', error);
+      console.error('No se pudieron guardar los colores de marca personalizados:', error);
     }
   }
 
-  private loadBrandColors(): BrandColors {
+  private loadCustomBrandColors(): BrandColors {
     try {
-      const raw = localStorage.getItem(BRAND_COLORS_KEY);
+      const raw = localStorage.getItem(CUSTOM_BRAND_COLORS_KEY);
       if (!raw) return { ...DEFAULT_BRAND_COLORS };
       const parsed = JSON.parse(raw) as BrandColors;
-      if (parsed?.primary && parsed?.secondary && parsed?.accent) {
-        return { primary: parsed.primary, secondary: parsed.secondary, accent: parsed.accent };
+      if (parsed?.primary && parsed?.secondary && parsed?.accent && parsed?.surface && parsed?.surfaceAlt) {
+        return { ...parsed };
       }
     } catch (error) {
-      console.error('No se pudieron leer los colores de marca guardados:', error);
+      console.error('No se pudieron leer los colores de marca personalizados:', error);
     }
     return { ...DEFAULT_BRAND_COLORS };
   }
@@ -706,7 +698,7 @@ export class InstitutionSettingsService {
         const parsed = JSON.parse(raw) as InstitutionSettings;
         if (parsed?.info) {
           return {
-            palette: this.getModePalette(mode, parsed.palette || DEFAULT_PALETTE),
+            palette: this.getModePalette(mode),
             info: this.sanitizeInfo(parsed.info)
           };
         }
@@ -742,7 +734,7 @@ export class InstitutionSettingsService {
     const mode = this.loadMode();
 
     return {
-      palette: this.getModePalette(mode, DEFAULT_PALETTE),
+      palette: this.getModePalette(mode),
       info: this.sanitizeInfo(DEFAULT_INFO)
     };
   }
@@ -752,4 +744,4 @@ export class InstitutionSettingsService {
     window.removeEventListener('storage', this.storageListener);
   }
 
-}
+} 

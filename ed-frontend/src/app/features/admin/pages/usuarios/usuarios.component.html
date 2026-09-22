@@ -21,7 +21,6 @@
       *ngIf="activeTab === 'listado'"
     >
 
-      <!-- FILTRO DE ROLES -->
 
       <div class="role-box">
 
@@ -56,7 +55,6 @@
           *ngIf="mostrarFiltroRol"
         >
 
-          <!-- TODOS -->
 
           <li
             class="rol-item"
@@ -66,7 +64,6 @@
             Todos
           </li>
 
-          <!-- ADMINISTRADOR -->
 
           <li
             class="rol-item"
@@ -76,7 +73,6 @@
             Administrador
           </li>
 
-          <!-- DOCENTE -->
 
           <li
             class="rol-item"
@@ -86,7 +82,6 @@
             Docente
           </li>
 
-          <!-- DIRECTIVO -->
 
           <li
             class="rol-item"
@@ -96,7 +91,6 @@
             Directivo
           </li>
 
-          <!-- ESTUDIANTE -->
 
           <li
             class="rol-item"
@@ -109,7 +103,6 @@
             Estudiante
           </li>
 
-          <!-- CURSOS DE ESTUDIANTES -->
 
           <ng-container
             *ngIf="rolSeleccionado === 'Estudiante'"
@@ -132,7 +125,6 @@
 
       </div>
 
-      <!-- EXPORTAR -->
 
       <button
         type="button"
@@ -154,7 +146,6 @@
 
       </button>
 
-      <!-- REGISTRAR -->
 
       <div class="registrar-box">
 
@@ -201,13 +192,11 @@
     [ngSwitch]="activeTab"
   >
 
-    <!-- LISTADO -->
 
     <ng-container
       *ngSwitchCase="'listado'"
     >
 
-      <!-- BUSCADOR -->
 
       <div class="search-bar">
 
@@ -225,11 +214,9 @@
 
       </div>
 
-      <!-- TABLA -->
 
       <div class="table-wrapper">
 
-        <!-- CARGANDO -->
 
         <div
           class="loading"
@@ -238,7 +225,6 @@
           Cargando usuarios...
         </div>
 
-        <!-- ERROR -->
 
         <div
           class="error"
@@ -247,7 +233,6 @@
           {{ errorCarga }}
         </div>
 
-        <!-- TABLA -->
 
         <table
           class="usuarios-table"
@@ -284,7 +269,6 @@
               *ngFor="let usuario of usuariosFiltrados"
             >
 
-              <!-- FOTO -->
 
               <td>
 
@@ -302,37 +286,31 @@
 
               </td>
 
-              <!-- NOMBRE -->
 
               <td>
                 {{ usuario.nombre }}
               </td>
 
-              <!-- ID -->
 
               <td>
                 {{ usuario.id }}
               </td>
 
-              <!-- CORREO -->
 
               <td>
                 {{ usuario.correo }}
               </td>
 
-              <!-- ROL -->
 
               <td>
                 {{ usuario.rol }}
               </td>
 
-              <!-- GRADO -->
 
               <td>
-                {{ usuario.grado ?? '--' }}
+                {{ usuario.grado ?? (usuario.rol === 'Estudiante' ? 'Sin curso' : '--') }}
               </td>
 
-              <!-- ESTADO -->
 
               <td>
 
@@ -350,7 +328,6 @@
 
               </td>
 
-              <!-- ACCIONES -->
 
               <td class="acciones-cell">
 
@@ -393,7 +370,6 @@
 
             </tr>
 
-            <!-- SIN RESULTADOS -->
 
             <tr
               *ngIf="usuariosFiltrados.length === 0"
@@ -416,7 +392,6 @@
 
     </ng-container>
 
-    <!-- IMPORTACIÓN -->
 
     <ng-container
       *ngSwitchCase="'importacion'"
@@ -429,7 +404,6 @@
 
   </ng-container>
 
-  <!-- MODAL REGISTRAR -->
 
   <app-registro-usuario-modal
     *ngIf="tipoRegistro"
@@ -440,7 +414,6 @@
   >
   </app-registro-usuario-modal>
 
-  <!-- MODAL EDITAR -->
 
   <app-editar-usuario-modal
     *ngIf="
