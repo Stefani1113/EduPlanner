@@ -637,15 +637,16 @@
   background-image:
     linear-gradient(
       135deg,
-      rgba(26, 42, 26, 0.85),
-      rgba(30, 30, 30, 0.85) 60%,
-      rgba(33, 42, 26, 0.85)
+      rgba(26, 42, 26, 0),
+      rgba(30, 30, 30, 0) 60%,
+      rgba(33, 42, 26, 0)
     ),
     url('/assets/img/pattern-trasparent.png');
   background-size: cover, cover;
   background-position: center, center;
   background-repeat: no-repeat, no-repeat;
 }
+
 
 .perfil-avatar {
   position: absolute;
