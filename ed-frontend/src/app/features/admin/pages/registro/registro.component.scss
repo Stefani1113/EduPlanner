@@ -13,7 +13,7 @@
   background: var(--inst-surface);
   border: 1px solid rgba(255, 255, 255, .04);
   border-radius: 16px;
-  box-shadow: 0 10px 35px rgba(0, 0, 0, .35);
+  box-shadow: 0 10px 35px rgba(var(--inst-shadow-rgb), calc(.35 * var(--inst-shadow-alpha-mult)));
 }
 
 
@@ -140,7 +140,7 @@
 
 .btn-agregar:hover {
   background: var(--inst-primary);
-  color: var(--inst-dark);
+  color: #0d0d0d;
 }
 
 
@@ -283,7 +283,7 @@
 }
 .btn-editar:not(:disabled):hover {
   background: var(--inst-primary);
-  color: var(--inst-dark);
+  color: #0d0d0d;
 }
 
 .btn-eliminar {
@@ -323,7 +323,7 @@
   background: var(--inst-surface);
   border: 1px solid var(--inst-border);
   border-radius: 15px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, .7);
+  box-shadow: 0 20px 60px rgba(var(--inst-shadow-rgb), calc(.7 * var(--inst-shadow-alpha-mult)));
 }
 
 .modal-header {
@@ -454,7 +454,7 @@
 
 .btn-guardar {
   background: var(--inst-primary);
-  color: var(--inst-dark);
+  color: #0d0d0d;
   font-weight: 600;
 }
 
@@ -538,7 +538,7 @@
 
 .btn-preview-imagen:hover {
   background: var(--inst-primary);
-  color: var(--inst-dark);
+  color: #0d0d0d;
 }
 
 

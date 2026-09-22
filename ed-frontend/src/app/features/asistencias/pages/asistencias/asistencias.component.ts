@@ -851,10 +851,7 @@ export class AsistenciaComponent implements OnInit, OnDestroy {
     this.cambiarTab('listado');
   }
 
-  /**
-   * Resumen personal del Estudiante: sus propios registros de asistencia
-   * y su porcentaje, en vez del listado de sesiones de todo el curso.
-   */
+
   buscarMiResumen(): void {
     if (this.idUsuarioActual === null) {
       return;
@@ -1036,12 +1033,7 @@ export class AsistenciaComponent implements OnInit, OnDestroy {
     });
   }
 
-  /**
-   * Para el Estudiante, el panel "Historial" (gráficos) muestra únicamente
-   * su propio porcentaje de asistencia en vez del historial de todos los
-   * cursos. Se reutiliza la misma estructura ResumenCurso para no duplicar
-   * la plantilla de gráficos.
-   */
+
   private cargarGraficoHistorialEstudiante(): void {
     if (this.idUsuarioActual === null) {
       this.resumenPorCurso = [];

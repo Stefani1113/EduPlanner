@@ -22,7 +22,7 @@
   border: 1px solid transparent;
   border-radius: 20px;
   background: var(--inst-dark);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+  box-shadow: 0 20px 60px rgba(var(--inst-shadow-rgb), calc(0.7 * var(--inst-shadow-alpha-mult)));
   animation: slideUp 0.3s ease;
 }
 
@@ -357,7 +357,7 @@
 
 .btn-guardar:hover:not(:disabled) {
   background: var(--inst-secondary);
-  color: var(--inst-dark);
+  color: #0d0d0d;
   transform: translateY(-1px);
   box-shadow: 0 4px 20px rgba(78, 209, 11, 0.3);
 }

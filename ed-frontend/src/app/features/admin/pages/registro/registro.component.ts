@@ -311,14 +311,7 @@ export class RegistroComponent implements OnInit {
   }
 
 
-  /**
-   * El backend reutiliza el mismo mensaje ("El X indicado no existe / no se encontró en Y")
-   * tanto cuando guardas algo con un id inválido como cuando ELIMINAS algo que MySQL bloquea
-   * por tener registros dependientes. En una eliminación esa frase es engañosa: el registro
-   * que borraste sí existe (lo tenías seleccionado en la lista); lo que pasa es que otra
-   * tabla todavía lo referencia. Esta función detecta ese caso y da el mensaje correcto,
-   * sin necesidad de tocar el backend.
-   */
+
   private mensajeErrorEliminacion(err: any, fallback: string): string {
 
     const mensaje: string =
@@ -737,11 +730,7 @@ export class RegistroComponent implements OnInit {
   }
 
 
-  /**
-   * Vuelve a pedir la lista de cursos al backend antes de abrir un formulario que permite
-   * elegir un curso. Evita que el <select> muestre cursos que ya fueron eliminados en otra
-   * pestaña/sesión, que es lo que provoca el error "El idCourse indicado no existe" al guardar.
-   */
+
   private refrescarCursosDisponibles(): void {
     this.horariosService.listarCursos().subscribe({
       next: respuesta => {
@@ -1237,11 +1226,7 @@ export class RegistroComponent implements OnInit {
   }
 
 
-  /**
-   * Borra las cargas académicas relacionadas (si las hay) y luego la asignatura.
-   * Si falla la eliminación de alguna carga, se detiene y no se intenta borrar la
-   * asignatura, para no dejar el sistema a medias.
-   */
+
   private ejecutarEliminarAsignatura(
     asignatura: AsignaturaFila,
     cargasRelacionadas: AcademicLoadResponseDTO[]

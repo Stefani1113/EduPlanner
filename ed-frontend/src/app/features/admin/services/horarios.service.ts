@@ -10,7 +10,6 @@ export interface MensajeIA {
 export interface BloqueHorario {
   hora: string;
   horaFin: string;
-  /** Minutos desde medianoche, para saber si el bloque está en curso ahora mismo. */
   minutosInicio: number;
   minutosFin: number;
   lunes: string;
