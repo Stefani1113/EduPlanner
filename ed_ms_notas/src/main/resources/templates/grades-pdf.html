@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <title>Reporte de Notas - EduPlanner</title>
+    <style>
+
+        @page {
+            size: A4 landscape;
+            margin: 20mm 12mm 16mm 12mm;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            background-color: #ffffff;
+            color: #111111;
+            font-size: 11.5px;
+        }
+
+        /* ===================== HEADER / BANNER ===================== */
+
+        .banner {
+            background: linear-gradient(135deg, #1e7a3d, #14532d);
+            color: #ffffff;
+            padding: 14px 20px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .banner .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .banner .brand-logo {
+            width: 30px;
+            height: 30px;
+            border-radius: 7px;
+            background-color: #ffffff;
+            opacity: 0.9;
+        }
+
+        .banner .brand-text .title {
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .banner .brand-text .subtitle {
+            font-size: 10.5px;
+            color: #d6f0dd;
+            margin-top: 2px;
+        }
+
+        .banner .meta {
+            text-align: right;
+            font-size: 10px;
+            color: #d6f0dd;
+        }
+
+        /* ===================== SUMMARY BOX ===================== */
+
+        .summary {
+            background-color: #f2f9f4;
+            border: 1px solid #cdeed9;
+            border-left: 4px solid #2e9e52;
+            border-radius: 6px;
+            padding: 10px 16px;
+            margin-bottom: 16px;
+            display: flex;
+            gap: 28px;
+        }
+
+        .summary .stat .label {
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #2e9e52;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+
+        .summary .stat .value {
+            font-size: 14px;
+            font-weight: 700;
+            color: #111111;
+        }
+
+        /* ===================== TABLE ===================== */
+
+        table.grades {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table.grades thead th {
+            background-color: #1e293b;
+            color: #ffffff;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            padding: 9px 8px;
+            text-align: left;
+            border: 1px solid #1e293b;
+        }
+
+        table.grades tbody td {
+            padding: 7px 8px;
+            border: 1px solid #e2e8e5;
+            color: #111111;
+            font-size: 10.5px;
+        }
+
+        table.grades tbody tr:nth-child(even) td {
+            background-color: #f3f6fa;
+        }
+
+        table.grades tbody tr:nth-child(odd) td {
+            background-color: #ffffff;
+        }
+
+        td.col-nota {
+            font-weight: 700;
+            text-align: center;
+        }
+
+        td.nota-aprobada {
+            color: #16a34a;
+        }
+
+        td.nota-sin-registro {
+            color: #64748b;
+            font-weight: 400;
+        }
+
+        /* ===================== STATUS BADGES ===================== */
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 9px;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .badge-registrada {
+            background-color: #dcfce7;
+            color: #15803d;
+        }
+
+        .badge-modificada {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-anulada {
+            background-color: #fee2e2;
+            color: #b91c1c;
+        }
+
+        /* ===================== EMPTY STATE ===================== */
+
+        .empty-state {
+            text-align: center;
+            padding: 24px;
+            color: #64748b;
+            font-style: italic;
+            font-size: 11px;
+        }
+
+        /* ===================== FOOTER ===================== */
+
+        .footer {
+            margin-top: 20px;
+            padding-top: 10px;
+            border-top: 1px solid #d9e9de;
+            display: flex;
+            justify-content: space-between;
+            font-size: 9px;
+            color: #6b7280;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- ===================== BANNER ===================== -->
+    <div class="banner">
+        <div class="brand">
+            <div class="brand-logo"></div>
+            <div class="brand-text">
+                <div class="title" th:text="${title}">Reporte de Notas</div>
+                <div class="subtitle" th:text="${subtitle}">Curso 10-A · Periodo 2026-2</div>
+            </div>
+        </div>
+        <div class="meta">
+            <div th:text="${'Generado el ' + fechaGeneracion}">Generado el 22/09/2026</div>
+        </div>
+    </div>
+
+    <!-- ===================== RESUMEN ===================== -->
+    <div class="summary">
+        <div class="stat">
+            <div class="label">Total de notas</div>
+            <div class="value" th:text="${totalRegistros}">32</div>
+        </div>
+        <div class="stat">
+            <div class="label">Con nota registrada</div>
+            <div class="value" th:text="${totalAprobadas}">28</div>
+        </div>
+        <div class="stat" th:if="${totalSinRegistro != null}">
+            <div class="label">Sin registro</div>
+            <div class="value" th:text="${totalSinRegistro}">4</div>
+        </div>
+    </div>
+
+    <!-- ===================== TABLA DE NOTAS ===================== -->
+    <table class="grades" th:if="${!records.isEmpty()}">
+        <thead>
+            <tr>
+                <th>Estudiante</th>
+                <th>Curso</th>
+                <th>Asignatura</th>
+                <th>Periodo</th>
+                <th>Tipo eval.</th>
+                <th>Nota</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!--
+                'records' es una lista de objetos tipo GradeResponseDTO con:
+                studentName, courseName, subjectName, periodName,
+                idEvaluationType, gradeValue, status ("REGISTERED" | "MODIFIED" | "ANNULLED")
+            -->
+            <tr th:each="g : ${records}">
+                <td th:text="${g.studentName}">Nombre del estudiante</td>
+                <td th:text="${g.courseName}">10-A</td>
+                <td th:text="${g.subjectName}">Matemáticas</td>
+                <td th:text="${g.periodName}">2026-2</td>
+                <td th:text="${g.idEvaluationType != null ? '#' + g.idEvaluationType : '—'}">
+                    #3
+                </td>
+
+                <td
+                    th:class="${g.gradeValue != null ? 'col-nota nota-aprobada' : 'col-nota nota-sin-registro'}"
+                    th:text="${g.gradeValue != null ? g.gradeValue : '—'}">
+                    4.5
+                </td>
+
+                <td>
+                    <span th:if="${g.status == 'REGISTERED'}" class="badge badge-registrada">Registrada</span>
+                    <span th:if="${g.status == 'MODIFIED'}" class="badge badge-modificada">Modificada</span>
+                    <span th:if="${g.status == 'ANNULLED'}" class="badge badge-anulada">Anulada</span>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- ===================== ESTADO VACÍO ===================== -->
+    <div class="empty-state" th:if="${records.isEmpty()}">
+        No se encontraron notas registradas en el periodo indicado.
+    </div>
+
+    <!-- ===================== FOOTER ===================== -->
+    <div class="footer">
+        <span>EduPlanner &copy; <span th:text="${#calendars.format(#calendars.createNow(), 'yyyy')}">2026</span></span>
+        <span th:text="${'Documento generado automáticamente — ' + subtitle}">Documento generado automáticamente — Curso 10-A · Periodo 2026-2</span>
+    </div>
+
+</body>
+</html>
