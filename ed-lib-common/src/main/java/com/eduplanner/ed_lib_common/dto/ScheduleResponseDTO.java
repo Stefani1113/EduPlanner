@@ -14,6 +14,7 @@ public class ScheduleResponseDTO {
     private Integer idSchedule;
 
     private Integer idCourse;
+    private String courseName;
 
     private Integer idSubject;
     private String subjectName;
