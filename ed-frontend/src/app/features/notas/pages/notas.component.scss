@@ -12,7 +12,7 @@
   margin: 0 0 6px;
   font-size: 25px;
   font-weight: 700;
-  color: var(--inst-light);
+  color: var(--inst-text);
   letter-spacing: 0.2px;
 }
 
@@ -83,7 +83,7 @@
 }
 
 .tab:hover {
-  color: var(--inst-light);
+  color: var(--inst-text);
   background: color-mix(in srgb, var(--inst-light) 6%, transparent);
 }
 
@@ -138,7 +138,7 @@
 .panel-subtitle {
   position: relative;
   z-index: 1;
-  color: var(--inst-accent);
+  color: var(--inst-secondary);
   font-size: 13px;
   margin: 0 0 6px;
   font-weight: 600;
@@ -157,7 +157,7 @@
 .panel-title {
   position: relative;
   z-index: 1;
-  color: var(--inst-light);
+  color: var(--inst-text);
   font-size: 15px;
   margin: 0 0 18px;
   line-height: 1.45;
@@ -182,7 +182,7 @@
   position: relative;
   z-index: 1;
   background: linear-gradient(135deg, var(--inst-secondary), var(--inst-primary));
-  color: var(--inst-dark);
+  color: #0d0d0d;
   border: none;
   border-radius: 10px;
   padding: 11px 22px;
@@ -248,7 +248,7 @@
   background: var(--inst-dark);
   border: 1px solid transparent;
   border-radius: 10px;
-  color: var(--inst-light);
+  color: var(--inst-text);
   padding: 10px 14px;
   font-size: 13.5px;
   font-weight: 500;
@@ -299,7 +299,7 @@
 
 .promedio-valor span {
   font-size: 20px;
-  color: var(--inst-accent);
+  color: var(--inst-muted);
   font-weight: 600;
 }
 
@@ -332,7 +332,7 @@
 }
 
 .asignatura-nombre {
-  color: var(--inst-accent);
+  color: var(--inst-secondary);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.5px;
@@ -377,7 +377,7 @@
 }
 
 .config-panel {
-  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.28);
+  box-shadow: 0 18px 36px rgba(var(--inst-shadow-rgb), calc(0.28 * var(--inst-shadow-alpha-mult)));
 }
 
 .listado-estudiantes {
@@ -466,7 +466,7 @@
   color: #1c1e1a;
   border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 14px 30px rgba(var(--inst-shadow-rgb), calc(0.35 * var(--inst-shadow-alpha-mult)));
 }
 
 .preview-card-head {
@@ -537,7 +537,7 @@
 }
 
 .preview-tabla .btn-verde.full {
-  color: var(--inst-dark);
+  color: #0d0d0d;
 }
 
 .filtros-notas {
@@ -547,7 +547,7 @@
   gap: 16px;
   margin-bottom: 20px;
   max-width: 100%;
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 12px 28px rgba(var(--inst-shadow-rgb), calc(0.25 * var(--inst-shadow-alpha-mult)));
 }
 
 .filtros-notas .campo {
@@ -625,7 +625,7 @@
   background: var(--inst-dark);
   border: 1px solid var(--inst-border);
   border-radius: 8px;
-  color: var(--inst-light);
+  color: var(--inst-text);
   text-align: center;
   padding: 7px 4px;
   font-size: 13px;
@@ -671,7 +671,7 @@
   font-size: 21px;
   font-weight: 700;
   margin: 0 0 10px;
-  color: var(--inst-light);
+  color: var(--inst-text);
 }
 
 .escala-desc {
@@ -715,7 +715,7 @@
   background: var(--inst-dark);
   border: 1px solid transparent;
   border-radius: 10px;
-  color: var(--inst-light);
+  color: var(--inst-text);
   padding: 10px 14px;
   font-size: 13.5px;
   font-weight: 600;
@@ -790,7 +790,7 @@
   background: var(--inst-dark);
   border: 1px solid transparent;
   border-radius: 10px;
-  color: var(--inst-light);
+  color: var(--inst-text);
   padding: 10px 14px;
   font-size: 13px;
   transition: border-color 0.2s ease;
@@ -804,7 +804,7 @@
 .pasos-panel {
   max-width: 620px;
   margin: 0 auto 24px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.32);
+  box-shadow: 0 20px 40px rgba(var(--inst-shadow-rgb), calc(0.32 * var(--inst-shadow-alpha-mult)));
   border: 1px solid color-mix(in srgb, var(--inst-secondary) 20%, var(--inst-border));
 }
 
@@ -920,7 +920,7 @@
 }
 
 .paso-nombre {
-  color: var(--inst-light, #f2f2f2);
+  color: var(--inst-text, #f2f2f2);
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.2px;
@@ -969,7 +969,7 @@
   border-radius: 50%;
   border: 1px solid transparent;
   background: var(--inst-surface-alt);
-  color: var(--inst-light);
+  color: var(--inst-text);
   cursor: pointer;
   font-size: 15px;
   line-height: 1;
@@ -979,7 +979,7 @@
 .paso-botones button:hover {
   background: var(--inst-secondary);
   border-color: var(--inst-secondary);
-  color: var(--inst-dark);
+  color: #0d0d0d;
 }
 
 .pasos-total-wrap {

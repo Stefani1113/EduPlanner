@@ -5,7 +5,6 @@
   padding: 32px 38px 56px;
   color: var(--inst-text);
 
-  /* Paleta semántica de asistencia: un color = un significado en toda la pantalla */
   --att-success: var(--inst-secondary);
   --att-success-bg: rgba(78, 209, 11, 0.14);
   --att-success-border: rgba(78, 209, 11, 0.35);
@@ -75,7 +74,7 @@
   background: var(--inst-primary);
   color: var(--inst-light);
   transform: translateY(-2px);
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 8px 22px rgba(var(--inst-shadow-rgb), calc(0.3 * var(--inst-shadow-alpha-mult)));
 }
 
 .tabs {
@@ -87,7 +86,7 @@
   margin-bottom: 28px;
   border-radius: 14px;
   background: var(--inst-surface-alt);
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 14px 34px rgba(var(--inst-shadow-rgb), calc(0.35 * var(--inst-shadow-alpha-mult)));
 }
 
 .tab {
@@ -198,7 +197,7 @@
   border-radius: 14px;
   background: var(--inst-surface-alt);
   border: 1px solid transparent;
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 8px 22px rgba(var(--inst-shadow-rgb), calc(0.3 * var(--inst-shadow-alpha-mult)));
   position: relative;
   overflow: hidden;
 }
@@ -238,7 +237,7 @@
   border-radius: 16px;
   background: var(--inst-surface-alt);
   border: 1px solid transparent;
-  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 14px 32px rgba(var(--inst-shadow-rgb), calc(0.3 * var(--inst-shadow-alpha-mult)));
 }
 
 .filtro-titulo {
@@ -408,7 +407,7 @@
   border-radius: 15px;
   border: 1px solid transparent;
   background: var(--inst-surface-alt);
-  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 10px 26px rgba(var(--inst-shadow-rgb), calc(0.3 * var(--inst-shadow-alpha-mult)));
 }
 
 .loading-card div {
@@ -463,7 +462,7 @@
   border: 1px solid transparent;
   border-radius: 17px;
   background: var(--inst-surface-alt);
-  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 16px 34px rgba(var(--inst-shadow-rgb), calc(0.3 * var(--inst-shadow-alpha-mult)));
   transition: transform 0.22s ease, box-shadow 0.22s ease,
     border-color 0.22s ease;
 }
@@ -471,7 +470,7 @@
 .stat-card:hover {
   transform: translateY(-3px);
   border-color: transparent;
-  box-shadow: 0 22px 44px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 22px 44px rgba(var(--inst-shadow-rgb), calc(0.4 * var(--inst-shadow-alpha-mult)));
 }
 
 .stat-principal {
@@ -602,7 +601,7 @@
   border-radius: 18px;
   border: 1px solid transparent;
   background: var(--inst-surface-alt);
-  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 16px 34px rgba(var(--inst-shadow-rgb), calc(0.3 * var(--inst-shadow-alpha-mult)));
 }
 
 .timeline-header {
@@ -702,7 +701,7 @@
 .attendance-item:hover {
   transform: translateX(4px);
   border-color: transparent;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 8px 20px rgba(var(--inst-shadow-rgb), calc(0.3 * var(--inst-shadow-alpha-mult)));
 }
 
 .attendance-item-main {
@@ -815,14 +814,14 @@
   border: 1px solid transparent;
   border-radius: 18px;
   padding: 22px;
-  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 16px 34px rgba(var(--inst-shadow-rgb), calc(0.3 * var(--inst-shadow-alpha-mult)));
 }
 
 .panel h3 {
   margin: 0 0 18px;
   font-size: 15px;
   font-weight: 700;
-  color: var(--inst-accent);
+  color: var(--inst-secondary);
   text-align: left;
 }
 
@@ -896,8 +895,6 @@
   background: var(--inst-secondary);
 }
 
-/* Paleta coherente (tonos institucionales) para las barras "Global" por curso,
-   sustituye el color aleatorio que llega inline desde el componente. */
 .barras-scroll .barra-item:nth-child(6n + 1) .barra-relleno,
 .barras-scroll .barra-item:nth-child(6n + 1) .barra-punto {
   background: var(--inst-secondary) !important;
@@ -976,7 +973,7 @@
 }
 
 .listado-vacio strong {
-  color: var(--inst-accent);
+  color: var(--inst-text);
   font-size: 14px;
   font-weight: 700;
 }
@@ -1009,12 +1006,10 @@
   transition: stroke-dashoffset 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* "Porcentaje Total" = métrica positiva global -> verde institucional */
 .panel-total > .dona-grande .dona-progreso {
   stroke: var(--att-success) !important;
 }
 
-/* Mini donas: Tardanzas (1ª) = advertencia, Faltas (2ª) = negativo */
 .mini-donas .mini-dona-item:nth-child(1) .dona-progreso {
   stroke: var(--att-warning) !important;
 }
@@ -1144,7 +1139,7 @@
   border-radius: 15px;
   border: 1px solid transparent;
   background: var(--inst-surface-alt);
-  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 10px 26px rgba(var(--inst-shadow-rgb), calc(0.3 * var(--inst-shadow-alpha-mult)));
 }
 
 .filtros-bar label {
@@ -1202,7 +1197,7 @@
   border-radius: 17px;
   padding: 20px 24px;
   margin-bottom: 20px;
-  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 14px 32px rgba(var(--inst-shadow-rgb), calc(0.3 * var(--inst-shadow-alpha-mult)));
 }
 
 .resumen-personal-porcentaje {
@@ -1255,7 +1250,7 @@
   background: var(--inst-primary);
   color: var(--inst-light);
   transform: translateY(-2px);
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 8px 22px rgba(var(--inst-shadow-rgb), calc(0.3 * var(--inst-shadow-alpha-mult)));
 }
 
 .btn-secundario:disabled {
@@ -1286,7 +1281,7 @@
   border-radius: 17px;
   padding: 6px;
   overflow-x: auto;
-  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 16px 34px rgba(var(--inst-shadow-rgb), calc(0.3 * var(--inst-shadow-alpha-mult)));
 }
 
 .tabla-wrap-scroll {
@@ -1345,7 +1340,7 @@
 
 .celda-asistencia:hover:not(:disabled) {
   transform: scale(1.06);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 6px 16px rgba(var(--inst-shadow-rgb), calc(0.4 * var(--inst-shadow-alpha-mult)));
 }
 
 .celda-asistencia:disabled {
@@ -1406,7 +1401,7 @@
   align-items: center;
   gap: 16px;
   flex-wrap: wrap;
-  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 14px 32px rgba(var(--inst-shadow-rgb), calc(0.3 * var(--inst-shadow-alpha-mult)));
   transition: transform 0.2s ease, border-color 0.2s ease,
     box-shadow 0.2s ease;
 }
@@ -1414,7 +1409,7 @@
 .excusa-card:hover {
   transform: translateY(-2px);
   border-color: transparent;
-  box-shadow: 0 20px 42px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 20px 42px rgba(var(--inst-shadow-rgb), calc(0.4 * var(--inst-shadow-alpha-mult)));
 }
 
 .excusa-info {
@@ -1532,7 +1527,7 @@
   padding-left: 2px;
   font-size: 13.5px;
   font-weight: 800;
-  color: var(--inst-accent);
+  color: var(--inst-secondary);
   letter-spacing: 0.3px;
 }
 
@@ -1606,7 +1601,7 @@
   border: 1px solid transparent;
   border-radius: 13px;
   padding: 14px 20px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 8px 20px rgba(var(--inst-shadow-rgb), calc(0.25 * var(--inst-shadow-alpha-mult)));
   transition: transform 0.18s ease, border-color 0.18s ease,
     box-shadow 0.18s ease;
 }
@@ -1614,7 +1609,7 @@
 .toma-fila:hover {
   transform: translateX(4px);
   border-color: transparent;
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 12px 28px rgba(var(--inst-shadow-rgb), calc(0.35 * var(--inst-shadow-alpha-mult)));
 }
 
 .toma-nombre {
@@ -1687,8 +1682,8 @@
   font-weight: 800;
   cursor: pointer;
   background: var(--inst-secondary);
-  color: var(--inst-dark);
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35);
+  color: #0d0d0d;
+  box-shadow: 0 8px 22px rgba(var(--inst-shadow-rgb), calc(0.35 * var(--inst-shadow-alpha-mult)));
   transition: transform 0.18s ease, box-shadow 0.18s ease,
     opacity 0.18s ease;
 }
@@ -1696,7 +1691,7 @@
 .btn-guardar-toma:hover:not(:disabled) {
   transform: translateY(-2px);
   background: var(--inst-accent);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 12px 30px rgba(var(--inst-shadow-rgb), calc(0.45 * var(--inst-shadow-alpha-mult)));
 }
 
 .btn-guardar-toma:disabled {
@@ -1709,7 +1704,6 @@
   margin-top: 0;
 }
 
-/* ===== Panel lateral: descargar historial por estudiante o por curso ===== */
 
 .panel-descarga-overlay {
   position: fixed;
@@ -1742,7 +1736,7 @@
   box-sizing: border-box;
   background: var(--inst-surface-alt);
   border-left: 1px solid var(--inst-border);
-  box-shadow: -22px 0 48px rgba(0, 0, 0, 0.5);
+  box-shadow: -22px 0 48px rgba(var(--inst-shadow-rgb), calc(0.5 * var(--inst-shadow-alpha-mult)));
   transform: translateX(100%);
   transition: transform 0.3s cubic-bezier(0.34, 1.06, 0.64, 1);
 }
@@ -1751,7 +1745,6 @@
   transform: translateX(0);
 }
 
-/* --- Encabezado fijo --- */
 
 .panel-descarga-header {
   display: flex;
@@ -1789,7 +1782,6 @@
   transform: translateX(-2px);
 }
 
-/* --- Cuerpo con scroll propio --- */
 
 .panel-descarga-body {
   flex: 1;
@@ -1909,7 +1901,7 @@
 .panel-descarga-chip.active {
   background: var(--inst-secondary);
   border-color: var(--inst-secondary);
-  color: var(--inst-dark);
+  color: #0d0d0d;
 }
 
 .panel-descarga-lista-header {
@@ -1951,7 +1943,7 @@
 }
 
 .panel-descarga-seleccionar-todo:hover:not(:disabled) {
-  color: var(--inst-light);
+  color: var(--inst-text);
 }
 
 .panel-descarga-seleccionar-todo:disabled {
@@ -1971,7 +1963,6 @@
   padding: 8px 12px;
 }
 
-/* --- Lista de resultados --- */
 
 .panel-descarga-lista {
   display: flex;
@@ -2074,7 +2065,6 @@
   color: var(--inst-muted);
 }
 
-/* --- Pie fijo --- */
 
 .panel-descarga-footer {
   display: flex;
@@ -2101,9 +2091,9 @@
   font-size: 13.5px;
   font-weight: 800;
   cursor: pointer;
-  color: var(--inst-dark);
+  color: #0d0d0d;
   background: var(--inst-secondary);
-  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 10px 26px rgba(var(--inst-shadow-rgb), calc(0.35 * var(--inst-shadow-alpha-mult)));
   transition: transform 0.18s ease, box-shadow 0.18s ease,
     opacity 0.18s ease, filter 0.18s ease;
 }

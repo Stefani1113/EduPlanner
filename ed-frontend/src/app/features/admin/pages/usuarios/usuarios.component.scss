@@ -130,7 +130,7 @@
   border-radius: 10px;
   overflow: hidden;
   z-index: 50;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 8px 30px rgba(var(--inst-shadow-rgb), calc(0.6 * var(--inst-shadow-alpha-mult)));
   padding: 4px 0;
 }
 
@@ -202,7 +202,7 @@
   border-radius: 10px;
   overflow: hidden;
   z-index: 50;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 8px 30px rgba(var(--inst-shadow-rgb), calc(0.6 * var(--inst-shadow-alpha-mult)));
   padding: 4px 0;
 }
 

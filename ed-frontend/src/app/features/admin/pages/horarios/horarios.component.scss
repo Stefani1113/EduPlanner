@@ -44,7 +44,6 @@
   margin-left: auto;
 }
 
-/* --- Selector de curso --- */
 
 .course-picker {
   position: relative;
@@ -109,7 +108,7 @@
   padding: 0 6px;
   border-radius: 50%;
   background: var(--inst-secondary);
-  color: var(--inst-dark);
+  color: #0d0d0d;
   font-size: 11px;
   font-weight: 700;
   display: flex;
@@ -132,7 +131,7 @@
   border-radius: 10px;
   padding: 6px;
   z-index: 20;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 12px 30px rgba(var(--inst-shadow-rgb), calc(0.4 * var(--inst-shadow-alpha-mult)));
 }
 
 .course-dropdown button {
@@ -563,7 +562,6 @@
   background: color-mix(in srgb, var(--inst-secondary) 12%, transparent);
 }
 
-/* ===== Tabla de horario ===== */
 
 .schedule-wrapper {
   width: 100%;
@@ -741,7 +739,7 @@
   border: 2px solid transparent;
   border-radius: 50%;
   background: var(--inst-surface-alt);
-  box-shadow: 0 7px 24px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 7px 24px rgba(var(--inst-shadow-rgb), calc(0.35 * var(--inst-shadow-alpha-mult)));
   cursor: pointer;
   z-index: 900;
   transition: 0.2s;
@@ -779,7 +777,7 @@
   background: transparent;
   border: 1px solid transparent;
   border-radius: 20px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
+  box-shadow: 0 20px 60px rgba(var(--inst-shadow-rgb), calc(0.55 * var(--inst-shadow-alpha-mult)));
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -852,7 +850,7 @@
 .close-chat {
   border: none;
   background: transparent;
-  color: var(--inst-accent);
+  color: var(--inst-muted);
   font-size: 28px;
   cursor: pointer;
 }
@@ -1017,7 +1015,6 @@
   cursor: not-allowed;
 }
 
-/* ===== Responsive (mismos breakpoints que Usuarios) ===== */
 
 @media (max-width: 700px) {
   .horarios-content {
@@ -1113,7 +1110,7 @@
 
 .query-toggle-btn.active {
   background: var(--inst-secondary);
-  color: var(--inst-dark);
+  color: #0d0d0d;
 }
 
 .horario-actions {
@@ -1149,7 +1146,7 @@
 
 .action-button.publish {
   background: var(--inst-secondary);
-  color: var(--inst-dark);
+  color: #0d0d0d;
 }
 
 .action-button.publish:hover:not(:disabled) {
