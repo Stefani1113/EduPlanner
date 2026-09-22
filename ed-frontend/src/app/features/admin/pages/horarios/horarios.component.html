@@ -160,21 +160,20 @@
             {{ obtenerHoraFormateada() }}
           </strong>
         </div>
- 
+
       </div>
 
-    <button
-      type="button"
-      class="pdf-button"
-      [disabled]="!horarioDisponible"
-      (click)="exportarHorario()"
-    >
-      <span class="pdf-chip">
-        CSV
-      </span>
+      <button
+        type="button"
+        class="pdf-button"
+        [disabled]="!horarioDisponible"
+      >
+        <span class="pdf-chip">
+          PDF
+        </span>
 
-      Descargar
-    </button>
+        Descargar
+      </button>
 
     </div>
 
@@ -823,41 +822,6 @@
         <label>
           La IA está pensando...
         </label>
-
-      </div>
-
-      <div
-        class="quick-questions"
-        *ngIf="
-          mensajes.length <= 1 &&
-          !cargando
-        "
-      >
-
-        <p>
-          También puedes preguntarme:
-        </p>
-
-        <button
-          type="button"
-          (click)="usarPregunta('¿Hay algún conflicto en el horario?')"
-        >
-          ¿Hay conflictos en el horario?
-        </button>
-
-        <button
-          type="button"
-          (click)="usarPregunta('Ayúdame a organizar un horario')"
-        >
-          Ayúdame a organizar un horario
-        </button>
-
-        <button
-          type="button"
-          (click)="usarPregunta('¿Qué profesores tienen horario ocupado?')"
-        >
-          ¿Qué profesores tienen horario ocupado?
-        </button>
 
       </div>
 

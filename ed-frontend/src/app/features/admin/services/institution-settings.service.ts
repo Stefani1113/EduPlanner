@@ -278,13 +278,7 @@ export class InstitutionSettingsService {
   }
 
 
-  /**
-   * Trae del backend la información institucional (nombre, descripción,
-   * logo) y los 5 colores de marca del tema Personalizado.
-   *
-   * Oscuro y Claro NUNCA se tocan aquí: son fijos y no dependen del
-   * backend, así que no se pueden mezclar con nada más.
-   */
+
   cargarDesdeBackend(): void {
     this.http.get<HttpGlobalResponse<ConfigurationResponse>>(this.apiUrl).pipe(
       catchError(() => of(null))
@@ -345,11 +339,6 @@ export class InstitutionSettingsService {
     this.applyPalette(palette);
   }
 
-  /**
-   * Oscuro y Claro: siempre devuelven el preset fijo, tal cual, sin mezcla.
-   * Personalizado: devuelve la paleta guardada localmente, con los 5
-   * colores de marca (los que sí llegan del backend) puestos encima.
-   */
   private getModePalette(mode: ThemeMode): InstitutionPalette {
 
     if (mode === 'light') {
@@ -404,11 +393,6 @@ export class InstitutionSettingsService {
   }
 
 
-  /**
-   * Solo tiene efecto sobre colores cuando el modo activo es "custom"
-   * (pestaña Personalizado). Con Oscuro o Claro seleccionados, la UI no
-   * deja editar los colores, así que aquí solo se actualiza el texto/logo.
-   */
   updateSettings(
     palette: InstitutionPalette,
     info: InstitutionInfo
@@ -760,4 +744,4 @@ export class InstitutionSettingsService {
     window.removeEventListener('storage', this.storageListener);
   }
 
-}
+} 

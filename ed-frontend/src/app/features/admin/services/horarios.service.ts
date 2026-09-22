@@ -10,6 +10,8 @@ export interface MensajeIA {
 export interface BloqueHorario {
   hora: string;
   horaFin: string;
+  minutosInicio: number;
+  minutosFin: number;
   lunes: string;
   martes: string;
   miercoles: string;
