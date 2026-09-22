@@ -160,20 +160,21 @@
             {{ obtenerHoraFormateada() }}
           </strong>
         </div>
-
+ 
       </div>
 
-      <button
-        type="button"
-        class="pdf-button"
-        [disabled]="!horarioDisponible"
-      >
-        <span class="pdf-chip">
-          PDF
-        </span>
+    <button
+      type="button"
+      class="pdf-button"
+      [disabled]="!horarioDisponible"
+      (click)="exportarHorario()"
+    >
+      <span class="pdf-chip">
+        CSV
+      </span>
 
-        Descargar
-      </button>
+      Descargar
+    </button>
 
     </div>
 
