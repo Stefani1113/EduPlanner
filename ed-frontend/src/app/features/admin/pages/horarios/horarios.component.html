@@ -195,7 +195,7 @@
   <div
     class="horario-actions"
     *ngIf="
-      !esVistaRestringida &&
+      esAdministrador &&
       modoConsulta === 'curso'
     "
   >
@@ -512,7 +512,10 @@
           [class.selected-day]="diaSeleccionado === 'Lunes'"
         >
 
-          <div class="subject-card">
+          <div
+            class="subject-card"
+            [class.now]="diaSeleccionado === 'Lunes' && esBloqueActual(horario)"
+          >
 
             <strong>
               {{ horario.lunes || '—' }}
@@ -536,7 +539,10 @@
           [class.selected-day]="diaSeleccionado === 'Martes'"
         >
 
-          <div class="subject-card">
+          <div
+            class="subject-card"
+            [class.now]="diaSeleccionado === 'Martes' && esBloqueActual(horario)"
+          >
 
             <strong>
               {{ horario.martes || '—' }}
@@ -560,7 +566,10 @@
           [class.selected-day]="diaSeleccionado === 'Miércoles'"
         >
 
-          <div class="subject-card">
+          <div
+            class="subject-card"
+            [class.now]="diaSeleccionado === 'Miércoles' && esBloqueActual(horario)"
+          >
 
             <strong>
               {{ horario.miercoles || '—' }}
@@ -584,7 +593,10 @@
           [class.selected-day]="diaSeleccionado === 'Jueves'"
         >
 
-          <div class="subject-card">
+          <div
+            class="subject-card"
+            [class.now]="diaSeleccionado === 'Jueves' && esBloqueActual(horario)"
+          >
 
             <strong>
               {{ horario.jueves || '—' }}
@@ -608,7 +620,10 @@
           [class.selected-day]="diaSeleccionado === 'Viernes'"
         >
 
-          <div class="subject-card">
+          <div
+            class="subject-card"
+            [class.now]="diaSeleccionado === 'Viernes' && esBloqueActual(horario)"
+          >
 
             <strong>
               {{ horario.viernes || '—' }}
@@ -725,7 +740,7 @@
   </section>
 
   <button
-    *ngIf="!esVistaRestringida"
+    *ngIf="puedeUsarIA"
     type="button"
     class="floating-ia"
     (click)="abrirChat()"
@@ -741,7 +756,7 @@
 
 </main>
 
-<ng-container *ngIf="!esVistaRestringida">
+<ng-container *ngIf="puedeUsarIA">
 
   <div
     class="chat-overlay"
