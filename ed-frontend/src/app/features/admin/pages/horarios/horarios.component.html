@@ -166,7 +166,8 @@
       <button
         type="button"
         class="pdf-button"
-        [disabled]="!horarioDisponible"
+        [disabled]="!horarioDisponible || cargando"
+        (click)="exportarHorario()"
       >
         <span class="pdf-chip">
           PDF
