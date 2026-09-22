@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.http.HttpHeaders;
@@ -244,21 +245,23 @@ public class ScheduleController {
 
         try {
 
+                // Obtener el horario según el usuario
                 List<ScheduleResponseDTO> schedules =
                         service.getMySchedule(idUser, role);
 
                 SchedulePdfDTO pdfData = new SchedulePdfDTO();
 
-                // Fecha de generación
                 pdfData.setFechaGeneracion(
                         LocalDate.now().format(
                                 DateTimeFormatter.ofPattern("dd/MM/yyyy")
                         )
                 );
 
-                List<TimeSlotResponseDTO> timeSlots = null;
+                // IMPORTANTE:
+                // Inicializamos la lista para que nunca quede en null
+                List<TimeSlotResponseDTO> timeSlots =
+                        new ArrayList<>();
 
-                // Información específica del usuario
                 if ("ESTUDIANTE".equals(role)) {
 
                 Integer idCourse =
@@ -269,15 +272,16 @@ public class ScheduleController {
                         Course course =
                                 service.getCourseById(idCourse);
 
+                        // Obtener los bloques horarios del turno del curso
                         timeSlots =
                                 service.getTimeSlotResponsesByShift(
                                         course.getIdShift()
                                 );
 
-                        // Curso
+                        // Información del curso
                         pdfData.setCurso(course.getName());
 
-                        // Periodo académico
+                        // Información del período
                         Integer idPeriod = course.getIdPeriod();
 
                         AcademicPeriod period =
@@ -286,7 +290,41 @@ public class ScheduleController {
                         pdfData.setPeriodo(period.getName());
                 }
 
+                // Nombre del estudiante
                 pdfData.setEstudiante(
+                        administracionServiceClient
+                                .getUserFullName(idUser)
+                );
+                }
+
+                if ("DOCENTE".equals(role) && !schedules.isEmpty()) {
+
+                // Tomamos el curso del primer horario encontrado
+                Integer idCourse =
+                        schedules.get(0).getIdCourse();
+
+                Course course =
+                        service.getCourseById(idCourse);
+
+                // Obtener los bloques horarios del turno del curso
+                timeSlots =
+                        service.getTimeSlotResponsesByShift(
+                                course.getIdShift()
+                        );
+
+                // Información del curso
+                pdfData.setCurso(course.getName());
+
+                // Información del período
+                Integer idPeriod = course.getIdPeriod();
+
+                AcademicPeriod period =
+                        service.getAcademicPeriodById(idPeriod);
+
+                pdfData.setPeriodo(period.getName());
+
+                // Nombre del docente
+                pdfData.setDocente(
                         administracionServiceClient
                                 .getUserFullName(idUser)
                 );
@@ -309,13 +347,15 @@ public class ScheduleController {
 
         } catch (IllegalArgumentException e) {
 
+                e.printStackTrace();
+
                 return ResponseEntity.badRequest().build();
 
         } catch (Exception e) {
 
-        e.printStackTrace();
+                e.printStackTrace();
 
-        return ResponseEntity.internalServerError().build();
+                return ResponseEntity.internalServerError().build();
         }
         }
 

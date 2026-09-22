@@ -1,6 +1,5 @@
 package com.EduPlanner.ed_ms_gestion_academica.service;
 
-import com.EduPlanner.ed_ms_gestion_academica.repository.TimeSlotRepository;
 import com.eduplanner.ed_lib_common.dto.SchedulePdfDTO;
 import com.eduplanner.ed_lib_common.dto.SchedulePdfRowDTO;
 import com.eduplanner.ed_lib_common.dto.ScheduleResponseDTO;
