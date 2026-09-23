@@ -30,6 +30,7 @@ import {
   MiPerfilDTO
 } from '../../admin/services/perfil.service';
 import { ModalService } from '../../../core/services/modal.service';
+import { PaginationComponent } from '../../../core/components/pagination/pagination.component';
 
 type Tab =
   | 'historial'
@@ -85,7 +86,8 @@ interface ResumenReporteEstudiante {
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule
+    FormsModule,
+    PaginationComponent
   ],
   templateUrl: './notas.component.html',
   styleUrl: './notas.component.scss'

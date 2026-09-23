@@ -174,9 +174,7 @@ export class HorariosService {
 
   constructor(private http: HttpClient) {}
 
-  // ============================================================
-  // ASIGNATURAS
-  // ============================================================
+
 
   listarAsignaturas(): Observable<
     HttpGlobalResponse<SubjectResponseDTO[]>
@@ -211,9 +209,7 @@ export class HorariosService {
     >(`${this.base}/subjects/${id}`);
   }
 
-  // ============================================================
-  // DOCENTES ACADÉMICOS
-  // ============================================================
+
 
   listarDocentesAcademicos(): Observable<
     HttpGlobalResponse<AcademicTeacherResponseDTO[]>
@@ -240,9 +236,7 @@ export class HorariosService {
     >(`${this.base}/academic-teachers/${id}`, dto);
   }
 
-  // ============================================================
-  // CARGAS ACADÉMICAS
-  // ============================================================
+
 
   listarCargasAcademicas(): Observable<
     HttpGlobalResponse<AcademicLoadResponseDTO[]>
@@ -277,9 +271,7 @@ export class HorariosService {
     >(`${this.base}/academic-loads/${id}`);
   }
 
-  // ============================================================
-  // PERIODOS ACADÉMICOS
-  // ============================================================
+
 
   listarPeriodos(): Observable<
     HttpGlobalResponse<AcademicPeriodResponseDTO[]>
@@ -314,9 +306,6 @@ export class HorariosService {
     >(`${this.base}/academic-periods/${id}/permanent`);
   }
 
-  // ============================================================
-  // NIVELES ACADÉMICOS
-  // ============================================================
 
   listarNiveles(): Observable<
     HttpGlobalResponse<AcademicLevelResponseDTO[]>
@@ -351,9 +340,6 @@ export class HorariosService {
     >(`${this.base}/academic-levels/${id}/permanent`);
   }
 
-  // ============================================================
-  // JORNADAS
-  // ============================================================
 
   listarJornadas(): Observable<
     HttpGlobalResponse<SchoolShiftResponseDTO[]>
@@ -388,9 +374,6 @@ export class HorariosService {
     >(`${this.base}/school-shifts/${id}/permanent`);
   }
 
-  // ============================================================
-  // FRANJAS HORARIAS
-  // ============================================================
 
   listarFranjas(): Observable<
     HttpGlobalResponse<TimeSlotResponseDTO[]>
@@ -425,9 +408,7 @@ export class HorariosService {
     >(`${this.base}/time-slots/${id}/permanent`);
   }
 
-  // ============================================================
-  // DISPONIBILIDAD DE DOCENTES
-  // ============================================================
+
 
   listarDisponibilidad(): Observable<
     HttpGlobalResponse<TeacherAvailabilityResponseDTO[]>
@@ -462,9 +443,7 @@ export class HorariosService {
     >(`${this.base}/teacher-availability/${id}`);
   }
 
-  // ============================================================
-  // CURSOS
-  // ============================================================
+
 
   listarCursos(): Observable<
     HttpGlobalResponse<CourseResponseDTO[]>

@@ -168,15 +168,8 @@ export class UsuariosComponent implements OnInit, OnDestroy {
 
   usuarios: Usuario[] = [];
 
-  // ============================================================
-  // PAGINACIÓN
-  // ============================================================
+  
 
-  /**
-   * Página que ve el usuario.
-   *
-   * Angular trabaja con páginas desde 1.
-   */
   paginaActual = 1;
 
   /**
@@ -238,9 +231,7 @@ export class UsuariosComponent implements OnInit, OnDestroy {
     this.breadcrumbService.setExtra(null);
   }
 
-  // ============================================================
-  // CURSOS
-  // ============================================================
+
 
   private cargarCursos(): void {
     this.cargandoCursos = true;
@@ -287,9 +278,7 @@ export class UsuariosComponent implements OnInit, OnDestroy {
       });
   }
 
-  // ============================================================
-  // USUARIOS + PAGINACIÓN
-  // ============================================================
+
 
   private cargarUsuarios(pagina = 1): void {
     this.cargando = true;
@@ -315,9 +304,7 @@ export class UsuariosComponent implements OnInit, OnDestroy {
 
     let peticion;
 
-    // ==========================================================
-    // BUSQUEDA POR NOMBRE
-    // ==========================================================
+
 
     if (
       termino &&
@@ -331,9 +318,7 @@ export class UsuariosComponent implements OnInit, OnDestroy {
         );
     }
 
-    // ==========================================================
-    // TODOS LOS USUARIOS
-    // ==========================================================
+
 
     else if (
       this.rolSeleccionado === 'Todos'
@@ -346,9 +331,7 @@ export class UsuariosComponent implements OnInit, OnDestroy {
         );
     }
 
-    // ==========================================================
-    // ESTUDIANTES POR CURSO
-    // ==========================================================
+
 
     else if (
       this.rolSeleccionado === 'Estudiante' &&
@@ -376,9 +359,7 @@ export class UsuariosComponent implements OnInit, OnDestroy {
         );
     }
 
-    // ==========================================================
-    // USUARIOS POR ROL
-    // ==========================================================
+
 
     else {
       const idRol =
@@ -402,9 +383,7 @@ export class UsuariosComponent implements OnInit, OnDestroy {
         );
     }
 
-    // ==========================================================
-    // RESPUESTA DEL BACKEND
-    // ==========================================================
+
 
     peticion
       .pipe(
@@ -489,9 +468,7 @@ export class UsuariosComponent implements OnInit, OnDestroy {
     this.cargarUsuarios(pagina);
   }
 
-  // ============================================================
-  // FILTRADO LOCAL DE LA PÁGINA ACTUAL
-  // ============================================================
+
 
   get usuariosFiltrados(): Usuario[] {
     const term =
@@ -538,9 +515,7 @@ export class UsuariosComponent implements OnInit, OnDestroy {
     return this.usuariosFiltrados;
   }
 
-  // ============================================================
-  // CURSO SELECCIONADO
-  // ============================================================
+
 
   private obtenerIdCursoSeleccionado(): number | null {
     if (
@@ -589,9 +564,7 @@ export class UsuariosComponent implements OnInit, OnDestroy {
     );
   }
 
-  // ============================================================
-  // MAPEAR USUARIO
-  // ============================================================
+
 
   private mapearUsuario(
     dto: UserResponseDTO
@@ -639,9 +612,7 @@ export class UsuariosComponent implements OnInit, OnDestroy {
     };
   }
 
-  // ============================================================
-  // ESTADÍSTICAS
-  // ============================================================
+
 
   get totalRol(): number {
     return this.usuariosFiltrados.length;
@@ -667,9 +638,7 @@ export class UsuariosComponent implements OnInit, OnDestroy {
       .length;
   }
 
-  // ============================================================
-  // BÚSQUEDA
-  // ============================================================
+
 
   cambiarBusqueda(
     valor: string
@@ -687,9 +656,7 @@ export class UsuariosComponent implements OnInit, OnDestroy {
     this.cargarUsuarios(1);
   }
 
-  // ============================================================
-  // FILTROS
-  // ============================================================
+
 
   seleccionarRol(
     rol: Rol
@@ -732,9 +699,7 @@ export class UsuariosComponent implements OnInit, OnDestroy {
     this.cargarUsuarios(1);
   }
 
-  // ============================================================
-  // TABS
-  // ============================================================
+
 
   cambiarTab(
     tab: Tab
@@ -750,9 +715,7 @@ export class UsuariosComponent implements OnInit, OnDestroy {
     this.actualizarBreadcrumb();
   }
 
-  // ============================================================
-  // ESTADO
-  // ============================================================
+
 
   toggleEstado(
     usuario: Usuario
@@ -823,9 +786,7 @@ export class UsuariosComponent implements OnInit, OnDestroy {
     return this.cambiandoEstado.has(id);
   }
 
-  // ============================================================
-  // REGISTRO
-  // ============================================================
+
 
   abrirRegistro(
     tipo: TipoRegistro
@@ -970,9 +931,7 @@ export class UsuariosComponent implements OnInit, OnDestroy {
     }
   }
 
-  // ============================================================
-  // EDICIÓN
-  // ============================================================
+
 
   editar(
     usuario: Usuario
@@ -1185,9 +1144,7 @@ export class UsuariosComponent implements OnInit, OnDestroy {
         : 'Staff';
   }
 
-  // ============================================================
-  // EXPORTAR CSV
-  // ============================================================
+
 
   exportarCSV(): void {
     if (
@@ -1354,9 +1311,6 @@ export class UsuariosComponent implements OnInit, OnDestroy {
       .slice(0, 10);
   }
 
-  // ============================================================
-  // ERRORES
-  // ============================================================
 
   private obtenerMensajeError(
     err: any,
@@ -1369,9 +1323,7 @@ export class UsuariosComponent implements OnInit, OnDestroy {
     );
   }
 
-  // ============================================================
-  // BREADCRUMB
-  // ============================================================
+
 
   private actualizarBreadcrumb(): void {
     const tabLabel =

@@ -182,9 +182,6 @@
 <ng-container [ngSwitch]="activeTab">
 
 
-<!-- ============================= -->
-<!-- LISTADO -->
-<!-- ============================= -->
 
 <ng-container *ngSwitchCase="'listado'">
 
@@ -207,9 +204,6 @@
 
   <div class="table-wrapper">
 
-    <!-- ============================= -->
-    <!-- CARGANDO -->
-    <!-- ============================= -->
 
     <div
       class="loading"
@@ -218,9 +212,6 @@
       Cargando usuarios...
     </div>
 
-    <!-- ============================= -->
-    <!-- ERROR -->
-    <!-- ============================= -->
 
     <div
       class="error"
@@ -229,9 +220,6 @@
       {{ errorCarga }}
     </div>
 
-    <!-- ============================= -->
-    <!-- TABLA -->
-    <!-- ============================= -->
 
     <table
       class="usuarios-table"
@@ -373,9 +361,6 @@
 
         </tr>
 
-        <!-- ============================= -->
-        <!-- SIN RESULTADOS -->
-        <!-- ============================= -->
 
         <tr
           *ngIf="usuariosPagina.length === 0"
@@ -406,9 +391,7 @@
 
 </ng-container>
 
-<!-- ============================= -->
-<!-- IMPORTACIÓN -->
-<!-- ============================= -->
+
 
 <ng-container
   *ngSwitchCase="'importacion'"
@@ -422,11 +405,7 @@
 
   </ng-container>
 
-  <!-- ============================= -->
 
-  <!-- MODAL REGISTRO -->
-
-  <!-- ============================= -->
 
 <app-registro-usuario-modal
 *ngIf="tipoRegistro"
@@ -439,11 +418,7 @@
 
   </app-registro-usuario-modal>
 
-  <!-- ============================= -->
 
-  <!-- MODAL EDICIÓN -->
-
-  <!-- ============================= -->
 
 <app-editar-usuario-modal
 *ngIf="
