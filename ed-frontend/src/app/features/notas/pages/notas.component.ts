@@ -1,6 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { PaginationComponent } from '../../../core/components/pagination/pagination.component';
 import { Subject, forkJoin, of } from 'rxjs';
 import { catchError, finalize } from 'rxjs/operators';
 
@@ -73,7 +74,8 @@ interface ResumenReporteEstudiante {
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule
+    FormsModule,
+    PaginationComponent
   ],
   templateUrl: './notas.component.html',
   styleUrls: ['./notas.component.scss']
@@ -132,6 +134,18 @@ export class NotasComponent implements OnInit, OnDestroy {
   errorGuardado = '';
 
   estudiantesNotas: FilaNotas[] = [];
+
+  paginaActualNotas = 1;
+  readonly tamanoPagina = 10;
+
+  cambiarPaginaNotas(pagina: number): void {
+    this.paginaActualNotas = pagina;
+  }
+
+  get estudiantesNotasPaginados(): FilaNotas[] {
+    const inicio = (this.paginaActualNotas - 1) * this.tamanoPagina;
+    return this.estudiantesNotas.slice(inicio, inicio + this.tamanoPagina);
+  }
   actividadesNotasColumnas: EvaluativeActivityResponseDTO[] = [];
 
   escalaActual: GradingScaleResponseDTO | null = null;
