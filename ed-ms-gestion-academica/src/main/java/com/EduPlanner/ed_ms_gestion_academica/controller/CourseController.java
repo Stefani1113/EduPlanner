@@ -22,6 +22,8 @@ import com.eduplanner.ed_lib_common.dto.HttpGlobalResponse;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 /** RF 8.1.1 - Base: /eduplanner/courses */
 @RestController @RequestMapping("/courses") @RequiredArgsConstructor
@@ -47,9 +49,9 @@ public class CourseController {
     }
 
     @GetMapping
-    public ResponseEntity<HttpGlobalResponse<List<CourseResponseDTO>>> listCourses() {
-        HttpGlobalResponse<List<CourseResponseDTO>> r = new HttpGlobalResponse<>();
-        r.setData(service.listCourses()); r.setMessage("Cursos consultado correctamente"); return ResponseEntity.ok(r);
+    public ResponseEntity<HttpGlobalResponse<Page<CourseResponseDTO>>> listCourses(Pageable pageable) {
+        HttpGlobalResponse<Page<CourseResponseDTO>> r = new HttpGlobalResponse<>();
+        r.setData(service.listCourses(pageable)); r.setMessage("Cursos consultado correctamente"); return ResponseEntity.ok(r);
     }
 
     @GetMapping("/{id}")
@@ -61,18 +63,54 @@ public class CourseController {
     }
 
     @GetMapping("/filter")
-    public ResponseEntity<HttpGlobalResponse<List<CourseResponseDTO>>> filterCourses(
+    public ResponseEntity<HttpGlobalResponse<Page<CourseResponseDTO>>> filterCourses(
             @RequestParam(required = false) Integer period,
             @RequestParam(required = false) Integer level,
-            @RequestParam(required = false) Integer shift) {
-        HttpGlobalResponse<List<CourseResponseDTO>> r = new HttpGlobalResponse<>();
-        List<CourseResponseDTO> data;
-        if (period != null) data = service.getCoursesByPeriod(period);
-        else if (level != null) data = service.getCoursesByLevel(level);
-        else if (shift != null) data = service.getCoursesByShift(shift);
-        else data = service.listCourses();
-        r.setData(data); r.setMessage(data.isEmpty() ? "No se encontraron cursos con ese id" : "Cursos filtrados correctamente");
-        return data.isEmpty() ? ResponseEntity.status(HttpStatus.NOT_FOUND).body(r) : ResponseEntity.ok(r);
+            @RequestParam(required = false) Integer shift,
+            Pageable pageable) {
+
+        HttpGlobalResponse<Page<CourseResponseDTO>> r =
+                new HttpGlobalResponse<>();
+
+        Page<CourseResponseDTO> data;
+
+        if (period != null) {
+
+            data = service.getCoursesByPeriod(
+                    period,
+                    pageable
+            );
+
+        } else if (level != null) {
+
+            data = service.getCoursesByLevel(
+                    level,
+                    pageable
+            );
+
+        } else if (shift != null) {
+
+            data = service.getCoursesByShift(
+                    shift,
+                    pageable
+            );
+
+        } else {
+
+            data = service.listCourses(pageable);
+        }
+
+        r.setData(data);
+
+        r.setMessage(
+                data.isEmpty()
+                        ? "No se encontraron cursos con ese filtro"
+                        : "Cursos filtrados correctamente"
+        );
+
+        return data.isEmpty()
+                ? ResponseEntity.status(HttpStatus.NOT_FOUND).body(r)
+                : ResponseEntity.ok(r);
     }
 
     @DeleteMapping("/{id}")
