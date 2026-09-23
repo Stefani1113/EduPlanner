@@ -313,12 +313,12 @@
             </div>
             <div class="stat-line">
                 Presentes: <span class="stat-number" th:text="${summary.presentCount}">32</span>
-                &nbsp;&nbsp;Tardanzas: <span class="stat-number" th:text="${summary.lateCount}">3</span>
-                &nbsp;&nbsp;Salidas anticipadas: <span class="stat-number" th:text="${summary.earlyDepartureCount}">1</span>
+                &#160;&#160;Tardanzas: <span class="stat-number" th:text="${summary.lateCount}">3</span>
+                &#160;&#160;Salidas anticipadas: <span class="stat-number" th:text="${summary.earlyDepartureCount}">1</span>
             </div>
             <div class="stat-line">
                 Ausencias justificadas: <span class="stat-number" th:text="${summary.justifiedAbsenceCount}">2</span>
-                &nbsp;&nbsp;Ausencias no justificadas: <span class="stat-number" th:text="${summary.unjustifiedAbsenceCount}">2</span>
+                &#160;&#160;Ausencias no justificadas: <span class="stat-number" th:text="${summary.unjustifiedAbsenceCount}">2</span>
             </div>
         </div>
         <div class="pct-cell">
@@ -347,7 +347,7 @@
                 justificationStatus (NONE | PENDING | APPROVED | REJECTED)
             -->
             <tr th:each="r : ${records}">
-                <td th:text="${r.attendanceDate != null ? #temporals.format(r.attendanceDate, 'dd/MM/yyyy') : ''}">22/09/2026</>
+                <td th:text="${r.attendanceDate != null ? #temporals.format(r.attendanceDate, 'dd/MM/yyyy') : ''}">22/09/2026</td>
 
                 <td>
                     <span th:if="${r.attendanceStatus != null and r.attendanceStatus.name() == 'PRESENT'}" class="badge badge-presente">
