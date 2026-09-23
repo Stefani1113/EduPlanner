@@ -43,4 +43,8 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     Page<User> findByNameContainingIgnoreCase(String name, Pageable pageable);
 
     Page<User> findByIdCourse(Integer idCourse, Pageable pageable);
+
+    Page<User> findByRoleIdRoleAndStatusTrue(Integer idRole, Pageable pageable);
+    Page<User> findByRoleIdRoleAndStatusTrueAndPositionContainingIgnoreCase(Integer idRole,String position,Pageable pageable);
 }
+
