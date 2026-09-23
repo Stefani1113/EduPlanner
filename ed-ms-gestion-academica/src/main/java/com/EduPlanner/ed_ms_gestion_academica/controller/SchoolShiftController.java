@@ -14,6 +14,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -32,10 +34,10 @@ public class SchoolShiftController {
      */
     @RequireRole(RolEnum.ADMINISTRADOR)
     @GetMapping
-    public ResponseEntity<HttpGlobalResponse<List<SchoolShiftResponseDTO>>> getAll(
-        @RequestParam(required = false) Boolean active) {
-        HttpGlobalResponse<List<SchoolShiftResponseDTO>> response = new HttpGlobalResponse<>();
-        List<SchoolShiftResponseDTO> result = (Boolean.TRUE.equals(active)) ? service.findAllActive() : service.findAll();
+    public ResponseEntity<HttpGlobalResponse<Page<SchoolShiftResponseDTO>>> getAll(
+        @RequestParam(required = false) Boolean active, Pageable pageable) {
+        HttpGlobalResponse<Page<SchoolShiftResponseDTO>> response = new HttpGlobalResponse<>();
+        Page<SchoolShiftResponseDTO> result = (Boolean.TRUE.equals(active)) ? service.findAllActive(pageable) : service.findAll(pageable);
         response.setData(result);
         response.setMessage("Jornadas consultadas correctamente");
         return ResponseEntity.ok(response);
