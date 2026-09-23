@@ -1,12 +1,27 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, of, throwError } from 'rxjs';
-import { catchError, map } from 'rxjs/operators';
+import {
+  HttpClient,
+  HttpErrorResponse
+} from '@angular/common/http';
+import { Observable, of } from 'rxjs';
+import {
+  catchError,
+  map
+} from 'rxjs/operators';
 
 interface HttpGlobalResponse<T> {
   data: T;
   message: string;
 }
+
+interface PageResponse<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+  size: number;
+}
+
 
 export type AttendanceStatus =
   | 'PRESENT'
@@ -22,7 +37,7 @@ export type JustificationStatus =
   | 'REJECTED';
 
 export interface AttendanceRequestDTO {
-  idSchedule: number | null;
+  idSchedule: number;
   idStudent: number;
   idCourse: number;
   attendanceDate: string;
@@ -136,7 +151,10 @@ export interface FilaGridListado {
   segundoNombre: string;
   primerApellido: string;
   segundoApellido: string;
-  porFecha: Map<string, AttendanceResponseDTO | null>;
+  porFecha: Map<
+    string,
+    AttendanceResponseDTO | null
+  >;
 }
 
 interface DescargarPdfParams {
@@ -150,202 +168,85 @@ interface DescargarPdfParams {
   providedIn: 'root'
 })
 export class AsistenciaService {
-  private readonly base = '/gestion-academica/eduplanner';
+  private readonly base =
+    '/gestion-academica/eduplanner';
+
   private readonly administracionUsers =
     '/administracion/eduplanner/users';
+
   private readonly administracionTeachers =
     '/administracion/eduplanner/teacher';
 
   private readonly ID_ROL_ESTUDIANTE = 3;
 
-  constructor(private http: HttpClient) {}
+  private readonly ID_SCHEDULE_ASISTENCIA = 1;
 
-  private extraerLista<T>(respuesta: any): T[] {
-    if (Array.isArray(respuesta)) {
-      return respuesta;
-    }
-
-    if (!respuesta) {
-      return [];
-    }
-
-    if (Array.isArray(respuesta.content)) {
-      return respuesta.content;
-    }
-
-    if (Array.isArray(respuesta.items)) {
-      return respuesta.items;
-    }
-
-    if (Array.isArray(respuesta.results)) {
-      return respuesta.results;
-    }
-
-    if (Array.isArray(respuesta.data)) {
-      return respuesta.data;
-    }
-
-    if (respuesta.data) {
-      if (Array.isArray(respuesta.data)) {
-        return respuesta.data;
-      }
-
-      if (Array.isArray(respuesta.data.content)) {
-        return respuesta.data.content;
-      }
-
-      if (Array.isArray(respuesta.data.items)) {
-        return respuesta.data.items;
-      }
-
-      if (Array.isArray(respuesta.data.results)) {
-        return respuesta.data.results;
-      }
-    }
-
-    return [];
-  }
-
-  private extraerObjeto<T>(respuesta: any): T | null {
-    if (!respuesta) {
-      return null;
-    }
-
-    if (respuesta.data !== undefined) {
-      return respuesta.data as T;
-    }
-
-    return respuesta as T;
-  }
-
-  private manejarError<T>(valorFallback: T) {
-    return (error: HttpErrorResponse): Observable<T> => {
-      if (error.status === 404) {
-        return of(valorFallback);
-      }
-
-      return throwError(() => error);
-    };
-  }
+  constructor(
+    private http: HttpClient
+  ) {}
 
   listarCursos(): Observable<CourseResponseDTO[]> {
-    return this.http
-      .get<HttpGlobalResponse<any>>(`${this.base}/courses`)
-      .pipe(
-        map(respuesta =>
-          this.extraerLista<CourseResponseDTO>(respuesta)
-        ),
-        catchError(
-          this.manejarError<CourseResponseDTO[]>([])
-        )
-      );
+    return this.http.get<HttpGlobalResponse<PageResponse<CourseResponseDTO>>>(
+      `${this.base}/courses`,
+      { params: { page: '0', size: '1000' } }
+    ).pipe(map(r => r.data?.content ?? []), catchError(() => of([])));
   }
 
   listarNiveles(): Observable<AcademicLevelResponseDTO[]> {
-    return this.http
-      .get<HttpGlobalResponse<any>>(
-        `${this.base}/academic-levels`
-      )
-      .pipe(
-        map(respuesta =>
-          this.extraerLista<AcademicLevelResponseDTO>(respuesta)
-        ),
-        catchError(
-          this.manejarError<AcademicLevelResponseDTO[]>([])
-        )
-      );
+    return this.http.get<HttpGlobalResponse<PageResponse<AcademicLevelResponseDTO>>>(
+      `${this.base}/academic-levels`,
+      { params: { page: '0', size: '1000' } }
+    ).pipe(map(r => r.data?.content ?? []), catchError(() => of([])));
   }
 
   listarDocentesAcademicos(): Observable<AcademicTeacherResponseDTO[]> {
     return this.http
-      .get<HttpGlobalResponse<any>>(
+      .get<
+        HttpGlobalResponse<AcademicTeacherResponseDTO[]>
+      >(
         `${this.base}/academic-teachers`
       )
       .pipe(
-        map(respuesta =>
-          this.extraerLista<AcademicTeacherResponseDTO>(respuesta)
-        ),
-        catchError(
-          this.manejarError<AcademicTeacherResponseDTO[]>([])
-        )
+        map(r => r.data ?? []),
+        catchError(() => of([]))
       );
   }
 
   listarEstudiantes(): Observable<UsuarioBasico[]> {
-    return this.http
-      .get<HttpGlobalResponse<any>>(
-        this.administracionUsers,
-        {
-          params: {
-            idRole: this.ID_ROL_ESTUDIANTE
-          }
-        }
-      )
-      .pipe(
-        map(respuesta =>
-          this.extraerLista<UsuarioBasico>(respuesta)
-        ),
-        catchError(
-          this.manejarError<UsuarioBasico[]>([])
-        )
-      );
+    return this.http.get<HttpGlobalResponse<PageResponse<UsuarioBasico>>>(
+      this.administracionUsers,
+      { params: { idRole: this.ID_ROL_ESTUDIANTE, page: '0', size: '1000' } }
+    ).pipe(map(r => r.data?.content ?? []), catchError(() => of([])));
   }
 
   listarEstudiantesPorCurso(
     idCourse: number
   ): Observable<UsuarioBasico[]> {
-    return this.http
-      .get<HttpGlobalResponse<any>>(
-        `${this.administracionUsers}/course/${idCourse}`
-      )
-      .pipe(
-        map(respuesta =>
-          this.extraerLista<UsuarioBasico>(respuesta)
-        ),
-        catchError(
-          this.manejarError<UsuarioBasico[]>([])
-        )
-      );
+    return this.http.get<HttpGlobalResponse<PageResponse<UsuarioBasico>>>(
+      `${this.administracionUsers}/course/${idCourse}`,
+      { params: { page: '0', size: '1000' } }
+    ).pipe(map(r => r.data?.content ?? []), catchError(() => of([])));
   }
 
   listarDocentes(): Observable<UsuarioBasico[]> {
-    return this.http
-      .get<HttpGlobalResponse<any>>(
-        this.administracionTeachers
-      )
-      .pipe(
-        map(respuesta =>
-          this.extraerLista<UsuarioBasico>(respuesta)
-        ),
-        catchError(
-          this.manejarError<UsuarioBasico[]>([])
-        )
-      );
+    return this.http.get<HttpGlobalResponse<PageResponse<UsuarioBasico>>>(
+      this.administracionTeachers,
+      { params: { page: '0', size: '1000' } }
+    ).pipe(map(r => r.data?.content ?? []), catchError(() => of([])));
   }
 
   registrarAsistencia(
     dto: AttendanceRequestDTO
   ): Observable<AttendanceResponseDTO> {
     return this.http
-      .post<HttpGlobalResponse<AttendanceResponseDTO>>(
+      .post<
+        HttpGlobalResponse<AttendanceResponseDTO>
+      >(
         `${this.base}/attendance`,
         dto
       )
       .pipe(
-        map(respuesta => {
-          const data =
-            this.extraerObjeto<AttendanceResponseDTO>(
-              respuesta
-            );
-
-          if (!data) {
-            throw new Error(
-              'El servidor no devolvió la asistencia registrada.'
-            );
-          }
-
-          return data;
-        })
+        map(r => r.data)
       );
   }
 
@@ -353,24 +254,13 @@ export class AsistenciaService {
     idAttendance: number
   ): Observable<AttendanceResponseDTO> {
     return this.http
-      .get<HttpGlobalResponse<AttendanceResponseDTO>>(
+      .get<
+        HttpGlobalResponse<AttendanceResponseDTO>
+      >(
         `${this.base}/attendance/${idAttendance}`
       )
       .pipe(
-        map(respuesta => {
-          const data =
-            this.extraerObjeto<AttendanceResponseDTO>(
-              respuesta
-            );
-
-          if (!data) {
-            throw new Error(
-              'No se encontró el registro de asistencia.'
-            );
-          }
-
-          return data;
-        })
+        map(r => r.data)
       );
   }
 
@@ -380,7 +270,9 @@ export class AsistenciaService {
     endDate: string
   ): Observable<AttendanceResponseDTO[]> {
     return this.http
-      .get<HttpGlobalResponse<any>>(
+      .get<
+        HttpGlobalResponse<AttendanceResponseDTO[]>
+      >(
         `${this.base}/attendance/history`,
         {
           params: {
@@ -391,11 +283,15 @@ export class AsistenciaService {
         }
       )
       .pipe(
-        map(respuesta =>
-          this.extraerLista<AttendanceResponseDTO>(respuesta)
-        ),
+        map(r => r.data ?? []),
         catchError(
-          this.manejarError<AttendanceResponseDTO[]>([])
+          (err: HttpErrorResponse) => {
+            if (err.status === 404) {
+              return of([]);
+            }
+
+            throw err;
+          }
         )
       );
   }
@@ -406,7 +302,9 @@ export class AsistenciaService {
     endDate: string
   ): Observable<AttendanceResponseDTO[]> {
     return this.http
-      .get<HttpGlobalResponse<any>>(
+      .get<
+        HttpGlobalResponse<AttendanceResponseDTO[]>
+      >(
         `${this.base}/attendance/history`,
         {
           params: {
@@ -417,13 +315,32 @@ export class AsistenciaService {
         }
       )
       .pipe(
-        map(respuesta =>
-          this.extraerLista<AttendanceResponseDTO>(respuesta)
-        ),
+        map(r => r.data ?? []),
         catchError(
-          this.manejarError<AttendanceResponseDTO[]>([])
+          (err: HttpErrorResponse) => {
+            if (err.status === 404) {
+              return of([]);
+            }
+
+            throw err;
+          }
         )
       );
+  }
+
+  obtenerHistorialPorCursoPaginado(
+    idCourse: number,
+    startDate: string,
+    endDate: string,
+    page = 0,
+    size = 10
+  ): Observable<AttendanceResponseDTO[]> {
+    return this.obtenerHistorialPorCurso(idCourse, startDate, endDate).pipe(
+      map(registros => {
+        const inicio = Math.max(0, page) * Math.max(1, size);
+        return registros.slice(inicio, inicio + Math.max(1, size));
+      })
+    );
   }
 
   obtenerResumenPorEstudiante(
@@ -432,7 +349,9 @@ export class AsistenciaService {
     endDate: string
   ): Observable<AttendanceSummaryDTO> {
     return this.http
-      .get<HttpGlobalResponse<AttendanceSummaryDTO>>(
+      .get<
+        HttpGlobalResponse<AttendanceSummaryDTO>
+      >(
         `${this.base}/attendance/summary`,
         {
           params: {
@@ -443,43 +362,7 @@ export class AsistenciaService {
         }
       )
       .pipe(
-        map(respuesta => {
-          const data =
-            this.extraerObjeto<AttendanceSummaryDTO>(
-              respuesta
-            );
-
-          if (!data) {
-            return {
-              idStudent,
-              startDate,
-              endDate,
-              totalRecords: 0,
-              presentCount: 0,
-              lateCount: 0,
-              earlyDepartureCount: 0,
-              justifiedAbsenceCount: 0,
-              unjustifiedAbsenceCount: 0,
-              attendancePercentage: 0
-            };
-          }
-
-          return data;
-        }),
-        catchError(
-          this.manejarError<AttendanceSummaryDTO>({
-            idStudent,
-            startDate,
-            endDate,
-            totalRecords: 0,
-            presentCount: 0,
-            lateCount: 0,
-            earlyDepartureCount: 0,
-            justifiedAbsenceCount: 0,
-            unjustifiedAbsenceCount: 0,
-            attendancePercentage: 0
-          })
-        )
+        map(r => r.data)
       );
   }
 
@@ -487,26 +370,22 @@ export class AsistenciaService {
     idAttendance: number,
     dto: AttendanceRequestDTO
   ): Observable<AttendanceResponseDTO> {
+    const dtoCorregido: AttendanceRequestDTO = {
+      ...dto,
+      idSchedule:
+        dto.idSchedule ??
+        this.ID_SCHEDULE_ASISTENCIA
+    };
+
     return this.http
-      .put<HttpGlobalResponse<AttendanceResponseDTO>>(
+      .put<
+        HttpGlobalResponse<AttendanceResponseDTO>
+      >(
         `${this.base}/attendance/${idAttendance}`,
-        dto
+        dtoCorregido
       )
       .pipe(
-        map(respuesta => {
-          const data =
-            this.extraerObjeto<AttendanceResponseDTO>(
-              respuesta
-            );
-
-          if (!data) {
-            throw new Error(
-              'El servidor no devolvió la asistencia actualizada.'
-            );
-          }
-
-          return data;
-        })
+        map(r => r.data)
       );
   }
 
@@ -519,25 +398,14 @@ export class AsistenciaService {
     };
 
     return this.http
-      .patch<HttpGlobalResponse<AttendanceResponseDTO>>(
+      .patch<
+        HttpGlobalResponse<AttendanceResponseDTO>
+      >(
         `${this.base}/attendance/${idAttendance}/justification`,
         dto
       )
       .pipe(
-        map(respuesta => {
-          const data =
-            this.extraerObjeto<AttendanceResponseDTO>(
-              respuesta
-            );
-
-          if (!data) {
-            throw new Error(
-              'El servidor no devolvió la justificación.'
-            );
-          }
-
-          return data;
-        })
+        map(r => r.data)
       );
   }
 
@@ -552,25 +420,14 @@ export class AsistenciaService {
     };
 
     return this.http
-      .patch<HttpGlobalResponse<AttendanceResponseDTO>>(
+      .patch<
+        HttpGlobalResponse<AttendanceResponseDTO>
+      >(
         `${this.base}/attendance/${idAttendance}/justification/review`,
         dto
       )
       .pipe(
-        map(respuesta => {
-          const data =
-            this.extraerObjeto<AttendanceResponseDTO>(
-              respuesta
-            );
-
-          if (!data) {
-            throw new Error(
-              'El servidor no devolvió la revisión de la justificación.'
-            );
-          }
-
-          return data;
-        })
+        map(r => r.data)
       );
   }
 
@@ -582,7 +439,10 @@ export class AsistenciaService {
       {
         params: {
           ...params
-        } as Record<string, string | number>,
+        } as Record<
+          string,
+          string | number
+        >,
         responseType: 'blob'
       }
     );
@@ -592,38 +452,47 @@ export class AsistenciaService {
     registros: AttendanceResponseDTO[]
   ): Omit<
     ResumenCurso,
-    'idCourse' | 'nombreCurso' | 'nombreNivel'
+    'idCourse' |
+    'nombreCurso' |
+    'nombreNivel'
   > {
-    const registrosValidos = Array.isArray(registros)
-      ? registros
-      : [];
+    const totalRecords =
+      registros.length;
 
-    const totalRecords = registrosValidos.length;
+    const presentCount =
+      registros.filter(
+        r =>
+          r.attendanceStatus ===
+          'PRESENT'
+      ).length;
 
-    const presentCount = registrosValidos.filter(
-      registro =>
-        registro.attendanceStatus === 'PRESENT'
-    ).length;
+    const lateCount =
+      registros.filter(
+        r =>
+          r.attendanceStatus ===
+          'LATE'
+      ).length;
 
-    const lateCount = registrosValidos.filter(
-      registro =>
-        registro.attendanceStatus === 'LATE'
-    ).length;
+    const earlyDepartureCount =
+      registros.filter(
+        r =>
+          r.attendanceStatus ===
+          'EARLY_DEPARTURE'
+      ).length;
 
-    const earlyDepartureCount = registrosValidos.filter(
-      registro =>
-        registro.attendanceStatus === 'EARLY_DEPARTURE'
-    ).length;
+    const justifiedCount =
+      registros.filter(
+        r =>
+          r.attendanceStatus ===
+          'JUSTIFIED'
+      ).length;
 
-    const justifiedCount = registrosValidos.filter(
-      registro =>
-        registro.attendanceStatus === 'JUSTIFIED'
-    ).length;
-
-    const unjustifiedCount = registrosValidos.filter(
-      registro =>
-        registro.attendanceStatus === 'ABSENT'
-    ).length;
+    const unjustifiedCount =
+      registros.filter(
+        r =>
+          r.attendanceStatus ===
+          'ABSENT'
+      ).length;
 
     const asistieron =
       presentCount +
@@ -635,7 +504,10 @@ export class AsistenciaService {
       totalRecords === 0
         ? 0
         : Math.round(
-            (asistieron * 100 / totalRecords) * 100
+            (asistieron *
+              100 /
+              totalRecords) *
+              100
           ) / 100;
 
     return {
