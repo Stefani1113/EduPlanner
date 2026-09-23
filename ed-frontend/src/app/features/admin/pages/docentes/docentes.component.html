@@ -44,7 +44,7 @@
 
   <div class="docentes-grid" *ngIf="!cargando && !errorCarga && docentesFiltrados.length > 0">
 
-    <article class="docente-card" *ngFor="let d of docentesFiltrados">
+    <article class="docente-card" *ngFor="let d of docentesPaginados">
 
       <span class="status-corner" [class.activo]="d.status" [class.inactivo]="!d.status">
         {{ d.status ? 'Activo' : 'Inactivo' }}
@@ -114,6 +114,14 @@
     </article>
 
   </div>
+
+  <app-pagination
+    *ngIf="!cargando && !errorCarga && docentesFiltrados.length > 0"
+    [totalItems]="docentesFiltrados.length"
+    [pageSize]="tamanoPagina"
+    [currentPage]="paginaActual"
+    (pageChange)="cambiarPagina($event)"
+  ></app-pagination>
 
   <div class="modal-overlay" *ngIf="mostrarPerfil" (click)="cerrarPerfil()">
 

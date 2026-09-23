@@ -1,6 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { PaginationComponent } from '../../../../core/components/pagination/pagination.component';
 import { HttpErrorResponse } from '@angular/common/http';
 import { forkJoin, of, from, Observable } from 'rxjs';
 import { catchError, concatMap, map, switchMap } from 'rxjs/operators';
@@ -65,7 +66,8 @@ const ETIQUETA_TAB: Record<Tab, string> = {
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule
+    FormsModule,
+    PaginationComponent
   ],
   templateUrl: './asistencias.component.html',
   styleUrl: './asistencias.component.scss'
@@ -88,7 +90,8 @@ export class AsistenciaComponent implements OnInit, OnDestroy {
   get tabPorDefecto(): Tab {
     if (this.esEstudiante) return 'resumen';
     if (this.esDirectivo) return 'listado';
-    return 'tomar';
+    if (this.esDocente) return 'tomar';
+    return 'resumen';
   }
 
   tomaCurso: number | null = null;
@@ -303,6 +306,8 @@ export class AsistenciaComponent implements OnInit, OnDestroy {
 
           if (this.esDirectivo) {
             this.tabActiva = 'listado';
+          } else if (this.esAdministrador) {
+            this.tabActiva = 'resumen';
           }
         }
 
@@ -334,14 +339,13 @@ export class AsistenciaComponent implements OnInit, OnDestroy {
   }
 
   cambiarTab(tab: Tab): void {
-    // El Estudiante no puede tomar asistencia.
-    // El Directivo tampoco: solo puede consultar (resumen, historial, listado, justificaciones).
-    if (tab === 'tomar' && (this.esEstudiante || this.esDirectivo)) {
+    // "Tomar asistencia" es exclusivo del Docente.
+    if (tab === 'tomar' && !this.esDocente) {
       return;
     }
 
-    // El Estudiante no tiene la pestaña "Historial" (solo Resumen, Listado y Justificaciones).
-    if (tab === 'historial' && this.esEstudiante) {
+    // "Justificaciones" es solo para Docente (gestiona) y Estudiante (escribe la suya).
+    if (tab === 'conflictos' && !this.esDocente && !this.esEstudiante) {
       return;
     }
 
@@ -1789,7 +1793,20 @@ export class AsistenciaComponent implements OnInit, OnDestroy {
     return filas;
   }
 
+  paginaActualListado = 1;
+  readonly tamanoPagina = 10;
+
+  cambiarPaginaListado(pagina: number): void {
+    this.paginaActualListado = pagina;
+  }
+
+  get filasListadoPaginadas(): FilaGridListado[] {
+    const inicio = (this.paginaActualListado - 1) * this.tamanoPagina;
+    return this.filasListadoVisibles.slice(inicio, inicio + this.tamanoPagina);
+  }
+
   buscarListado(): void {
+    this.paginaActualListado = 1;
     this.errorListado = null;
     this.columnasListado = [];
     this.filasListado = [];

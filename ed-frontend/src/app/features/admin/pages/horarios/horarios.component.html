@@ -2,7 +2,7 @@
 
   <div class="horario-toolbar">
 
-    <div class="view-toggle" *ngIf="!esVistaRestringida">
+    <div class="view-toggle" *ngIf="esAdministrador">
 
       <button
         type="button"
@@ -20,14 +20,21 @@
         (click)="alternarVista('conflictos')"
       >
         Conflictos
-        <span class="badge-count" *ngIf="conflictos.length">
+
+        <span
+          class="badge-count"
+          *ngIf="conflictos.length"
+        >
           {{ conflictos.length }}
         </span>
       </button>
 
     </div>
 
-    <div class="query-toggle" *ngIf="!esVistaRestringida">
+    <div
+      class="query-toggle"
+      *ngIf="esAdministrador || esDirectivo"
+    >
 
       <button
         type="button"
@@ -61,6 +68,7 @@
         <div class="picker-icon">▦</div>
 
         <div class="picker-text">
+
           <span class="picker-label">
             {{ esVistaRestringida ? 'Grado' : 'Curso seleccionado' }}
           </span>
@@ -68,26 +76,28 @@
           <strong>
             {{ cursoSeleccionado || 'Sin curso' }}
           </strong>
+
         </div>
 
         <span
           class="picker-badge"
-          *ngIf="!esVistaRestringida"
+          *ngIf="esAdministrador || esDirectivo"
         >
           {{ cursosDisponibles.length }}
         </span>
 
         <span
           class="picker-chevron"
-          *ngIf="!esVistaRestringida"
+          *ngIf="esAdministrador || esDirectivo"
         >
           ⌄
         </span>
 
         <div
-          class="course-dropdown"
+          class="course-dropdown lista-scroll"
           *ngIf="selectorCursosAbierto"
         >
+
           <button
             type="button"
             *ngFor="let curso of cursosDisponibles"
@@ -96,24 +106,31 @@
           >
             {{ curso }}
           </button>
+
         </div>
 
       </div>
 
       <div
         class="course-picker"
-        *ngIf="modoConsulta === 'docente' && !esVistaRestringida"
+        *ngIf="
+          modoConsulta === 'docente' &&
+          (esAdministrador || esDirectivo)
+        "
         (click)="alternarSelectorDocentes()"
       >
 
         <div class="picker-icon">
+
           <img
             src="/assets/img/user.png"
             alt=""
           >
+
         </div>
 
         <div class="picker-text">
+
           <span class="picker-label">
             Docente seleccionado
           </span>
@@ -121,6 +138,7 @@
           <strong>
             {{ nombreDocenteSeleccionado() }}
           </strong>
+
         </div>
 
         <span class="picker-badge">
@@ -132,17 +150,21 @@
         </span>
 
         <div
-          class="course-dropdown"
+          class="course-dropdown lista-scroll"
           *ngIf="selectorDocentesAbierto"
         >
+
           <button
             type="button"
             *ngFor="let docente of docentesDisponibles"
-            [class.active]="docenteSeleccionado?.idUser === docente.idUser"
+            [class.active]="
+              docenteSeleccionado?.idUser === docente.idUser
+            "
             (click)="seleccionarDocente(docente); $event.stopPropagation()"
           >
             {{ nombreDocente(docente) }}
           </button>
+
         </div>
 
       </div>
@@ -152,6 +174,7 @@
         <span class="clock-dot"></span>
 
         <div class="clock-text">
+
           <span>
             {{ obtenerNombreDiaActual() }}
           </span>
@@ -159,6 +182,7 @@
           <strong>
             {{ obtenerHoraFormateada() }}
           </strong>
+
         </div>
 
       </div>
@@ -166,14 +190,20 @@
       <button
         type="button"
         class="pdf-button"
-        [disabled]="!horarioDisponible || cargando"
+        [disabled]="
+          !horarioDisponible ||
+          cargando ||
+          !puedeExportarHorario
+        "
         (click)="exportarHorario()"
       >
+
         <span class="pdf-chip">
           PDF
         </span>
 
         Descargar
+
       </button>
 
     </div>
@@ -195,7 +225,7 @@
   <div
     class="horario-actions"
     *ngIf="
-      !esVistaRestringida &&
+      esAdministrador &&
       modoConsulta === 'curso'
     "
   >
@@ -272,7 +302,7 @@
       <span
         class="draft-tag"
         *ngIf="
-          !esVistaRestringida &&
+          esAdministrador &&
           hayBorrador
         "
       >
@@ -282,7 +312,7 @@
       <span
         class="published-tag"
         *ngIf="
-          !esVistaRestringida &&
+          esAdministrador &&
           hayHorarioPublicado &&
           !hayBorrador
         "
@@ -290,7 +320,7 @@
         Horario publicado
       </span>
 
-      <span *ngIf="!esVistaRestringida">
+      <span *ngIf="esAdministrador">
         {{ cursosDisponibles.length }} cursos registrados
       </span>
 
@@ -306,7 +336,7 @@
   <div
     class="summary-card"
     *ngIf="
-      !esVistaRestringida &&
+      esAdministrador &&
       vistaActual === 'conflictos'
     "
   >
@@ -328,9 +358,11 @@
     </div>
 
     <div class="summary-right">
+
       <span>
         Revisa y corrige antes de publicar
       </span>
+
     </div>
 
   </div>
@@ -338,7 +370,7 @@
   <div
     class="publication-alert"
     *ngIf="
-      !esVistaRestringida &&
+      esAdministrador &&
       notificacionActual
     "
   >
@@ -380,6 +412,7 @@
       </h3>
 
       <p>
+
         {{
           modoConsulta === 'docente'
             ? 'El docente'
@@ -395,16 +428,21 @@
         </strong>
 
         no tiene un horario registrado actualmente.
+
       </p>
 
-      <span *ngIf="!esVistaRestringida">
+      <span *ngIf="esAdministrador || esDirectivo">
+
         Selecciona otro
+
         {{
           modoConsulta === 'docente'
             ? 'docente'
             : 'curso'
         }}
+
         para consultar su horario.
+
       </span>
 
     </div>
@@ -615,7 +653,7 @@
   <section
     class="conflicts-wrapper"
     *ngIf="
-      !esVistaRestringida &&
+      esAdministrador &&
       vistaActual === 'conflictos'
     "
   >
@@ -641,7 +679,7 @@
       <tbody>
 
         <tr
-          *ngFor="let conflicto of conflictos"
+          *ngFor="let conflicto of conflictosPaginados"
         >
 
           <td>
@@ -683,6 +721,14 @@
 
     </table>
 
+    <app-pagination
+      *ngIf="conflictos.length > 0"
+      [totalItems]="conflictos.length"
+      [pageSize]="tamanoPagina"
+      [currentPage]="paginaActualConflictos"
+      (pageChange)="cambiarPaginaConflictos($event)"
+    ></app-pagination>
+
     <div
       class="empty-state"
       *ngIf="!conflictos.length"
@@ -705,7 +751,7 @@
   </section>
 
   <button
-    *ngIf="!esVistaRestringida"
+    *ngIf="esAdministrador"
     type="button"
     class="floating-ia"
     (click)="abrirChat()"
@@ -721,7 +767,7 @@
 
 </main>
 
-<ng-container *ngIf="!esVistaRestringida">
+<ng-container *ngIf="esAdministrador">
 
   <div
     class="chat-overlay"

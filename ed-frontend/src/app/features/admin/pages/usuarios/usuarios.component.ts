@@ -18,6 +18,7 @@ TipoEdicion
 } from './editar-usuario-modal/editar-usuario-modal.component';
 
 import { ImportacionComponent } from '../importacion/importacion.component';
+import { PaginationComponent } from '../../../../core/components/pagination/pagination.component';
 
 import {
 UsuariosService,
@@ -89,7 +90,8 @@ CommonModule,
 FormsModule,
 RegistroUsuarioModalComponent,
 EditarUsuarioModalComponent,
-ImportacionComponent
+ImportacionComponent,
+PaginationComponent
 ],
 templateUrl: './usuarios.component.html',
 styleUrl: './usuarios.component.scss'
@@ -493,6 +495,18 @@ return {
 }
 
 
+paginaActual = 1;
+readonly tamanoPagina = 10;
+
+cambiarPagina(pagina: number): void {
+  this.paginaActual = pagina;
+}
+
+get usuariosPaginados(): Usuario[] {
+  const inicio = (this.paginaActual - 1) * this.tamanoPagina;
+  return this.usuariosFiltrados.slice(inicio, inicio + this.tamanoPagina);
+}
+
 get usuariosFiltrados(): Usuario[] {
 
 const term =
@@ -583,6 +597,7 @@ this.gradoSeleccionado =
   'Todos los cursos';
 
 this.busqueda = '';
+this.paginaActual = 1;
 
 this.mostrarFiltroRol = false;
 

@@ -24,7 +24,7 @@
         </button>
 
         <button
-          *ngIf="!esEstudiante && !esDirectivo"
+          *ngIf="!esEstudiante"
           type="button"
           class="tab"
           [class.active]="tabActiva === 'notas'"
@@ -33,7 +33,7 @@
         </button>
 
         <button
-          *ngIf="!esEstudiante && !esDirectivo"
+          *ngIf="esDocente"
           type="button"
           class="tab"
           [class.active]="tabActiva === 'calificacion'"
@@ -210,7 +210,7 @@
 
     <div
       class="tab-panel"
-      *ngIf="tabActiva === 'notas' && !esEstudiante && !esDirectivo">
+      *ngIf="tabActiva === 'notas' && !esEstudiante">
 
       <div class="panel filtros-notas">
 
@@ -237,6 +237,7 @@
         <button
           type="button"
           class="btn-outline"
+          *ngIf="!esDirectivo"
           [disabled]="descargandoPdfCurso || !estudiantesNotas.length"
           (click)="descargarPdfCurso()">
 
@@ -310,7 +311,7 @@
           <tbody>
 
             <tr
-              *ngFor="let fila of estudiantesNotas">
+              *ngFor="let fila of estudiantesNotasPaginados">
 
               <td class="col-estudiante">
                 {{ fila.nombreCompleto }}
@@ -340,7 +341,7 @@
                       )
                     "
                     (blur)="guardarCelda(fila, act)"
-                    [disabled]="celda.guardando"
+                    [disabled]="celda.guardando || !esDocente"
                     [min]="escalaActual?.minimumValue ?? 0"
                     [max]="escalaActual?.maximumValue ?? 5"
                     step="0.1">
@@ -367,6 +368,14 @@
 
         </table>
 
+        <app-pagination
+          *ngIf="estudiantesNotas.length > 0"
+          [totalItems]="estudiantesNotas.length"
+          [pageSize]="tamanoPagina"
+          [currentPage]="paginaActualNotas"
+          (pageChange)="cambiarPaginaNotas($event)"
+        ></app-pagination>
+
       </div>
 
       <p
@@ -385,7 +394,7 @@
 
     <div
       class="tab-panel"
-      *ngIf="tabActiva === 'calificacion' && !esEstudiante && !esDirectivo">
+      *ngIf="tabActiva === 'calificacion' && esDocente">
 
       <p class="config-titulo">
         CONFIGURACIÓN

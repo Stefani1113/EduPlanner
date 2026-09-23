@@ -1,6 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { PaginationComponent } from '../../../core/components/pagination/pagination.component';
 import { Subject, forkJoin, of } from 'rxjs';
 import { catchError, finalize } from 'rxjs/operators';
 
@@ -73,7 +74,8 @@ interface ResumenReporteEstudiante {
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule
+    FormsModule,
+    PaginationComponent
   ],
   templateUrl: './notas.component.html',
   styleUrls: ['./notas.component.scss']
@@ -132,6 +134,18 @@ export class NotasComponent implements OnInit, OnDestroy {
   errorGuardado = '';
 
   estudiantesNotas: FilaNotas[] = [];
+
+  paginaActualNotas = 1;
+  readonly tamanoPagina = 10;
+
+  cambiarPaginaNotas(pagina: number): void {
+    this.paginaActualNotas = pagina;
+  }
+
+  get estudiantesNotasPaginados(): FilaNotas[] {
+    const inicio = (this.paginaActualNotas - 1) * this.tamanoPagina;
+    return this.estudiantesNotas.slice(inicio, inicio + this.tamanoPagina);
+  }
   actividadesNotasColumnas: EvaluativeActivityResponseDTO[] = [];
 
   escalaActual: GradingScaleResponseDTO | null = null;
@@ -356,7 +370,7 @@ export class NotasComponent implements OnInit, OnDestroy {
 
     if (
       this.tabActiva === 'notas' &&
-      !this.esDirectivo &&
+      !this.esEstudiante &&
       this.idCursoSeleccionado !== null &&
       this.idAsignaturaNotas !== null
     ) {
@@ -470,15 +484,15 @@ export class NotasComponent implements OnInit, OnDestroy {
   }
 
   cambiarTab(tab: Tab): void {
-    if (this.esDirectivo) {
-      this.tabActiva = 'historial';
+    if (tab === 'calificacion' && !this.esDocente) {
       return;
     }
 
-    if (
-      this.esEstudiante &&
-      tab === 'calificacion'
-    ) {
+    if (tab === 'notas' && this.esEstudiante) {
+      return;
+    }
+
+    if (tab === 'reportes' && this.esDirectivo) {
       return;
     }
 
@@ -798,7 +812,6 @@ export class NotasComponent implements OnInit, OnDestroy {
 
   cargarNotas(): void {
     if (
-      this.esDirectivo ||
       this.esEstudiante
     ) {
       return;
@@ -988,8 +1001,7 @@ export class NotasComponent implements OnInit, OnDestroy {
     valor: number | string
   ): void {
     if (
-      this.esEstudiante ||
-      this.esDirectivo
+      !this.esDocente
     ) {
       return;
     }
