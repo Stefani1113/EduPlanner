@@ -2179,7 +2179,7 @@ export class HorariosComponent implements OnInit, OnDestroy {
 
       return;
     }
-
+ 
     this.idGeneracionPublicadaActual =
       this.generacionesPublicadas[
         String(idCourse)
