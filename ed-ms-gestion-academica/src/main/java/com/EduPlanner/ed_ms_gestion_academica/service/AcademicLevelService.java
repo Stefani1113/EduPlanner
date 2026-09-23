@@ -7,6 +7,8 @@ import com.EduPlanner.ed_ms_gestion_academica.repository.AcademicLevelRepository
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -20,8 +22,8 @@ public class AcademicLevelService {
      * Listar todos lo niveles
      * @return
      */
-    public List<AcademicLevelResponseDTO> findAll() {
-        return repository.findAll().stream().map(AcademicLevelResponseDTO::fromEntity).toList();
+    public Page<AcademicLevelResponseDTO> findAll(Pageable pageable) {
+        return repository.findAll(pageable).map(AcademicLevelResponseDTO::fromEntity);
     }
 
 
@@ -99,7 +101,7 @@ public class AcademicLevelService {
      * Listar solo activos
      * @return
      */
-    public List<AcademicLevelResponseDTO> findAllActive() {
-        return repository.findByStatusTrue().stream().map(AcademicLevelResponseDTO::fromEntity).toList();
+    public Page<AcademicLevelResponseDTO> findAllActive(Pageable pageable) {
+        return repository.findByStatusTrue(pageable).map(AcademicLevelResponseDTO::fromEntity);
     }
 }

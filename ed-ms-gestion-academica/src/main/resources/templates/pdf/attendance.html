@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <title>Reporte de Asistencias - EduPlanner</title>
+    <style>
+
+        /*
+            NOTA PARA openHTMLtoPDF:
+            Sin flexbox/grid (no soportados) -> se usa display:table/table-cell.
+            Sin linear-gradient() (no soportado) -> fondos sólidos.
+            Registrar la fuente en el builder de Java:
+                builder.useFont(new File("fonts/Helvetica.ttf"), "Helvetica");
+        */
+
+        @page {
+            size: A4 landscape;
+            margin: 20mm 12mm 16mm 12mm;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            background-color: #ffffff;
+            color: #111111;
+            font-size: 11.5px;
+        }
+
+        /* ===================== BANNER ===================== */
+
+        .banner {
+            display: table;
+            width: 100%;
+            background-color: #14532d;
+            color: #ffffff;
+            border-radius: 8px;
+            padding: 14px 20px;
+            margin-bottom: 16px;
+        }
+
+        .banner .brand-cell {
+            display: table-cell;
+            vertical-align: middle;
+            width: 70%;
+        }
+
+        .banner .brand-logo {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border-radius: 7px;
+            background-color: #ffffff;
+            vertical-align: middle;
+        }
+
+        .banner .brand-text {
+            display: inline-block;
+            vertical-align: middle;
+            margin-left: 10px;
+        }
+
+        .banner .brand-text .title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .banner .brand-text .subtitle {
+            font-size: 10.5px;
+            color: #d6f0dd;
+            margin-top: 2px;
+        }
+
+        .banner .meta-cell {
+            display: table-cell;
+            vertical-align: middle;
+            width: 30%;
+            text-align: right;
+            font-size: 10px;
+            color: #d6f0dd;
+        }
+
+        /* ===================== RESUMEN ===================== */
+
+        .summary {
+            display: table;
+            width: 100%;
+            background-color: #f2f9f4;
+            border: 1px solid #cdeed9;
+            border-left: 4px solid #2e9e52;
+            border-radius: 6px;
+            padding: 14px 18px;
+            margin-bottom: 16px;
+        }
+
+        .summary .stats-cell {
+            display: table-cell;
+            vertical-align: middle;
+            width: 72%;
+        }
+
+        .summary .stats-cell .summary-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: #14532d;
+            margin-bottom: 8px;
+        }
+
+        .summary .stats-cell .stat-line {
+            font-size: 10px;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+
+        .summary .stats-cell .stat-line .stat-number {
+            font-weight: 700;
+            color: #14532d;
+        }
+
+        .summary .pct-cell {
+            display: table-cell;
+            vertical-align: middle;
+            width: 28%;
+            text-align: right;
+        }
+
+        .summary .pct-cell .pct-value {
+            font-size: 30px;
+            font-weight: 700;
+            color: #1e7a3d;
+        }
+
+        .summary .pct-cell .pct-label {
+            font-size: 8.5px;
+            color: #4b7a5c;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        /* ===================== TABLE ===================== */
+
+        table.attendance {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        table.attendance thead th {
+            background-color: #14532d;
+            color: #ffffff;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            padding: 9px 8px;
+            text-align: left;
+            border: 1px solid #14532d;
+        }
+
+        table.attendance tbody td {
+            padding: 7px 8px;
+            border: 1px solid #d9e9de;
+            color: #111111;
+            font-size: 10.5px;
+            vertical-align: middle;
+        }
+
+        table.attendance tbody tr:nth-child(even) td {
+            background-color: #f2f9f4;
+        }
+
+        table.attendance tbody tr:nth-child(odd) td {
+            background-color: #ffffff;
+        }
+
+        table.attendance {
+            width: 100%;
+            border-collapse: collapse;
+            page-break-inside: auto;
+        }
+
+        table.attendance tr {
+            page-break-inside: avoid;
+            page-break-after: auto;
+        }
+
+        table.attendance thead {
+            display: table-header-group;
+        }
+
+        /* ===================== BADGES ===================== */
+        /* Predomina el verde (Presente / Justificado / Aprobada);
+           se mantienen acentos funcionales en ámbar y rojo para que
+           tardanzas, ausencias y rechazos sigan siendo detectables
+           de un vistazo dentro de la tabla. */
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 9px;
+            font-weight: 700;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .badge-presente {
+            background-color: #dcf5e3;
+            color: #14532d;
+        }
+
+        .badge-justificado {
+            background-color: #cdeed9;
+            color: #1e7a3d;
+        }
+
+        .badge-tardanza {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-salida-anticipada {
+            background-color: #e6e1fb;
+            color: #5b21b6;
+        }
+
+        .badge-ausente {
+            background-color: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .badge-sin-justificar {
+            background-color: #eef1ee;
+            color: #6b7280;
+        }
+
+        .badge-pendiente {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+
+        .badge-aprobada {
+            background-color: #dcf5e3;
+            color: #14532d;
+        }
+
+        .badge-rechazada {
+            background-color: #fee2e2;
+            color: #b91c1c;
+        }
+
+        /* ===================== EMPTY STATE ===================== */
+
+        .empty-state {
+            text-align: center;
+            padding: 24px;
+            color: #6b8a76;
+            font-style: italic;
+            font-size: 11px;
+        }
+
+        /* ===================== FOOTER ===================== */
+
+        .footer {
+            display: table;
+            width: 100%;
+            margin-top: 20px;
+            padding-top: 10px;
+            border-top: 1px solid #d9e9de;
+            font-size: 9px;
+            color: #4b5563;
+        }
+
+        .footer .footer-left {
+            display: table-cell;
+            text-align: left;
+        }
+
+        .footer .footer-right {
+            display: table-cell;
+            text-align: right;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- ===================== BANNER ===================== -->
+    <div class="banner">
+        <div class="brand-cell">
+            <div class="brand-text">
+                <div class="title" th:text="${title}">Reporte de Asistencias</div>
+                <div class="subtitle" th:text="${subtitle}">Curso 10-A · Periodo 2026-2</div>
+            </div>
+        </div>
+        <div class="meta-cell">
+            <div th:text="${'Generado el ' + fechaGeneracion}">Generado el 22/09/2026</div>
+        </div>
+    </div>
+
+    <!-- ===================== RESUMEN ===================== -->
+    <!-- 'summary' es un AttendanceSummaryDTO opcional: totalRecords, presentCount,
+         lateCount, earlyDepartureCount, justifiedAbsenceCount,
+         unjustifiedAbsenceCount, attendancePercentage -->
+    <div class="summary" th:if="${summary != null}">
+        <div class="stats-cell">
+            <div class="summary-title">Resumen del periodo</div>
+            <div class="stat-line">
+                Total de registros: <span class="stat-number" th:text="${summary.totalRecords}">40</span>
+            </div>
+            <div class="stat-line">
+                Presentes: <span class="stat-number" th:text="${summary.presentCount}">32</span>
+                &#160;&#160;Tardanzas: <span class="stat-number" th:text="${summary.lateCount}">3</span>
+                &#160;&#160;Salidas anticipadas: <span class="stat-number" th:text="${summary.earlyDepartureCount}">1</span>
+            </div>
+            <div class="stat-line">
+                Ausencias justificadas: <span class="stat-number" th:text="${summary.justifiedAbsenceCount}">2</span>
+                &#160;&#160;Ausencias no justificadas: <span class="stat-number" th:text="${summary.unjustifiedAbsenceCount}">2</span>
+            </div>
+        </div>
+        <div class="pct-cell">
+            <div class="pct-value" th:text="${summary.attendancePercentage + '%'}">90%</div>
+            <div class="pct-label">Asistencia en el periodo</div>
+        </div>
+    </div>
+
+    <!-- ===================== TABLA DE ASISTENCIAS ===================== -->
+    <table class="attendance" th:if="${!records.isEmpty()}">
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Estado</th>
+                <th>Curso</th>
+                <th>Observación</th>
+                <th>Justificación</th>
+                <th>Revisión</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!--
+                'records' es una lista de AttendanceResponseDTO con:
+                attendanceDate, attendanceStatus (PRESENT | LATE | EARLY_DEPARTURE | ABSENT | JUSTIFIED),
+                courseName, observation, justificationText,
+                justificationStatus (NONE | PENDING | APPROVED | REJECTED)
+            -->
+            <tr th:each="r : ${records}">
+                <td th:text="${r.attendanceDate != null ? #temporals.format(r.attendanceDate, 'dd/MM/yyyy') : ''}">22/09/2026</td>
+
+                <td>
+                    <span th:if="${r.attendanceStatus != null and r.attendanceStatus.name() == 'PRESENT'}" class="badge badge-presente">
+                        Presente
+                    </span>
+                    <span th:if="${r.attendanceStatus != null and r.attendanceStatus.name() == 'LATE'}" class="badge badge-presente">
+                        Tardanza
+                    </span>
+                    <span th:if="${r.attendanceStatus != null and r.attendanceStatus.name() == 'EARLY_DEPARTURE'}" class="badge badge-salida-anticipada">
+                        Salida anticipada
+                    </span>
+                    <span th:if="${r.attendanceStatus != null and r.attendanceStatus.name() == 'ABSENT'}" class="badge badge-ausente">
+                        Ausente
+                    </span>
+                    <span th:if="${r.attendanceStatus != null and r.attendanceStatus.name() == 'JUSTIFIED'}" class="badge badge-justificado">
+                        Justificado
+                    </span>
+                </td>
+
+                <td th:text="${r.courseName}">10-A</td>
+                <td th:text="${r.observation != null ? r.observation : '—'}">Sin novedad</td>
+                <td th:text="${r.justificationText != null ? r.justificationText : '—'}">—</td>
+
+                <td>
+                    <span th:if="${r.justificationStatus == null or r.justificationStatus.name() == 'NONE'}" class="badge badge-sin-justificar">Sin justificar</span>
+                    <span th:if="${r.justificationStatus != null and r.justificationStatus.name() == 'PENDING'}" class="badge badge-pendiente">Pendiente</span>
+                    <span th:if="${r.justificationStatus != null and r.justificationStatus.name() == 'APPROVED'}" class="badge badge-aprobada">Aprobada</span>
+                    <span th:if="${r.justificationStatus != null and r.justificationStatus.name() == 'REJECTED'}" class="badge badge-rechazada">Rechazada</span>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- ===================== ESTADO VACÍO ===================== -->
+    <div class="empty-state" th:if="${records.isEmpty()}">
+        No se encontraron registros de asistencia en el periodo indicado.
+    </div>
+
+    <!-- ===================== FOOTER ===================== -->
+    <div class="footer">
+        <div class="footer-left">EduPlanner &#169; <span th:text="${#calendars.format(#calendars.createNow(), 'yyyy')}">2026</span></div>
+        <div class="footer-right" th:text="${'Documento generado automáticamente — ' + subtitle}">Documento generado automáticamente — Curso 10-A · Periodo 2026-2</div>
+    </div>
+
+</body>
+</html>

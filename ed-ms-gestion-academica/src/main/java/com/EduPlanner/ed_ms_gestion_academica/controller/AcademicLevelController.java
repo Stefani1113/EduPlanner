@@ -14,7 +14,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 @RestController
@@ -31,10 +32,10 @@ public class AcademicLevelController {
      * @return
      */
     @GetMapping
-    public ResponseEntity<HttpGlobalResponse<List<AcademicLevelResponseDTO>>> getAll(
-        @RequestParam(required = false) Boolean active) {
-        HttpGlobalResponse<List<AcademicLevelResponseDTO>> response = new HttpGlobalResponse<>();
-        List<AcademicLevelResponseDTO> result = (Boolean.TRUE.equals(active)) ? service.findAllActive() : service.findAll();
+    public ResponseEntity<HttpGlobalResponse<Page<AcademicLevelResponseDTO>>> getAll(
+        @RequestParam(required = false) Boolean active, Pageable pageable) {
+        HttpGlobalResponse<Page<AcademicLevelResponseDTO>> response = new HttpGlobalResponse<>();
+        Page<AcademicLevelResponseDTO> result = (Boolean.TRUE.equals(active)) ? service.findAllActive(pageable) : service.findAll(pageable);
         response.setData(result);
         response.setMessage("Niveles académicos consultados correctamente");
         return ResponseEntity.ok(response);

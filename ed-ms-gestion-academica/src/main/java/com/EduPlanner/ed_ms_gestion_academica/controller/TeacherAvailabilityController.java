@@ -12,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -23,21 +25,27 @@ public class TeacherAvailabilityController {
     private final TeacherAvailabilityService service;
 
     /**
-     * Listar todos y por docentes
-     * teacher-availability            -> todos
-     * teacher-availability?idTeacher=5 -> filtrado por docente
-     * @param idTeacher
-     * @return
+     * Listar todas y por docente
+     *
+     * GET /teacher-availability?page=0&size=10
+     * GET /teacher-availability?idTeacher=5&page=0&size=10
      */
     @GetMapping
-    public ResponseEntity<HttpGlobalResponse<List<TeacherAvailabilityResponseDTO>>> getAll(
-            @RequestParam(required = false) Integer idTeacher) {
-        HttpGlobalResponse<List<TeacherAvailabilityResponseDTO>> response = new HttpGlobalResponse<>();
-        List<TeacherAvailabilityResponseDTO> result = (idTeacher != null)
-                ? service.findByTeacher(idTeacher)
-                : service.findAll();
+    public ResponseEntity<HttpGlobalResponse<Page<TeacherAvailabilityResponseDTO>>> getAll(
+            @RequestParam(required = false) Integer idTeacher,
+            Pageable pageable) {
+
+        HttpGlobalResponse<Page<TeacherAvailabilityResponseDTO>> response =
+                new HttpGlobalResponse<>();
+
+        Page<TeacherAvailabilityResponseDTO> result =
+                (idTeacher != null)
+                        ? service.findByTeacher(idTeacher, pageable)
+                        : service.findAll(pageable);
+
         response.setData(result);
         response.setMessage("Disponibilidad consultada correctamente");
+
         return ResponseEntity.ok(response);
     }
 
