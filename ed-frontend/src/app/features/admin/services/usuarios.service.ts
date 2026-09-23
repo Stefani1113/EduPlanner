@@ -7,6 +7,17 @@ export interface HttpGlobalResponse<T> {
   message: string;
 }
 
+export interface PageResponse<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+  size: number;
+  first: boolean;
+  last: boolean;
+  empty: boolean;
+}
+
 export interface UserResponseDTO {
   idUser: number;
   email: string;
@@ -196,38 +207,57 @@ export class UsuariosService {
   constructor(private http: HttpClient) {}
 
   listar(
-    idRole?: number
-  ): Observable<HttpGlobalResponse<UserResponseDTO[]>> {
+    idRole?: number,
+    page = 0,
+    size = 10
+  ): Observable<HttpGlobalResponse<PageResponse<UserResponseDTO>>> {
 
-    const params: Record<string, string> = {};
+    const params: Record<string, string> = {
+      page: page.toString(),
+      size: size.toString()
+    };
 
     if (idRole !== undefined) {
       params['idRole'] = idRole.toString();
     }
 
-    return this.http.get<HttpGlobalResponse<UserResponseDTO[]>>(
+    return this.http.get<HttpGlobalResponse<PageResponse<UserResponseDTO>>>(
       `${this.api}/users`,
       { params }
     );
   }
 
   listarPorCurso(
-    idCourse: number
-  ): Observable<HttpGlobalResponse<UserResponseDTO[]>> {
+    idCourse: number,
+    page = 0,
+    size = 10
+  ): Observable<HttpGlobalResponse<PageResponse<UserResponseDTO>>> {
 
-    return this.http.get<HttpGlobalResponse<UserResponseDTO[]>>(
-      `${this.api}/users/course/${idCourse}`
+    const params = {
+      page: page.toString(),
+      size: size.toString()
+    };
+
+    return this.http.get<HttpGlobalResponse<PageResponse<UserResponseDTO>>>(
+      `${this.api}/users/course/${idCourse}`,
+      { params }
     );
   }
 
   buscarPorNombre(
-    name: string
-  ): Observable<HttpGlobalResponse<UserResponseDTO[]>> {
+    name: string,
+    page = 0,
+    size = 10
+  ): Observable<HttpGlobalResponse<PageResponse<UserResponseDTO>>> {
 
-    return this.http.get<HttpGlobalResponse<UserResponseDTO[]>>(
+    return this.http.get<HttpGlobalResponse<PageResponse<UserResponseDTO>>>(
       `${this.api}/users/search`,
       {
-        params: { name }
+        params: {
+          name,
+          page: page.toString(),
+          size: size.toString()
+        }
       }
     );
   }
