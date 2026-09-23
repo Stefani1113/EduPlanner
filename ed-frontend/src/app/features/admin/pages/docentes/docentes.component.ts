@@ -1,13 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
 import {
   DocentesService,
   TeachingRequestDTO,
   TeachingResponseDTO
 } from '../../services/docentes.service';
-
 import { PerfilService } from '../../services/perfil.service';
 import { ModalService } from '../../../../core/services/modal.service';
 
@@ -16,7 +14,7 @@ const API_BASE_URL = 'http://localhost:8080';
 
 function emptyForm(): TeachingRequestDTO {
   return {
-    name: '',  
+    name: '',
     surnames: '',
     email: '',
     password: '',
@@ -83,29 +81,25 @@ function formDesdeDocente(
 export class DocentesComponent implements OnInit {
 
   docentes: TeachingResponseDTO[] = [];
-
   cargando = false;
   errorCarga = '';
   busqueda = '';
-
   mostrarFormulario = false;
   mostrarPerfil = false;
   mostrarConfirmacionEliminar = false;
   mostrarMasCampos = false;
-
   guardando = false;
   eliminando = false;
-
   errorFormulario = '';
   errorEliminacion = '';
-
   docenteEnEdicion: TeachingResponseDTO | null = null;
   docenteSeleccionado: TeachingResponseDTO | null = null;
   docenteParaEliminar: TeachingResponseDTO | null = null;
-
   form: TeachingRequestDTO = emptyForm();
-
   puedeGestionar = false;
+
+  paginaActual = 1;
+  readonly tamanoPagina = 10;
 
   constructor(
     private docentesService: DocentesService,
@@ -122,7 +116,8 @@ export class DocentesComponent implements OnInit {
     this.perfilService.obtenerMiPerfil().subscribe({
       next: respuesta => {
         const rol = (respuesta.data?.roleName || '').toLowerCase();
-        this.puedeGestionar = rol.includes('admin') && !rol.includes('direct');
+        this.puedeGestionar =
+          rol.includes('admin') && !rol.includes('direct');
       },
       error: () => {
         this.puedeGestionar = false;
@@ -130,20 +125,58 @@ export class DocentesComponent implements OnInit {
     });
   }
 
+  private extraerLista(
+    respuesta: any
+  ): TeachingResponseDTO[] {
+    if (Array.isArray(respuesta)) {
+      return respuesta;
+    }
+
+    if (Array.isArray(respuesta?.data)) {
+      return respuesta.data;
+    }
+
+    if (Array.isArray(respuesta?.data?.data)) {
+      return respuesta.data.data;
+    }
+
+    if (Array.isArray(respuesta?.data?.content)) {
+      return respuesta.data.content;
+    }
+
+    if (Array.isArray(respuesta?.data?.items)) {
+      return respuesta.data.items;
+    }
+
+    if (Array.isArray(respuesta?.content)) {
+      return respuesta.content;
+    }
+
+    if (Array.isArray(respuesta?.items)) {
+      return respuesta.items;
+    }
+
+    return [];
+  }
+
   cargarDocentes(): void {
     this.cargando = true;
     this.errorCarga = '';
 
     this.docentesService.listar().subscribe({
-      next: (res) => {
-        this.docentes = (res.data ?? []).map(
-          docente => this.prepararDocente(docente)
+      next: res => {
+        const lista = this.extraerLista(res);
+
+        this.docentes = lista.map(docente =>
+          this.prepararDocente(docente)
         );
 
+        this.paginaActual = 1;
         this.cargando = false;
       },
-      error: (err) => {
+      error: err => {
         this.cargando = false;
+        this.docentes = [];
 
         this.errorCarga =
           err.error?.message ??
@@ -206,9 +239,9 @@ export class DocentesComponent implements OnInit {
     return this.normalizarFoto(docente.photoUrl);
   }
 
-
- 
-  obtenerDescripcionLineas(desc: string | null | undefined): string[] {
+  obtenerDescripcionLineas(
+    desc: string | null | undefined
+  ): string[] {
     if (!desc) {
       return [];
     }
@@ -251,19 +284,25 @@ export class DocentesComponent implements OnInit {
     );
   }
 
-  paginaActual = 1;
-  readonly tamanoPagina = 10;
-
   get totalPaginas(): number {
     return Math.max(
       1,
-      Math.ceil(this.docentesFiltrados.length / this.tamanoPagina)
+      Math.ceil(
+        this.docentesFiltrados.length /
+        this.tamanoPagina
+      )
     );
   }
 
   get docentesPagina(): TeachingResponseDTO[] {
-    const inicio = (this.paginaActual - 1) * this.tamanoPagina;
-    return this.docentesFiltrados.slice(inicio, inicio + this.tamanoPagina);
+    const inicio =
+      (this.paginaActual - 1) *
+      this.tamanoPagina;
+
+    return this.docentesFiltrados.slice(
+      inicio,
+      inicio + this.tamanoPagina
+    );
   }
 
   irPaginaAnterior(): void {
@@ -284,12 +323,16 @@ export class DocentesComponent implements OnInit {
     setTimeout(() => {
       document
         .querySelector('.docentes-grid')
-        ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        ?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
     });
   }
 
   buscar(): void {
     const term = this.busqueda.trim();
+
     this.paginaActual = 1;
 
     if (!term) {
@@ -301,19 +344,22 @@ export class DocentesComponent implements OnInit {
     this.errorCarga = '';
 
     this.docentesService.buscar(term).subscribe({
-      next: (res) => {
-        this.docentes = (res.data ?? []).map(
-          docente => this.prepararDocente(docente)
+      next: res => {
+        const lista = this.extraerLista(res);
+
+        this.docentes = lista.map(docente =>
+          this.prepararDocente(docente)
         );
 
         this.cargando = false;
       },
-      error: (err) => {
+      error: err => {
         this.cargando = false;
 
         if (err.status === 404) {
           this.docentes = [];
         } else {
+          this.docentes = [];
           this.errorCarga =
             err.error?.message ??
             'Error al buscar docentes.';
@@ -394,7 +440,6 @@ export class DocentesComponent implements OnInit {
         this.docenteEnEdicion
           ? 'Completa todos los campos obligatorios para guardar los cambios.'
           : 'Por favor completa todos los campos obligatorios.';
-
       return;
     }
 
@@ -417,14 +462,16 @@ export class DocentesComponent implements OnInit {
         this.mostrarFormulario = false;
         this.docenteEnEdicion = null;
         this.form = emptyForm();
+
         this.cargarDocentes();
+
         this.modalService.success(
           eraEdicion
             ? 'El docente se actualizó correctamente.'
             : 'El docente se agregó correctamente.'
         );
       },
-      error: (err) => {
+      error: err => {
         this.guardando = false;
 
         this.errorFormulario =
@@ -482,7 +529,7 @@ export class DocentesComponent implements OnInit {
         this.mostrarConfirmacionEliminar = false;
         this.docenteParaEliminar = null;
       },
-      error: (err) => {
+      error: err => {
         this.eliminando = false;
 
         this.errorEliminacion =
