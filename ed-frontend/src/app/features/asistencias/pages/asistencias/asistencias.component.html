@@ -637,6 +637,7 @@
               type="text"
               placeholder="Nombre del estudiante..."
               [(ngModel)]="busquedaListado"
+              (ngModelChange)="paginaActualListado = 1"
             >
           </label>
 
@@ -675,7 +676,7 @@
 
             <tbody>
 
-              <tr *ngFor="let fila of filasListadoVisibles">
+              <tr *ngFor="let fila of filasListadoPaginadas">
 
                 <td>
                   {{ fila.primerNombre }}
@@ -721,6 +722,14 @@
             </tbody>
 
           </table>
+
+          <app-pagination
+            *ngIf="filasListadoVisibles.length > 0"
+            [totalItems]="filasListadoVisibles.length"
+            [pageSize]="tamanoPagina"
+            [currentPage]="paginaActualListado"
+            (pageChange)="cambiarPaginaListado($event)"
+          ></app-pagination>
 
           <ng-template #sinListado>
             <div class="sin-datos listado-vacio">
