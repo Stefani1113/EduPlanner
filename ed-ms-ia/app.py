@@ -19,7 +19,7 @@ def status():
         "status": "online",
         "mcp": {
             "online": True,
-            "url": "http://127.0.0.1:8000/mcp"
+            "url": "http://0.0.0.0:8000/mcp"
         },
         "llm": {
             "provider": "gemini",
@@ -67,11 +67,11 @@ if __name__ == "__main__":
     print("🚀 EDUPLANNER IA")
     print("================================")
     print("Servidor Flask:")
-    print("http://127.0.0.1:5000")
+    print("http://0.0.0.0:5000")
     print("================================")
 
     app.run(
-        host="127.0.0.1",
-        port=5000,
-        debug=False
-    )
+    host="0.0.0.0",
+    port=5000,
+    debug=False
+)
