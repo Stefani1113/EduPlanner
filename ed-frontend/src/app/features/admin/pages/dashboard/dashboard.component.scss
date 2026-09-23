@@ -141,7 +141,7 @@ h4 {
   padding: 6px 16px;
   border: 1px solid transparent;
   border-radius: 50px;
-  background: rgba(22, 22, 22, 0.85);
+  background: var(--inst-dark);
   backdrop-filter: blur(6px);
   color: var(--inst-secondary);
   font-size: 11px;
@@ -152,7 +152,7 @@ h4 {
 
 .hero-title {
   margin: 20px 0 16px;
-  color: var(--inst-text);
+  color: var(--inst-accent);
   font-size: clamp(42px, 6vw, 72px);
   font-weight: 800;
   line-height: 1.05;
