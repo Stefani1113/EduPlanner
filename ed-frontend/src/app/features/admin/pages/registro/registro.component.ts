@@ -197,18 +197,9 @@ export class RegistroComponent implements OnInit {
   paginaFranjas = 1;
   paginaDisponibilidades = 1;
 
-  /*
-   * ============================================================
-   * TOTALES
-   * ============================================================
-   *
-   * Estos getters solucionan errores del HTML como:
-   *
-   * NG9: Property 'totalDocentes' does not exist
-   *
-   * Los totales corresponden a la colección completa,
-   * no solamente a los registros visibles de la página actual.
-   */
+  // ======================================================
+  // TOTALES PARA EL COMPONENTE DE PAGINACIÓN
+  // ======================================================
 
   get totalDocentes(): number {
     return this.docentes.length;
@@ -241,12 +232,6 @@ export class RegistroComponent implements OnInit {
   get totalDisponibilidades(): number {
     return this.disponibilidades.length;
   }
-
-  /*
-   * ============================================================
-   * DATOS PAGINADOS
-   * ============================================================
-   */
 
   get docentesPagina(): DocenteFila[] {
     return this.pagina(
@@ -308,8 +293,13 @@ export class RegistroComponent implements OnInit {
     items: T[],
     pagina: number
   ): T[] {
+    const paginaSegura = Math.max(
+      1,
+      pagina
+    );
+
     const inicio =
-      (pagina - 1) * this.tamanoPagina;
+      (paginaSegura - 1) * this.tamanoPagina;
 
     return items.slice(
       inicio,
