@@ -719,6 +719,14 @@
 
           </table>
 
+          <app-pagination
+            *ngIf="filasListadoVisibles.length > 0"
+            [totalItems]="filasListadoVisibles.length"
+            [pageSize]="tamanoPaginaListado"
+            [currentPage]="paginaListado"
+            (pageChange)="cambiarPaginaListado($event)"
+          ></app-pagination>
+
           <ng-template #sinListado>
             <div class="sin-datos listado-vacio">
               <strong>No hay registros de asistencia.</strong>

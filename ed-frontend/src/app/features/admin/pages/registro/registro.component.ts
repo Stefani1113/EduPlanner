@@ -197,10 +197,7 @@ export class RegistroComponent implements OnInit {
   paginaFranjas = 1;
   paginaDisponibilidades = 1;
 
-  // ======================================================
-  // TOTALES PARA EL COMPONENTE DE PAGINACIÓN
-  // ======================================================
-
+ 
   get totalDocentes(): number {
     return this.docentes.length;
   }

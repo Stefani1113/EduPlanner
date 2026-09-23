@@ -907,9 +907,7 @@
   min-height: 76px;
 }
 
-/* ============================= */
-/* RESUMEN                       */
-/* ============================= */
+
 
 .paginacion-resumen {
   flex: 1 1 0;
@@ -926,9 +924,7 @@
   font-weight: 600;
 }
 
-/* ============================= */
-/* CONTROLES                    */
-/* ============================= */
+
 
 .paginacion-controles {
   flex: 0 0 auto;
@@ -940,9 +936,7 @@
   gap: 12px;
 }
 
-/* ============================= */
-/* BOTONES                       */
-/* ============================= */
+
 
 .btn-paginacion {
   height: 40px;
@@ -1005,9 +999,7 @@
   box-shadow: none;
 }
 
-/* ============================= */
-/* INFORMACIÓN DE PÁGINA         */
-/* ============================= */
+
 
 .paginacion-info {
   min-width: 110px;
@@ -1032,9 +1024,7 @@
   font-weight: 600;
 }
 
-/* ============================= */
-/* TABLET                        */
-/* ============================= */
+
 
 @media (max-width: 900px) {
 
@@ -1066,9 +1056,7 @@
   }
 }
 
-/* ============================= */
-/* MÓVIL                         */
-/* ============================= */
+
 
 @media (max-width: 600px) {
 
@@ -1110,9 +1098,6 @@
   }
 }
 
-/* ============================= */
-/* PANTALLAS MUY PEQUEÑAS        */
-/* ============================= */
 
 @media (max-width: 400px) {
 
@@ -1136,4 +1121,51 @@
   .paginacion-resumen {
     font-size: 12px;
   }
+}
+.table-wrapper {
+  max-height: 520px;
+  overflow-x: auto;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--inst-primary) var(--inst-dark);
+}
+
+.table-wrapper::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+.table-wrapper::-webkit-scrollbar-track {
+  background: var(--inst-dark);
+  border-radius: 10px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb {
+  background: var(--inst-primary);
+  border-radius: 10px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb:hover {
+  background: var(--inst-secondary);
+}
+
+.role-menu {
+  max-height: 280px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--inst-primary) var(--inst-dark);
+}
+
+.role-menu::-webkit-scrollbar {
+  width: 7px;
+}
+
+.role-menu::-webkit-scrollbar-track {
+  background: var(--inst-dark);
+  border-radius: 10px;
+}
+
+.role-menu::-webkit-scrollbar-thumb {
+  background: var(--inst-primary);
+  border-radius: 10px;
 }
