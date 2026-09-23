@@ -1,8 +1,42 @@
 from typing import Any
 
+# Traemos un diccionario de datos
+def get_all_pages(client, endpoint, page_size=100):
+    all_items = []
+    page = 0
+
+    while True:
+        separator = "&" if "?" in endpoint else "?"
+
+        response = client.get(
+            f"{endpoint}{separator}page={page}&size={page_size}"
+        )
+
+        data = response["data"]
+
+        if isinstance(data, dict) and "content" in data:
+            content = data["content"]
+
+            all_items.extend(content)
+
+            if data.get("last", True):
+                break
+
+            page += 1
+
+        elif isinstance(data, list):
+            all_items.extend(data)
+            break
+
+        else:
+            raise ValueError(
+                f"Formato de respuesta inesperado para {endpoint}"
+            )
+
+    return all_items
+
 # Adaptamos la información que devuelven los endpoint en formato JSON
 # A lo que espera el algoritmo
-
 def adapt_academic_loads(data: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return [
         {
@@ -76,22 +110,18 @@ def adapt_time_slots(
 def load_scheduler_data(client, course_names: list[str] | None = None):
 
     # Cargas acdémicas
-    academic_loads_response = client.get(
+    academic_loads_data = client.get(
         "/academic-loads"
     )
-
-    academic_loads_data = academic_loads_response["data"]
 
     academic_loads = adapt_academic_loads(
         academic_loads_data
     )
 
     # Cursos
-    courses_response = client.get(
+    courses_data = client.get(
         "/courses"
     )
-
-    courses_data = courses_response["data"]
 
     courses = adapt_courses(
         courses_data
@@ -220,13 +250,13 @@ def load_scheduler_data(client, course_names: list[str] | None = None):
 
     for teacher_id in teacher_ids:
 
-        availability_response = client.get(
+        availability_data = get_all_pages( client,
             f"/teacher-availability?idTeacher={teacher_id}"
         )
 
         teacher_availability.extend(
             adapt_teacher_availability(
-                availability_response["data"]
+                availability_data
             )
         )
 
@@ -241,13 +271,13 @@ def load_scheduler_data(client, course_names: list[str] | None = None):
 
     for shift_id in shift_ids:
 
-        time_slots_response = client.get(
+        time_slots_data = get_all_pages(client,
             f"/time-slots?idShift={shift_id}"
         )
 
         time_slots.extend(
             adapt_time_slots(
-                time_slots_response["data"]
+                time_slots_data["data"]
             )
         )
 
