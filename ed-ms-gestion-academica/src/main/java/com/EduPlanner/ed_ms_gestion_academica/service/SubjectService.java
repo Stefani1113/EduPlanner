@@ -1,4 +1,4 @@
-    package com.EduPlanner.ed_ms_gestion_academica.service;
+package com.EduPlanner.ed_ms_gestion_academica.service;
 import com.eduplanner.ed_lib_common.dto.SubjectRequestDTO;
 import com.eduplanner.ed_lib_common.dto.SubjectResponseDTO;
 import com.eduplanner.ed_lib_common.entity.Subject;
@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service @RequiredArgsConstructor @Log4j2
 public class SubjectService {
@@ -23,11 +25,13 @@ public class SubjectService {
             throw new IllegalArgumentException("El nombre del tema ya está en uso");
         map(req, s); return toResponse(repository.save(s));
     }
-    public List<SubjectResponseDTO> listSubjects() { return repository.findByStatusTrue().stream().map(this::toResponse).toList(); }
+
+    public Page<SubjectResponseDTO> listSubjects(Pageable pageable) { return repository.findByStatusTrue(pageable).map(this::toResponse); }
+
     public SubjectResponseDTO getSubjectById(Integer id) { return toResponse(getOrThrow(id));
     }
 
-    public List<SubjectResponseDTO> searchSubjects(String name) { return repository.findByNameContainingIgnoreCaseAndStatusTrue(name).stream().map(this::toResponse).toList();
+    public Page<SubjectResponseDTO> searchSubjects(String name, Pageable pageable) { return repository.findByNameContainingIgnoreCaseAndStatusTrue(name, pageable).map(this::toResponse);
     }
 
     public void deleteSubject(Integer id) { Subject s = getOrThrow(id); repository.delete(s);

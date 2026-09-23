@@ -12,6 +12,9 @@ import com.eduplanner.ed_ms_administracion.security.RequireRole;
 import com.eduplanner.ed_ms_administracion.service.UserEditService;
 import com.eduplanner.ed_ms_administracion.service.UserQueryService;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,17 +33,20 @@ public class UserController {
     // Consultar todos los usuarios
     @RequireRole({RolEnum.ADMINISTRADOR, RolEnum.DIRECTIVO})
     @GetMapping
-    public ResponseEntity<HttpGlobalResponse<List<UserResponseDTO>>> getUsers(
-            @RequestParam(required = false) Integer idRole) {
+    public ResponseEntity<HttpGlobalResponse<Page<UserResponseDTO>>> getUsers(
+            @RequestParam(required = false) Integer idRole,
+            Pageable pageable) {
 
-        HttpGlobalResponse<List<UserResponseDTO>> response = new HttpGlobalResponse<>();
+        HttpGlobalResponse<Page<UserResponseDTO>> response =
+                new HttpGlobalResponse<>();
 
-        List<UserResponseDTO> users = (idRole != null)
-                ? userQueryService.findByRole(idRole)
-                : userQueryService.findAll();
+        Page<UserResponseDTO> users = (idRole != null)
+                ? userQueryService.findByRole(idRole, pageable)
+                : userQueryService.findAll(pageable);
 
         response.setData(users);
         response.setMessage("Usuarios consultados correctamente");
+
         return ResponseEntity.ok(response);
     }
 
@@ -52,10 +58,10 @@ public class UserController {
      */
     @RequireRole({RolEnum.ADMINISTRADOR, RolEnum.DOCENTE, RolEnum.DIRECTIVO})
     @GetMapping("/course/{idCourse}")
-    public ResponseEntity<HttpGlobalResponse<List<UserResponseDTO>>> getUsersByCourse(
-            @PathVariable Integer idCourse) {
-        HttpGlobalResponse<List<UserResponseDTO>> response = new HttpGlobalResponse<>();
-        response.setData(userQueryService.findByCourse(idCourse));
+    public ResponseEntity<HttpGlobalResponse<Page<UserResponseDTO>>> getUsersByCourse(
+            @PathVariable Integer idCourse, Pageable pageable) {
+        HttpGlobalResponse<Page<UserResponseDTO>> response = new HttpGlobalResponse<>();
+        response.setData(userQueryService.findByCourse(idCourse, pageable));
         response.setMessage("Estudiantes del curso consultados correctamente");
         return ResponseEntity.ok(response);
     }
@@ -75,9 +81,9 @@ public class UserController {
     //Consultar usuario por nombre
     @RequireRole(RolEnum.ADMINISTRADOR)
     @GetMapping("/search")
-    public ResponseEntity<HttpGlobalResponse<List<UserResponseDTO>>> getUserByName(@RequestParam String name) {
-        HttpGlobalResponse<List<UserResponseDTO>> response = new HttpGlobalResponse<>();
-            List<UserResponseDTO> users = userQueryService.findByName(name);
+    public ResponseEntity<HttpGlobalResponse<Page<UserResponseDTO>>> getUserByName(@RequestParam String name, Pageable pageable) {
+        HttpGlobalResponse<Page<UserResponseDTO>> response = new HttpGlobalResponse<>();
+            Page<UserResponseDTO> users = userQueryService.findByName(name, pageable);
             response.setData(users);
             response.setMessage(users.isEmpty()
                     ? "No se encontraron usuarios con ese nombre"

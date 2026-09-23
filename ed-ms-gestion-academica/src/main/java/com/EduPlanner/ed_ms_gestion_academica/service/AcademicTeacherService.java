@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service @RequiredArgsConstructor @Log4j2
 public class AcademicTeacherService {
@@ -52,8 +54,8 @@ public class AcademicTeacherService {
         return toResponse(repository.save(t));
     }
 
-    public List<AcademicTeacherResponseDTO> listTeachers() {
-        return repository.findByStatusTrue().stream().map(this::toResponse).toList();
+    public Page<AcademicTeacherResponseDTO> listTeachers(Pageable pageable) {
+        return repository.findByStatusTrue(pageable).map(this::toResponse);
     }
 
     public AcademicTeacherResponseDTO getTeacherById(Integer id) {

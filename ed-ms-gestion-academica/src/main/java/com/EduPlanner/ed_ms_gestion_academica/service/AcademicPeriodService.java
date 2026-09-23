@@ -7,6 +7,8 @@ import com.EduPlanner.ed_ms_gestion_academica.repository.AcademicPeriodRepositor
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -20,10 +22,9 @@ public class AcademicPeriodService {
      * Listar todas los periodos
      * @return
      */
-    public List<AcademicPeriodResponseDTO> findAll() {
-        return repository.findAll().stream()
-                .map(AcademicPeriodResponseDTO::fromEntity)
-                .toList();
+    public Page<AcademicPeriodResponseDTO> findAll(Pageable pageable) {
+        return repository.findAll(pageable)
+                .map(AcademicPeriodResponseDTO::fromEntity);
     }
 
     /**
@@ -114,7 +115,7 @@ public class AcademicPeriodService {
      * Buscar por activos
      * @return
      */
-    public List<AcademicPeriodResponseDTO> findAllActive() {
-        return repository.findByStatusTrue().stream().map(AcademicPeriodResponseDTO::fromEntity).toList();
+    public Page<AcademicPeriodResponseDTO> findAllActive(Pageable pageable) {
+        return repository.findByStatusTrue(pageable).map(AcademicPeriodResponseDTO::fromEntity);
     }
 }
