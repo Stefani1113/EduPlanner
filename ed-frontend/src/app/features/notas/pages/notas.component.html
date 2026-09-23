@@ -14,6 +14,7 @@
     <div class="tabs-row">
 
       <div class="tabs">
+<<<<<<< Updated upstream
 
         <button
           type="button"
@@ -50,6 +51,12 @@
           Reportes/Exportar
         </button>
 
+=======
+        <button type="button" class="tab" [class.active]="tabActiva === 'historial'" (click)="cambiarTab('historial')">Ver Historial</button>
+        <button type="button" class="tab" [class.active]="tabActiva === 'notas'" (click)="cambiarTab('notas')">Notas</button>
+        <button type="button" class="tab" [class.active]="tabActiva === 'calificacion'" (click)="cambiarTab('calificacion')">Calificación</button>
+        <button type="button" class="tab" [class.active]="tabActiva === 'reportes'" (click)="cambiarTab('reportes')">Reportes/Exportar</button>
+>>>>>>> Stashed changes
       </div>
 
       <div
@@ -208,9 +215,16 @@
 
     </div>
 
+<<<<<<< Updated upstream
     <div
       class="tab-panel"
       *ngIf="tabActiva === 'notas' && !esEstudiante && !esDirectivo">
+=======
+
+    <!-- ================= TAB: NOTAS ================= -->
+
+    <div class="tab-panel" *ngIf="tabActiva === 'notas'">
+>>>>>>> Stashed changes
 
       <div class="panel filtros-notas">
 
@@ -256,11 +270,16 @@
         {{ errorPdfCurso }}
       </div>
 
+<<<<<<< Updated upstream
       <div
         class="error error-guardado"
         *ngIf="errorGuardado">
         {{ errorGuardado }}
       </div>
+=======
+      <div class="loading" *ngIf="cargandoNotas">Cargando notas desde la base de datos…</div>
+      <div class="error" *ngIf="errorNotas">{{ errorNotas }}</div>
+>>>>>>> Stashed changes
 
       <div
         class="loading"
@@ -526,6 +545,7 @@
 
       </div>
 
+<<<<<<< Updated upstream
       <div class="panel pasos-panel">
 
         <div class="pasos-header">
@@ -540,6 +560,52 @@
               Define cómo se reparte el 100% entre las actividades evaluativas del periodo.
             </p>
 
+=======
+      <!-- ============ PASOS POR PERIODO (rediseñado) ============ -->
+
+      <div class="panel pasos-panel">
+
+        <div class="pasos-header">
+          <div class="pasos-header-texto">
+            <p class="panel-subtitle-green">Pasos por periodo</p>
+            <p class="panel-hint">Define cómo se reparte el 100% entre las actividades evaluativas del periodo.</p>
+          </div>
+          <span class="pasos-badge" [class.completo]="totalPorcentajePasos === 100">
+            {{ totalPorcentajePasos }}%
+          </span>
+        </div>
+
+        <label class="campo pasos-select-periodo">
+          <span>Periodo</span>
+          <select [(ngModel)]="idPeriodoPasos" (ngModelChange)="onCambioPeriodoPasos()">
+            <option *ngFor="let p of periodos" [ngValue]="p.idPeriod">{{ p.name }}</option>
+          </select>
+        </label>
+
+        <p class="pasos-aviso-bloqueado" *ngIf="pasosYaDefinidos">
+          <span class="pasos-aviso-icono">ℹ️</span>
+          Este periodo ya tiene sus actividades configuradas. Si necesitas cambiar los porcentajes, comunícate con soporte.
+        </p>
+
+        <div class="pasos-lista">
+          <div class="paso-card" *ngFor="let paso of pasosPeriodo; let i = index" [class.bloqueado]="paso.existente">
+
+            <span class="paso-indice">{{ i + 1 }}</span>
+
+            <div class="paso-info">
+              <span class="paso-nombre">{{ paso.evaluationName }}</span>
+              <div class="paso-barra">
+                <div class="paso-barra-relleno" [style.width.%]="paso.weightPercentage"></div>
+              </div>
+            </div>
+
+            <span class="paso-porcentaje">{{ paso.weightPercentage }}%</span>
+
+            <div class="paso-botones" *ngIf="!paso.existente">
+              <button type="button" (click)="ajustarPaso(paso, -5)" aria-label="Disminuir porcentaje">−</button>
+              <button type="button" (click)="ajustarPaso(paso, 5)" aria-label="Aumentar porcentaje">+</button>
+            </div>
+>>>>>>> Stashed changes
           </div>
 
           <span
@@ -550,6 +616,7 @@
 
         </div>
 
+<<<<<<< Updated upstream
         <label class="campo pasos-select-periodo">
 
           <span>
@@ -577,6 +644,21 @@
           Este periodo ya tiene sus actividades configuradas. Si necesitas cambiar los porcentajes, comunícate con soporte.
 
         </p>
+=======
+        <div class="pasos-total-wrap">
+          <div class="pasos-total-barra">
+            <div class="pasos-total-relleno"
+                 [class.error]="totalPorcentajePasos !== 100"
+                 [style.width.%]="totalPorcentajePasos"></div>
+          </div>
+          <p class="paso-total" [class.paso-total-error]="totalPorcentajePasos !== 100">
+            <ng-container *ngIf="totalPorcentajePasos === 100; else pasosIncompletos">
+              ✓ Total: 100% — listo para guardar
+            </ng-container>
+            <ng-template #pasosIncompletos>Total: {{ totalPorcentajePasos }}% (debe sumar 100%)</ng-template>
+          </p>
+        </div>
+>>>>>>> Stashed changes
 
         <div class="pasos-lista">
 
@@ -680,12 +762,20 @@
       </p>
 
       <div class="botones-finales">
+<<<<<<< Updated upstream
 
         <button
           type="button"
           class="btn-outline"
           (click)="descartarCambiosCalificacion()">
           DESCARTAR
+=======
+        <button type="button" class="btn-outline" (click)="descartarCambiosCalificacion()">DESCARTAR</button>
+        <button type="button" class="btn-verde"
+                [disabled]="guardandoEscala || guardandoPasos"
+                (click)="guardarCambiosCalificacion()">
+          {{ (guardandoEscala || guardandoPasos) ? 'GUARDANDO…' : 'GUARDAR CAMBIOS' }}
+>>>>>>> Stashed changes
         </button>
 
         <button
@@ -1006,6 +1096,110 @@
 
           </div>
 
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- ================= TAB: REPORTES/EXPORTAR ================= -->
+
+    <div class="tab-panel" *ngIf="tabActiva === 'reportes'">
+
+      <div class="reportes-grid">
+
+        <div class="panel config-panel">
+          <p class="panel-subtitle-green">Configuración de REPORTES</p>
+
+          <label class="campo">
+            <span>Nivel académico</span>
+            <select [(ngModel)]="idNivelReporte" (ngModelChange)="onCambioNivelReporte()">
+              <option [ngValue]="null" disabled>Selecciona un nivel</option>
+              <option *ngFor="let n of niveles" [ngValue]="n.idLevel">{{ n.name }}</option>
+            </select>
+          </label>
+
+          <label class="campo" *ngIf="cursosReporte.length">
+            <span>Curso y sección</span>
+            <select [(ngModel)]="idCursoReporte" (ngModelChange)="onCambioCursoReporte()">
+              <option *ngFor="let c of cursosReporte" [ngValue]="c.idCourse">{{ c.name }}</option>
+            </select>
+          </label>
+
+          <label class="campo" *ngIf="periodos.length">
+            <span>Periodo</span>
+            <select [(ngModel)]="idPeriodoReporte">
+              <option *ngFor="let p of periodos" [ngValue]="p.idPeriod">{{ p.name }}</option>
+            </select>
+          </label>
+
+          <div class="error" *ngIf="errorReporte">{{ errorReporte }}</div>
+
+          <div class="listado-estudiantes" *ngIf="estudiantesReporte.length">
+            <div class="listado-header">
+              <span>Listado de estudiantes</span>
+              <label class="seleccionar-todos">
+                <input type="checkbox" [checked]="todosSeleccionadosReporte" (change)="toggleTodosReporte()">
+                Seleccionar todos
+              </label>
+            </div>
+
+            <div class="estudiante-item" *ngFor="let e of estudiantesReporte">
+              <input type="checkbox"
+                     [checked]="seleccionadosReporte.has(e.idUser)"
+                     (change)="toggleEstudianteReporte(e.idUser)">
+              <span class="estudiante-nombre">{{ e.name }} {{ e.surnames }}</span>
+            </div>
+          </div>
+
+          <div class="loading" *ngIf="cargandoEstudiantesReporte">Cargando estudiantes…</div>
+
+          <button type="button" class="btn-verde full" [disabled]="!seleccionadosReporte.size || cargandoVistaPrevia" (click)="regenerarVistaPrevia()">
+            {{ cargandoVistaPrevia ? 'Generando…' : 'REGENERAR VISTA PREVIA' }}
+          </button>
+        </div>
+
+        <div class="panel preview-panel">
+          <p class="panel-subtitle-green">Vista previa: reporte_consolidado.pdf</p>
+
+          <div class="preview-vacio" *ngIf="!vistaPreviaGenerada">
+            Selecciona un nivel, un curso y los estudiantes, luego genera la vista previa.
+          </div>
+
+          <div class="preview-card" *ngIf="vistaPreviaGenerada">
+
+            <div class="preview-card-head">
+              <div class="preview-logo">Edu<br>Planner</div>
+              <div>
+                <p class="preview-inst">INSTITUCIÓN<br>EDUCATIVA</p>
+                <p class="preview-sub">Reporte consolidado de calificaciones</p>
+              </div>
+            </div>
+
+            <div class="preview-meta">
+              <p><strong>Curso:</strong> {{ nombreCursoReporte }}</p>
+              <p><strong>Periodo:</strong> {{ nombrePeriodoReporte }}</p>
+              <p><strong>Estudiantes:</strong> {{ vistaPrevia.length }}</p>
+            </div>
+
+            <table class="preview-tabla">
+              <thead>
+                <tr><th>Estudiante</th><th>Notas registradas</th><th>Promedio</th></tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let r of vistaPrevia">
+                  <td>{{ r.estudiante.name }} {{ r.estudiante.surnames }}</td>
+                  <td>{{ r.notas.length }}</td>
+                  <td>{{ r.notas.length ? (r.promedio | number:'1.2-2') : '—' }}</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <button type="button" class="btn-verde full" [disabled]="descargandoPdf" (click)="descargarReportePdf()">
+              {{ descargandoPdf ? 'Generando PDF…' : 'DESCARGAR PDF' }}
+            </button>
+          </div>
         </div>
 
       </div>
