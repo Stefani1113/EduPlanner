@@ -9,6 +9,7 @@
     <button
       type="button"
       class="btn-descargar-historial"
+      *ngIf="!esDirectivo"
       (click)="abrirPanelDescarga()"
     >
       <span class="btn-descargar-historial-icono">⬇</span>
@@ -31,7 +32,7 @@
       <button
         type="button"
         class="tab"
-        *ngIf="!esEstudiante && !esDirectivo"
+        *ngIf="esDocente"
         [class.active]="tabActiva === 'tomar'"
         (click)="cambiarTab('tomar')"
       >
@@ -50,7 +51,6 @@
       <button
         type="button"
         class="tab"
-        *ngIf="!esEstudiante"
         [class.active]="tabActiva === 'historial'"
         (click)="cambiarTab('historial')"
       >
@@ -69,6 +69,7 @@
       <button
         type="button"
         class="tab"
+        *ngIf="esDocente || esEstudiante"
         [class.active]="tabActiva === 'conflictos'"
         (click)="cambiarTab('conflictos')"
       >
@@ -541,6 +542,7 @@
             <button
               type="button"
               class="btn-secundario"
+              *ngIf="!esDirectivo"
               (click)="descargarPdfHistorial()"
               [disabled]="idCursoSeleccionado === null"
             >
@@ -641,6 +643,7 @@
           <button
             type="button"
             class="btn-secundario"
+            *ngIf="!esDirectivo"
             (click)="descargarPdfListado()"
             [disabled]="filtroListadoCurso === null"
           >

@@ -1,6 +1,8 @@
 <div class="importacion-container" *ngIf="vista === 'formulario'">
   <div class="importacion-card">
-    <div class="card-header">IMPORTACIÓN MASIVA</div>
+    <div class="card-header">
+      IMPORTACIÓN MASIVA
+    </div>
 
     <div class="card-body">
       <div class="descripcion">
@@ -15,11 +17,18 @@
         (dragleave)="onDragLeave($event)"
         (drop)="onDrop($event)"
       >
-        <img src="assets/img/archive.png" alt="Seleccionar archivo">
+        <img
+          src="assets/img/archive.png"
+          alt="Seleccionar archivo"
+        >
 
         <div class="upload-text">
           <p>
-            {{ archivo ? 'Archivo seleccionado' : 'Arrastra tu archivo aquí' }}
+            {{
+              archivo
+                ? 'Archivo seleccionado'
+                : 'Arrastra tu archivo aquí'
+            }}
           </p>
 
           <span>
@@ -42,14 +51,23 @@
         <strong>{{ tamanoMaximoMB }} MB</strong>
       </div>
 
-      <div class="archivo" *ngIf="archivo">
+      <div
+        class="archivo"
+        *ngIf="archivo"
+      >
         <i class="fa-solid fa-file-csv"></i>
 
         <div class="archivo-info">
-          <strong>{{ archivo.name }}</strong>
+          <strong>
+            {{ archivo.name }}
+          </strong>
 
           <span>
-            {{ (archivo.size / 1024 / 1024) | number:'1.2-2' }} MB
+            {{
+              (archivo.size / 1024 / 1024)
+                | number:'1.2-2'
+            }}
+            MB
           </span>
         </div>
 
@@ -76,11 +94,16 @@
         [disabled]="cargando || !archivo"
         (click)="importar()"
       >
-        {{ cargando ? 'PROCESANDO...' : 'IMPORTAR ARCHIVO' }}
+        {{
+          cargando
+            ? 'PROCESANDO...'
+            : 'IMPORTAR ARCHIVO'
+        }}
       </button>
     </div>
   </div>
 </div>
+
 
 <div
   class="reporte-container"
@@ -106,6 +129,7 @@
     </div>
 
     <div class="reporte-meta">
+
       <span>
         <strong>Archivo:</strong>
         {{ reporte.fileName }}
@@ -120,7 +144,9 @@
         <strong>ID de importación:</strong>
         #{{ reporte.idImport }}
       </span>
+
     </div>
+
 
     <div class="resumen-cards">
 
@@ -134,6 +160,7 @@
         </span>
       </div>
 
+
       <div class="resumen-card exitosos">
         <span class="resumen-label">
           Exitosos
@@ -144,6 +171,7 @@
         </span>
       </div>
 
+
       <div class="resumen-card errores">
         <span class="resumen-label">
           Con errores
@@ -153,6 +181,7 @@
           {{ reporte.failedRows }}
         </span>
       </div>
+
 
       <div class="resumen-card porcentaje">
         <span class="resumen-label">
@@ -166,12 +195,14 @@
 
     </div>
 
+
     <div
       class="tabla-errores-titulo"
       *ngIf="reporte.errors?.length"
     >
       Tabla de errores
     </div>
+
 
     <div
       class="table-wrapper"
@@ -189,7 +220,10 @@
         </thead>
 
         <tbody>
-          <tr *ngFor="let err of reporte.errors">
+
+          <tr
+            *ngFor="let err of reporte.errors"
+          >
 
             <td>
               {{ err.rowNumber }}
@@ -213,10 +247,12 @@
             </td>
 
           </tr>
+
         </tbody>
 
       </table>
     </div>
+
 
     <div
       class="sin-errores"
@@ -225,9 +261,10 @@
       Todos los registros se procesaron correctamente, sin errores.
     </div>
 
+
     <button
       type="button"
-      class="btn-nueva-importacion"
+      class="btn-nueva-importacion" 
       (click)="volver()"
     >
       REALIZAR OTRA IMPORTACIÓN
