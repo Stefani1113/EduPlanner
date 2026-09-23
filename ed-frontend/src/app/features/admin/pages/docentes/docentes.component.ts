@@ -10,7 +10,6 @@ import {
 
 import { PerfilService } from '../../services/perfil.service';
 import { ModalService } from '../../../../core/services/modal.service';
-import { PaginationComponent } from '../../../../core/components/pagination/pagination.component';
 
 const ID_INSTITUCION_FIJO = 1;
 const API_BASE_URL = 'http://localhost:8080';
@@ -76,8 +75,7 @@ function formDesdeDocente(
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
-    PaginationComponent
+    FormsModule
   ],
   templateUrl: './docentes.component.html',
   styleUrl: './docentes.component.scss'
@@ -221,18 +219,6 @@ export class DocentesComponent implements OnInit {
       .filter(linea => linea.length > 0);
   }
 
-  paginaActual = 1;
-  readonly tamanoPagina = 10;
-
-  cambiarPagina(pagina: number): void {
-    this.paginaActual = pagina;
-  }
-
-  get docentesPaginados(): TeachingResponseDTO[] {
-    const inicio = (this.paginaActual - 1) * this.tamanoPagina;
-    return this.docentesFiltrados.slice(inicio, inicio + this.tamanoPagina);
-  }
-
   get docentesFiltrados(): TeachingResponseDTO[] {
     const term = this.busqueda
       .trim()
@@ -265,9 +251,46 @@ export class DocentesComponent implements OnInit {
     );
   }
 
+  paginaActual = 1;
+  readonly tamanoPagina = 10;
+
+  get totalPaginas(): number {
+    return Math.max(
+      1,
+      Math.ceil(this.docentesFiltrados.length / this.tamanoPagina)
+    );
+  }
+
+  get docentesPagina(): TeachingResponseDTO[] {
+    const inicio = (this.paginaActual - 1) * this.tamanoPagina;
+    return this.docentesFiltrados.slice(inicio, inicio + this.tamanoPagina);
+  }
+
+  irPaginaAnterior(): void {
+    if (this.paginaActual > 1) {
+      this.paginaActual--;
+      this.enfocarListado();
+    }
+  }
+
+  irPaginaSiguiente(): void {
+    if (this.paginaActual < this.totalPaginas) {
+      this.paginaActual++;
+      this.enfocarListado();
+    }
+  }
+
+  private enfocarListado(): void {
+    setTimeout(() => {
+      document
+        .querySelector('.docentes-grid')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+
   buscar(): void {
-    this.paginaActual = 1;
     const term = this.busqueda.trim();
+    this.paginaActual = 1;
 
     if (!term) {
       this.cargarDocentes();

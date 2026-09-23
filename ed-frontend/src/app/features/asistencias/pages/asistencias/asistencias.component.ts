@@ -1,7 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { PaginationComponent } from '../../../../core/components/pagination/pagination.component';
 import { HttpErrorResponse } from '@angular/common/http';
 import { forkJoin, of, from, Observable } from 'rxjs';
 import { catchError, concatMap, map, switchMap } from 'rxjs/operators';
@@ -66,8 +65,7 @@ const ETIQUETA_TAB: Record<Tab, string> = {
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
-    PaginationComponent
+    FormsModule
   ],
   templateUrl: './asistencias.component.html',
   styleUrl: './asistencias.component.scss'
@@ -1794,23 +1792,48 @@ export class AsistenciaComponent implements OnInit, OnDestroy {
   }
 
   paginaActualListado = 1;
-  readonly tamanoPagina = 10;
+  readonly tamanoPaginaListado = 10;
 
-  cambiarPaginaListado(pagina: number): void {
-    this.paginaActualListado = pagina;
+  get totalPaginasListado(): number {
+    return Math.max(
+      1,
+      Math.ceil(this.filasListadoVisibles.length / this.tamanoPaginaListado)
+    );
   }
 
-  get filasListadoPaginadas(): FilaGridListado[] {
-    const inicio = (this.paginaActualListado - 1) * this.tamanoPagina;
-    return this.filasListadoVisibles.slice(inicio, inicio + this.tamanoPagina);
+  get filasListadoPagina(): FilaGridListado[] {
+    const inicio = (this.paginaActualListado - 1) * this.tamanoPaginaListado;
+    return this.filasListadoVisibles.slice(inicio, inicio + this.tamanoPaginaListado);
+  }
+
+  irPaginaAnteriorListado(): void {
+    if (this.paginaActualListado > 1) {
+      this.paginaActualListado--;
+      this.enfocarListado();
+    }
+  }
+
+  irPaginaSiguienteListado(): void {
+    if (this.paginaActualListado < this.totalPaginasListado) {
+      this.paginaActualListado++;
+      this.enfocarListado();
+    }
+  }
+
+  private enfocarListado(): void {
+    setTimeout(() => {
+      document
+        .querySelector('.listado-tabla')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
   }
 
   buscarListado(): void {
-    this.paginaActualListado = 1;
     this.errorListado = null;
     this.columnasListado = [];
     this.filasListado = [];
     this.listadoConsultado = true;
+    this.paginaActualListado = 1;
 
     if (!this.filtroListadoInicio || !this.filtroListadoFin) {
       this.errorListado = 'Selecciona las fechas de inicio y fin.';
