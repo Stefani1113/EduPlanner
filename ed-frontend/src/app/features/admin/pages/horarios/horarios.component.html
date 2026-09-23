@@ -94,7 +94,7 @@
         </span>
 
         <div
-          class="course-dropdown"
+          class="course-dropdown lista-scroll"
           *ngIf="selectorCursosAbierto"
         >
 
@@ -150,7 +150,7 @@
         </span>
 
         <div
-          class="course-dropdown"
+          class="course-dropdown lista-scroll"
           *ngIf="selectorDocentesAbierto"
         >
 
@@ -679,7 +679,7 @@
       <tbody>
 
         <tr
-          *ngFor="let conflicto of conflictos"
+          *ngFor="let conflicto of conflictosPaginados"
         >
 
           <td>
@@ -720,6 +720,14 @@
       </tbody>
 
     </table>
+
+    <app-pagination
+      *ngIf="conflictos.length > 0"
+      [totalItems]="conflictos.length"
+      [pageSize]="tamanoPagina"
+      [currentPage]="paginaActualConflictos"
+      (pageChange)="cambiarPaginaConflictos($event)"
+    ></app-pagination>
 
     <div
       class="empty-state"

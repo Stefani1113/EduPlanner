@@ -13,6 +13,7 @@ import {
   ScheduleResponseDTO,
   TimeSlotResponseDTO
 } from '../../services/horarios.service';
+import { PaginationComponent } from '../../../../core/components/pagination/pagination.component';
 
 import { PerfilService } from '../../services/perfil.service';
 import { BreadcrumbService } from '../../services/breadcrumb.service';
@@ -30,7 +31,7 @@ const CLAVE_HORARIOS_PUBLICADOS =
 @Component({
   selector: 'app-horarios',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, PaginationComponent],
   templateUrl: './horarios.component.html',
   styleUrls: ['./horarios.component.scss']
 })
@@ -60,6 +61,18 @@ export class HorariosComponent implements OnInit, OnDestroy {
 
   conflictos: ConflictoHorario[] = [];
   notificaciones: NotificacionHorario[] = [];
+
+  paginaActualConflictos = 1;
+  readonly tamanoPagina = 10;
+
+  cambiarPaginaConflictos(pagina: number): void {
+    this.paginaActualConflictos = pagina;
+  }
+
+  get conflictosPaginados(): ConflictoHorario[] {
+    const inicio = (this.paginaActualConflictos - 1) * this.tamanoPagina;
+    return this.conflictos.slice(inicio, inicio + this.tamanoPagina);
+  }
 
   get notificacionActual(): NotificacionHorario | null {
     if (!this.esAdministrador) {
