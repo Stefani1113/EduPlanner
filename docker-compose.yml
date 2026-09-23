@@ -1,0 +1,338 @@
+services:
+
+  
+  # MYSQL
+
+  mysql:
+    image: mysql:8.0
+    container_name: eduplanner-mysql
+    restart: unless-stopped
+
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-eduplanner}
+
+    ports:
+      - "3306:3306"
+
+    volumes:
+      - eduplanner_mysql_data:/var/lib/mysql
+
+    networks:
+      - eduplanner-network
+
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${MYSQL_ROOT_PASSWORD:-root}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+
+
+  # CONSUL
+
+  consul:
+    image: hashicorp/consul:1.20
+    container_name: eduplanner-consul
+    restart: unless-stopped
+
+    command: >
+      consul agent
+      -dev
+      -client=0.0.0.0
+
+    ports:
+      - "8500:8500"
+      - "8600:8600/udp"
+
+    networks:
+      - eduplanner-network
+
+
+
+  # AUTENTICACION
+
+  autenticacion:
+    build:
+      context: .
+      dockerfile: ./ed-ms-autenticacion/Dockerfile
+
+    container_name: ed-ms-autenticacion
+    restart: unless-stopped
+
+    ports:
+      - "8081:8081"
+
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${DB_AUTH:-autenticacion}?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-root}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+
+      SPRING_CLOUD_CONSUL_HOST: consul
+      SPRING_CLOUD_CONSUL_PORT: 8500
+
+    depends_on:
+      mysql:
+        condition: service_healthy
+      consul:
+        condition: service_started
+
+    networks:
+      - eduplanner-network
+
+
+
+  # ADMINISTRACION
+
+  administracion:
+    build:
+      context: .
+      dockerfile: ./ed-ms-administracion/Dockerfile
+
+    container_name: ed-ms-administracion
+    restart: unless-stopped
+
+    ports:
+      - "${ADMIN_PORT:-8082}:8082"
+
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${DB_ADMIN:-administracion}?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-root}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+
+      SPRING_CLOUD_CONSUL_HOST: consul
+      SPRING_CLOUD_CONSUL_PORT: 8500
+
+    depends_on:
+      mysql:
+        condition: service_healthy
+      consul:
+        condition: service_started
+
+    networks:
+      - eduplanner-network
+
+
+
+  # GESTION ACADEMICA
+ 
+  gestion-academica:
+    build:
+      context: .
+      dockerfile: ./ed-ms-gestion-academica/Dockerfile
+
+    container_name: ed-ms-gestion-academica
+    restart: unless-stopped
+
+    ports:
+      - "8083:8083"
+
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${DB_ACADEMICA:-gestion_academica}?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-root}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+
+      SPRING_CLOUD_CONSUL_HOST: consul
+      SPRING_CLOUD_CONSUL_PORT: 8500
+
+    depends_on:
+      mysql:
+        condition: service_healthy
+      consul:
+        condition: service_started
+
+    networks:
+      - eduplanner-network
+
+
+  
+  # NOTAS
+  notas:
+    build:
+      context: .
+      dockerfile: ./ed_ms_notas/Dockerfile
+
+    container_name: ed-ms-notas
+    restart: unless-stopped
+
+    ports:
+      - "8084:8084"
+
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${DB_NOTAS:-microNotes}?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-root}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+
+      SPRING_CLOUD_CONSUL_HOST: consul
+      SPRING_CLOUD_CONSUL_PORT: 8500
+
+    depends_on:
+      mysql:
+        condition: service_healthy
+      consul:
+        condition: service_started
+
+    networks:
+      - eduplanner-network
+
+
+  
+  # CONFIGURACION INSTITUCIONAL
+  configuracion-institucional:
+    build:
+      context: .
+      dockerfile: ./ed_ms_configuracion_institucional/Dockerfile
+
+    container_name: ed-ms-configuracion-institucional
+    restart: unless-stopped
+
+    ports:
+      - "8086:8086"
+
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${DB_INSTITUCIONAL:-institutional_configuration}?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-root}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+
+      SPRING_CLOUD_CONSUL_HOST: consul
+      SPRING_CLOUD_CONSUL_PORT: 8500
+
+    depends_on:
+      mysql:
+        condition: service_healthy
+      consul:
+        condition: service_started
+
+    networks:
+      - eduplanner-network
+
+
+  
+  # GATEWAY
+ 
+  gateway:
+    build:
+      context: .
+      dockerfile: ./ed-gateway/Dockerfile
+
+    container_name: ed-gateway
+    restart: unless-stopped
+
+    ports:
+      - "8080:8080"
+
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+
+      SPRING_CLOUD_CONSUL_HOST: consul
+      SPRING_CLOUD_CONSUL_PORT: 8500
+
+    depends_on:
+      consul:
+        condition: service_started
+      autenticacion:
+        condition: service_started
+      gestion-academica:
+        condition: service_started
+      notas:
+        condition: service_started
+      configuracion-institucional:
+        condition: service_started
+
+    networks:
+      - eduplanner-network
+
+
+  # IA
+  ia:
+    build:
+      context: .
+      dockerfile: ./ed-ms-ia/Dockerfile
+
+    container_name: ed-ms-ia
+    restart: unless-stopped
+
+    ports:
+      - "${IA_PORT:-8087}:8087"
+
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+
+      SPRING_CLOUD_CONSUL_HOST: consul
+      SPRING_CLOUD_CONSUL_PORT: 8500
+
+    depends_on:
+      consul:
+        condition: service_started
+
+    networks:
+      - eduplanner-network
+
+
+  # MCP
+  mcp:
+    build:
+      context: .
+      dockerfile: ./ed-ms-mcp/Dockerfile
+
+    container_name: ed-ms-mcp
+    restart: unless-stopped
+
+    ports:
+      - "${MCP_PORT:-8088}:8088"
+
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+
+      SPRING_CLOUD_CONSUL_HOST: consul
+      SPRING_CLOUD_CONSUL_PORT: 8500
+
+    depends_on:
+      consul:
+        condition: service_started
+
+    networks:
+      - eduplanner-network
+
+
+  # FRONTEND
+  frontend:
+    build:
+      context: ./ed-frontend
+      dockerfile: Dockerfile
+
+    container_name: ed-frontend
+    restart: unless-stopped
+
+    ports:
+      - "4200:80"
+
+    depends_on:
+      - gateway
+
+    networks:
+      - eduplanner-network
+
+
+# VOLUMES
+volumes:
+
+  eduplanner_mysql_data:
+    name: eduplanner_mysql_data
+
+
+# NETWORK
+networks:
+
+  eduplanner-network:
+    name: eduplanner-network
+    driver: bridge
