@@ -311,7 +311,7 @@
           <tbody>
 
             <tr
-              *ngFor="let fila of estudiantesNotas">
+              *ngFor="let fila of estudiantesNotasPaginados">
 
               <td class="col-estudiante">
                 {{ fila.nombreCompleto }}
@@ -367,6 +367,14 @@
           </tbody>
 
         </table>
+
+        <app-pagination
+          *ngIf="estudiantesNotas.length > 0"
+          [totalItems]="estudiantesNotas.length"
+          [pageSize]="tamanoPagina"
+          [currentPage]="paginaActualNotas"
+          (pageChange)="cambiarPaginaNotas($event)"
+        ></app-pagination>
 
       </div>
 
