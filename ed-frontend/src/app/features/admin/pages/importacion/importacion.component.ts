@@ -1,28 +1,25 @@
 import {
   Component,
   EventEmitter,
-  Input,
   Output
 } from '@angular/core';
-
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
 import {
-  UsuariosService,
-  RegisterStudentDTO,
-  CourseBasicoDTO
-} from '../../services/usuarios.service';
+  ImportacionService,
+  ImportReport
+} from '../../services/importacion.service';
 
 interface ErrorImportacion {
   rowNumber: number;
+  rowData?: string;
   error: string;
 }
 
 interface ReporteImportacion {
-  idImport: number | string;
+  idImport: number;
   fileName: string;
-  importDate: Date;
+  importDate: string | Date;
   totalRows: number;
   successRows: number;
   failedRows: number;
@@ -30,25 +27,25 @@ interface ReporteImportacion {
 }
 
 interface EstudianteImportado {
-  name: string;
-  surnames: string;
-  email: string;
-  document: string;
-  documentType: string;
-  documentIssuePlace: string;
-  phoneNumber: string;
-  gender: string;
-  birthdate: string | null;
-  address: string;
-  bloodType: string;
-  disabilities: string;
-  stratum: number | undefined;
-  populationType: string;
-  healthRegime: string;
+  nombre: string;
+  apellidos: string;
+  correo: string;
+  telefono: string;
+  documento: string;
+  tipoDocumento: string;
+  lugarExpedicionDocumento: string;
+  genero: string;
+  fechaNacimiento: string;
+  direccion: string;
+  tipoSangre: string;
+  discapacidades: string;
+  estrato: string;
+  tipoPoblacion: string;
+  regimenSalud: string;
   eps: string;
-  guardianName: string;
-  guardianPhone: string;
-  idCourse: number | null;
+  nombreAcudiente: string;
+  telefonoAcudiente: string;
+  idCurso: number | null;
 }
 
 @Component({
@@ -63,21 +60,13 @@ interface EstudianteImportado {
 })
 export class ImportacionComponent {
 
-  @Input() cursos: CourseBasicoDTO[] = [];
-
-  @Output() importarCompletado =
-    new EventEmitter<void>();
-
-  // ============================================================
-  // ESTADO DE LA VISTA
-  // ============================================================
+  @Output() importarCompletado = new EventEmitter<void>();
 
   vista: 'formulario' | 'reporte' = 'formulario';
 
   archivo: File | null = null;
 
   arrastrando = false;
-
   cargando = false;
 
   errorGeneral = '';
@@ -88,42 +77,82 @@ export class ImportacionComponent {
 
   estudiantes: EstudianteImportado[] = [];
 
-  // Curso seleccionado opcionalmente cuando el CSV
-  // no contiene una columna de curso.
-  cursoSeleccionado: number | null = null;
+  contadorImportacion = 1;
 
-  private contadorImportacion = 1;
+  columnasEsperadas: string[] = [
+    'nombre',
+    'apellidos',
+    'correo',
+    'telefono',
+    'documento',
+    'tipo_documento',
+    'lugar_expedicion_documento',
+    'genero',
+    'fecha_nacimiento',
+    'direccion',
+    'tipo_sangre',
+    'discapacidades',
+    'estrato',
+    'tipo_poblacion',
+    'regimen_salud',
+    'eps',
+    'nombre_acudiente',
+    'telefono_acudiente',
+    'id_curso'
+  ];
 
   constructor(
-    private usuariosService: UsuariosService
+    private importacionService: ImportacionService
   ) {}
 
-  // ============================================================
-  // ARCHIVO
-  // ============================================================
-
   seleccionarArchivo(event: Event): void {
-
-    const input =
-      event.target as HTMLInputElement;
+    const input = event.target as HTMLInputElement;
 
     if (!input.files || input.files.length === 0) {
       return;
     }
 
-    this.procesarArchivo(input.files[0]);
+    const file = input.files[0];
+
+    this.procesarArchivo(file);
+
+    input.value = '';
+  }
+
+  procesarArchivo(file: File): void {
+    this.errorGeneral = '';
+
+    if (!file.name.toLowerCase().endsWith('.csv')) {
+      this.errorGeneral = 'Solo se permiten archivos CSV.';
+      this.archivo = null;
+      return;
+    }
+
+    const tamanoMB = file.size / (1024 * 1024);
+
+    if (tamanoMB > this.tamanoMaximoMB) {
+      this.errorGeneral =
+        `El archivo supera el tamaño máximo permitido de ${this.tamanoMaximoMB} MB.`;
+
+      this.archivo = null;
+      return;
+    }
+
+    this.archivo = file;
   }
 
   onDragOver(event: DragEvent): void {
-
     event.preventDefault();
     event.stopPropagation();
+
+    if (this.cargando) {
+      return;
+    }
 
     this.arrastrando = true;
   }
 
   onDragLeave(event: DragEvent): void {
-
     event.preventDefault();
     event.stopPropagation();
 
@@ -131,7 +160,6 @@ export class ImportacionComponent {
   }
 
   onDrop(event: DragEvent): void {
-
     event.preventDefault();
     event.stopPropagation();
 
@@ -150,67 +178,21 @@ export class ImportacionComponent {
     this.procesarArchivo(files[0]);
   }
 
-  private procesarArchivo(file: File): void {
-
-    this.errorGeneral = '';
-
-    // Validar extensión
-    const nombre =
-      file.name.toLowerCase();
-
-    if (!nombre.endsWith('.csv')) {
-
-      this.errorGeneral =
-        'El archivo seleccionado debe ser un archivo CSV.';
-
-      return;
-    }
-
-    // Validar tamaño
-    const tamanoMB =
-      file.size / 1024 / 1024;
-
-    if (tamanoMB > this.tamanoMaximoMB) {
-
-      this.errorGeneral =
-        `El archivo supera el tamaño máximo permitido de ${this.tamanoMaximoMB} MB.`;
-
-      return;
-    }
-
-    this.archivo = file;
-
-    this.reporte = null;
-
-    this.vista = 'formulario';
-
-    this.estudiantes = [];
-  }
-
   quitarArchivo(): void {
-
     if (this.cargando) {
       return;
     }
 
     this.archivo = null;
-
-    this.estudiantes = [];
-
     this.errorGeneral = '';
+    this.estudiantes = [];
   }
 
-  // ============================================================
-  // IMPORTACIÓN
-  // ============================================================
-
   importar(): void {
+    this.errorGeneral = '';
 
     if (!this.archivo) {
-
-      this.errorGeneral =
-        'Selecciona un archivo CSV antes de importar.';
-
+      this.errorGeneral = 'Selecciona un archivo CSV antes de importar.';
       return;
     }
 
@@ -218,195 +200,281 @@ export class ImportacionComponent {
       return;
     }
 
-    this.errorGeneral = '';
-
-    this.cargando = true;
-
-    this.leerArchivoParaImportar(this.archivo);
+    this.validarCSVAntesDeEnviar(this.archivo);
   }
 
-  private leerArchivoParaImportar(
-    archivo: File
-  ): void {
+  private validarCSVAntesDeEnviar(file: File): void {
+    this.cargando = true;
+    this.errorGeneral = '';
 
     const reader = new FileReader();
 
-    reader.onload = () => {
-
+    reader.onload = (): void => {
       try {
+        const contenido = String(reader.result ?? '');
 
-        const contenido =
-          String(reader.result || '');
+        const valido = this.validarEstructuraCSV(contenido);
 
-        if (!contenido.trim()) {
+        if (!valido) {
+          this.cargando = false;
+          return;
+        }
 
-          this.finalizarConError(
-            'El archivo CSV está vacío.'
-          );
+        this.estudiantes = this.extraerEstudiantes(contenido);
+
+        if (this.estudiantes.length === 0) {
+          this.errorGeneral =
+            'El archivo CSV no contiene registros de estudiantes válidos.';
+          this.cargando = false;
+          return;
+        }
+
+        this.enviarArchivo(file);
+
+      } catch (error) {
+        this.cargando = false;
+
+        this.errorGeneral =
+          this.obtenerMensajeError(error);
+      }
+    };
+
+    reader.onerror = (): void => {
+      this.cargando = false;
+
+      this.errorGeneral =
+        'No fue posible leer el archivo CSV.';
+    };
+
+    reader.readAsText(file, 'UTF-8');
+  }
+
+  private enviarArchivo(file: File): void {
+    this.importacionService.importarEstudiantes(file).subscribe({
+      next: (respuesta): void => {
+
+        const idImport = Number(respuesta.data);
+
+        if (!idImport || Number.isNaN(idImport)) {
+          this.cargando = false;
+
+          this.errorGeneral =
+            'El servidor no devolvió un identificador de importación válido.';
 
           return;
         }
 
-        this.procesarCSV(contenido);
+        this.obtenerReporte(idImport, file.name);
+      },
 
-      } catch (error) {
+      error: (error): void => {
+        this.cargando = false;
 
-        console.error(
-          'Error procesando CSV:',
-          error
-        );
-
-        this.finalizarConError(
-          'No fue posible procesar el archivo CSV.'
-        );
+        this.errorGeneral =
+          this.obtenerMensajeError(error);
       }
-    };
-
-    reader.onerror = () => {
-
-      this.finalizarConError(
-        'No fue posible leer el archivo seleccionado.'
-      );
-    };
-
-    reader.readAsText(
-      archivo,
-      'UTF-8'
-    );
+    });
   }
 
-  // ============================================================
-  // CSV
-  // ============================================================
-
-  private procesarCSV(
-    contenido: string
+  private obtenerReporte(
+    idImport: number,
+    nombreArchivo: string
   ): void {
 
-    const lineas =
-      contenido
-        .replace(/\r\n/g, '\n')
-        .replace(/\r/g, '\n')
-        .split('\n')
-        .filter(
-          linea =>
-            linea.trim().length > 0
+    this.importacionService.obtenerReporte(idImport).subscribe({
+      next: (respuesta): void => {
+
+        this.reporte = this.convertirReporte(
+          respuesta.data,
+          nombreArchivo
         );
 
+        this.vista = 'reporte';
+        this.cargando = false;
+
+        this.contadorImportacion++;
+
+        this.importarCompletado.emit();
+      },
+
+      error: (error): void => {
+        this.cargando = false;
+
+        this.errorGeneral =
+          this.obtenerMensajeError(error);
+      }
+    });
+  }
+
+  private convertirReporte(
+    reporte: ImportReport,
+    nombreArchivo: string
+  ): ReporteImportacion {
+
+    return {
+      idImport: reporte.idImport,
+      fileName: reporte.fileName || nombreArchivo,
+      importDate: reporte.importDate,
+      totalRows: Number(reporte.totalRows) || 0,
+      successRows: Number(reporte.successRows) || 0,
+      failedRows: Number(reporte.failedRows) || 0,
+      errors: Array.isArray(reporte.errors)
+        ? reporte.errors.map((error): ErrorImportacion => ({
+            rowNumber: Number(error.rowNumber) || 0,
+            rowData: error.rowData || '',
+            error: error.error || ''
+          }))
+        : []
+    };
+  }
+
+  private validarEstructuraCSV(contenido: string): boolean {
+
+    const lineas = contenido
+      .replace(/^\uFEFF/, '')
+      .split(/\r?\n/)
+      .map(linea => linea.trim())
+      .filter(linea => linea.length > 0);
+
     if (lineas.length < 2) {
+      this.errorGeneral =
+        'El archivo CSV debe contener encabezados y al menos un estudiante.';
 
-      this.finalizarConError(
-        'El archivo debe tener encabezados y al menos un estudiante.'
-      );
-
-      return;
+      return false;
     }
 
-    const separador =
-      this.detectarSeparador(
-        lineas[0]
-      );
+    const separador = this.detectarSeparador(lineas[0]);
 
-    const encabezados =
-      this.parsearLinea(
-        lineas[0],
-        separador
-      ).map(
-        campo =>
-          this.normalizar(campo)
-      );
+    const encabezados = this.parsearLinea(
+      lineas[0],
+      separador
+    ).map(encabezado =>
+      this.normalizarEncabezado(encabezado)
+    );
+
+    if (encabezados.length !== this.columnasEsperadas.length) {
+      this.errorGeneral =
+        `El archivo debe contener exactamente ${this.columnasEsperadas.length} columnas. Se encontraron ${encabezados.length}.`;
+
+      return false;
+    }
+
+    const columnasFaltantes = this.columnasEsperadas.filter(
+      columna => !encabezados.includes(columna)
+    );
+
+    if (columnasFaltantes.length > 0) {
+      this.errorGeneral =
+        `Faltan columnas obligatorias: ${columnasFaltantes.join(', ')}.`;
+
+      return false;
+    }
+
+    const columnasExtra = encabezados.filter(
+      encabezado => !this.columnasEsperadas.includes(encabezado)
+    );
+
+    if (columnasExtra.length > 0) {
+      this.errorGeneral =
+        `El archivo contiene columnas no permitidas: ${columnasExtra.join(', ')}.`;
+
+      return false;
+    }
+
+    return true;
+  }
+
+  private extraerEstudiantes(
+    contenido: string
+  ): EstudianteImportado[] {
+
+    const lineas = contenido
+      .replace(/^\uFEFF/, '')
+      .split(/\r?\n/)
+      .filter(linea => linea.trim().length > 0);
+
+    if (lineas.length < 2) {
+      return [];
+    }
+
+    const separador = this.detectarSeparador(lineas[0]);
+
+    const encabezados = this.parsearLinea(
+      lineas[0],
+      separador
+    ).map(encabezado =>
+      this.normalizarEncabezado(encabezado)
+    );
 
     const estudiantes: EstudianteImportado[] = [];
 
-    const errores: ErrorImportacion[] = [];
+    for (let i = 1; i < lineas.length; i++) {
 
-    for (
-      let i = 1;
-      i < lineas.length;
-      i++
-    ) {
-
-      const valores =
-        this.parsearLinea(
-          lineas[i],
-          separador
-        );
+      const valores = this.parsearLinea(
+        lineas[i],
+        separador
+      );
 
       if (
-        valores.length === 1 &&
-        !valores[0].trim()
+        valores.length === 0 ||
+        valores.every(valor => valor.trim() === '')
       ) {
         continue;
       }
 
-      const estudiante =
-        this.crearEstudiante(
-          encabezados,
-          valores
-        );
+      const registro: Record<string, string> = {};
 
-      const erroresFila =
-        this.validarEstudiante(
-          estudiante
-        );
+      encabezados.forEach((encabezado, indice) => {
+        registro[encabezado] =
+          (valores[indice] ?? '').trim();
+      });
 
-      if (erroresFila.length > 0) {
+      const estudiante: EstudianteImportado = {
+        nombre: registro['nombre'] || '',
+        apellidos: registro['apellidos'] || '',
+        correo: registro['correo'] || '',
+        telefono: registro['telefono'] || '',
+        documento: registro['documento'] || '',
+        tipoDocumento: registro['tipo_documento'] || '',
+        lugarExpedicionDocumento:
+          registro['lugar_expedicion_documento'] || '',
+        genero: registro['genero'] || '',
+        fechaNacimiento:
+          this.convertirFechaCSV(
+            registro['fecha_nacimiento'] || ''
+          ),
+        direccion: registro['direccion'] || '',
+        tipoSangre: registro['tipo_sangre'] || '',
+        discapacidades:
+          registro['discapacidades'] || '',
+        estrato: registro['estrato'] || '',
+        tipoPoblacion:
+          registro['tipo_poblacion'] || '',
+        regimenSalud:
+          registro['regimen_salud'] || '',
+        eps: registro['eps'] || '',
+        nombreAcudiente:
+          registro['nombre_acudiente'] || '',
+        telefonoAcudiente:
+          registro['telefono_acudiente'] || '',
+        idCurso:
+          this.convertirNumero(
+            registro['id_curso'] || ''
+          )
+      };
 
-        erroresFila.forEach(
-          mensaje => {
-
-            errores.push({
-              rowNumber: i + 1,
-              error: mensaje
-            });
-
-          }
-        );
-
-      } else {
-
-        estudiantes.push(
-          estudiante
-        );
-      }
+      estudiantes.push(estudiante);
     }
 
-    this.estudiantes =
-      estudiantes;
-
-    if (
-      estudiantes.length === 0
-    ) {
-
-      this.generarReporte(
-        lineas.length - 1,
-        0,
-        errores
-      );
-
-      return;
-    }
-
-    this.registrarEstudiantes(
-      estudiantes,
-      lineas.length - 1,
-      errores
-    );
+    return estudiantes;
   }
 
-  private detectarSeparador(
-    linea: string
-  ): string {
+  private detectarSeparador(linea: string): string {
 
-    const comas =
-      (linea.match(/,/g) || []).length;
+    const comas = (linea.match(/,/g) || []).length;
+    const puntosComa = (linea.match(/;/g) || []).length;
 
-    const puntosYComas =
-      (linea.match(/;/g) || []).length;
-
-    return puntosYComas > comas
-      ? ';'
-      : ',';
+    return puntosComa > comas ? ';' : ',';
   }
 
   private parsearLinea(
@@ -416,18 +484,12 @@ export class ImportacionComponent {
 
     const resultado: string[] = [];
 
-    let actual = '';
-
+    let valorActual = '';
     let dentroComillas = false;
 
-    for (
-      let i = 0;
-      i < linea.length;
-      i++
-    ) {
+    for (let i = 0; i < linea.length; i++) {
 
-      const caracter =
-        linea[i];
+      const caracter = linea[i];
 
       if (caracter === '"') {
 
@@ -435,539 +497,106 @@ export class ImportacionComponent {
           dentroComillas &&
           linea[i + 1] === '"'
         ) {
-
-          actual += '"';
-
+          valorActual += '"';
           i++;
-
         } else {
-
-          dentroComillas =
-            !dentroComillas;
+          dentroComillas = !dentroComillas;
         }
 
-        continue;
-      }
-
-      if (
+      } else if (
         caracter === separador &&
         !dentroComillas
       ) {
 
-        resultado.push(
-          actual.trim()
-        );
+        resultado.push(valorActual);
+        valorActual = '';
 
-        actual = '';
+      } else {
 
-        continue;
+        valorActual += caracter;
       }
-
-      actual += caracter;
     }
 
-    resultado.push(
-      actual.trim()
-    );
+    resultado.push(valorActual);
 
     return resultado;
   }
 
-  // ============================================================
-  // CREAR ESTUDIANTE
-  // ============================================================
+  private normalizarEncabezado(
+    encabezado: string
+  ): string {
 
-  private crearEstudiante(
-    encabezados: string[],
-    valores: string[]
-  ): EstudianteImportado {
-
-    const obtener =
-      (...nombres: string[]): string => {
-
-        for (
-          const nombre of nombres
-        ) {
-
-          const indice =
-            encabezados.indexOf(
-              this.normalizar(nombre)
-            );
-
-          if (
-            indice !== -1
-          ) {
-
-            return (
-              valores[indice] || ''
-            ).trim();
-          }
-        }
-
-        return '';
-      };
-
-    const cursoTexto =
-      obtener(
-        'idCourse',
-        'id_course',
-        'idcurso',
-        'curso',
-        'course',
-        'grado'
-      );
-
-    const idCourse =
-      this.obtenerIdCurso(
-        cursoTexto
-      );
-
-    const stratumTexto =
-      obtener(
-        'stratum',
-        'estrato'
-      );
-
-    const stratum =
-      Number(stratumTexto);
-
-    return {
-
-      name: obtener(
-        'name',
-        'nombre',
-        'nombres'
-      ),
-
-      surnames: obtener(
-        'surnames',
-        'surname',
-        'apellido',
-        'apellidos'
-      ),
-
-      email: obtener(
-        'email',
-        'correo',
-        'correo electronico',
-        'correo electrónico'
-      ),
-
-      document: obtener(
-        'document',
-        'documento',
-        'cedula',
-        'cédula'
-      ),
-
-      documentType:
-        obtener(
-          'documentType',
-          'tipo documento',
-          'tipo_documento'
-        ) || 'CC',
-
-      documentIssuePlace:
-        obtener(
-          'documentIssuePlace',
-          'lugar expedicion',
-          'lugar de expedicion',
-          'lugar de expedición'
-        ),
-
-      phoneNumber:
-        obtener(
-          'phoneNumber',
-          'telefono',
-          'teléfono',
-          'celular'
-        ),
-
-      gender:
-        obtener(
-          'gender',
-          'genero',
-          'género'
-        ),
-
-      birthdate:
-        this.formatearFecha(
-          obtener(
-            'birthdate',
-            'fecha nacimiento',
-            'fecha de nacimiento',
-            'fecha_nacimiento'
-          )
-        ),
-
-      address:
-        obtener(
-          'address',
-          'direccion',
-          'dirección'
-        ),
-
-      bloodType:
-        obtener(
-          'bloodType',
-          'tipo sangre',
-          'tipo de sangre'
-        ),
-
-      disabilities:
-        obtener(
-          'disabilities',
-          'discapacidad',
-          'discapacidades'
-        ),
-
-      stratum:
-        Number.isFinite(stratum)
-          ? stratum
-          : undefined,
-
-      populationType:
-        obtener(
-          'populationType',
-          'tipo poblacion',
-          'tipo de población'
-        ),
-
-      healthRegime:
-        obtener(
-          'healthRegime',
-          'regimen salud',
-          'régimen de salud'
-        ),
-
-      eps:
-        obtener('eps'),
-
-      guardianName:
-        obtener(
-          'guardianName',
-          'nombre acudiente',
-          'acudiente',
-          'nombre del acudiente'
-        ),
-
-      guardianPhone:
-        obtener(
-          'guardianPhone',
-          'telefono acudiente',
-          'teléfono acudiente',
-          'telefono del acudiente',
-          'teléfono del acudiente'
-        ),
-
-      idCourse
-    };
+    return encabezado
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, '_');
   }
 
-  // ============================================================
-  // VALIDACIÓN
-  // ============================================================
+  private convertirFechaCSV(
+    fecha: string
+  ): string {
 
-  private validarEstudiante(
-    estudiante: EstudianteImportado
-  ): string[] {
+    const valor = fecha.trim();
 
-    const errores: string[] = [];
-
-    if (!estudiante.name) {
-
-      errores.push(
-        'Campo obligatorio: nombre'
-      );
+    if (!valor) {
+      return '';
     }
 
-    if (!estudiante.surnames) {
+    let dia = '';
+    let mes = '';
+    let anio = '';
 
-      errores.push(
-        'Campo obligatorio: apellidos'
-      );
-    }
+    const partes = valor.split(/[\/-]/);
 
-    if (!estudiante.email) {
+    if (partes.length === 3) {
 
-      errores.push(
-        'Campo obligatorio: correo'
-      );
-
-    } else if (
-      !this.emailValido(
-        estudiante.email
-      )
-    ) {
-
-      errores.push(
-        'Correo electrónico inválido'
-      );
-    }
-
-    if (!estudiante.document) {
-
-      errores.push(
-        'Campo obligatorio: documento'
-      );
+      if (partes[0].length === 4) {
+        anio = partes[0];
+        mes = partes[1];
+        dia = partes[2];
+      } else {
+        dia = partes[0];
+        mes = partes[1];
+        anio = partes[2];
+      }
     }
 
     if (
-      estudiante.idCourse === null ||
-      estudiante.idCourse === undefined
+      !dia ||
+      !mes ||
+      !anio
     ) {
-
-      errores.push(
-        'Curso no encontrado o no especificado'
-      );
+      return valor;
     }
 
-    if (!estudiante.guardianName) {
-
-      errores.push(
-        'Campo obligatorio: nombre del acudiente'
-      );
+    if (anio.length === 2) {
+      anio =
+        Number(anio) >= 50
+          ? `19${anio}`
+          : `20${anio}`;
     }
 
-    return errores;
+    return `${anio}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
   }
 
-  private emailValido(
-    email: string
-  ): boolean {
+  private convertirNumero(
+    valor: string
+  ): number | null {
 
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-      .test(email);
-  }
-
-  // ============================================================
-  // REGISTRO EN BACKEND
-  // ============================================================
-
-  private registrarEstudiantes(
-    estudiantes: EstudianteImportado[],
-    totalFilas: number,
-    erroresIniciales: ErrorImportacion[]
-  ): void {
-
-    const errores = [
-      ...erroresIniciales
-    ];
-
-    let procesados = 0;
-
-    let exitosos = 0;
-
-    estudiantes.forEach(
-      estudiante => {
-
-        const dto: RegisterStudentDTO = {
-
-          name:
-            estudiante.name,
-
-          surnames:
-            estudiante.surnames,
-
-          email:
-            estudiante.email,
-
-          phoneNumber:
-            estudiante.phoneNumber || undefined,
-
-          document:
-            estudiante.document,
-
-          documentType:
-            estudiante.documentType || 'CC',
-
-          documentIssuePlace:
-            estudiante.documentIssuePlace ||
-            undefined,
-
-          gender:
-            estudiante.gender ||
-            undefined,
-
-          birthdate:
-            estudiante.birthdate,
-
-          address:
-            estudiante.address ||
-            undefined,
-
-          bloodType:
-            estudiante.bloodType ||
-            undefined,
-
-          disabilities:
-            estudiante.disabilities ||
-            undefined,
-
-          stratum:
-            estudiante.stratum,
-
-          populationType:
-            estudiante.populationType ||
-            undefined,
-
-          healthRegime:
-            estudiante.healthRegime ||
-            undefined,
-
-          eps:
-            estudiante.eps ||
-            undefined,
-
-          guardian: {
-
-            guardianName:
-              estudiante.guardianName,
-
-            guardianPhone:
-              estudiante.guardianPhone || ''
-          },
-
-          idCourse:
-            estudiante.idCourse as number
-        };
-
-        this.usuariosService
-          .registrarEstudiante(dto)
-          .subscribe({
-
-            next: () => {
-
-              exitosos++;
-
-              procesados++;
-
-              if (
-                procesados ===
-                estudiantes.length
-              ) {
-
-                this.generarReporte(
-                  totalFilas,
-                  exitosos,
-                  errores
-                );
-              }
-            },
-
-            error: (error) => {
-
-              procesados++;
-
-              errores.push({
-
-                rowNumber:
-                  this.obtenerFilaEstudiante(
-                    estudiante,
-                    estudiantes
-                  ),
-
-                error:
-                  this.obtenerMensajeError(
-                    error
-                  )
-              });
-
-              if (
-                procesados ===
-                estudiantes.length
-              ) {
-
-                this.generarReporte(
-                  totalFilas,
-                  exitosos,
-                  errores
-                );
-              }
-            }
-          });
-      }
+    const numero = Number(
+      valor.trim()
     );
+
+    return Number.isFinite(numero)
+      ? numero
+      : null;
   }
-
-  // ============================================================
-  // REPORTE
-  // ============================================================
-
-  private generarReporte(
-    total: number,
-    exitosos: number,
-    errores: ErrorImportacion[]
-  ): void {
-
-    this.reporte = {
-
-      idImport:
-        this.contadorImportacion++,
-
-      fileName:
-        this.archivo?.name || '',
-
-      importDate:
-        new Date(),
-
-      totalRows:
-        total,
-
-      successRows:
-        exitosos,
-
-      failedRows:
-        errores.length,
-
-      errors:
-        errores
-    };
-
-    this.cargando = false;
-
-    this.vista = 'reporte';
-
-    if (exitosos > 0) {
-      this.importarCompletado.emit();
-    }
-  }
-
-  private finalizarConError(
-    mensaje: string
-  ): void {
-
-    this.cargando = false;
-
-    this.errorGeneral =
-      mensaje;
-  }
-
-  // ============================================================
-  // BOTONES
-  // ============================================================
-
-  volver(): void {
-
-    this.vista = 'formulario';
-
-    this.reporte = null;
-
-    this.errorGeneral = '';
-
-    this.cargando = false;
-  }
-
-  // ============================================================
-  // INFORMACIÓN DEL REPORTE
-  // ============================================================
 
   porcentajeExito(): number {
 
-    if (
-      !this.reporte ||
-      this.reporte.totalRows === 0
-    ) {
+    if (!this.reporte || this.reporte.totalRows <= 0) {
       return 0;
     }
 
@@ -979,321 +608,228 @@ export class ImportacionComponent {
     );
   }
 
-  claseTipoError(
-    error: string
-  ): string {
+  claseTipoError(error: string): string {
 
-    const texto =
-      error.toLowerCase();
+    const tipo = this.detectarTipoError(error);
 
-    if (
-      texto.includes('correo') ||
-      texto.includes('email')
-    ) {
-      return 'error-correo';
+    switch (tipo) {
+      case 'correo':
+        return 'error-correo';
+
+      case 'documento':
+        return 'error-documento';
+
+      case 'curso':
+        return 'error-curso';
+
+      case 'datos':
+        return 'error-datos';
+
+      default:
+        return 'error-general';
     }
-
-    if (
-      texto.includes('curso')
-    ) {
-      return 'error-curso';
-    }
-
-    if (
-      texto.includes('documento')
-    ) {
-      return 'error-documento';
-    }
-
-    if (
-      texto.includes('obligatorio')
-    ) {
-      return 'error-validacion';
-    }
-
-    return 'error-general';
   }
 
-  etiquetaTipoError(
-    error: string
-  ): string {
+  etiquetaTipoError(error: string): string {
 
-    const texto =
-      error.toLowerCase();
+    const tipo = this.detectarTipoError(error);
 
-    if (
-      texto.includes('correo') ||
-      texto.includes('email')
-    ) {
-      return 'Correo';
+    switch (tipo) {
+      case 'correo':
+        return 'Correo';
+
+      case 'documento':
+        return 'Documento';
+
+      case 'curso':
+        return 'Curso';
+
+      case 'datos':
+        return 'Datos';
+
+      default:
+        return 'Error';
     }
-
-    if (
-      texto.includes('curso')
-    ) {
-      return 'Curso';
-    }
-
-    if (
-      texto.includes('documento')
-    ) {
-      return 'Documento';
-    }
-
-    if (
-      texto.includes('obligatorio')
-    ) {
-      return 'Obligatorio';
-    }
-
-    return 'Validación';
   }
 
-  campoAfectado(
-    error: string
-  ): string {
+  campoAfectado(error: string): string {
 
-    const texto =
-      error.toLowerCase();
+    const tipo = this.detectarTipoError(error);
 
-    if (
-      texto.includes('correo') ||
-      texto.includes('email')
-    ) {
-      return 'Correo';
+    switch (tipo) {
+      case 'correo':
+        return 'correo';
+
+      case 'documento':
+        return 'documento';
+
+      case 'curso':
+        return 'id_curso';
+
+      case 'datos':
+        return 'datos del estudiante';
+
+      default:
+        return 'registro';
     }
-
-    if (
-      texto.includes('curso')
-    ) {
-      return 'Curso';
-    }
-
-    if (
-      texto.includes('documento')
-    ) {
-      return 'Documento';
-    }
-
-    if (
-      texto.includes('nombre del acudiente') ||
-      texto.includes('acudiente')
-    ) {
-      return 'Acudiente';
-    }
-
-    if (
-      texto.includes('nombre')
-    ) {
-      return 'Nombre';
-    }
-
-    if (
-      texto.includes('apellidos')
-    ) {
-      return 'Apellidos';
-    }
-
-    return 'Registro';
   }
 
-  mensajeAmigable(
-    error: string
-  ): string {
+  mensajeAmigable(error: string): string {
 
-    if (!error) {
-      return 'Error desconocido.';
+    const texto = error?.trim() || '';
+
+    if (!texto) {
+      return 'No fue posible procesar este registro.';
     }
 
-    return error;
-  }
+    const tipo = this.detectarTipoError(texto);
 
-  // ============================================================
-  // CURSOS
-  // ============================================================
-
-  private obtenerIdCurso(
-    valor: string
-  ): number | null {
-
-    if (!valor) {
-
-      return this.cursoSeleccionado;
+    if (tipo === 'correo') {
+      return 'El correo electrónico no es válido o ya se encuentra registrado.';
     }
 
-    const numero =
-      Number(valor);
-
-    if (
-      Number.isInteger(numero) &&
-      this.cursos.some(
-        curso =>
-          curso.idCourse === numero
-      )
-    ) {
-
-      return numero;
+    if (tipo === 'documento') {
+      return 'El documento no es válido o ya se encuentra registrado.';
     }
 
-    const buscado =
-      this.normalizarCurso(
-        valor
-      );
-
-    const curso =
-      this.cursos.find(
-        item =>
-          this.normalizarCurso(
-            item.name
-          ) === buscado
-      );
-
-    if (curso) {
-      return curso.idCourse;
+    if (tipo === 'curso') {
+      return 'El curso indicado no existe o no está disponible.';
     }
 
-    return this.cursoSeleccionado;
-  }
-
-  private normalizarCurso(
-    valor: string
-  ): string {
-
-    return this.normalizar(valor)
-      .replace(/\s+/g, '')
-      .replace(/_/g, '-');
-  }
-
-  // ============================================================
-  // UTILIDADES
-  // ============================================================
-
-  private normalizar(
-    valor: string
-  ): string {
-
-    return valor
-      .normalize('NFD')
-      .replace(
-        /[\u0300-\u036f]/g,
-        ''
-      )
-      .toLowerCase()
-      .trim()
-      .replace(
-        /\s+/g,
-        ' '
-      );
-  }
-
-  private formatearFecha(
-    valor: string
-  ): string | null {
-
-    if (!valor) {
-      return null;
-    }
-
-    const texto =
-      valor.trim();
-
-    if (
-      /^\d{4}-\d{2}-\d{2}$/
-        .test(texto)
-    ) {
-      return texto;
-    }
-
-    const slash =
-      texto.match(
-        /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/
-      );
-
-    if (slash) {
-
-      const dia =
-        slash[1].padStart(2, '0');
-
-      const mes =
-        slash[2].padStart(2, '0');
-
-      const anio =
-        slash[3];
-
-      return `${anio}-${mes}-${dia}`;
-    }
-
-    const guion =
-      texto.match(
-        /^(\d{1,2})-(\d{1,2})-(\d{4})$/
-      );
-
-    if (guion) {
-
-      const dia =
-        guion[1].padStart(2, '0');
-
-      const mes =
-        guion[2].padStart(2, '0');
-
-      const anio =
-        guion[3];
-
-      return `${anio}-${mes}-${dia}`;
+    if (tipo === 'datos') {
+      return 'Uno o varios datos del estudiante no cumplen con el formato esperado.';
     }
 
     return texto;
   }
 
-  private obtenerMensajeError(
-    error: any
+  private detectarTipoError(
+    error: string
   ): string {
 
+    const texto = (
+      error || ''
+    ).toLowerCase();
+
     if (
-      error?.error?.message
+      texto.includes('correo') ||
+      texto.includes('email') ||
+      texto.includes('mail')
     ) {
-      return String(
-        error.error.message
-      );
+      return 'correo';
     }
 
     if (
-      error?.error?.data?.message
+      texto.includes('documento') ||
+      texto.includes('identificacion') ||
+      texto.includes('identificación')
     ) {
-      return String(
-        error.error.data.message
-      );
+      return 'documento';
     }
 
     if (
-      error?.message
+      texto.includes('curso') ||
+      texto.includes('idcourse') ||
+      texto.includes('id_curso')
     ) {
-      return String(
-        error.message
-      );
+      return 'curso';
     }
 
     if (
-      error?.status
+      texto.includes('campo') ||
+      texto.includes('formato') ||
+      texto.includes('obligatorio') ||
+      texto.includes('fecha') ||
+      texto.includes('telefono') ||
+      texto.includes('teléfono')
     ) {
-      return `Error HTTP ${error.status}.`;
+      return 'datos';
     }
 
-    return 'No fue posible registrar el estudiante.';
+    return 'general';
   }
 
-  private obtenerFilaEstudiante(
-    estudiante: EstudianteImportado,
-    estudiantes: EstudianteImportado[]
-  ): number {
+  volver(): void {
 
-    const indice =
-      estudiantes.indexOf(
-        estudiante
-      );
+    this.vista = 'formulario';
+    this.reporte = null;
+    this.errorGeneral = '';
+    this.cargando = false;
+    this.arrastrando = false;
+  }
 
-    return indice >= 0
-      ? indice + 2
-      : 0;
+  formatearFechaReporte(
+    fecha: string | Date
+  ): string {
+
+    if (!fecha) {
+      return '';
+    }
+
+    const fechaConvertida =
+      fecha instanceof Date
+        ? fecha
+        : new Date(fecha);
+
+    if (
+      Number.isNaN(
+        fechaConvertida.getTime()
+      )
+    ) {
+      return String(fecha);
+    }
+
+    return fechaConvertida.toLocaleString(
+      'es-CO',
+      {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      }
+    );
+  }
+
+  private obtenerMensajeError(
+    error: unknown
+  ): string {
+
+    const respuesta = error as {
+      error?: {
+        message?: string;
+      };
+      message?: string;
+    };
+
+    if (
+      respuesta?.error?.message
+    ) {
+      return respuesta.error.message;
+    }
+
+    if (
+      respuesta?.message
+    ) {
+      return respuesta.message;
+    }
+
+    return 'Ocurrió un error al procesar el archivo.';
+  }
+
+  obtenerFilaEstudiante(
+    numeroFila: number
+  ): EstudianteImportado | null {
+
+    const indice = numeroFila - 2;
+
+    if (
+      indice < 0 ||
+      indice >= this.estudiantes.length
+    ) {
+      return null;
+    }
+
+    return this.estudiantes[indice];
   }
 }

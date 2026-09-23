@@ -88,7 +88,8 @@ export class AsistenciaComponent implements OnInit, OnDestroy {
   get tabPorDefecto(): Tab {
     if (this.esEstudiante) return 'resumen';
     if (this.esDirectivo) return 'listado';
-    return 'tomar';
+    if (this.esDocente) return 'tomar';
+    return 'resumen';
   }
 
   tomaCurso: number | null = null;
@@ -303,6 +304,8 @@ export class AsistenciaComponent implements OnInit, OnDestroy {
 
           if (this.esDirectivo) {
             this.tabActiva = 'listado';
+          } else if (this.esAdministrador) {
+            this.tabActiva = 'resumen';
           }
         }
 
@@ -334,14 +337,13 @@ export class AsistenciaComponent implements OnInit, OnDestroy {
   }
 
   cambiarTab(tab: Tab): void {
-    // El Estudiante no puede tomar asistencia.
-    // El Directivo tampoco: solo puede consultar (resumen, historial, listado, justificaciones).
-    if (tab === 'tomar' && (this.esEstudiante || this.esDirectivo)) {
+    // "Tomar asistencia" es exclusivo del Docente.
+    if (tab === 'tomar' && !this.esDocente) {
       return;
     }
 
-    // El Estudiante no tiene la pestaña "Historial" (solo Resumen, Listado y Justificaciones).
-    if (tab === 'historial' && this.esEstudiante) {
+    // "Justificaciones" es solo para Docente (gestiona) y Estudiante (escribe la suya).
+    if (tab === 'conflictos' && !this.esDocente && !this.esEstudiante) {
       return;
     }
 

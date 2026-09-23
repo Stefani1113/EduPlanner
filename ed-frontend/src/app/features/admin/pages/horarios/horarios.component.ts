@@ -351,15 +351,11 @@ export class HorariosComponent implements OnInit, OnDestroy {
         this.cargandoPerfil = false;
       }
 
-<<<<<<< Updated upstream
     });
 
     this.horariosService.obtenerDocentes().subscribe({
 
-=======
-  private cargarHorario(idCourse: number | null): void {
-    this.horariosService.obtenerMiHorario().subscribe({
->>>>>>> Stashed changes
+
       next: respuesta => {
         this.docentesDisponibles =
           respuesta?.data || [];
