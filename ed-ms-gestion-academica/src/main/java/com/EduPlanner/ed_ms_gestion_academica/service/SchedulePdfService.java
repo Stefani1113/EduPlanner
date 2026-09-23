@@ -3,6 +3,7 @@ package com.EduPlanner.ed_ms_gestion_academica.service;
 import com.eduplanner.ed_lib_common.dto.SchedulePdfDTO;
 import com.eduplanner.ed_lib_common.dto.SchedulePdfRowDTO;
 import com.eduplanner.ed_lib_common.dto.ScheduleResponseDTO;
+import com.eduplanner.ed_lib_common.dto.TimeSlotResponseDTO;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,7 @@ import java.util.Map;
 public class SchedulePdfService {
 
     private final TemplateEngine templateEngine;
+
 
     public byte[] generatePdf(SchedulePdfDTO data) {
 
@@ -68,63 +70,129 @@ public class SchedulePdfService {
         }
     }
 
-    public byte[] generateSchedulePdf(SchedulePdfDTO data,List<ScheduleResponseDTO> schedules) {
-        data.setFilas(buildRows(schedules));
+    
+    public byte[] generateSchedulePdf(
+            SchedulePdfDTO data,
+            List<ScheduleResponseDTO> schedules,
+            List<TimeSlotResponseDTO> timeSlots
+    ) {
+
+        data.setFilas(buildRows(schedules, timeSlots));
 
         return generatePdf(data);
     }
 
-    private List<SchedulePdfRowDTO> buildRows(List<ScheduleResponseDTO> schedules) {
+    private List<SchedulePdfRowDTO> buildRows(
+            List<ScheduleResponseDTO> schedules,
+            List<TimeSlotResponseDTO> timeSlots
+    ) {
 
-    Map<Short, SchedulePdfRowDTO> rows = new LinkedHashMap<>();
+        Map<Short, SchedulePdfRowDTO> rows =
+                new LinkedHashMap<>();
 
-    schedules.stream()
-            .sorted(Comparator.comparing(
-                    ScheduleResponseDTO::getSlotOrder,
-                    Comparator.nullsLast(Comparator.naturalOrder())
-            ))
-            .forEach(schedule -> {
+        timeSlots.stream()
+                .filter(slot -> Boolean.TRUE.equals(slot.getStatus()))
+                .sorted(
+                        Comparator.comparing(
+                                TimeSlotResponseDTO::getSlotOrder
+                        )
+                )
+                .forEach(timeSlot -> {
 
-                Short slotOrder = schedule.getSlotOrder();
+                    SchedulePdfRowDTO row =
+                            new SchedulePdfRowDTO();
 
-                SchedulePdfRowDTO row = rows.computeIfAbsent(
-                        slotOrder,
-                        key -> {
+                    row.setHoraInicio(
+                            timeSlot.getStartTime().toString()
+                    );
 
-                            SchedulePdfRowDTO newRow =
-                                    new SchedulePdfRowDTO();
+                    row.setHoraFin(
+                            timeSlot.getEndTime().toString()
+                    );
 
-                            newRow.setHoraInicio(
-                                    schedule.getStartTime().toString()
-                            );
+                    // Si el bloque es descanso
+                    if (Boolean.TRUE.equals(timeSlot.getIsBreak())) {
 
-                            newRow.setHoraFin(
-                                    schedule.getEndTime().toString()
-                            );
-
-                            return newRow;
-                        }
-                );
-
-                String subject = schedule.getSubjectName();
-
-                switch (schedule.getDayOfWeek()) {
-
-                    case 1 -> row.setLunes(subject);
-
-                    case 2 -> row.setMartes(subject);
-
-                    case 3 -> row.setMiercoles(subject);
-
-                    case 4 -> row.setJueves(subject);
-
-                    case 5 -> row.setViernes(subject);
-
-                    default -> {
-                        // No hacemos nada para días no contemplados
+                        row.setLunes("DESCANSO");
+                        row.setMartes("DESCANSO");
+                        row.setMiercoles("DESCANSO");
+                        row.setJueves("DESCANSO");
+                        row.setViernes("DESCANSO");
                     }
-                }
-            });
+
+                    rows.put(
+                            timeSlot.getSlotOrder(),
+                            row
+                    );
+                });
+
+        if (schedules != null) {
+
+            schedules.stream()
+                    .sorted(
+                            Comparator.comparing(
+                                    ScheduleResponseDTO::getSlotOrder,
+                                    Comparator.nullsLast(
+                                            Comparator.naturalOrder()
+                                    )
+                            )
+                    )
+                    .forEach(schedule -> {
+
+                        Short slotOrder =
+                                schedule.getSlotOrder();
+
+                        SchedulePdfRowDTO row =
+                                rows.get(slotOrder);
+
+                        if (row == null) {
+
+                            row = new SchedulePdfRowDTO();
+
+                            if (schedule.getStartTime() != null) {
+                                row.setHoraInicio(
+                                        schedule.getStartTime().toString()
+                                );
+                            }
+
+                            if (schedule.getEndTime() != null) {
+                                row.setHoraFin(
+                                        schedule.getEndTime().toString()
+                                );
+                            }
+
+                            rows.put(slotOrder, row);
+                        }
+
+                        String subject =
+                                schedule.getSubjectName();
+
+                        if (subject == null || subject.isBlank()) {
+                            return;
+                        }
+
+                        switch (schedule.getDayOfWeek()) {
+
+                            case 1 ->
+                                    row.setLunes(subject);
+
+                            case 2 ->
+                                    row.setMartes(subject);
+
+                            case 3 ->
+                                    row.setMiercoles(subject);
+
+                            case 4 ->
+                                    row.setJueves(subject);
+
+                            case 5 ->
+                                    row.setViernes(subject);
+
+                            default -> {
+                            }
+                        }
+                    });
+        }
 
         return new ArrayList<>(rows.values());
     }
