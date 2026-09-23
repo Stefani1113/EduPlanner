@@ -19,12 +19,12 @@ import {
   GradeRequestDTO
 } from '../services/notas.service';
 
-import { ModalService } from '../../../core/services/modal.service';
-
 import {
   PerfilService,
   MiPerfilDTO
 } from '../../admin/services/perfil.service';
+
+import { ModalService } from '../../../core/services/modal.service';
 
 type Tab = 'historial' | 'reportes' | 'notas' | 'calificacion';
 
@@ -232,38 +232,37 @@ export class NotasComponent implements OnInit, OnDestroy {
         catchError(() => of(null))
       )
     })
-      .pipe(
-        finalize(() => {
-          this.cargando = false;
-        })
-      )
-      .subscribe({
-        next: respuesta => {
-          this.niveles = respuesta.niveles.filter(n => n.status);
-          this.cursos = respuesta.cursos.filter(c => c.status);
-          this.periodos = respuesta.periodos;
-          this.asignaturas = respuesta.asignaturas.filter(a => a.status);
-          this.escalas = respuesta.escalas;
-          this.tiposEvaluacion = respuesta.tiposEvaluacion;
-          this.actividadesEvaluativas = respuesta.actividades;
+    .pipe(
+      finalize(() => {
+        this.cargando = false;
+      })
+    )
+    .subscribe({
+      next: respuesta => {
+        this.niveles = respuesta.niveles.filter(n => n.status);
+        this.cursos = respuesta.cursos.filter(c => c.status);
+        this.periodos = respuesta.periodos;
+        this.asignaturas = respuesta.asignaturas.filter(a => a.status);
+        this.escalas = respuesta.escalas;
+        this.tiposEvaluacion = respuesta.tiposEvaluacion;
+        this.actividadesEvaluativas = respuesta.actividades;
 
-          this.perfil = respuesta.perfil?.data ?? null;
+        this.perfil = respuesta.perfil?.data ?? null;
 
-          this.configurarRol();
-          this.seleccionarPeriodoActivo();
-          this.configurarDatosSegunRol();
+        this.configurarRol();
+        this.seleccionarPeriodoActivo();
+        this.configurarDatosSegunRol();
 
-          if (!this.esDirectivo) {
-            this.configurarEscala();
-            this.configurarPasosPeriodo();
-            this.configurarReporteGeneral();
-          }
-        },
-        error: () => {
-          this.errorGeneral =
-            'No fue posible cargar la información académica.';
+        if (!this.esDirectivo) {
+          this.configurarEscala();
+          this.configurarPasosPeriodo();
+          this.configurarReporteGeneral();
         }
-      });
+      },
+      error: () => {
+        this.errorGeneral = 'No fue posible cargar la información académica.';
+      }
+    });
   }
 
   configurarRol(): void {
@@ -281,30 +280,20 @@ export class NotasComponent implements OnInit, OnDestroy {
       rol === 'ADMIN';
 
     this.idEstudianteActual =
-      this.perfil?.idUser ?? null;
+      this.perfil?.idUser ??
+      null;
 
     this.idCursoEstudiante =
-      this.perfil?.idCourse ?? null;
+      this.perfil?.idCourse ??
+      null;
 
     this.idDocenteActual =
-      this.perfil?.idUser ?? null;
+      this.perfil?.idUser ??
+      null;
 
     if (this.esDirectivo) {
       this.tabActiva = 'historial';
     }
-
-    if (this.esEstudiante) {
-      this.tabActiva = 'historial';
-    }
-  }
-
-  private refrescarActividadesEvaluativas(): void {
-    this.notasService.listarActividadesEvaluativas().subscribe({
-      next: actividades => {
-        this.actividadesEvaluativas = actividades;
-        this.actualizarPasosPeriodo();
-      }
-    });
   }
 
   configurarDatosSegunRol(): void {
@@ -332,9 +321,7 @@ export class NotasComponent implements OnInit, OnDestroy {
     this.cargarHistorial();
 
     if (this.idCursoSeleccionado !== null) {
-      this.cargarAsignaturasPorCurso(
-        this.idCursoSeleccionado
-      );
+      this.cargarAsignaturasPorCurso(this.idCursoSeleccionado);
     }
   }
 
@@ -369,7 +356,6 @@ export class NotasComponent implements OnInit, OnDestroy {
 
     if (
       this.tabActiva === 'notas' &&
-      !this.esDirectivo &&
       !this.esEstudiante &&
       this.idCursoSeleccionado !== null &&
       this.idAsignaturaNotas !== null
@@ -377,7 +363,7 @@ export class NotasComponent implements OnInit, OnDestroy {
       this.cargarNotas();
     }
 
-    if (!this.esDirectivo && !this.esEstudiante) {
+    if (!this.esDirectivo) {
       this.configurarPasosPeriodo();
     }
   }
@@ -387,9 +373,7 @@ export class NotasComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.seleccionarPeriodo(
-      this.idPeriodoSeleccionado
-    );
+    this.seleccionarPeriodo(this.idPeriodoSeleccionado);
   }
 
   seleccionarNivel(idNivel: number): void {
@@ -398,6 +382,7 @@ export class NotasComponent implements OnInit, OnDestroy {
     }
 
     this.idNivelSeleccionado = idNivel;
+
     this.cargarCursos(idNivel);
   }
 
@@ -414,12 +399,8 @@ export class NotasComponent implements OnInit, OnDestroy {
           this.idCursoSeleccionado === null &&
           this.cursos.length
         ) {
-          this.idCursoSeleccionado =
-            this.cursos[0].idCourse;
-
-          this.cursoSeleccionado =
-            this.cursos[0];
-
+          this.idCursoSeleccionado = this.cursos[0].idCourse;
+          this.cursoSeleccionado = this.cursos[0];
           this.cargarHistorial();
         }
       }
@@ -439,7 +420,6 @@ export class NotasComponent implements OnInit, OnDestroy {
       ) ?? null;
 
     this.idAsignaturaSeleccionada = null;
-    this.idAsignaturaNotas = null;
     this.asignaturaSeleccionada = null;
 
     this.cargarAsignaturasPorCurso(idCurso);
@@ -468,16 +448,11 @@ export class NotasComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.seleccionarCurso(
-      this.idCursoSeleccionado
-    );
+    this.seleccionarCurso(this.idCursoSeleccionado);
   }
 
   seleccionarAsignatura(idAsignatura: number): void {
-    if (
-      this.esEstudiante ||
-      this.esDirectivo
-    ) {
+    if (this.esEstudiante || this.esDirectivo) {
       return;
     }
 
@@ -495,23 +470,15 @@ export class NotasComponent implements OnInit, OnDestroy {
   }
 
   cambiarTab(tab: Tab): void {
-    if (this.esDirectivo) {
-      if (
-        tab === 'historial'
-      ) {
-        this.tabActiva = 'historial';
-        this.cargarHistorial();
-      }
+    if (tab === 'calificacion' && !this.esDocente) {
       return;
     }
 
-    if (
-      this.esEstudiante &&
-      (
-        tab === 'notas' ||
-        tab === 'calificacion'
-      )
-    ) {
+    if (tab === 'notas' && this.esEstudiante) {
+      return;
+    }
+
+    if (tab === 'reportes' && this.esDirectivo) {
       return;
     }
 
@@ -527,7 +494,6 @@ export class NotasComponent implements OnInit, OnDestroy {
 
     if (
       tab === 'notas' &&
-      !this.esEstudiante &&
       this.idCursoSeleccionado !== null
     ) {
       if (this.idAsignaturaNotas === null) {
@@ -541,16 +507,8 @@ export class NotasComponent implements OnInit, OnDestroy {
     }
 
     if (tab === 'calificacion') {
-      if (
-        this.esEstudiante ||
-        this.esDirectivo
-      ) {
-        return;
-      }
-
       this.configurarEscala();
       this.configurarPasosPeriodo();
-      this.refrescarActividadesEvaluativas();
     }
   }
 
@@ -560,9 +518,7 @@ export class NotasComponent implements OnInit, OnDestroy {
     }
 
     this.notasService
-      .listarCargaPorCurso(
-        this.idCursoEstudiante
-      )
+      .listarCargaPorCurso(this.idCursoEstudiante)
       .subscribe({
         next: carga => {
           this.cargasAcademicas =
@@ -596,8 +552,13 @@ export class NotasComponent implements OnInit, OnDestroy {
             )
           );
 
+          const todas =
+            this.asignaturas.length
+              ? this.asignaturas
+              : [];
+
           this.asignaturas =
-            this.asignaturas.filter(
+            todas.filter(
               a => ids.has(a.idSubject)
             );
 
@@ -613,10 +574,7 @@ export class NotasComponent implements OnInit, OnDestroy {
   }
 
   cargarHistorial(): void {
-    if (
-      this.esDirectivo &&
-      this.idCursoSeleccionado === null
-    ) {
+    if (this.esDirectivo && this.idCursoSeleccionado === null) {
       if (this.cursos.length) {
         this.idCursoSeleccionado =
           this.cursos[0].idCourse;
@@ -672,9 +630,7 @@ export class NotasComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (
-      this.idCursoSeleccionado === null
-    ) {
+    if (this.idCursoSeleccionado === null) {
       this.cargandoHistorial = false;
       this.historialNotas = [];
       this.resumenAsignaturas = [];
@@ -691,8 +647,9 @@ export class NotasComponent implements OnInit, OnDestroy {
       )
       .subscribe({
         next: carga => {
-          const cargas =
-            carga.filter(c => c.status);
+          const cargas = carga.filter(
+            c => c.status
+          );
 
           if (!cargas.length) {
             this.historialNotas = [];
@@ -752,92 +709,61 @@ export class NotasComponent implements OnInit, OnDestroy {
         grupos.get(nota.idSubject) ?? [];
 
       grupo.push(nota);
-      grupos.set(
-        nota.idSubject,
-        grupo
-      );
+      grupos.set(nota.idSubject, grupo);
     });
 
     const resumen: ResumenAsignatura[] = [];
 
-    grupos.forEach(
-      (notas, idSubject) => {
-        const valores =
-          notas
-            .map(
-              n =>
-                Number(n.gradeValue)
-            )
-            .filter(
-              v =>
-                Number.isFinite(v)
-            );
+    grupos.forEach((notas, idSubject) => {
+      const valores = notas
+        .map(n => Number(n.gradeValue))
+        .filter(v => Number.isFinite(v));
 
-        const promedio =
-          valores.length
-            ? valores.reduce(
-                (total, valor) =>
-                  total + valor,
-                0
-              ) / valores.length
-            : 0;
+      const promedio = valores.length
+        ? valores.reduce(
+            (total, valor) => total + valor,
+            0
+          ) / valores.length
+        : 0;
 
-        const nombre =
-          notas[0]?.subjectName ??
-          this.obtenerNombreAsignatura(
-            idSubject
-          );
+      const nombre =
+        notas[0]?.subjectName ??
+        this.obtenerNombreAsignatura(idSubject);
 
-        const maximo =
-          this.maximoEscala || 5;
+      const maximo = this.maximoEscala || 5;
 
-        resumen.push({
-          idSubject,
-          nombre,
-          promedio,
-          porcentaje:
-            maximo > 0
-              ? Math.min(
-                  100,
-                  Math.max(
-                    0,
-                    (promedio / maximo) *
-                      100
-                  )
+      resumen.push({
+        idSubject,
+        nombre,
+        promedio,
+        porcentaje:
+          maximo > 0
+            ? Math.min(
+                100,
+                Math.max(
+                  0,
+                  (promedio / maximo) * 100
                 )
-              : 0,
-          totalNotas:
-            valores.length,
-          estado:
-            this.obtenerEstadoNota(
-              promedio
-            )
-        });
-      }
-    );
+              )
+            : 0,
+        totalNotas: valores.length,
+        estado: this.obtenerEstadoNota(promedio)
+      });
+    });
 
-    this.resumenAsignaturas =
-      resumen;
+    this.resumenAsignaturas = resumen;
 
     const valoresGenerales =
       this.historialNotas
-        .map(
-          n =>
-            Number(n.gradeValue)
-        )
-        .filter(
-          v =>
-            Number.isFinite(v)
-        );
+        .map(n => Number(n.gradeValue))
+        .filter(v => Number.isFinite(v));
 
     this.promedioGeneral =
       valoresGenerales.length
         ? valoresGenerales.reduce(
-            (total, valor) =>
-              total + valor,
+            (total, valor) => total + valor,
             0
-          ) /
-          valoresGenerales.length
+          ) / valoresGenerales.length
         : 0;
 
     this.estadoPromedio =
@@ -846,24 +772,19 @@ export class NotasComponent implements OnInit, OnDestroy {
       );
   }
 
-  obtenerEstadoNota(
-    valor: number
-  ): string {
-    const escala =
-      this.escalaActual;
+  obtenerEstadoNota(valor: number): string {
+    const escala = this.escalaActual;
 
     if (!escala) {
       return '';
     }
 
-    return valor >=
-      escala.minimumPassGrade
+    return valor >= escala.minimumPassGrade
       ? 'Aprobado'
       : 'Reprobado';
   }
 
-  obtenerEscalaActual():
-    GradingScaleResponseDTO | null {
+  obtenerEscalaActual(): GradingScaleResponseDTO | null {
     return (
       this.escalas.find(
         e =>
@@ -877,9 +798,7 @@ export class NotasComponent implements OnInit, OnDestroy {
 
   cargarNotas(): void {
     if (
-      this.esDirectivo ||
-      this.esEstudiante ||
-      !this.esDocente
+      this.esEstudiante
     ) {
       return;
     }
@@ -898,56 +817,51 @@ export class NotasComponent implements OnInit, OnDestroy {
 
     forkJoin({
       estudiantes:
-        this.notasService
-          .listarEstudiantesPorCurso(
-            this.idCursoSeleccionado
-          ),
-
+        this.notasService.listarEstudiantesPorCurso(
+          this.idCursoSeleccionado
+        ),
       notas:
-        this.notasService
-          .obtenerNotasPorCurso(
-            this.idCursoSeleccionado,
-            this.idAsignaturaNotas,
-            this.idPeriodoSeleccionado
-          ),
-
+        this.notasService.obtenerNotasPorCurso(
+          this.idCursoSeleccionado,
+          this.idAsignaturaNotas,
+          this.idPeriodoSeleccionado
+        ),
       carga:
-        this.notasService
-          .listarCargaPorCurso(
-            this.idCursoSeleccionado
-          )
+        this.notasService.listarCargaPorCurso(
+          this.idCursoSeleccionado
+        )
     })
-      .pipe(
-        finalize(() => {
-          this.cargandoNotas = false;
-        })
-      )
-      .subscribe({
-        next: respuesta => {
-          this.estudiantes =
-            respuesta.estudiantes.filter(
-              e => e.status !== false
-            );
-
-          this.cargasAcademicas =
-            respuesta.carga.filter(
-              c => c.status
-            );
-
-          this.actividadesNotasColumnas =
-            this.obtenerActividadesDelPeriodo();
-
-          this.construirFilasNotas(
-            this.estudiantes,
-            respuesta.notas
+    .pipe(
+      finalize(() => {
+        this.cargandoNotas = false;
+      })
+    )
+    .subscribe({
+      next: respuesta => {
+        this.estudiantes =
+          respuesta.estudiantes.filter(
+            e => e.status !== false
           );
-        },
-        error: () => {
-          this.errorNotas =
-            'No fue posible cargar las notas.';
-          this.estudiantesNotas = [];
-        }
-      });
+
+        this.cargasAcademicas =
+          respuesta.carga.filter(
+            c => c.status
+          );
+
+        this.actividadesNotasColumnas =
+          this.obtenerActividadesDelPeriodo();
+
+        this.construirFilasNotas(
+          this.estudiantes,
+          respuesta.notas
+        );
+      },
+      error: () => {
+        this.errorNotas =
+          'No fue posible cargar las notas.';
+        this.estudiantesNotas = [];
+      }
+    });
   }
 
   construirFilasNotas(
@@ -955,54 +869,50 @@ export class NotasComponent implements OnInit, OnDestroy {
     notas: GradeDetailResponseDTO[]
   ): void {
     this.estudiantesNotas =
-      estudiantes.map(
-        estudiante => {
-          const celdas:
-            Record<number, CeldaEstado> =
-            {};
+      estudiantes.map(estudiante => {
+        const celdas: Record<
+          number,
+          CeldaEstado
+        > = {};
 
-          this.actividadesNotasColumnas.forEach(
-            actividad => {
-              const nota =
-                notas.find(
-                  n =>
-                    n.idStudent ===
-                      estudiante.idUser &&
-                    n.idEvaluative ===
-                      actividad.idEvaluative
-                );
+        this.actividadesNotasColumnas.forEach(
+          actividad => {
+            const nota = notas.find(
+              n =>
+                n.idStudent ===
+                  estudiante.idUser &&
+                n.idEvaluative ===
+                  actividad.idEvaluative
+            );
 
-              celdas[
-                actividad.idEvaluative
-              ] = {
-                valor:
-                  nota?.gradeValue ??
-                  null,
-                original:
-                  nota?.gradeValue ??
-                  null,
-                guardando: false,
-                error: '',
-                idGrade:
-                  nota?.idGrade,
-                idEvaluationType:
-                  nota?.idEvaluationType
-              };
-            }
-          );
+            celdas[actividad.idEvaluative] = {
+              valor:
+                nota?.gradeValue ??
+                null,
+              original:
+                nota?.gradeValue ??
+                null,
+              guardando: false,
+              error: '',
+              idGrade:
+                nota?.idGrade,
+              idEvaluationType:
+                nota?.idEvaluationType
+            };
+          }
+        );
 
-          return {
-            estudiante,
-            nombreCompleto:
-              `${estudiante.name} ${estudiante.surnames}`.trim(),
-            celdas,
-            promedio:
-              this.obtenerPromedioFila(
-                celdas
-              )
-          };
-        }
-      );
+        return {
+          estudiante,
+          nombreCompleto:
+            `${estudiante.name} ${estudiante.surnames}`.trim(),
+          celdas,
+          promedio:
+            this.obtenerPromedioFila(
+              celdas
+            )
+        };
+      });
   }
 
   obtenerCelda(
@@ -1025,9 +935,7 @@ export class NotasComponent implements OnInit, OnDestroy {
       };
     }
 
-    if (
-      !fila.celdas[idEvaluative]
-    ) {
+    if (!fila.celdas[idEvaluative]) {
       fila.celdas[idEvaluative] = {
         valor: null,
         original: null,
@@ -1036,16 +944,11 @@ export class NotasComponent implements OnInit, OnDestroy {
       };
     }
 
-    return fila.celdas[
-      idEvaluative
-    ];
+    return fila.celdas[idEvaluative];
   }
 
-  obtenerActividadesDelPeriodo():
-    EvaluativeActivityResponseDTO[] {
-    if (
-      this.idPeriodoSeleccionado === null
-    ) {
+  obtenerActividadesDelPeriodo(): EvaluativeActivityResponseDTO[] {
+    if (this.idPeriodoSeleccionado === null) {
       return [];
     }
 
@@ -1072,9 +975,7 @@ export class NotasComponent implements OnInit, OnDestroy {
       )
       .subscribe({
         next: notas => {
-          this.historialNotas =
-            notas;
-
+          this.historialNotas = notas;
           this.generarResumenAsignaturas();
         }
       });
@@ -1086,9 +987,7 @@ export class NotasComponent implements OnInit, OnDestroy {
     valor: number | string
   ): void {
     if (
-      !this.esDocente ||
-      this.esEstudiante ||
-      this.esDirectivo
+      !this.esDocente
     ) {
       return;
     }
@@ -1099,8 +998,7 @@ export class NotasComponent implements OnInit, OnDestroy {
         idEvaluative
       );
 
-    const numero =
-      Number(valor);
+    const numero = Number(valor);
 
     celda.error = '';
 
@@ -1110,9 +1008,6 @@ export class NotasComponent implements OnInit, OnDestroy {
       !Number.isFinite(numero)
     ) {
       celda.valor = null;
-      this.actualizarPromedioFila(
-        idStudent
-      );
       return;
     }
 
@@ -1178,11 +1073,7 @@ export class NotasComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (
-      !this.validarNota(
-        celda.valor
-      )
-    ) {
+    if (!this.validarNota(celda.valor)) {
       celda.error =
         `La nota debe estar entre ${this.escalaActual?.minimumValue ?? 0} y ${this.escalaActual?.maximumValue ?? 5}.`;
       return;
@@ -1257,13 +1148,10 @@ export class NotasComponent implements OnInit, OnDestroy {
         next: respuesta => {
           celda.original =
             respuesta.gradeValue;
-
           celda.valor =
             respuesta.gradeValue;
-
           celda.idGrade =
             respuesta.idGrade;
-
           celda.idEvaluationType =
             respuesta.idEvaluationType;
 
@@ -1341,16 +1229,15 @@ export class NotasComponent implements OnInit, OnDestroy {
       CeldaEstado
     >
   ): number {
-    const valores =
-      Object.values(celdas)
-        .map(c => c.valor)
-        .filter(
-          (
-            valor
-          ): valor is number =>
-            valor !== null &&
-            Number.isFinite(valor)
-        );
+    const valores = Object.values(
+      celdas
+    )
+      .map(c => c.valor)
+      .filter(
+        (valor): valor is number =>
+          valor !== null &&
+          Number.isFinite(valor)
+      );
 
     if (!valores.length) {
       return 0;
@@ -1413,19 +1300,16 @@ export class NotasComponent implements OnInit, OnDestroy {
             surnames:
               this.perfil.surnames ?? '',
             idCourse:
-              this.perfil.idCourse ??
-              undefined
+              this.perfil.idCourse ?? undefined
           }]
         : [];
 
     this.seleccionadosReporte.clear();
-
     this.seleccionadosReporte.add(
       idStudent
     );
 
-    this.todosSeleccionadosReporte =
-      true;
+    this.todosSeleccionadosReporte = true;
   }
 
   cargarCursosReporte(): void {
@@ -1462,11 +1346,8 @@ export class NotasComponent implements OnInit, OnDestroy {
     this.idCursoReporte = null;
     this.estudiantesReporte = [];
     this.seleccionadosReporte.clear();
-    this.todosSeleccionadosReporte =
-      false;
-    this.vistaPreviaGenerada =
-      false;
-    this.vistaPrevia = [];
+    this.todosSeleccionadosReporte = false;
+    this.vistaPreviaGenerada = false;
 
     this.cargarCursosReporte();
   }
@@ -1477,11 +1358,8 @@ export class NotasComponent implements OnInit, OnDestroy {
     }
 
     this.seleccionadosReporte.clear();
-    this.todosSeleccionadosReporte =
-      false;
-    this.vistaPreviaGenerada =
-      false;
-    this.vistaPrevia = [];
+    this.todosSeleccionadosReporte = false;
+    this.vistaPreviaGenerada = false;
 
     this.cargarEstudiantesReporte();
   }
@@ -1497,12 +1375,10 @@ export class NotasComponent implements OnInit, OnDestroy {
           this.idEstudianteActual ?? 0
         );
       }
-
       return;
     }
 
-    this.cargandoEstudiantesReporte =
-      true;
+    this.cargandoEstudiantesReporte = true;
 
     this.notasService
       .listarEstudiantesPorCurso(
@@ -1572,8 +1448,7 @@ export class NotasComponent implements OnInit, OnDestroy {
                     e.idUser ===
                     ids[indice]
                 ) ?? {
-                  idUser:
-                    ids[indice],
+                  idUser: ids[indice],
                   name: '',
                   surnames: ''
                 };
@@ -1617,7 +1492,6 @@ export class NotasComponent implements OnInit, OnDestroy {
       this.idEstudianteActual
     ) {
       this.seleccionadosReporte.clear();
-
       this.seleccionadosReporte.add(
         this.idEstudianteActual
       );
@@ -1633,17 +1507,13 @@ export class NotasComponent implements OnInit, OnDestroy {
     }
 
     this.errorReporte = '';
-    this.cargandoVistaPrevia =
-      true;
+    this.cargandoVistaPrevia = true;
 
     this.cargarPromediosReportes();
 
     setTimeout(() => {
-      this.vistaPreviaGenerada =
-        true;
-
-      this.cargandoVistaPrevia =
-        false;
+      this.vistaPreviaGenerada = true;
+      this.cargandoVistaPrevia = false;
     }, 300);
   }
 
@@ -1669,8 +1539,7 @@ export class NotasComponent implements OnInit, OnDestroy {
     }
 
     this.todosSeleccionadosReporte =
-      this.estudiantesReporte.length >
-        0 &&
+      this.estudiantesReporte.length > 0 &&
       this.estudiantesReporte.every(
         e =>
           this.seleccionadosReporte.has(
@@ -1731,7 +1600,6 @@ export class NotasComponent implements OnInit, OnDestroy {
       this.descargarPdfEstudiante(
         this.idEstudianteActual
       );
-
       return;
     }
 
@@ -1765,8 +1633,7 @@ export class NotasComponent implements OnInit, OnDestroy {
       )
       .pipe(
         finalize(() => {
-          this.descargandoPdf =
-            false;
+          this.descargandoPdf = false;
         })
       )
       .subscribe({
@@ -1802,9 +1669,7 @@ export class NotasComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.descargandoPdfCurso =
-      true;
-
+    this.descargandoPdfCurso = true;
     this.errorPdfCurso = '';
 
     this.notasService
@@ -1815,8 +1680,7 @@ export class NotasComponent implements OnInit, OnDestroy {
       )
       .pipe(
         finalize(() => {
-          this.descargandoPdfCurso =
-            false;
+          this.descargandoPdfCurso = false;
         })
       )
       .subscribe({
@@ -1831,9 +1695,7 @@ export class NotasComponent implements OnInit, OnDestroy {
 
   abrirPdf(blob: Blob): void {
     const url =
-      window.URL.createObjectURL(
-        blob
-      );
+      window.URL.createObjectURL(blob);
 
     window.open(
       url,
@@ -1920,8 +1782,7 @@ export class NotasComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.guardandoEscala =
-      true;
+    this.guardandoEscala = true;
 
     const dto = {
       minimumValue:
@@ -1951,8 +1812,7 @@ export class NotasComponent implements OnInit, OnDestroy {
       )
       .subscribe({
         next: escala => {
-          this.escalaActual =
-            escala;
+          this.escalaActual = escala;
 
           const indice =
             this.escalas.findIndex(
@@ -1974,15 +1834,7 @@ export class NotasComponent implements OnInit, OnDestroy {
             ...escala
           };
 
-          this.editandoEscala =
-            false;
-
-          this.configurarPasosPeriodo();
-
-          this.modalService.success(
-            'La escala de calificación fue guardada correctamente.',
-            'Escala guardada'
-          );
+          this.guardarPasos();
         },
         error: () => {
           this.errorEscala =
@@ -2009,9 +1861,7 @@ export class NotasComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.guardandoTipo =
-      true;
-
+    this.guardandoTipo = true;
     this.errorTipo = '';
 
     this.notasService
@@ -2063,60 +1913,36 @@ export class NotasComponent implements OnInit, OnDestroy {
         this.idPeriodoSeleccionado;
     }
 
-    if (
-      this.idPeriodoPasos === null
-    ) {
+    if (this.idPeriodoPasos === null) {
       this.pasosPeriodo = [];
       this.totalPorcentajePasos = 0;
-      this.pasosYaDefinidos = false;
-      return;
-    }
-
-    this.actualizarPasosPeriodo();
-  }
-
-  actualizarPasosPeriodo(): void {
-    if (
-      this.idPeriodoPasos === null
-    ) {
-      this.pasosPeriodo = [];
-      this.totalPorcentajePasos = 0;
-      this.pasosYaDefinidos = false;
       return;
     }
 
     const actividades =
       this.actividadesEvaluativas.filter(
-        actividad =>
-          actividad.idPeriod ===
+        a =>
+          a.idPeriod ===
           this.idPeriodoPasos
       );
 
-    if (actividades.length) {
-      this.pasosPeriodo =
-        actividades.map(
-          actividad => ({
-            idEvaluative:
-              actividad.idEvaluative,
-            evaluationName:
-              actividad.evaluationName,
-            weightPercentage:
-              actividad.weightPercentage,
-            startDate:
-              actividad.startDate,
-            endDate:
-              actividad.endDate,
-            existente: true
-          })
-        );
+    this.pasosPeriodo =
+      actividades.map(a => ({
+        idEvaluative:
+          a.idEvaluative,
+        evaluationName:
+          a.evaluationName,
+        weightPercentage:
+          a.weightPercentage,
+        startDate:
+          a.startDate,
+        endDate:
+          a.endDate,
+        existente: true
+      }));
 
-      this.pasosYaDefinidos =
-        true;
-    } else {
-      this.pasosPeriodo = [];
-      this.pasosYaDefinidos =
-        false;
-    }
+    this.pasosYaDefinidos =
+      actividades.length > 0;
 
     this.recalcularPorcentajes();
   }
@@ -2129,11 +1955,7 @@ export class NotasComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.idPeriodoPasos =
-      this.idPeriodoPasos ??
-      this.idPeriodoSeleccionado;
-
-    this.refrescarActividadesEvaluativas();
+    this.configurarPasosPeriodo();
   }
 
   agregarPaso(): void {
@@ -2262,27 +2084,25 @@ export class NotasComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.guardandoPasos =
-      true;
-
+    this.guardandoPasos = true;
     this.errorPasos = '';
 
     const solicitudes =
-      nuevos.map(
-        paso =>
-          this.notasService
-            .registrarActividadEvaluativa({
-              idPeriod:
-                this.idPeriodoPasos!,
-              startDate:
-                paso.startDate,
-              endDate:
-                paso.endDate,
-              evaluationName:
-                paso.evaluationName,
-              weightPercentage:
-                paso.weightPercentage
-            })
+      nuevos.map(paso =>
+        this.notasService.registrarActividadEvaluativa(
+          {
+            idPeriod:
+              this.idPeriodoPasos!,
+            startDate:
+              paso.startDate,
+            endDate:
+              paso.endDate,
+            evaluationName:
+              paso.evaluationName,
+            weightPercentage:
+              paso.weightPercentage
+          }
+        )
       );
 
     forkJoin(solicitudes)
@@ -2317,7 +2137,16 @@ export class NotasComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.refrescarActividadesEvaluativas();
+    this.notasService
+      .listarActividadesEvaluativas()
+      .subscribe({
+        next: actividades => {
+          this.actividadesEvaluativas =
+            actividades;
+
+          this.configurarPasosPeriodo();
+        }
+      });
   }
 
   descartarPasos(): void {
@@ -2471,8 +2300,7 @@ export class NotasComponent implements OnInit, OnDestroy {
     valor: number
   ): boolean {
     if (!this.escalaActual) {
-      return valor >= 0 &&
-        valor <= 5;
+      return valor >= 0 && valor <= 5;
     }
 
     return (
@@ -2489,8 +2317,7 @@ export class NotasComponent implements OnInit, OnDestroy {
       .slice(0, 10);
   }
 
-  get actividadesPeriodo():
-    EvaluativeActivityResponseDTO[] {
+  get actividadesPeriodo(): EvaluativeActivityResponseDTO[] {
     return this.obtenerActividadesDelPeriodo();
   }
 
@@ -2513,10 +2340,7 @@ export class NotasComponent implements OnInit, OnDestroy {
   }
 
   get hayEstudiantesSeleccionados(): boolean {
-    return (
-      this.seleccionadosReporte.size >
-      0
-    );
+    return this.seleccionadosReporte.size > 0;
   }
 
   get todosLosEstudiantesSeleccionados(): boolean {
@@ -2528,10 +2352,7 @@ export class NotasComponent implements OnInit, OnDestroy {
   }
 
   get porcentajePasosValido(): boolean {
-    return (
-      this.totalPorcentajePasos ===
-      100
-    );
+    return this.totalPorcentajePasos === 100;
   }
 
   get hayEscala(): boolean {
@@ -2554,14 +2375,10 @@ export class NotasComponent implements OnInit, OnDestroy {
   }
 
   get maximoEscala(): number {
-    return (
-      this.escalaActual
-        ?.maximumValue ?? 5
-    );
+    return this.escalaActual?.maximumValue ?? 5;
   }
 
-  get tiposDeLaEscala():
-    EvaluationTypeResponseDTO[] {
+  get tiposDeLaEscala(): EvaluationTypeResponseDTO[] {
     if (!this.escalaActual) {
       return [];
     }
@@ -2573,8 +2390,7 @@ export class NotasComponent implements OnInit, OnDestroy {
     );
   }
 
-  get perfilActual():
-    MiPerfilDTO | null {
+  get perfilActual(): MiPerfilDTO | null {
     return this.perfil;
   }
 
@@ -2595,7 +2411,7 @@ export class NotasComponent implements OnInit, OnDestroy {
         c =>
           c.idCourse ===
           this.idCursoReporte
-      )?.name ?? 
+      )?.name ??
       'Sin curso'
     );
   }
