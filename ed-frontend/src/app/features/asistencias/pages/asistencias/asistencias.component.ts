@@ -1,6 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { PaginationComponent } from '../../../../core/components/pagination/pagination.component';
 import { HttpErrorResponse } from '@angular/common/http';
 import { forkJoin, of, from, Observable } from 'rxjs';
 import { catchError, concatMap, map, switchMap } from 'rxjs/operators';
@@ -65,7 +66,8 @@ const ETIQUETA_TAB: Record<Tab, string> = {
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule
+    FormsModule,
+    PaginationComponent
   ],
   templateUrl: './asistencias.component.html',
   styleUrl: './asistencias.component.scss'
@@ -1791,7 +1793,20 @@ export class AsistenciaComponent implements OnInit, OnDestroy {
     return filas;
   }
 
+  paginaActualListado = 1;
+  readonly tamanoPagina = 10;
+
+  cambiarPaginaListado(pagina: number): void {
+    this.paginaActualListado = pagina;
+  }
+
+  get filasListadoPaginadas(): FilaGridListado[] {
+    const inicio = (this.paginaActualListado - 1) * this.tamanoPagina;
+    return this.filasListadoVisibles.slice(inicio, inicio + this.tamanoPagina);
+  }
+
   buscarListado(): void {
+    this.paginaActualListado = 1;
     this.errorListado = null;
     this.columnasListado = [];
     this.filasListado = [];
