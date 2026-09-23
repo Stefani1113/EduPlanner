@@ -1,5 +1,6 @@
 package com.EduPlanner.ed_ms_gestion_academica.controller;
 
+import com.EduPlanner.ed_ms_gestion_academica.controller.AcademicLevelController;
 import com.EduPlanner.ed_ms_gestion_academica.service.AcademicPeriodService;
 import com.EduPlanner.ed_ms_gestion_academica.security.RequireRole;
 import com.eduplanner.ed_lib_common.dto.AcademicPeriodRequestDTO;
@@ -14,6 +15,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -22,8 +25,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AcademicPeriodController {
 
+    private final AcademicLevelController academicLevelController;
     private final AcademicPeriodService service;
-
     /**
      * Listar todos o activos 
      * academic-periods - Todos
@@ -31,10 +34,10 @@ public class AcademicPeriodController {
      * @return
      */
     @GetMapping
-    public ResponseEntity<HttpGlobalResponse<List<AcademicPeriodResponseDTO>>> getAll(
-        @RequestParam(required = false) Boolean active) {
-        HttpGlobalResponse<List<AcademicPeriodResponseDTO>> response = new HttpGlobalResponse<>();
-        List<AcademicPeriodResponseDTO> result = (Boolean.TRUE.equals(active)) ? service.findAllActive() : service.findAll();
+    public ResponseEntity<HttpGlobalResponse<Page<AcademicPeriodResponseDTO>>> getAll(
+        @RequestParam(required = false) Boolean active, Pageable pageable) {
+        HttpGlobalResponse<Page<AcademicPeriodResponseDTO>> response = new HttpGlobalResponse<>();
+        Page<AcademicPeriodResponseDTO> result = (Boolean.TRUE.equals(active)) ? service.findAllActive(pageable) : service.findAll(pageable);
         response.setData(result);
         response.setMessage("Periodos académicos consultados correctamente");
         return ResponseEntity.ok(response);
