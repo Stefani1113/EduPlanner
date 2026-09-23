@@ -2,458 +2,462 @@
 
   <div class="header-top">
 
-    <div class="tabs">
 
-      <button
-        *ngFor="let tab of tabs"
-        type="button"
-        class="tab"
-        [class.active]="activeTab === tab.key"
-        (click)="cambiarTab(tab.key)"
+<div class="tabs">
+
+  <button
+    *ngFor="let tab of tabs"
+    type="button"
+    class="tab"
+    [class.active]="activeTab === tab.key"
+    (click)="cambiarTab(tab.key)"
+  >
+    {{ tab.label }}
+  </button>
+
+</div>
+
+<div
+  class="header-actions"
+  *ngIf="activeTab === 'listado'"
+>
+
+  <div class="role-box">
+
+    <button
+      type="button"
+      class="role-toggle"
+      (click)="
+        mostrarFiltroRol = !mostrarFiltroRol;
+        mostrarMenuRegistrar = false
+      "
+    >
+      <span>
+        {{
+          rolSeleccionado === 'Estudiante' &&
+          gradoSeleccionado !== 'Todos los cursos'
+            ? gradoSeleccionado
+            : rolSeleccionado
+        }}
+      </span>
+
+      <span
+        class="chevron"
+        [class.open]="mostrarFiltroRol"
       >
-        {{ tab.label }}
-      </button>
+        ▼
+      </span>
+    </button>
 
-    </div>
-
-    <div
-      class="header-actions"
-      *ngIf="activeTab === 'listado'"
+    <ul
+      class="role-menu"
+      *ngIf="mostrarFiltroRol"
     >
 
+      <li
+        class="rol-item"
+        [class.active]="rolSeleccionado === 'Todos'"
+        (click)="seleccionarRol('Todos')"
+      >
+        Todos
+      </li>
 
-      <div class="role-box">
+      <li
+        class="rol-item"
+        [class.active]="rolSeleccionado === 'Administrador'"
+        (click)="seleccionarRol('Administrador')"
+      >
+        Administrador
+      </li>
 
-        <button
-          type="button"
-          class="role-toggle"
-          (click)="mostrarFiltroRol = !mostrarFiltroRol; mostrarMenuRegistrar = false"
-        >
+      <li
+        class="rol-item"
+        [class.active]="rolSeleccionado === 'Docente'"
+        (click)="seleccionarRol('Docente')"
+      >
+        Docente
+      </li>
 
-          <span>
+      <li
+        class="rol-item"
+        [class.active]="rolSeleccionado === 'Directivo'"
+        (click)="seleccionarRol('Directivo')"
+      >
+        Directivo
+      </li>
 
-            {{
-              rolSeleccionado === 'Estudiante' &&
-              gradoSeleccionado !== 'Todos los cursos'
-                ? gradoSeleccionado
-                : rolSeleccionado
-            }}
-
-          </span>
-
-          <span
-            class="chevron"
-            [class.open]="mostrarFiltroRol"
-          >
-            ▼
-          </span>
-
-        </button>
-
-        <ul
-          class="role-menu"
-          *ngIf="mostrarFiltroRol"
-        >
-
-
-          <li
-            class="rol-item"
-            [class.active]="rolSeleccionado === 'Todos'"
-            (click)="seleccionarRol('Todos')"
-          >
-            Todos
-          </li>
-
-
-          <li
-            class="rol-item"
-            [class.active]="rolSeleccionado === 'Administrador'"
-            (click)="seleccionarRol('Administrador')"
-          >
-            Administrador
-          </li>
-
-
-          <li
-            class="rol-item"
-            [class.active]="rolSeleccionado === 'Docente'"
-            (click)="seleccionarRol('Docente')"
-          >
-            Docente
-          </li>
-
-
-          <li
-            class="rol-item"
-            [class.active]="rolSeleccionado === 'Directivo'"
-            (click)="seleccionarRol('Directivo')"
-          >
-            Directivo
-          </li>
-
-
-          <li
-            class="rol-item"
-            [class.active]="
-              rolSeleccionado === 'Estudiante' &&
-              gradoSeleccionado === 'Todos los cursos'
-            "
-            (click)="seleccionarRol('Estudiante')"
-          >
-            Estudiante
-          </li>
-
-
-          <ng-container
-            *ngIf="rolSeleccionado === 'Estudiante'"
-          >
-
-            <li
-              *ngFor="let grado of grados"
-              class="grado-item"
-              [class.active]="
-                gradoSeleccionado === grado
-              "
-              (click)="seleccionarGrado(grado)"
-            >
-              {{ grado }}
-            </li>
-
-          </ng-container>
-
-        </ul>
-
-      </div>
-
-
-      <button
-        type="button"
-        class="btn-exportar"
-        (click)="exportarCSV()"
-        [disabled]="
-          exportando ||
-          cargando ||
-          usuariosFiltrados.length === 0
+      <li
+        class="rol-item"
+        [class.active]="
+          rolSeleccionado === 'Estudiante' &&
+          gradoSeleccionado === 'Todos los cursos'
         "
-        title="Exportar los usuarios mostrados a CSV"
+        (click)="seleccionarRol('Estudiante')"
+      >
+        Estudiante
+      </li>
+
+      <ng-container
+        *ngIf="rolSeleccionado === 'Estudiante'"
       >
 
-        {{
-          exportando
-            ? 'Exportando...'
-            : '↓ Exportar CSV'
-        }}
-
-      </button>
-
-
-      <div class="registrar-box">
-
-        <button
-          type="button"
-          class="btn-registrar"
-          (click)="mostrarMenuRegistrar = !mostrarMenuRegistrar; mostrarFiltroRol = false"
+        <li
+          *ngFor="let grado of grados"
+          class="grado-item"
+          [class.active]="gradoSeleccionado === grado"
+          (click)="seleccionarGrado(grado)"
         >
-          + Registrar
-        </button>
+          {{ grado }}
+        </li>
 
-        <ul
-          class="registrar-menu"
-          *ngIf="mostrarMenuRegistrar"
-        >
+      </ng-container>
 
-          <li
-            (click)="abrirRegistro('Docente')"
-          >
-            Docente
-          </li>
-
-          <li
-            (click)="abrirRegistro('Estudiante')"
-          >
-            Estudiante
-          </li>
-
-          <li
-            (click)="abrirRegistro('Staff')"
-          >
-            Administrador / Directivo
-          </li>
-
-        </ul>
-
-      </div>
-
-    </div>
+    </ul>
 
   </div>
 
-  <ng-container
-    [ngSwitch]="activeTab"
+  <button
+    type="button"
+    class="btn-exportar"
+    (click)="exportarCSV()"
+    [disabled]="
+      exportando ||
+      cargando ||
+      usuariosFiltrados.length === 0
+    "
+    title="Exportar los usuarios mostrados a CSV"
   >
+    {{
+      exportando
+        ? 'Exportando...'
+        : '↓ Exportar CSV'
+    }}
+  </button>
 
+  <div class="registrar-box">
 
-    <ng-container
-      *ngSwitchCase="'listado'"
+    <button
+      type="button"
+      class="btn-registrar"
+      (click)="
+        mostrarMenuRegistrar = !mostrarMenuRegistrar;
+        mostrarFiltroRol = false
+      "
+    >
+      + Registrar
+    </button>
+
+    <ul
+      class="registrar-menu"
+      *ngIf="mostrarMenuRegistrar"
     >
 
+      <li
+        (click)="abrirRegistro('Docente')"
+      >
+        Docente
+      </li>
 
-      <div class="search-bar">
+      <li
+        (click)="abrirRegistro('Estudiante')"
+      >
+        Estudiante
+      </li>
 
-        <img
-          class="search-icon"
-          src="assets/img/magnifying_glass.png"
-          alt=""
+      <li
+        (click)="abrirRegistro('Staff')"
+      >
+        Administrador / Directivo
+      </li>
+
+    </ul>
+
+  </div>
+
+</div>
+
+
+  </div>
+
+<ng-container [ngSwitch]="activeTab">
+
+
+<!-- ============================= -->
+<!-- LISTADO -->
+<!-- ============================= -->
+
+<ng-container *ngSwitchCase="'listado'">
+
+  <div class="search-bar">
+
+    <img
+      class="search-icon"
+      src="assets/img/magnifying_glass.png"
+      alt=""
+    >
+
+    <input
+      type="text"
+      placeholder="Buscar por nombre..."
+      [(ngModel)]="busqueda"
+      (ngModelChange)="cambiarBusqueda($event)"
+    >
+
+  </div>
+
+  <div class="table-wrapper">
+
+    <!-- ============================= -->
+    <!-- CARGANDO -->
+    <!-- ============================= -->
+
+    <div
+      class="loading"
+      *ngIf="cargando"
+    >
+      Cargando usuarios...
+    </div>
+
+    <!-- ============================= -->
+    <!-- ERROR -->
+    <!-- ============================= -->
+
+    <div
+      class="error"
+      *ngIf="errorCarga && !cargando"
+    >
+      {{ errorCarga }}
+    </div>
+
+    <!-- ============================= -->
+    <!-- TABLA -->
+    <!-- ============================= -->
+
+    <table
+      class="usuarios-table"
+      *ngIf="!cargando && !errorCarga"
+    >
+
+      <thead>
+
+        <tr>
+          <th>Foto</th>
+          <th>Nombre</th>
+          <th>ID</th>
+          <th>Correo</th>
+          <th>Rol</th>
+          <th>Grado</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+
+      </thead>
+
+      <tbody>
+
+        <tr
+          *ngFor="let usuario of usuariosPagina"
         >
 
-        <input
-          type="text"
-          placeholder="Buscar por nombre..."
-          [(ngModel)]="busqueda"
-          (ngModelChange)="paginaActual = 1"
-        >
+          <!-- FOTO -->
 
-      </div>
+          <td>
 
+            <div class="avatar-cell">
 
-      <div class="table-wrapper">
-
-
-        <div
-          class="loading"
-          *ngIf="cargando"
-        >
-          Cargando usuarios...
-        </div>
-
-
-        <div
-          class="error"
-          *ngIf="errorCarga && !cargando"
-        >
-          {{ errorCarga }}
-        </div>
-
-
-        <table
-          class="usuarios-table"
-          *ngIf="!cargando && !errorCarga"
-        >
-
-          <thead>
-
-            <tr>
-
-              <th>Foto</th>
-
-              <th>Nombre</th>
-
-              <th>ID</th>
-
-              <th>Correo</th>
-
-              <th>Rol</th>
-
-              <th>Grado</th>
-
-              <th>Estado</th>
-
-              <th>Acciones</th>
-
-            </tr>
-
-          </thead>
-
-          <tbody>
-
-            <tr
-              *ngFor="let usuario of usuariosFiltrados"
-            >
-
-
-              <td>
-
-                <div class="avatar-cell">
-
-                  <img
-                    [src]="
-                      usuario.foto ??
-                      'assets/img/profile.png'
-                    "
-                    alt="Foto"
-                  >
-
-                </div>
-
-              </td>
-
-
-              <td>
-                {{ usuario.nombre }}
-              </td>
-
-
-              <td>
-                {{ usuario.id }}
-              </td>
-
-
-              <td>
-                {{ usuario.correo }}
-              </td>
-
-
-              <td>
-                {{ usuario.rol }}
-              </td>
-
-
-              <td>
-                {{ usuario.grado ?? (usuario.rol === 'Estudiante' ? 'Sin curso' : '--') }}
-              </td>
-
-
-              <td>
-
-                <span
-                  class="estado"
-                  [class.activo]="
-                    usuario.estado === 'Activo'
-                  "
-                  [class.inactivo]="
-                    usuario.estado === 'Inactivo'
-                  "
-                >
-                  {{ usuario.estado }}
-                </span>
-
-              </td>
-
-
-              <td class="acciones-cell">
-
-                <button
-                  type="button"
-                  class="accion editar"
-                  (click)="editar(usuario)"
-                  [disabled]="
-                    cargandoEdicion ||
-                    guardandoEdicion
-                  "
-                >
-                  Editar
-                </button>
-
-                <button
-                  type="button"
-                  class="accion"
-                  [class.inactivar]="
-                    usuario.estado === 'Activo'
-                  "
-                  [class.activar]="
-                    usuario.estado === 'Inactivo'
-                  "
-                  (click)="toggleEstado(usuario)"
-                  [disabled]="
-                    estaCambiandoEstado(usuario.id)
-                  "
-                >
-
-                  {{
-                    usuario.estado === 'Activo'
-                      ? 'Inactivar'
-                      : 'Activar'
-                  }}
-
-                </button>
-
-              </td>
-
-            </tr>
-
-
-            <tr
-              *ngIf="usuariosFiltrados.length === 0"
-            >
-
-              <td
-                colspan="8"
-                class="empty"
+              <img
+                [src]="
+                  usuario.foto ??
+                  'assets/img/profile.png'
+                "
+                alt="Foto"
               >
-                No se encontraron usuarios con los filtros actuales.
-              </td>
 
-            </tr>
+            </div>
 
-          </tbody>
+          </td>
 
-        </table>
+          <!-- NOMBRE -->
 
-        <div
-          class="paginacion"
-          *ngIf="!cargando && !errorCarga && usuariosFiltrados.length > 0"
+          <td>
+            {{ usuario.nombre }}
+          </td>
+
+          <!-- ID -->
+
+          <td>
+            {{ usuario.id }}
+          </td>
+
+          <!-- CORREO -->
+
+          <td>
+            {{ usuario.correo }}
+          </td>
+
+          <!-- ROL -->
+
+          <td>
+            {{ usuario.rol }}
+          </td>
+
+          <!-- GRADO -->
+
+          <td>
+            {{
+              usuario.grado ??
+              (
+                usuario.rol === 'Estudiante'
+                  ? 'Sin curso'
+                  : '--'
+              )
+            }}
+          </td>
+
+          <!-- ESTADO -->
+
+          <td>
+
+            <span
+              class="estado"
+              [class.activo]="
+                usuario.estado === 'Activo'
+              "
+              [class.inactivo]="
+                usuario.estado === 'Inactivo'
+              "
+            >
+              {{ usuario.estado }}
+            </span>
+
+          </td>
+
+          <!-- ACCIONES -->
+
+          <td class="acciones-cell">
+
+            <button
+              type="button"
+              class="accion editar"
+              (click)="editar(usuario)"
+              [disabled]="
+                cargandoEdicion ||
+                guardandoEdicion
+              "
+            >
+              Editar
+            </button>
+
+            <button
+              type="button"
+              class="accion"
+              [class.inactivar]="
+                usuario.estado === 'Activo'
+              "
+              [class.activar]="
+                usuario.estado === 'Inactivo'
+              "
+              (click)="toggleEstado(usuario)"
+              [disabled]="
+                estaCambiandoEstado(usuario.id)
+              "
+            >
+              {{
+                usuario.estado === 'Activo'
+                  ? 'Inactivar'
+                  : 'Activar'
+              }}
+            </button>
+
+          </td>
+
+        </tr>
+
+        <!-- ============================= -->
+        <!-- SIN RESULTADOS -->
+        <!-- ============================= -->
+
+        <tr
+          *ngIf="usuariosPagina.length === 0"
         >
-          <button
-            type="button"
-            class="btn-paginacion"
-            (click)="irPaginaAnterior()"
-            [disabled]="paginaActual === 1"
+
+          <td
+            colspan="8"
+            class="empty"
           >
-            Anteriores 10
-          </button>
+            No se encontraron usuarios con los filtros actuales.
+          </td>
 
-          <span class="paginacion-info">
-            Página {{ paginaActual }} de {{ totalPaginas }}
-          </span>
+        </tr>
 
-          <button
-            type="button"
-            class="btn-paginacion"
-            (click)="irPaginaSiguiente()"
-            [disabled]="paginaActual === totalPaginas"
-          >
-            Siguientes 10
-          </button>
-        </div>
+      </tbody>
 
-      </div>
+    </table>
 
-    </ng-container>
+    <app-pagination
+      *ngIf="!cargando && !errorCarga && totalUsuarios > 0"
+      [totalItems]="totalUsuarios"
+      [pageSize]="tamanoPagina"
+      [currentPage]="paginaActual"
+      (pageChange)="cambiarPagina($event)"
+    ></app-pagination>
 
+  </div>
 
-    <ng-container
-      *ngSwitchCase="'importacion'"
-    >
+</ng-container>
 
-      <app-importacion>
-      </app-importacion>
+<!-- ============================= -->
+<!-- IMPORTACIÓN -->
+<!-- ============================= -->
 
-    </ng-container>
+<ng-container
+  *ngSwitchCase="'importacion'"
+>
+
+  <app-importacion>
+  </app-importacion>
+
+</ng-container>
+
 
   </ng-container>
 
+  <!-- ============================= -->
 
-  <app-registro-usuario-modal
-    *ngIf="tipoRegistro"
-    [tipo]="tipoRegistro"
-    [guardando]="guardandoUsuario"
-    (cerrar)="cerrarModal()"
-    (guardar)="guardarUsuario($event)"
-  >
+  <!-- MODAL REGISTRO -->
+
+  <!-- ============================= -->
+
+<app-registro-usuario-modal
+*ngIf="tipoRegistro"
+[tipo]="tipoRegistro"
+[guardando]="guardandoUsuario"
+(cerrar)="cerrarModal()"
+(guardar)="guardarUsuario($event)"
+
+>
+
   </app-registro-usuario-modal>
 
+  <!-- ============================= -->
 
-  <app-editar-usuario-modal
-    *ngIf="
-      usuarioEnEdicion &&
-      tipoEdicion
-    "
-    [usuario]="usuarioEnEdicion"
-    [tipo]="tipoEdicion"
-    [guardando]="guardandoEdicion"
-    (cerrar)="cerrarEdicion()"
-    (guardar)="guardarEdicion($event)"
-  >
+  <!-- MODAL EDICIÓN -->
+
+  <!-- ============================= -->
+
+<app-editar-usuario-modal
+*ngIf="
+usuarioEnEdicion &&
+tipoEdicion
+"
+[usuario]="usuarioEnEdicion"
+[tipo]="tipoEdicion"
+[guardando]="guardandoEdicion"
+(cerrar)="cerrarEdicion()"
+(guardar)="guardarEdicion($event)"
+
+>
+
   </app-editar-usuario-modal>
 
 </div>

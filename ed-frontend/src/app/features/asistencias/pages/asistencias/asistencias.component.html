@@ -9,7 +9,6 @@
     <button
       type="button"
       class="btn-descargar-historial"
-      *ngIf="!esDirectivo"
       (click)="abrirPanelDescarga()"
     >
       <span class="btn-descargar-historial-icono">⬇</span>
@@ -32,7 +31,7 @@
       <button
         type="button"
         class="tab"
-        *ngIf="esDocente"
+        *ngIf="!esEstudiante && !esDirectivo"
         [class.active]="tabActiva === 'tomar'"
         (click)="cambiarTab('tomar')"
       >
@@ -51,6 +50,7 @@
       <button
         type="button"
         class="tab"
+        *ngIf="!esEstudiante"
         [class.active]="tabActiva === 'historial'"
         (click)="cambiarTab('historial')"
       >
@@ -69,7 +69,6 @@
       <button
         type="button"
         class="tab"
-        *ngIf="esDocente || esEstudiante"
         [class.active]="tabActiva === 'conflictos'"
         (click)="cambiarTab('conflictos')"
       >
@@ -542,7 +541,6 @@
             <button
               type="button"
               class="btn-secundario"
-              *ngIf="!esDirectivo"
               (click)="descargarPdfHistorial()"
               [disabled]="idCursoSeleccionado === null"
             >
@@ -637,14 +635,12 @@
               type="text"
               placeholder="Nombre del estudiante..."
               [(ngModel)]="busquedaListado"
-              (ngModelChange)="paginaActualListado = 1"
             >
           </label>
 
           <button
             type="button"
             class="btn-secundario"
-            *ngIf="!esDirectivo"
             (click)="descargarPdfListado()"
             [disabled]="filtroListadoCurso === null"
           >
@@ -661,7 +657,7 @@
           {{ errorListado }}
         </div>
 
-        <div class="tabla-wrap tabla-wrap-scroll listado-tabla" *ngIf="!cargandoListado && !errorListado">
+        <div class="tabla-wrap tabla-wrap-scroll" *ngIf="!cargandoListado && !errorListado">
 
           <table class="tabla" *ngIf="filasListadoVisibles.length > 0; else sinListado">
 
@@ -722,30 +718,6 @@
             </tbody>
 
           </table>
-
-          <div class="paginacion" *ngIf="filasListadoVisibles.length > 0">
-            <button
-              type="button"
-              class="btn-paginacion"
-              (click)="irPaginaAnteriorListado()"
-              [disabled]="paginaActualListado === 1"
-            >
-              Anteriores 10
-            </button>
-
-            <span class="paginacion-info">
-              Página {{ paginaActualListado }} de {{ totalPaginasListado }}
-            </span>
-
-            <button
-              type="button"
-              class="btn-paginacion"
-              (click)="irPaginaSiguienteListado()"
-              [disabled]="paginaActualListado === totalPaginasListado"
-            >
-              Siguientes 10
-            </button>
-          </div>
 
           <ng-template #sinListado>
             <div class="sin-datos listado-vacio">

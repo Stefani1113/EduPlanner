@@ -38,11 +38,11 @@
     {{ errorCarga }}
   </div>
 
-  <div *ngIf="!cargando && !errorCarga && docentesFiltrados.length === 0" class="estado-msg">
+  <div *ngIf="!cargando && !errorCarga && docentes.length === 0" class="estado-msg">
     No hay docentes registrados.
   </div>
 
-  <div class="docentes-grid" *ngIf="!cargando && !errorCarga && docentesFiltrados.length > 0">
+  <div class="docentes-grid" *ngIf="!cargando && !errorCarga && docentes.length > 0">
 
     <article class="docente-card" *ngFor="let d of docentesPagina">
 
@@ -115,29 +115,13 @@
 
   </div>
 
-  <div class="paginacion" *ngIf="!cargando && !errorCarga && docentesFiltrados.length > 0">
-    <button
-      type="button"
-      class="btn-paginacion"
-      (click)="irPaginaAnterior()"
-      [disabled]="paginaActual === 1"
-    >
-      Anteriores 10
-    </button>
-
-    <span class="paginacion-info">
-      Página {{ paginaActual }} de {{ totalPaginas }}
-    </span>
-
-    <button
-      type="button"
-      class="btn-paginacion"
-      (click)="irPaginaSiguiente()"
-      [disabled]="paginaActual === totalPaginas"
-    >
-      Siguientes 10
-    </button>
-  </div>
+  <app-pagination
+    *ngIf="!cargando && !errorCarga && totalElementos > 0"
+    [totalItems]="totalElementos"
+    [pageSize]="tamanoPagina"
+    [currentPage]="paginaActual"
+    (pageChange)="cambiarPagina($event)"
+  ></app-pagination>
 
   <div class="modal-overlay" *ngIf="mostrarPerfil" (click)="cerrarPerfil()">
 

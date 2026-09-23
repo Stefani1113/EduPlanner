@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 export interface MensajeIA {
   tipo: 'ia' | 'usuario';
@@ -135,8 +136,47 @@ export class HorariosService {
   }
 
   obtenerCursos(): Observable<HttpGlobalResponse<CursoDTO[]>> {
-    return this.http.get<HttpGlobalResponse<CursoDTO[]>>(
-      `${this.apiGestionAcademica}/courses`
+    return this.http.get<HttpGlobalResponse<{
+      content: CursoDTO[];
+      totalElements: number;
+      totalPages: number;
+      number: number;
+      size: number;
+    }>>(
+      `${this.apiGestionAcademica}/courses`,
+      { params: { page: '0', size: '1000' } }
+    ).pipe(
+      map(response => ({
+        data: response.data?.content ?? [],
+        message: response.message
+      }))
+    );
+  }
+
+  obtenerCursosPaginado(
+    page = 0,
+    size = 10
+  ): Observable<HttpGlobalResponse<{
+    content: CursoDTO[];
+    totalElements: number;
+    totalPages: number;
+    number: number;
+    size: number;
+  }>> {
+    return this.http.get<HttpGlobalResponse<{
+      content: CursoDTO[];
+      totalElements: number;
+      totalPages: number;
+      number: number;
+      size: number;
+    }>>(
+      `${this.apiGestionAcademica}/courses`,
+      {
+        params: {
+          page: Math.max(0, page).toString(),
+          size: Math.max(1, size).toString()
+        }
+      }
     );
   }
 
