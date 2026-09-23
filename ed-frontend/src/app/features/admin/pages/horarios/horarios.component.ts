@@ -1,6 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { firstValueFrom } from 'rxjs';
 import {
   HorariosService,
   MensajeIA,
@@ -41,6 +42,14 @@ export class HorariosComponent implements OnInit, OnDestroy {
   horarioDisponible = true;
   private franjasDisponibles: TimeSlotResponseDTO[] = [];
   private clasesActuales: ScheduleResponseDTO[] = [];
+
+  /**
+   * Caché de nombres de curso por idCourse, para poder mostrar
+   * en cada bloque del horario a qué curso pertenece esa clase
+   * (por ejemplo en el horario de un docente, que puede dictar
+   * distintos cursos en distintos bloques de la semana).
+   */
+  private nombresCursoCache = new Map<number, string>();
 
   conflictos: ConflictoHorario[] = [];
   notificaciones: NotificacionHorario[] = [];
@@ -334,8 +343,7 @@ export class HorariosComponent implements OnInit, OnDestroy {
       next: respuesta => {
         const clases = respuesta?.data || [];
 
-        this.horarios = this.construirGrilla(clases);
-        this.horarioDisponible = this.horarios.length > 0;
+        this.asignarHorarios(clases);
 
         if (
           this.esEstudiante &&
@@ -371,8 +379,7 @@ export class HorariosComponent implements OnInit, OnDestroy {
     ) || [];
 
     if (borradorCurso.length > 0) {
-      this.horarios = this.construirGrilla(borradorCurso);
-      this.horarioDisponible = this.horarios.length > 0;
+      this.asignarHorarios(borradorCurso);
       return;
     }
 
@@ -383,22 +390,19 @@ export class HorariosComponent implements OnInit, OnDestroy {
         if (clases.length > 0) {
           this.horariosPublicados[String(idCourse)] = [...clases];
           this.guardarHorariosPublicados();
-          this.horarios = this.construirGrilla(clases);
+          this.asignarHorarios(clases);
         } else {
           const respaldo =
             this.horariosPublicados[String(idCourse)] || [];
 
-          this.horarios = this.construirGrilla(respaldo);
+          this.asignarHorarios(respaldo);
         }
-
-        this.horarioDisponible = this.horarios.length > 0;
       },
       error: () => {
         const respaldo =
           this.horariosPublicados[String(idCourse)] || [];
 
-        this.horarios = this.construirGrilla(respaldo);
-        this.horarioDisponible = this.horarios.length > 0;
+        this.asignarHorarios(respaldo);
       }
     });
   }
@@ -425,8 +429,7 @@ export class HorariosComponent implements OnInit, OnDestroy {
       ) || [];
 
     if (clasesBorrador.length > 0) {
-      this.horarios = this.construirGrilla(clasesBorrador);
-      this.horarioDisponible = this.horarios.length > 0;
+      this.asignarHorarios(clasesBorrador);
       return;
     }
 
@@ -434,8 +437,7 @@ export class HorariosComponent implements OnInit, OnDestroy {
       next: respuesta => {
         const clases = respuesta?.data || [];
 
-        this.horarios = this.construirGrilla(clases);
-        this.horarioDisponible = this.horarios.length > 0;
+        this.asignarHorarios(clases);
       },
       error: () => {
         this.horarios = [];
@@ -461,17 +463,68 @@ export class HorariosComponent implements OnInit, OnDestroy {
         this.franjasDisponibles = respuesta?.data || [];
 
         if (this.clasesActuales.length > 0) {
-          this.horarios =
-            this.construirGrilla(this.clasesActuales);
-
-          this.horarioDisponible =
-            this.horarios.length > 0;
+          this.asignarHorarios(this.clasesActuales);
         }
       },
       error: () => {
         this.franjasDisponibles = [];
       }
     });
+  }
+
+  /**
+   * Asigna this.horarios/this.horarioDisponible a partir de una
+   * lista de clases, asegurando primero que el nombre de curso de
+   * cada clase esté disponible en caché.
+   */
+  private asignarHorarios(
+    clases: ScheduleResponseDTO[]
+  ): void {
+    this.precargarNombresCursos(clases).then(() => {
+      this.horarios = this.construirGrilla(clases);
+      this.horarioDisponible = this.horarios.length > 0;
+    });
+  }
+
+  /**
+   * Consulta (una sola vez por curso) el nombre de cada curso
+   * involucrado en las clases recibidas, y lo guarda en caché.
+   */
+  private async precargarNombresCursos(
+    clases: ScheduleResponseDTO[]
+  ): Promise<void> {
+    const idsFaltantes = Array.from(
+      new Set(
+        (clases || [])
+          .map(clase => Number(clase.idCourse))
+          .filter(
+            id =>
+              Number.isFinite(id) &&
+              !this.nombresCursoCache.has(id)
+          )
+      )
+    );
+
+    if (idsFaltantes.length === 0) {
+      return;
+    }
+
+    await Promise.all(
+      idsFaltantes.map(async id => {
+        try {
+          const respuesta = await firstValueFrom(
+            this.horariosService.obtenerCursoPorId(id)
+          );
+
+          this.nombresCursoCache.set(
+            id,
+            respuesta?.data?.name || `Curso ${id}`
+          );
+        } catch {
+          this.nombresCursoCache.set(id, `Curso ${id}`);
+        }
+      })
+    );
   }
 
   private construirGrilla(
@@ -507,6 +560,11 @@ export class HorariosComponent implements OnInit, OnDestroy {
           miercoles: '',
           jueves: '',
           viernes: '',
+          lunesCurso: '',
+          martesCurso: '',
+          miercolesCurso: '',
+          juevesCurso: '',
+          viernesCurso: '',
           descanso: false
         });
       }
@@ -519,6 +577,11 @@ export class HorariosComponent implements OnInit, OnDestroy {
       if (diaKey) {
         (fila as any)[diaKey] =
           clase.subjectName || '';
+
+        (fila as any)[`${diaKey}Curso`] =
+          this.nombresCursoCache.get(
+            Number(clase.idCourse)
+          ) || '';
       }
     }
 
@@ -582,6 +645,11 @@ export class HorariosComponent implements OnInit, OnDestroy {
         miercoles: '',
         jueves: '',
         viernes: '',
+        lunesCurso: '',
+        martesCurso: '',
+        miercolesCurso: '',
+        juevesCurso: '',
+        viernesCurso: '',
         descanso: true
       });
     }
@@ -650,6 +718,36 @@ export class HorariosComponent implements OnInit, OnDestroy {
     return `${horas12}:${minutos
       .toString()
       .padStart(2, '0')} ${periodo}`;
+  }
+
+  /**
+   * Texto secundario que se muestra debajo de la asignatura
+   * en cada celda del horario.
+   *
+   * Si el bloque tiene una clase asociada, se muestra el curso
+   * al que pertenece esa clase (útil sobre todo para el docente,
+   * que puede dictar distintas materias en distintos cursos a lo
+   * largo de la semana). Si el bloque está vacío se conserva el
+   * texto de referencia general (docente/curso seleccionado).
+   */
+  obtenerCursoCelda(
+    horario: BloqueHorario,
+    dia: 'lunes' | 'martes' | 'miercoles' | 'jueves' | 'viernes'
+  ): string {
+    const cursoDelBloque =
+      (horario as any)[`${dia}Curso`];
+
+    if (cursoDelBloque) {
+      return cursoDelBloque;
+    }
+
+    if (this.esVistaRestringida && this.esDocente) {
+      return this.cursoSeleccionado;
+    }
+
+    return this.modoConsulta === 'docente'
+      ? this.nombreDocenteSeleccionado()
+      : this.cursoSeleccionado;
   }
 
   alternarVista(
@@ -1256,11 +1354,7 @@ export class HorariosComponent implements OnInit, OnDestroy {
           this.publicando = false;
           this.reemplazando = false;
 
-          this.horarios =
-            this.construirGrilla(clasesNuevas);
-
-          this.horarioDisponible =
-            this.horarios.length > 0;
+          this.asignarHorarios(clasesNuevas);
 
           this.horariosService.limpiarNotificaciones();
           this.notificaciones = [];
