@@ -5,15 +5,11 @@
     <p>Gestiona el historial, los reportes, el registro y la escala de calificación de tu institución.</p>
   </div>
 
-  <div class="loading" *ngIf="cargandoBase">
+  <div class="loading" *ngIf="cargando">
     Cargando información académica…
   </div>
 
-  <div class="error" *ngIf="errorBase">
-    {{ errorBase }}
-  </div>
-
-  <ng-container *ngIf="!cargandoBase && !errorBase">
+  <ng-container *ngIf="!cargando">
 
     <div class="tabs-row">
 
@@ -46,6 +42,7 @@
         </button>
 
         <button
+          *ngIf="!esDirectivo"
           type="button"
           class="tab"
           [class.active]="tabActiva === 'reportes'"
@@ -65,7 +62,7 @@
           disabled>
 
           <option [ngValue]="idCursoSeleccionado">
-            {{ cursoSeleccionadoNombre }}
+            {{ nombreCursoActual }}
           </option>
 
         </select>
@@ -131,7 +128,7 @@
             </p>
 
             <p class="panel-hint">
-              Curso {{ cursoSeleccionadoNombre }}
+              Curso {{ nombreCursoActual }}
             </p>
 
           </div>
@@ -152,14 +149,6 @@
               class="btn-verde"
               (click)="cambiarTab('notas')">
               VER AHORA
-            </button>
-
-            <button
-              *ngIf="esDirectivo"
-              type="button"
-              class="btn-verde"
-              (click)="cambiarTab('reportes')">
-              VER REPORTES
             </button>
 
           </div>
@@ -194,13 +183,11 @@
               </div>
 
               <span class="barra-valor">
-
                 {{
                   a.totalNotas
                     ? (a.promedio | number:'1.2-2') + ' / ' + maximoEscala
                     : 'Sin notas'
                 }}
-
               </span>
 
             </div>
@@ -240,9 +227,7 @@
             <option
               *ngFor="let a of asignaturas"
               [ngValue]="a.idSubject">
-
               {{ a.name }}
-
             </option>
 
           </select>
@@ -528,9 +513,7 @@
             class="btn-verde"
             [disabled]="guardandoTipo"
             (click)="guardarNuevoTipo()">
-
             Agregar
-
           </button>
 
         </div>
@@ -562,9 +545,7 @@
           <span
             class="pasos-badge"
             [class.completo]="totalPorcentajePasos === 100">
-
             {{ totalPorcentajePasos }}%
-
           </span>
 
         </div>
@@ -582,9 +563,7 @@
             <option
               *ngFor="let p of periodos"
               [ngValue]="p.idPeriod">
-
               {{ p.name }}
-
             </option>
 
           </select>
@@ -691,9 +670,7 @@
         <div
           class="error"
           *ngIf="errorPasos">
-
           {{ errorPasos }}
-
         </div>
 
       </div>
@@ -708,9 +685,7 @@
           type="button"
           class="btn-outline"
           (click)="descartarCambiosCalificacion()">
-
           DESCARTAR
-
         </button>
 
         <button
@@ -732,16 +707,14 @@
       <div
         class="error"
         *ngIf="errorEscala">
-
         {{ errorEscala }}
-
       </div>
 
     </div>
 
     <div
       class="tab-panel"
-      *ngIf="tabActiva === 'reportes'">
+      *ngIf="tabActiva === 'reportes' && !esDirectivo">
 
       <div class="reportes-grid">
 
@@ -765,9 +738,7 @@
               <option
                 *ngFor="let n of niveles"
                 [ngValue]="n.idLevel">
-
                 {{ n.name }}
-
               </option>
 
             </select>
@@ -790,9 +761,7 @@
               <option
                 *ngFor="let c of cursosReporte"
                 [ngValue]="c.idCourse">
-
                 {{ c.name }}
-
               </option>
 
             </select>
@@ -814,9 +783,7 @@
               <option
                 *ngFor="let p of periodos"
                 [ngValue]="p.idPeriod">
-
                 {{ p.name }}
-
               </option>
 
             </select>
@@ -826,9 +793,7 @@
           <div
             class="error"
             *ngIf="errorReporte">
-
             {{ errorReporte }}
-
           </div>
 
           <div
@@ -1010,13 +975,11 @@
                   </td>
 
                   <td>
-
                     {{
                       r.notas.length
                         ? (r.promedio | number:'1.2-2')
                         : '—'
                     }}
-
                   </td>
 
                 </tr>
