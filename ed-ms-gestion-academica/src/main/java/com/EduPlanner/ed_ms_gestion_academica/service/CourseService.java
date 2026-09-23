@@ -7,6 +7,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service @RequiredArgsConstructor @Log4j2
 public class CourseService {
@@ -28,11 +30,15 @@ public class CourseService {
         return toResponse(repository.save(c));
     }
 
-    public List<CourseResponseDTO> listCourses() { return repository.findByStatusTrue().stream().map(this::toResponse).toList(); }
+    public Page<CourseResponseDTO> listCourses(Pageable pageable) { return repository.findByStatusTrue(pageable).map(this::toResponse); }
+
     public CourseResponseDTO getCourseById(Integer id) { return toResponse(getOrThrow(id)); }
-    public List<CourseResponseDTO> getCoursesByPeriod(Integer id) { return repository.findByIdPeriodAndStatusTrue(id).stream().map(this::toResponse).toList(); }
-    public List<CourseResponseDTO> getCoursesByLevel(Integer id) { return repository.findByIdLevelAndStatusTrue(id).stream().map(this::toResponse).toList(); }
-    public List<CourseResponseDTO> getCoursesByShift(Integer id) { return repository.findByIdShiftAndStatusTrue(id).stream().map(this::toResponse).toList(); }
+
+    public Page<CourseResponseDTO> getCoursesByPeriod(Integer id, Pageable pageable) { return repository.findByIdPeriodAndStatusTrue(id, pageable).map(this::toResponse); }
+
+    public Page<CourseResponseDTO> getCoursesByLevel(Integer id, Pageable pageable) { return repository.findByIdLevelAndStatusTrue(id, pageable).map(this::toResponse); }
+
+    public Page<CourseResponseDTO> getCoursesByShift(Integer id, Pageable pageable) { return repository.findByIdShiftAndStatusTrue(id, pageable).map(this::toResponse); }
 
     public void deleteCourse(Integer id) { Course c = getOrThrow(id); repository.delete(c);}
 

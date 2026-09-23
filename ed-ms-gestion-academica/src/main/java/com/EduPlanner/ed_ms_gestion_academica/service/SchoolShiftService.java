@@ -7,6 +7,8 @@ import com.EduPlanner.ed_ms_gestion_academica.repository.SchoolShiftRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalTime;
 import java.util.List;
@@ -21,8 +23,8 @@ public class SchoolShiftService {
      * Listar todos las jornadas
      * @return
      */
-    public List<SchoolShiftResponseDTO> findAll() {
-        return repository.findAll().stream().map(SchoolShiftResponseDTO::fromEntity).toList();
+    public Page<SchoolShiftResponseDTO> findAll(Pageable pageable) {
+        return repository.findAll(pageable).map(SchoolShiftResponseDTO::fromEntity);
     }
 
     /**
@@ -107,7 +109,7 @@ public class SchoolShiftService {
      * Listar por activos
      * @return
      */
-    public List<SchoolShiftResponseDTO> findAllActive() {
-        return repository.findByStatusTrue().stream().map(SchoolShiftResponseDTO::fromEntity).toList();
+    public Page<SchoolShiftResponseDTO> findAllActive(Pageable pageable) {
+        return repository.findByStatusTrue(pageable).map(SchoolShiftResponseDTO::fromEntity);
     }
 }

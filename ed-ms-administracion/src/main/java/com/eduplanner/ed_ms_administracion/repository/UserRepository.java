@@ -4,6 +4,8 @@ import com.eduplanner.ed_lib_common.entity.User;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 
@@ -12,9 +14,6 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     boolean existsByDocument(String document);
     List<User> findByRoleIdRole(Integer idRole);
     List<User> findByNameContainingIgnoreCase(String name);
-
-
-
 
     List<User> findByRoleIdRoleAndStatusTrue(Integer idRole);  
     List<User> findByRoleIdRoleAndStatusTrueAndNameContainingIgnoreCase(Integer idRole, String name);
@@ -33,4 +32,19 @@ public interface UserRepository extends JpaRepository<User, Integer> {
 
     boolean existsByPhoneNumber(String phoneNumber);
     boolean existsByPhoneNumberAndIdUserNot(String phoneNumber, Integer idUser);
+
+    /**
+     * Páginación 
+     */
+    Page<User> findAll(Pageable pageable);
+
+    Page<User> findByRoleIdRole(Integer idRole, Pageable pageable);
+
+    Page<User> findByNameContainingIgnoreCase(String name, Pageable pageable);
+
+    Page<User> findByIdCourse(Integer idCourse, Pageable pageable);
+
+    Page<User> findByRoleIdRoleAndStatusTrue(Integer idRole, Pageable pageable);
+    Page<User> findByRoleIdRoleAndStatusTrueAndPositionContainingIgnoreCase(Integer idRole,String position,Pageable pageable);
 }
+

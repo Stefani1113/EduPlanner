@@ -11,6 +11,8 @@ import com.eduplanner.ed_lib_common.dto.TeachingResponseDTO;
 import com.eduplanner.ed_lib_common.entity.User;
 import com.eduplanner.ed_ms_administracion.repository.UserRepository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
@@ -49,11 +51,9 @@ public class TeachingService {
     }
 
     /** RF 5.2 - List all active teachers */
-    public List<TeachingResponseDTO> listTeachers() {
-        return userRepository.findByRoleIdRoleAndStatusTrue(TEACHER_ROLE)
-                .stream()
-                .map(this::toDTO)
-                .toList();
+    public Page<TeachingResponseDTO> listTeachers(Pageable pageable) {
+        return userRepository.findByRoleIdRoleAndStatusTrue(TEACHER_ROLE, pageable)
+                .map(this::toDTO);
     }
 
     /** RF 5.2 - Get teacher profile by id */
@@ -84,11 +84,9 @@ public class TeachingService {
     }
 
     /** RF 5.4 - Filter teachers by position */
-    public List<TeachingResponseDTO> filterByPosition(String position) {
-        return userRepository.findByRoleIdRoleAndStatusTrueAndPositionContainingIgnoreCase(TEACHER_ROLE, position)
-                .stream()
-                .map(this::toDTO)
-                .toList();
+    public Page<TeachingResponseDTO> filterByPosition(String position, Pageable pageable) {
+        return userRepository.findByRoleIdRoleAndStatusTrueAndPositionContainingIgnoreCase(TEACHER_ROLE, position, pageable)
+                .map(this::toDTO);
     }
 
     // ---- private helpers ----

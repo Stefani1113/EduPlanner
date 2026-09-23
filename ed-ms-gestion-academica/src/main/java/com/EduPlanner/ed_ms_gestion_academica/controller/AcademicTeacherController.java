@@ -12,6 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 /** RF 8.1 - Base: /eduplanner/academic-teachers */
 @Log4j2
@@ -50,9 +52,9 @@ public class AcademicTeacherController {
     }
 
     @GetMapping
-    public ResponseEntity<HttpGlobalResponse<List<AcademicTeacherResponseDTO>>> listTeachers() {
-        HttpGlobalResponse<List<AcademicTeacherResponseDTO>> r = new HttpGlobalResponse<>();
-        r.setData(service.listTeachers()); r.setMessage("Profesores académicos consultados correctamente"); return ResponseEntity.ok(r);
+    public ResponseEntity<HttpGlobalResponse<Page<AcademicTeacherResponseDTO>>> listTeachers(Pageable pageable) {
+        HttpGlobalResponse<Page<AcademicTeacherResponseDTO>> r = new HttpGlobalResponse<>();
+        r.setData(service.listTeachers(pageable)); r.setMessage("Profesores académicos consultados correctamente"); return ResponseEntity.ok(r);
     }
 
     @GetMapping("/{id}")
