@@ -1,15 +1,9 @@
 package EduPlanner.ed_ms_notas.service;
 
-import EduPlanner.ed_ms_notas.client.AdministracionFeignClient;
-import EduPlanner.ed_ms_notas.client.GestionAcademicaFeignClient;
 import com.eduplanner.ed_lib_common.dto.GradeRequestDTO;
 import com.eduplanner.ed_lib_common.dto.GradeResponseDTO;
-import com.eduplanner.ed_lib_common.dto.HttpGlobalResponse;
-import com.eduplanner.ed_lib_common.dto.UserInfoDTO;
 import EduPlanner.ed_ms_notas.client.AdministracionServiceClient;
 import EduPlanner.ed_ms_notas.client.GestionAcademicaServiceClient;
-import com.eduplanner.ed_lib_common.dto.GradeRequestDTO;
-import com.eduplanner.ed_lib_common.dto.GradeResponseDTO;
 import com.eduplanner.ed_lib_common.entity.EvaluationType;
 import com.eduplanner.ed_lib_common.entity.EvaluativeActivity;
 import com.eduplanner.ed_lib_common.entity.Grade;
