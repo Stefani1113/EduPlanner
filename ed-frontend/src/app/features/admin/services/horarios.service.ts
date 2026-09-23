@@ -17,6 +17,11 @@ export interface BloqueHorario {
   miercoles: string;
   jueves: string;
   viernes: string;
+  lunesCurso: string;
+  martesCurso: string;
+  miercolesCurso: string;
+  juevesCurso: string;
+  viernesCurso: string;
   descanso: boolean;
 }
 
