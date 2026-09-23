@@ -140,11 +140,17 @@ export class HorariosService {
     );
   }
 
+<<<<<<< Updated upstream
   obtenerCursoPorId(
     idCourse: number
   ): Observable<HttpGlobalResponse<CursoDTO>> {
     return this.http.get<HttpGlobalResponse<CursoDTO>>(
       `${this.apiGestionAcademica}/courses/${idCourse}`
+=======
+  obtenerMiHorario(): Observable<HttpGlobalResponse<ClaseHorarioDTO[]>> {
+    return this.http.get<HttpGlobalResponse<ClaseHorarioDTO[]>>(
+      `${this.apiGestionAcademica}/schedules/my-schedule`
+>>>>>>> Stashed changes
     );
   }
 
