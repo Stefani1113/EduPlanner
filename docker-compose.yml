@@ -53,10 +53,7 @@ services:
   # AUTENTICACION
 
   autenticacion:
-    build:
-      context: .
-      dockerfile: ./ed-ms-autenticacion/Dockerfile
-
+    image: stefani1113/eduplanner-auth
     container_name: ed-ms-autenticacion
     restart: unless-stopped
 
@@ -86,10 +83,7 @@ services:
   # ADMINISTRACION
 
   administracion:
-    build:
-      context: .
-      dockerfile: ./ed-ms-administracion/Dockerfile
-
+    image: stefani1113/eduplanner-admin
     container_name: ed-ms-administracion
     restart: unless-stopped
 
@@ -186,10 +180,7 @@ services:
   
   # CONFIGURACION INSTITUCIONAL
   configuracion-institucional:
-    build:
-      context: .
-      dockerfile: ./ed_ms_configuracion_institucional/Dockerfile
-
+    image: stefani1113/eduplanner-config
     container_name: ed-ms-configuracion-institucional
     restart: unless-stopped
 

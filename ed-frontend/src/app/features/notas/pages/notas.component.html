@@ -311,7 +311,7 @@
           <tbody>
 
             <tr
-              *ngFor="let fila of estudiantesNotasPaginados">
+              *ngFor="let fila of estudiantesNotasPagina">
 
               <td class="col-estudiante">
                 {{ fila.nombreCompleto }}
@@ -368,13 +368,29 @@
 
         </table>
 
-        <app-pagination
-          *ngIf="estudiantesNotas.length > 0"
-          [totalItems]="estudiantesNotas.length"
-          [pageSize]="tamanoPagina"
-          [currentPage]="paginaActualNotas"
-          (pageChange)="cambiarPaginaNotas($event)"
-        ></app-pagination>
+        <div class="paginacion" *ngIf="estudiantesNotas.length > 0">
+          <button
+            type="button"
+            class="btn-paginacion"
+            (click)="irPaginaAnteriorNotas()"
+            [disabled]="paginaActualNotas === 1"
+          >
+            Anteriores 10
+          </button>
+
+          <span class="paginacion-info">
+            Página {{ paginaActualNotas }} de {{ totalPaginasNotas }}
+          </span>
+
+          <button
+            type="button"
+            class="btn-paginacion"
+            (click)="irPaginaSiguienteNotas()"
+            [disabled]="paginaActualNotas === totalPaginasNotas"
+          >
+            Siguientes 10
+          </button>
+        </div>
 
       </div>
 
@@ -830,7 +846,7 @@
 
             <div
               class="estudiante-item"
-              *ngFor="let e of estudiantesReporte">
+              *ngFor="let e of estudiantesReportePagina">
 
               <input
                 type="checkbox"
@@ -841,6 +857,30 @@
                 {{ e.name }} {{ e.surnames }}
               </span>
 
+            </div>
+
+            <div class="paginacion" *ngIf="estudiantesReporte.length > 0">
+              <button
+                type="button"
+                class="btn-paginacion"
+                (click)="irPaginaAnteriorReporte()"
+                [disabled]="paginaActualReporte === 1"
+              >
+                Anteriores 10
+              </button>
+
+              <span class="paginacion-info">
+                Página {{ paginaActualReporte }} de {{ totalPaginasReporte }}
+              </span>
+
+              <button
+                type="button"
+                class="btn-paginacion"
+                (click)="irPaginaSiguienteReporte()"
+                [disabled]="paginaActualReporte === totalPaginasReporte"
+              >
+                Siguientes 10
+              </button>
             </div>
 
           </div>
