@@ -1,7 +1,7 @@
 package com.eduplanner.ed_ms_administracion.service;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.eduplanner.ed_lib_common.dto.UserResponseDTO;
@@ -10,48 +10,78 @@ import com.eduplanner.ed_ms_administracion.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
-
 /**
- * Servicio para busqueda de usuarios 
+ * Servicio para búsqueda de usuarios
+ *
  * Listar todos
  * Por rol
  * Por nombre
  * Por id
- * UserQueryService
+ * Por curso
  */
 @Service
 @RequiredArgsConstructor
 public class UserQueryService {
-    
+
     private final UserRepository userRepository;
 
-    public List<UserResponseDTO> findAll() {
-        return userRepository.findAll().stream()
-                .map(UserResponseDTO::fromEntity)
-                .toList();
+    /**
+     * Consultar todos los usuarios paginados.
+     */
+    public Page<UserResponseDTO> findAll(Pageable pageable) {
+
+        return userRepository.findAll(pageable)
+                .map(UserResponseDTO::fromEntity);
     }
 
-    public List<UserResponseDTO> findByRole(Integer idRole) {
-        return userRepository.findByRoleIdRole(idRole).stream()
-                .map(UserResponseDTO::fromEntity)
-                .toList();
+    /**
+     * Consultar usuarios por rol paginados.
+     */
+    public Page<UserResponseDTO> findByRole(
+            Integer idRole,
+            Pageable pageable) {
+
+        return userRepository.findByRoleIdRole(idRole, pageable)
+                .map(UserResponseDTO::fromEntity);
     }
 
-    public List<UserResponseDTO> findByName( String name) {
-        return userRepository.findByNameContainingIgnoreCase(name).stream()
-                .map(UserResponseDTO::fromEntity)
-                .toList();
+    /**
+     * Buscar usuarios por nombre paginados.
+     */
+    public Page<UserResponseDTO> findByName(
+            String name,
+            Pageable pageable) {
+
+        return userRepository.findByNameContainingIgnoreCase(
+                        name,
+                        pageable
+                )
+                .map(UserResponseDTO::fromEntity);
     }
 
+    /**
+     * Consultar usuario por ID.
+     */
     public UserResponseDTO findById(Integer idUser) {
+
         User user = userRepository.findById(idUser)
-                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado con id: " + idUser));
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "Usuario no encontrado con id: " + idUser
+                        )
+                );
+
         return UserResponseDTO.fromEntity(user);
     }
 
-    public List<UserResponseDTO> findByCourse(Integer idCourse) {
-    return userRepository.findByIdCourse(idCourse).stream()
-            .map(UserResponseDTO::fromEntity)
-            .toList();
+    /**
+     * Consultar estudiantes de un curso paginados.
+     */
+    public Page<UserResponseDTO> findByCourse(
+            Integer idCourse,
+            Pageable pageable) {
+
+        return userRepository.findByIdCourse(idCourse, pageable)
+                .map(UserResponseDTO::fromEntity);
     }
 }
