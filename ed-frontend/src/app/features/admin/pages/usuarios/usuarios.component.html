@@ -51,7 +51,7 @@
         </button>
 
         <ul
-          class="role-menu"
+          class="role-menu lista-scroll"
           *ngIf="mostrarFiltroRol"
         >
 
@@ -210,6 +210,7 @@
           type="text"
           placeholder="Buscar por nombre..."
           [(ngModel)]="busqueda"
+          (ngModelChange)="paginaActual = 1"
         >
 
       </div>
@@ -266,7 +267,7 @@
           <tbody>
 
             <tr
-              *ngFor="let usuario of usuariosFiltrados"
+              *ngFor="let usuario of usuariosPaginados"
             >
 
 
@@ -387,6 +388,14 @@
           </tbody>
 
         </table>
+
+        <app-pagination
+          *ngIf="!cargando && !errorCarga && usuariosFiltrados.length > 0"
+          [totalItems]="usuariosFiltrados.length"
+          [pageSize]="tamanoPagina"
+          [currentPage]="paginaActual"
+          (pageChange)="cambiarPagina($event)"
+        ></app-pagination>
 
       </div>
 
