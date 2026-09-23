@@ -12,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -71,10 +73,10 @@ public class TeachingController {
      * GET /eduplanner/teacher
      */
     @GetMapping
-    public ResponseEntity<HttpGlobalResponse<List<TeachingResponseDTO>>> listTeachers() {
-        HttpGlobalResponse<List<TeachingResponseDTO>> response = new HttpGlobalResponse<>();
+    public ResponseEntity<HttpGlobalResponse<Page<TeachingResponseDTO>>> listTeachers(Pageable pageable) {
+        HttpGlobalResponse<Page<TeachingResponseDTO>> response = new HttpGlobalResponse<>();
         try {
-            List<TeachingResponseDTO> data = teachingService.listTeachers();
+            Page<TeachingResponseDTO> data = teachingService.listTeachers(pageable);
             response.setData(data);
             response.setMessage("Docentes obtenidos correctamente");
             return ResponseEntity.ok(response);
@@ -148,11 +150,11 @@ public class TeachingController {
      * GET /eduplanner/teacher/filter?cargo=matematicas
      */
     @GetMapping("/filter")
-    public ResponseEntity<HttpGlobalResponse<List<TeachingResponseDTO>>> filterByPosition(
-            @RequestParam String position) {
-        HttpGlobalResponse<List<TeachingResponseDTO>> response = new HttpGlobalResponse<>();
+    public ResponseEntity<HttpGlobalResponse<Page<TeachingResponseDTO>>> filterByPosition(
+            @RequestParam String position, Pageable pageable) {
+        HttpGlobalResponse<Page<TeachingResponseDTO>> response = new HttpGlobalResponse<>();
         try {
-            List<TeachingResponseDTO> data = teachingService.filterByPosition(position);
+            Page<TeachingResponseDTO> data = teachingService.filterByPosition(position, pageable);
             if (data.isEmpty()) {
                 response.setMessage("No se encontraron docentes con el cargo: " + position);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
