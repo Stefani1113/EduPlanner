@@ -8,6 +8,8 @@ import com.EduPlanner.ed_ms_gestion_academica.repository.TimeSlotRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.time.LocalTime;
 import java.util.List;
@@ -131,5 +133,24 @@ public class TimeSlotService {
     private TimeSlot getOrThrow(Integer id) {
         return repository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Bloque horario no encontrado con id: " + id));
+    }
+
+    /**
+     * Listar todos los bloques horarios paginados
+     */
+    public Page<TimeSlotResponseDTO> findAll(Pageable pageable) {
+        return repository.findAll(pageable)
+                .map(TimeSlotResponseDTO::fromEntity);
+    }
+
+    /**
+     * Listar bloques horarios por jornada paginados
+     */
+    public Page<TimeSlotResponseDTO> findByShift(
+            Integer idShift,
+            Pageable pageable) {
+
+        return repository.findByIdShift(idShift, pageable)
+                .map(TimeSlotResponseDTO::fromEntity);
     }
 }

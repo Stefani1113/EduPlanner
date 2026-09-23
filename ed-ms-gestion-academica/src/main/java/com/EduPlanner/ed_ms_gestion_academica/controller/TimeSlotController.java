@@ -14,6 +14,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -23,19 +25,30 @@ import java.util.List;
 public class TimeSlotController {
 
     private final TimeSlotService service;
-
-    // GET /time-slots            -> todos
-    // GET /time-slots?idShift=2  -> filtrado por jornada
+    /**
+     * Listar bloques horarios
+     *
+     * GET /time-slots?page=0&size=10
+     * GET /time-slots?idShift=2&page=0&size=10
+     */
     @GetMapping
-    public ResponseEntity<HttpGlobalResponse<List<TimeSlotResponseDTO>>> getAll(
-            @RequestParam(required = false) Integer idShift) {
-        HttpGlobalResponse<List<TimeSlotResponseDTO>> response = new HttpGlobalResponse<>();
-        List<TimeSlotResponseDTO> result = (idShift != null) ? service.findByShift(idShift) : service.findAll();
+    public ResponseEntity<HttpGlobalResponse<Page<TimeSlotResponseDTO>>> getAll(
+            @RequestParam(required = false) Integer idShift,
+            Pageable pageable) {
+
+        HttpGlobalResponse<Page<TimeSlotResponseDTO>> response =
+                new HttpGlobalResponse<>();
+
+        Page<TimeSlotResponseDTO> result =
+                (idShift != null)
+                        ? service.findByShift(idShift, pageable)
+                        : service.findAll(pageable);
+
         response.setData(result);
         response.setMessage("Bloques horarios consultados correctamente");
-        return ResponseEntity.ok(response);
-    }
+            return ResponseEntity.ok(response);
 
+    }
     /**
      * Buscar por Id
      * @param id
