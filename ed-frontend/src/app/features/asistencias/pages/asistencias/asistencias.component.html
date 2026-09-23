@@ -661,7 +661,7 @@
           {{ errorListado }}
         </div>
 
-        <div class="tabla-wrap tabla-wrap-scroll" *ngIf="!cargandoListado && !errorListado">
+        <div class="tabla-wrap tabla-wrap-scroll listado-tabla" *ngIf="!cargandoListado && !errorListado">
 
           <table class="tabla" *ngIf="filasListadoVisibles.length > 0; else sinListado">
 
@@ -676,7 +676,7 @@
 
             <tbody>
 
-              <tr *ngFor="let fila of filasListadoPaginadas">
+              <tr *ngFor="let fila of filasListadoPagina">
 
                 <td>
                   {{ fila.primerNombre }}
@@ -723,13 +723,29 @@
 
           </table>
 
-          <app-pagination
-            *ngIf="filasListadoVisibles.length > 0"
-            [totalItems]="filasListadoVisibles.length"
-            [pageSize]="tamanoPagina"
-            [currentPage]="paginaActualListado"
-            (pageChange)="cambiarPaginaListado($event)"
-          ></app-pagination>
+          <div class="paginacion" *ngIf="filasListadoVisibles.length > 0">
+            <button
+              type="button"
+              class="btn-paginacion"
+              (click)="irPaginaAnteriorListado()"
+              [disabled]="paginaActualListado === 1"
+            >
+              Anteriores 10
+            </button>
+
+            <span class="paginacion-info">
+              Página {{ paginaActualListado }} de {{ totalPaginasListado }}
+            </span>
+
+            <button
+              type="button"
+              class="btn-paginacion"
+              (click)="irPaginaSiguienteListado()"
+              [disabled]="paginaActualListado === totalPaginasListado"
+            >
+              Siguientes 10
+            </button>
+          </div>
 
           <ng-template #sinListado>
             <div class="sin-datos listado-vacio">

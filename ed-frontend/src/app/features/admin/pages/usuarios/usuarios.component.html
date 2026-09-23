@@ -51,7 +51,7 @@
         </button>
 
         <ul
-          class="role-menu lista-scroll"
+          class="role-menu"
           *ngIf="mostrarFiltroRol"
         >
 
@@ -267,7 +267,7 @@
           <tbody>
 
             <tr
-              *ngFor="let usuario of usuariosPaginados"
+              *ngFor="let usuario of usuariosFiltrados"
             >
 
 
@@ -389,13 +389,32 @@
 
         </table>
 
-        <app-pagination
+        <div
+          class="paginacion"
           *ngIf="!cargando && !errorCarga && usuariosFiltrados.length > 0"
-          [totalItems]="usuariosFiltrados.length"
-          [pageSize]="tamanoPagina"
-          [currentPage]="paginaActual"
-          (pageChange)="cambiarPagina($event)"
-        ></app-pagination>
+        >
+          <button
+            type="button"
+            class="btn-paginacion"
+            (click)="irPaginaAnterior()"
+            [disabled]="paginaActual === 1"
+          >
+            Anteriores 10
+          </button>
+
+          <span class="paginacion-info">
+            Página {{ paginaActual }} de {{ totalPaginas }}
+          </span>
+
+          <button
+            type="button"
+            class="btn-paginacion"
+            (click)="irPaginaSiguiente()"
+            [disabled]="paginaActual === totalPaginas"
+          >
+            Siguientes 10
+          </button>
+        </div>
 
       </div>
 

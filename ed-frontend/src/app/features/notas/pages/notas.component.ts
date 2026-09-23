@@ -1,7 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { PaginationComponent } from '../../../core/components/pagination/pagination.component';
 import { Subject, forkJoin, of } from 'rxjs';
 import { catchError, finalize } from 'rxjs/operators';
 
@@ -74,8 +73,7 @@ interface ResumenReporteEstudiante {
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
-    PaginationComponent
+    FormsModule
   ],
   templateUrl: './notas.component.html',
   styleUrls: ['./notas.component.scss']
@@ -136,15 +134,40 @@ export class NotasComponent implements OnInit, OnDestroy {
   estudiantesNotas: FilaNotas[] = [];
 
   paginaActualNotas = 1;
-  readonly tamanoPagina = 10;
+  readonly tamanoPaginaNotas = 10;
 
-  cambiarPaginaNotas(pagina: number): void {
-    this.paginaActualNotas = pagina;
+  get totalPaginasNotas(): number {
+    return Math.max(
+      1,
+      Math.ceil(this.estudiantesNotas.length / this.tamanoPaginaNotas)
+    );
   }
 
-  get estudiantesNotasPaginados(): FilaNotas[] {
-    const inicio = (this.paginaActualNotas - 1) * this.tamanoPagina;
-    return this.estudiantesNotas.slice(inicio, inicio + this.tamanoPagina);
+  get estudiantesNotasPagina(): FilaNotas[] {
+    const inicio = (this.paginaActualNotas - 1) * this.tamanoPaginaNotas;
+    return this.estudiantesNotas.slice(inicio, inicio + this.tamanoPaginaNotas);
+  }
+
+  irPaginaAnteriorNotas(): void {
+    if (this.paginaActualNotas > 1) {
+      this.paginaActualNotas--;
+      this.enfocarListadoNotas();
+    }
+  }
+
+  irPaginaSiguienteNotas(): void {
+    if (this.paginaActualNotas < this.totalPaginasNotas) {
+      this.paginaActualNotas++;
+      this.enfocarListadoNotas();
+    }
+  }
+
+  private enfocarListadoNotas(): void {
+    setTimeout(() => {
+      document
+        .querySelector('.grid-notas')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
   }
   actividadesNotasColumnas: EvaluativeActivityResponseDTO[] = [];
 
@@ -159,6 +182,43 @@ export class NotasComponent implements OnInit, OnDestroy {
 
   cursosReporte: CourseResponseDTO[] = [];
   estudiantesReporte: UsuarioBasico[] = [];
+
+  paginaActualReporte = 1;
+  readonly tamanoPaginaReporte = 10;
+
+  get totalPaginasReporte(): number {
+    return Math.max(
+      1,
+      Math.ceil(this.estudiantesReporte.length / this.tamanoPaginaReporte)
+    );
+  }
+
+  get estudiantesReportePagina(): UsuarioBasico[] {
+    const inicio = (this.paginaActualReporte - 1) * this.tamanoPaginaReporte;
+    return this.estudiantesReporte.slice(inicio, inicio + this.tamanoPaginaReporte);
+  }
+
+  irPaginaAnteriorReporte(): void {
+    if (this.paginaActualReporte > 1) {
+      this.paginaActualReporte--;
+      this.enfocarListadoReporte();
+    }
+  }
+
+  irPaginaSiguienteReporte(): void {
+    if (this.paginaActualReporte < this.totalPaginasReporte) {
+      this.paginaActualReporte++;
+      this.enfocarListadoReporte();
+    }
+  }
+
+  private enfocarListadoReporte(): void {
+    setTimeout(() => {
+      document
+        .querySelector('.listado-estudiantes')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
   seleccionadosReporte = new Set<number>();
   todosSeleccionadosReporte = false;
 
@@ -882,6 +942,7 @@ export class NotasComponent implements OnInit, OnDestroy {
     estudiantes: UsuarioBasico[],
     notas: GradeDetailResponseDTO[]
   ): void {
+    this.paginaActualNotas = 1;
     this.estudiantesNotas =
       estudiantes.map(estudiante => {
         const celdas: Record<
@@ -1410,6 +1471,7 @@ export class NotasComponent implements OnInit, OnDestroy {
             estudiantes.filter(
               e => e.status !== false
             );
+          this.paginaActualReporte = 1;
 
           this.seleccionadosReporte.clear();
           this.todosSeleccionadosReporte =
