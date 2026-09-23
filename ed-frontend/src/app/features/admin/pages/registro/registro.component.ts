@@ -3,12 +3,10 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
-
 import {
   DocentesService,
   TeachingResponseDTO
 } from '../../services/docentes.service';
-
 import {
   HorariosService,
   SubjectResponseDTO,
@@ -27,9 +25,7 @@ import {
   TeacherAvailabilityResponseDTO,
   TeacherAvailabilityRequestDTO
 } from '../../services/registro.service';
-
 import { ModalService } from '../../../../core/services/modal.service';
-
 
 interface DocenteFila {
   idAcademicLoad: number;
@@ -117,7 +113,6 @@ const DIAS_SEMANA = [
   { valor: 6, nombre: 'Sábado' }
 ];
 
-
 @Component({
   selector: 'app-registro',
   standalone: true,
@@ -126,11 +121,8 @@ const DIAS_SEMANA = [
   styleUrl: './registro.component.scss'
 })
 export class RegistroComponent implements OnInit {
-
- 
   mostrarDatos = true;
   pestanaActivaDatos: 'academico' | 'calendario' | 'disponibilidad' = 'academico';
-
   mostrarFormularioDocente = false;
   mostrarFormularioAsignatura = false;
   mostrarFormularioCurso = false;
@@ -139,7 +131,6 @@ export class RegistroComponent implements OnInit {
   mostrarFormularioJornada = false;
   mostrarFormularioFranja = false;
   mostrarFormularioDisponibilidad = false;
-
   editandoDocente = false;
   editandoAsignatura = false;
   editandoCurso = false;
@@ -148,9 +139,7 @@ export class RegistroComponent implements OnInit {
   editandoJornada = false;
   editandoFranja = false;
   editandoDisponibilidad = false;
-
   cargandoDatos = false;
-
   guardandoDocente = false;
   guardandoAsignatura = false;
   guardandoCurso = false;
@@ -160,10 +149,7 @@ export class RegistroComponent implements OnInit {
   guardandoFranja = false;
   guardandoDisponibilidad = false;
 
-
-  
   errorCarga = '';
-
   errorFormularioDocente = '';
   errorFormularioAsignatura = '';
   errorFormularioCurso = '';
@@ -173,10 +159,6 @@ export class RegistroComponent implements OnInit {
   errorFormularioFranja = '';
   errorFormularioDisponibilidad = '';
 
-
-  
-
-  
   docentes: DocenteFila[] = [];
   asignaturas: AsignaturaFila[] = [];
   cursos: CursoFila[] = [];
@@ -185,11 +167,8 @@ export class RegistroComponent implements OnInit {
   jornadas: JornadaFila[] = [];
   franjas: FranjaFila[] = [];
   disponibilidades: DisponibilidadFila[] = [];
-
   diasSemana = DIAS_SEMANA;
 
-
-  
   docenteSeleccionado: DocenteFila | null = null;
   asignaturaSeleccionada: AsignaturaFila | null = null;
   cursoSeleccionado: CursoFila | null = null;
@@ -199,24 +178,18 @@ export class RegistroComponent implements OnInit {
   franjaSeleccionada: FranjaFila | null = null;
   disponibilidadSeleccionada: DisponibilidadFila | null = null;
 
-
-
   docentesDisponibles: TeachingResponseDTO[] = [];
   cursosDisponibles: CourseResponseDTO[] = [];
   asignaturasCatalogo: SubjectResponseDTO[] = [];
-
   periodosDisponibles: AcademicPeriodResponseDTO[] = [];
   nivelesDisponibles: AcademicLevelResponseDTO[] = [];
   jornadasDisponibles: SchoolShiftResponseDTO[] = [];
   franjasDisponibles: TimeSlotResponseDTO[] = [];
   academicTeachersCatalogo: AcademicTeacherResponseDTO[] = [];
 
-
   private academicTeachersPorUsuario =
     new Map<number, AcademicTeacherResponseDTO>();
 
-
- 
   formularioDocente = {
     idAcademicLoad: 0,
     idUser: 0,
@@ -227,8 +200,6 @@ export class RegistroComponent implements OnInit {
     horasSemanaArea: 0
   };
 
-
- 
   formularioAsignatura = {
     idSubject: 0,
     nombre: '',
@@ -236,8 +207,6 @@ export class RegistroComponent implements OnInit {
     color: '#347d1c'
   };
 
-
-  
   formularioCurso: {
     idCourse: number;
     idPeriod: number | null;
@@ -256,13 +225,11 @@ export class RegistroComponent implements OnInit {
     estudiantes: 0
   };
 
-
   formularioNivel = {
     idLevel: 0,
     nombre: '',
     descripcion: ''
   };
-
 
   formularioPeriodo = {
     idPeriod: 0,
@@ -271,14 +238,12 @@ export class RegistroComponent implements OnInit {
     fechaFin: ''
   };
 
-
   formularioJornada = {
     idShift: 0,
     nombre: '',
     horaInicio: '',
     horaFin: ''
   };
-
 
   formularioFranja = {
     idTimeSlot: 0,
@@ -289,7 +254,6 @@ export class RegistroComponent implements OnInit {
     esDescanso: false
   };
 
-
   formularioDisponibilidad = {
     idAvailability: 0,
     idTeacher: 0,
@@ -298,22 +262,49 @@ export class RegistroComponent implements OnInit {
     disponible: true
   };
 
-
   constructor(
     private horariosService: HorariosService,
     private docentesService: DocentesService,
     private modalService: ModalService
   ) {}
 
-
   ngOnInit(): void {
     this.cargarDatos();
   }
 
+  private extraerLista<T>(respuesta: any): T[] {
+    if (Array.isArray(respuesta)) {
+      return respuesta;
+    }
 
+    if (!respuesta || typeof respuesta !== 'object') {
+      return [];
+    }
+
+    if (Array.isArray(respuesta.data)) {
+      return respuesta.data;
+    }
+
+    if (Array.isArray(respuesta.content)) {
+      return respuesta.content;
+    }
+
+    if (Array.isArray(respuesta.items)) {
+      return respuesta.items;
+    }
+
+    if (Array.isArray(respuesta.results)) {
+      return respuesta.results;
+    }
+
+    if (respuesta.data && typeof respuesta.data === 'object') {
+      return this.extraerLista<T>(respuesta.data);
+    }
+
+    return [];
+  }
 
   private mensajeErrorEliminacion(err: any, fallback: string): string {
-
     const mensaje: string =
       err?.error?.message ||
       err?.error?.error ||
@@ -331,10 +322,7 @@ export class RegistroComponent implements OnInit {
     return mensaje || fallback;
   }
 
-
-  
   cargarDatos(): void {
-
     this.cargandoDatos = true;
     this.errorCarga = '';
 
@@ -350,7 +338,6 @@ export class RegistroComponent implements OnInit {
       franjas: this.horariosService.listarFranjas(),
       disponibilidad: this.horariosService.listarDisponibilidad()
     }).subscribe({
-
       next: ({
         docentes,
         cursos,
@@ -363,16 +350,39 @@ export class RegistroComponent implements OnInit {
         franjas,
         disponibilidad
       }) => {
+        this.docentesDisponibles =
+          this.extraerLista<TeachingResponseDTO>(docentes);
 
-        this.docentesDisponibles = docentes.data ?? [];
-        this.cursosDisponibles = cursos.data ?? [];
-        this.asignaturasCatalogo = asignaturas.data ?? [];
+        this.cursosDisponibles =
+          this.extraerLista<CourseResponseDTO>(cursos);
 
-        this.periodosDisponibles = periodos.data ?? [];
-        this.nivelesDisponibles = niveles.data ?? [];
-        this.jornadasDisponibles = jornadas.data ?? [];
-        this.franjasDisponibles = franjas.data ?? [];
+        this.asignaturasCatalogo =
+          this.extraerLista<SubjectResponseDTO>(asignaturas);
 
+        this.periodosDisponibles =
+          this.extraerLista<AcademicPeriodResponseDTO>(periodos);
+
+        this.nivelesDisponibles =
+          this.extraerLista<AcademicLevelResponseDTO>(niveles);
+
+        this.jornadasDisponibles =
+          this.extraerLista<SchoolShiftResponseDTO>(jornadas);
+
+        this.franjasDisponibles =
+          this.extraerLista<TimeSlotResponseDTO>(franjas);
+
+        const cargasDisponibles =
+          this.extraerLista<AcademicLoadResponseDTO>(cargas);
+
+        const disponibilidadData =
+          this.extraerLista<TeacherAvailabilityResponseDTO>(
+            disponibilidad
+          );
+
+        const academicTeachersData =
+          this.extraerLista<AcademicTeacherResponseDTO>(
+            academicTeachers
+          );
 
         const docentesPorId =
           new Map<number, TeachingResponseDTO>(
@@ -382,8 +392,6 @@ export class RegistroComponent implements OnInit {
             ])
           );
 
-
-
         const cursosPorId =
           new Map<number, CourseResponseDTO>(
             this.cursosDisponibles.map(curso => [
@@ -391,7 +399,6 @@ export class RegistroComponent implements OnInit {
               curso
             ])
           );
-
 
         const asignaturasPorId =
           new Map<number, SubjectResponseDTO>(
@@ -401,12 +408,8 @@ export class RegistroComponent implements OnInit {
             ])
           );
 
-
-
-        const academicTeachersData =
-          academicTeachers.data ?? [];
-
-        this.academicTeachersCatalogo = academicTeachersData;
+        this.academicTeachersCatalogo =
+          academicTeachersData;
 
         this.academicTeachersPorUsuario =
           new Map<number, AcademicTeacherResponseDTO>(
@@ -416,7 +419,6 @@ export class RegistroComponent implements OnInit {
             ])
           );
 
-
         const academicTeacherPorId =
           new Map<number, AcademicTeacherResponseDTO>(
             academicTeachersData.map(docente => [
@@ -424,8 +426,6 @@ export class RegistroComponent implements OnInit {
               docente
             ])
           );
-
-
 
         this.asignaturas =
           this.asignaturasCatalogo.map(asignatura => ({
@@ -435,12 +435,8 @@ export class RegistroComponent implements OnInit {
             color: asignatura.color ?? '#347d1c'
           }));
 
-
-
         this.cursos =
           this.cursosDisponibles.map(curso => {
-
-
             const academicTeacher =
               curso.homeroomTeacher !== null &&
               curso.homeroomTeacher !== undefined
@@ -457,36 +453,27 @@ export class RegistroComponent implements OnInit {
               idPeriod: Number(curso.idPeriod ?? 0),
               idLevel: Number(curso.idLevel ?? 0),
               idShift: Number(curso.idShift ?? 0),
-
               homeroomTeacher:
                 curso.homeroomTeacher ?? null,
-
               nombre: curso.name ?? '',
-
               docenteTitular: docenteTitular
                 ? `${docenteTitular.name ?? ''} ${docenteTitular.surnames ?? ''}`.trim()
                 : 'Sin asignar',
-
               nivel: this.obtenerNombreNivel(
                 Number(curso.idLevel ?? 0)
               ),
-
               jornada: this.obtenerNombreJornada(
                 Number(curso.idShift ?? 0)
               ),
-
               estudiantes: Number(
                 curso.studentCount ?? 0
               )
             };
           });
 
-
-
         this.docentes =
-          (cargas.data ?? [])
+          cargasDisponibles
             .map(carga => {
-
               const academicTeacher =
                 academicTeacherPorId.get(
                   carga.idTeacher
@@ -516,45 +503,32 @@ export class RegistroComponent implements OnInit {
               return {
                 idAcademicLoad:
                   carga.idAcademicLoad,
-
                 idAcademicTeacher:
                   academicTeacher.idAcademicTeacher,
-
                 idUser:
                   academicTeacher.idUser,
-
                 idCourse:
                   carga.idCourse,
-
                 idSubject:
                   carga.idSubject,
-
                 nombre:
                   docente.name ?? '',
-
                 apellidos:
                   docente.surnames ?? '',
-
                 photoUrl:
                   docente.photoUrl ?? null,
-
                 area: asignatura
                   ? (asignatura.name ?? 'Asignatura sin nombre')
                   : 'Asignatura no encontrada',
-
                 curso: curso
                   ? (curso.name ?? 'Curso sin nombre')
                   : `Curso #${carga.idCourse}`,
-
                 maxDailyHours:
                   academicTeacher.maxDailyHours ?? 0,
-
                 maxWeeklyHours:
                   academicTeacher.maxWeeklyHours ?? 0,
-
                 horasSemanaArea:
                   carga.weeklyHours ?? 0
-
               } as DocenteFila;
             })
             .filter(
@@ -562,14 +536,12 @@ export class RegistroComponent implements OnInit {
                 fila !== null
             );
 
-
         this.niveles =
           this.nivelesDisponibles.map(nivel => ({
             idLevel: nivel.idLevel,
             nombre: nivel.name ?? '',
             descripcion: nivel.description ?? ''
           }));
-
 
         this.periodos =
           this.periodosDisponibles.map(periodo => ({
@@ -579,7 +551,6 @@ export class RegistroComponent implements OnInit {
             fechaFin: periodo.endDate ?? ''
           }));
 
-
         this.jornadas =
           this.jornadasDisponibles.map(jornada => ({
             idShift: jornada.idShift,
@@ -588,7 +559,6 @@ export class RegistroComponent implements OnInit {
             horaFin: jornada.endTime ?? ''
           }));
 
-
         const jornadasPorId =
           new Map<number, SchoolShiftResponseDTO>(
             this.jornadasDisponibles.map(jornada => [
@@ -596,7 +566,6 @@ export class RegistroComponent implements OnInit {
               jornada
             ])
           );
-
 
         this.franjas =
           this.franjasDisponibles.map(franja => ({
@@ -611,7 +580,6 @@ export class RegistroComponent implements OnInit {
             esDescanso: !!franja.isBreak
           }));
 
-
         const franjasPorId =
           new Map<number, TimeSlotResponseDTO>(
             this.franjasDisponibles.map(franja => [
@@ -620,10 +588,8 @@ export class RegistroComponent implements OnInit {
             ])
           );
 
-
         this.disponibilidades =
-          (disponibilidad.data ?? []).map(item => {
-
+          disponibilidadData.map(item => {
             const academicTeacher =
               academicTeacherPorId.get(item.idTeacher);
 
@@ -638,35 +604,29 @@ export class RegistroComponent implements OnInit {
             const diaNombre =
               DIAS_SEMANA.find(
                 dia => dia.valor === item.dayOfWeek
-              )?.nombre ?? `Día ${item.dayOfWeek}`;
+              )?.nombre ??
+              `Día ${item.dayOfWeek}`;
 
             return {
               idAvailability: item.idAvailability,
               idTeacher: item.idTeacher,
-
               docente: docente
                 ? `${docente.name ?? ''} ${docente.surnames ?? ''}`.trim()
                 : `Docente #${item.idTeacher}`,
-
               idTimeSlot: item.idTimeSlot,
-
               franja: franja
                 ? `${franja.startTime ?? ''} - ${franja.endTime ?? ''}`
                 : `Franja #${item.idTimeSlot}`,
-
               diaSemana: item.dayOfWeek,
               diaNombre,
               disponible: item.available
             };
           });
 
-
         this.cargandoDatos = false;
       },
 
-
       error: err => {
-
         console.error(
           'Error cargando datos:',
           err
@@ -679,43 +639,39 @@ export class RegistroComponent implements OnInit {
           err?.error?.error ||
           'No se pudo cargar la información desde el servidor.';
       }
-
     });
   }
 
-
- 
   obtenerNombreNivel(idLevel: number): string {
-
     return (
       this.nivelesDisponibles.find(
         nivel => nivel.idLevel === idLevel
-      )?.name ?? `Nivel ${idLevel}`
+      )?.name ??
+      `Nivel ${idLevel}`
     );
   }
 
-
   obtenerNombreJornada(idShift: number): string {
-
     return (
       this.jornadasDisponibles.find(
         jornada => jornada.idShift === idShift
-      )?.name ?? `Jornada ${idShift}`
+      )?.name ??
+      `Jornada ${idShift}`
     );
   }
 
-
-  nombreDocenteAcademico(academico: AcademicTeacherResponseDTO): string {
-
-    const docente = this.docentesDisponibles.find(
-      d => d.idUser === academico.idUser
-    );
+  nombreDocenteAcademico(
+    academico: AcademicTeacherResponseDTO
+  ): string {
+    const docente =
+      this.docentesDisponibles.find(
+        d => d.idUser === academico.idUser
+      );
 
     return docente
       ? `${docente.name ?? ''} ${docente.surnames ?? ''}`.trim()
       : `Docente #${academico.idUser}`;
   }
-
 
   cambiarPestanaDatos(
     pestana: 'academico' | 'calendario' | 'disponibilidad'
@@ -723,28 +679,26 @@ export class RegistroComponent implements OnInit {
     this.pestanaActivaDatos = pestana;
   }
 
-
-  
   seleccionarDocente(docente: DocenteFila): void {
     this.docenteSeleccionado = docente;
   }
 
-
-
   private refrescarCursosDisponibles(): void {
     this.horariosService.listarCursos().subscribe({
       next: respuesta => {
-        this.cursosDisponibles = respuesta.data ?? [];
+        this.cursosDisponibles =
+          this.extraerLista<CourseResponseDTO>(respuesta);
       },
       error: err => {
-        console.error('No se pudo refrescar la lista de cursos:', err);
+        console.error(
+          'No se pudo refrescar la lista de cursos:',
+          err
+        );
       }
     });
   }
 
-
   abrirAgregarDocente(): void {
-
     this.editandoDocente = false;
     this.errorFormularioDocente = '';
 
@@ -762,9 +716,7 @@ export class RegistroComponent implements OnInit {
     this.mostrarFormularioDocente = true;
   }
 
-
   abrirEditarDocente(): void {
-
     if (!this.docenteSeleccionado) {
       return;
     }
@@ -789,17 +741,13 @@ export class RegistroComponent implements OnInit {
     this.mostrarFormularioDocente = true;
   }
 
-
   cerrarFormularioDocente(): void {
-
     if (!this.guardandoDocente) {
       this.mostrarFormularioDocente = false;
     }
   }
 
-
   guardarDocente(): void {
-
     this.errorFormularioDocente = '';
 
     const formulario =
@@ -817,7 +765,6 @@ export class RegistroComponent implements OnInit {
       return;
     }
 
-
     if (
       !this.cursosDisponibles.some(
         curso => curso.idCourse === formulario.idCourse
@@ -828,7 +775,6 @@ export class RegistroComponent implements OnInit {
       return;
     }
 
-
     if (
       formulario.maxDailyHours <= 0 ||
       formulario.maxDailyHours > 24
@@ -837,7 +783,6 @@ export class RegistroComponent implements OnInit {
         'Las horas máximas diarias deben estar entre 1 y 24.';
       return;
     }
-
 
     if (
       formulario.maxWeeklyHours <= 0 ||
@@ -848,19 +793,15 @@ export class RegistroComponent implements OnInit {
       return;
     }
 
-
     this.guardandoDocente = true;
-
 
     const academicTeacherExistente =
       this.academicTeachersPorUsuario.get(
         formulario.idUser
       );
 
-
     const guardarDisponibilidad$ =
       academicTeacherExistente
-
         ? this.horariosService.actualizarDocenteAcademico(
             academicTeacherExistente.idAcademicTeacher,
             {
@@ -869,78 +810,60 @@ export class RegistroComponent implements OnInit {
               maxWeeklyHours: formulario.maxWeeklyHours
             }
           )
-
         : this.horariosService.crearDocenteAcademico({
             idUser: formulario.idUser,
             maxDailyHours: formulario.maxDailyHours,
             maxWeeklyHours: formulario.maxWeeklyHours
           });
 
-
     guardarDisponibilidad$.subscribe({
-
       next: respuesta => {
-
-
         const idAcademicTeacher =
           respuesta?.data?.idAcademicTeacher ??
           academicTeacherExistente?.idAcademicTeacher;
 
         if (!idAcademicTeacher) {
-
           this.guardandoDocente = false;
-
           this.errorFormularioDocente =
             'El backend no devolvió el ID del docente académico.';
-
           return;
         }
-
 
         const carga = {
           idTeacher: idAcademicTeacher,
           idCourse: formulario.idCourse,
           idSubject: formulario.idSubject,
-          // El backend exige >= 1. Al editar se conserva el valor ya guardado;
-          // al crear se envía el mínimo, porque el campo ya no se pide en el formulario.
-          weeklyHours: formulario.horasSemanaArea > 0
-            ? formulario.horasSemanaArea
-            : 1
+          weeklyHours:
+            formulario.horasSemanaArea > 0
+              ? formulario.horasSemanaArea
+              : 1
         };
-
 
         const guardarCarga$ =
           this.editandoDocente
-
             ? this.horariosService.actualizarCargaAcademica(
                 formulario.idAcademicLoad,
                 carga
               )
-
             : this.horariosService.crearCargaAcademica(
                 carga
               );
 
-
         guardarCarga$.subscribe({
-
           next: () => {
-
             this.guardandoDocente = false;
             this.mostrarFormularioDocente = false;
             this.docenteSeleccionado = null;
-
             this.cargarDatos();
-        this.modalService.success(
-          this.editandoDocente
-            ? 'La asignación del docente se actualizó correctamente.'
-            : 'La asignación del docente se agregó correctamente.'
-        );
+
+            this.modalService.success(
+              this.editandoDocente
+                ? 'La asignación del docente se actualizó correctamente.'
+                : 'La asignación del docente se agregó correctamente.'
+            );
           },
 
-
           error: err => {
-
             console.error(
               'Error guardando carga:',
               err
@@ -953,13 +876,10 @@ export class RegistroComponent implements OnInit {
               err?.error?.error ||
               'No se pudo guardar la asignación del docente.';
           }
-
         });
       },
 
-
       error: err => {
-
         console.error(
           'Error guardando docente académico:',
           err
@@ -972,13 +892,10 @@ export class RegistroComponent implements OnInit {
           err?.error?.error ||
           'No se pudo guardar la disponibilidad del docente.';
       }
-
     });
   }
 
-
   async eliminarDocente(): Promise<void> {
-
     if (!this.docenteSeleccionado) {
       return;
     }
@@ -986,24 +903,22 @@ export class RegistroComponent implements OnInit {
     const docente =
       this.docenteSeleccionado;
 
-    const confirmar = await this.modalService.confirm(
-      `¿Deseas quitar la asignación de "${docente.area}" a ${docente.nombre} ${docente.apellidos}?`,
-      'Quitar asignación'
-    );
+    const confirmar =
+      await this.modalService.confirm(
+        `¿Deseas quitar la asignación de "${docente.area}" a ${docente.nombre} ${docente.apellidos}?`,
+        'Quitar asignación'
+      );
 
     if (!confirmar) {
       return;
     }
-
 
     this.horariosService
       .eliminarCargaAcademica(
         docente.idAcademicLoad
       )
       .subscribe({
-
         next: () => {
-
           this.docentes =
             this.docentes.filter(
               item =>
@@ -1014,9 +929,7 @@ export class RegistroComponent implements OnInit {
           this.docenteSeleccionado = null;
         },
 
-
         error: err => {
-
           console.error(
             'Error eliminando carga:',
             err
@@ -1029,18 +942,16 @@ export class RegistroComponent implements OnInit {
             )
           );
         }
-
       });
   }
 
-
-  seleccionarAsignatura(asignatura: AsignaturaFila): void {
+  seleccionarAsignatura(
+    asignatura: AsignaturaFila
+  ): void {
     this.asignaturaSeleccionada = asignatura;
   }
 
-
   abrirAgregarAsignatura(): void {
-
     this.editandoAsignatura = false;
     this.errorFormularioAsignatura = '';
 
@@ -1054,9 +965,7 @@ export class RegistroComponent implements OnInit {
     this.mostrarFormularioAsignatura = true;
   }
 
-
   abrirEditarAsignatura(): void {
-
     if (!this.asignaturaSeleccionada) {
       return;
     }
@@ -1071,17 +980,13 @@ export class RegistroComponent implements OnInit {
     this.mostrarFormularioAsignatura = true;
   }
 
-
   cerrarFormularioAsignatura(): void {
-
     if (!this.guardandoAsignatura) {
       this.mostrarFormularioAsignatura = false;
     }
   }
 
-
   guardarAsignatura(): void {
-
     this.errorFormularioAsignatura = '';
 
     const nombre =
@@ -1094,48 +999,37 @@ export class RegistroComponent implements OnInit {
       this.formularioAsignatura.color ||
       '#347d1c';
 
-
     if (!nombre) {
-
       this.errorFormularioAsignatura =
         'El nombre de la asignatura es obligatorio.';
-
       return;
     }
 
-
     this.guardandoAsignatura = true;
-
 
     const dto = {
       name: nombre,
       description: descripcion,
-      color: color
+      color
     };
-
 
     const peticion =
       this.editandoAsignatura
-
         ? this.horariosService.actualizarAsignatura(
             this.formularioAsignatura.idSubject,
             dto
           )
-
         : this.horariosService.crearAsignatura(
             dto
           );
 
-
     peticion.subscribe({
-
       next: () => {
-
         this.guardandoAsignatura = false;
         this.mostrarFormularioAsignatura = false;
         this.asignaturaSeleccionada = null;
-
         this.cargarDatos();
+
         this.modalService.success(
           this.editandoAsignatura
             ? 'La asignatura se actualizó correctamente.'
@@ -1143,9 +1037,7 @@ export class RegistroComponent implements OnInit {
         );
       },
 
-
       error: err => {
-
         console.error(
           'Error guardando asignatura:',
           err
@@ -1158,13 +1050,10 @@ export class RegistroComponent implements OnInit {
           err?.error?.error ||
           'No se pudo guardar la asignatura.';
       }
-
     });
   }
 
-
   async eliminarAsignatura(): Promise<void> {
-
     if (!this.asignaturaSeleccionada) {
       return;
     }
@@ -1172,85 +1061,85 @@ export class RegistroComponent implements OnInit {
     const asignatura =
       this.asignaturaSeleccionada;
 
-    const confirmar = await this.modalService.confirm(
-      `¿Deseas eliminar ${asignatura.nombre}?`,
-      'Eliminar asignatura'
-    );
+    const confirmar =
+      await this.modalService.confirm(
+        `¿Deseas eliminar ${asignatura.nombre}?`,
+        'Eliminar asignatura'
+      );
 
     if (!confirmar) {
       return;
     }
 
+    this.horariosService
+      .listarCargasAcademicas()
+      .subscribe({
+        next: async respuesta => {
+          const cargasRelacionadas =
+            this.extraerLista<AcademicLoadResponseDTO>(
+              respuesta
+            ).filter(
+              carga =>
+                carga.idSubject ===
+                asignatura.idSubject
+            );
 
-    // Antes de borrar, vemos si hay cargas académicas (docentes asignados a esta
-    // asignatura en algún curso) que dependen de ella. Si las hay, el borrado directo
-    // fallaría con un 409, así que avisamos y, si el usuario acepta, las eliminamos
-    // primero en cascada.
-    this.horariosService.listarCargasAcademicas().subscribe({
+          if (cargasRelacionadas.length > 0) {
+            const confirmarCascada =
+              await this.modalService.confirm(
+                `"${asignatura.nombre}" está asignada a ${cargasRelacionadas.length} docente(s)/curso(s) en carga académica. Si continúas, también se eliminarán esas asignaciones. ¿Deseas continuar?`,
+                'La asignatura está en uso'
+              );
 
-      next: async respuesta => {
-
-        const cargasRelacionadas =
-          (respuesta.data ?? []).filter(
-            carga => carga.idSubject === asignatura.idSubject
-          );
-
-        if (cargasRelacionadas.length > 0) {
-
-          const confirmarCascada = await this.modalService.confirm(
-            `"${asignatura.nombre}" está asignada a ${cargasRelacionadas.length} ` +
-            `docente(s)/curso(s) en carga académica. Si continúas, también se eliminarán ` +
-            `esas asignaciones. ¿Deseas continuar?`,
-            'La asignatura está en uso'
-          );
-
-          if (!confirmarCascada) {
-            return;
+            if (!confirmarCascada) {
+              return;
+            }
           }
+
+          this.ejecutarEliminarAsignatura(
+            asignatura,
+            cargasRelacionadas
+          );
+        },
+
+        error: err => {
+          console.error(
+            'No se pudo verificar si la asignatura está en uso:',
+            err
+          );
+
+          this.modalService.error(
+            'No se pudo verificar si la asignatura está en uso. Inténtalo de nuevo.'
+          );
         }
-
-        this.ejecutarEliminarAsignatura(asignatura, cargasRelacionadas);
-      },
-
-      error: err => {
-        console.error(
-          'No se pudo verificar si la asignatura está en uso:',
-          err
-        );
-
-        this.modalService.error(
-          'No se pudo verificar si la asignatura está en uso. Inténtalo de nuevo.'
-        );
-      }
-    });
+      });
   }
-
-
 
   private ejecutarEliminarAsignatura(
     asignatura: AsignaturaFila,
     cargasRelacionadas: AcademicLoadResponseDTO[]
   ): void {
-
     const eliminacionesCargas =
-      cargasRelacionadas.map(carga =>
-        this.horariosService.eliminarCargaAcademica(carga.idAcademicLoad)
+      cargasRelacionadas.map(
+        carga =>
+          this.horariosService.eliminarCargaAcademica(
+            carga.idAcademicLoad
+          )
       );
 
-    // forkJoin([]) emite un arreglo vacío y se completa de inmediato, así que no hace
-    // falta un caso especial cuando no hay cargas relacionadas.
-    const pasoPrevio$ = forkJoin(eliminacionesCargas);
+    const pasoPrevio$ =
+      forkJoin(eliminacionesCargas);
 
     pasoPrevio$
       .pipe(
         switchMap(() =>
-          this.horariosService.eliminarAsignatura(asignatura.idSubject)
+          this.horariosService.eliminarAsignatura(
+            asignatura.idSubject
+          )
         )
       )
       .subscribe({
-
         next: () => {
-
           this.asignaturas =
             this.asignaturas.filter(
               item =>
@@ -1267,13 +1156,10 @@ export class RegistroComponent implements OnInit {
 
           this.asignaturaSeleccionada = null;
 
-          // Refresca todo (docentes, cargas, etc.) para reflejar las asignaciones eliminadas
           this.cargarDatos();
         },
 
-
         error: err => {
-
           console.error(
             'Error eliminando asignatura:',
             err
@@ -1286,22 +1172,16 @@ export class RegistroComponent implements OnInit {
             )
           );
         }
-
       });
   }
-
-
 
   seleccionarCurso(curso: CursoFila): void {
     this.cursoSeleccionado = curso;
   }
 
-
   abrirAgregarCurso(): void {
-
     this.editandoCurso = false;
     this.errorFormularioCurso = '';
-
 
     const primerPeriodoDisponible =
       this.periodosDisponibles[0]?.idPeriod ?? null;
@@ -1311,7 +1191,6 @@ export class RegistroComponent implements OnInit {
 
     const primeraJornadaDisponible =
       this.jornadasDisponibles[0]?.idShift ?? 0;
-
 
     this.formularioCurso = {
       idCourse: 0,
@@ -1326,9 +1205,7 @@ export class RegistroComponent implements OnInit {
     this.mostrarFormularioCurso = true;
   }
 
-
   abrirEditarCurso(): void {
-
     if (!this.cursoSeleccionado) {
       return;
     }
@@ -1344,25 +1221,24 @@ export class RegistroComponent implements OnInit {
       idPeriod: curso.idPeriod ?? null,
       idLevel: curso.idLevel,
       idShift: curso.idShift,
-      homeroomTeacher: curso.homeroomTeacher,
-      nombre: curso.nombre ?? '',
-      estudiantes: curso.estudiantes
+      homeroomTeacher:
+        curso.homeroomTeacher,
+      nombre:
+        curso.nombre ?? '',
+      estudiantes:
+        curso.estudiantes
     };
 
     this.mostrarFormularioCurso = true;
   }
 
-
   cerrarFormularioCurso(): void {
-
     if (!this.guardandoCurso) {
       this.mostrarFormularioCurso = false;
     }
   }
 
-
   guardarCurso(): void {
-
     this.errorFormularioCurso = '';
 
     const formulario =
@@ -1371,24 +1247,17 @@ export class RegistroComponent implements OnInit {
     const nombre =
       (formulario.nombre ?? '').trim();
 
-
     if (!nombre) {
-
       this.errorFormularioCurso =
         'El nombre del curso es obligatorio.';
-
       return;
     }
-
 
     if (formulario.idPeriod === null) {
-
       this.errorFormularioCurso =
         'Selecciona un período académico.';
-
       return;
     }
-
 
     const idPeriod =
       Number(formulario.idPeriod);
@@ -1402,103 +1271,83 @@ export class RegistroComponent implements OnInit {
     const estudiantes =
       Number(formulario.estudiantes);
 
-
     if (
       !Number.isInteger(idPeriod) ||
       idPeriod <= 0
     ) {
-
       this.errorFormularioCurso =
         'Selecciona un período académico válido.';
-
       return;
     }
-
 
     if (
       this.periodosDisponibles.length > 0 &&
       !this.periodosDisponibles.some(
-        periodo => periodo.idPeriod === idPeriod
+        periodo =>
+          periodo.idPeriod === idPeriod
       )
     ) {
-
       this.errorFormularioCurso =
         'El período seleccionado no existe. Selecciona un período válido.';
-
       return;
     }
-
 
     if (
       !this.nivelesDisponibles.some(
-        nivel => nivel.idLevel === idLevel
+        nivel =>
+          nivel.idLevel === idLevel
       )
     ) {
-
       this.errorFormularioCurso =
         'Selecciona un nivel válido.';
-
       return;
     }
-
 
     if (
       !this.jornadasDisponibles.some(
-        jornada => jornada.idShift === idShift
+        jornada =>
+          jornada.idShift === idShift
       )
     ) {
-
       this.errorFormularioCurso =
         'Selecciona una jornada válida.';
-
       return;
     }
-
 
     if (
       !Number.isInteger(estudiantes) ||
       estudiantes < 0 ||
       estudiantes > 32767
     ) {
-
       this.errorFormularioCurso =
         'La cantidad de estudiantes debe estar entre 0 y 32.767.';
-
       return;
     }
-
 
     const idUserHomeroomTeacher =
       formulario.homeroomTeacher !== null &&
       Number(formulario.homeroomTeacher) > 0
-
         ? Number(formulario.homeroomTeacher)
-
         : null;
 
-
-    let homeroomTeacher: number | null = null;
-
+    let homeroomTeacher:
+      number | null = null;
 
     if (idUserHomeroomTeacher !== null) {
-
       const academicTeacher =
         this.academicTeachersPorUsuario.get(
           idUserHomeroomTeacher
         );
 
       if (!academicTeacher) {
-
         this.errorFormularioCurso =
           'El docente seleccionado todavía no está registrado como docente académico. Regístralo primero antes de asignarlo como titular.';
-
         return;
       }
 
       homeroomTeacher =
         academicTeacher.idAcademicTeacher;
     }
-
 
     const dto: CourseRequestDTO = {
       idPeriod,
@@ -1509,33 +1358,25 @@ export class RegistroComponent implements OnInit {
       studentCount: estudiantes
     };
 
-
     console.log(
       'CURSO QUE SE ENVÍA AL BACKEND:',
       JSON.stringify(dto, null, 2)
     );
 
-
     this.guardandoCurso = true;
-
 
     const peticion =
       this.editandoCurso
-
         ? this.horariosService.actualizarCurso(
             formulario.idCourse,
             dto
           )
-
         : this.horariosService.crearCurso(
             dto
           );
 
-
     peticion.subscribe({
-
       next: respuesta => {
-
         console.log(
           'Curso guardado correctamente:',
           respuesta
@@ -1544,8 +1385,8 @@ export class RegistroComponent implements OnInit {
         this.guardandoCurso = false;
         this.mostrarFormularioCurso = false;
         this.cursoSeleccionado = null;
-
         this.cargarDatos();
+
         this.modalService.success(
           this.editandoCurso
             ? 'El curso se actualizó correctamente.'
@@ -1553,9 +1394,7 @@ export class RegistroComponent implements OnInit {
         );
       },
 
-
       error: err => {
-
         this.guardandoCurso = false;
 
         console.error(
@@ -1563,72 +1402,49 @@ export class RegistroComponent implements OnInit {
           err
         );
 
-
         let mensaje = '';
 
-
         if (typeof err?.error === 'string') {
-
           mensaje = err.error;
-
         } else if (err?.error?.message) {
-
           mensaje = err.error.message;
-
         } else if (err?.error?.error) {
-
           mensaje = err.error.error;
-
         } else if (err?.message) {
-
           mensaje = err.message;
         }
 
-
         const mensajeLower =
           mensaje.toLowerCase();
-
 
         if (
           mensajeLower.includes('fk_course_period') ||
           mensajeLower.includes('academic_period') ||
           mensajeLower.includes('foreign key')
         ) {
-
           this.errorFormularioCurso =
             'El período seleccionado no existe. Selecciona un período válido.';
-
         } else if (err?.status === 500) {
-
           this.errorFormularioCurso =
             mensaje ||
             'El servidor no pudo registrar el curso.';
-
         } else if (err?.status === 400) {
-
           this.errorFormularioCurso =
             mensaje ||
             'Los datos del curso no son válidos.';
-
         } else if (err?.status === 401) {
-
           this.errorFormularioCurso =
             'Tu sesión ha expirado. Inicia sesión nuevamente.';
-
         } else {
-
           this.errorFormularioCurso =
             mensaje ||
             'No se pudo guardar el curso. Inténtalo nuevamente.';
         }
       }
-
     });
   }
 
-
   async eliminarCurso(): Promise<void> {
-
     if (!this.cursoSeleccionado) {
       return;
     }
@@ -1636,42 +1452,38 @@ export class RegistroComponent implements OnInit {
     const curso =
       this.cursoSeleccionado;
 
-    const confirmar = await this.modalService.confirm(
-      `¿Deseas eliminar el curso ${curso.nombre}?`,
-      'Eliminar curso'
-    );
+    const confirmar =
+      await this.modalService.confirm(
+        `¿Deseas eliminar el curso ${curso.nombre}?`,
+        'Eliminar curso'
+      );
 
     if (!confirmar) {
       return;
     }
 
-
     this.horariosService
-      .eliminarCurso(
-        curso.idCourse
-      )
+      .eliminarCurso(curso.idCourse)
       .subscribe({
-
         next: () => {
-
           this.cursos =
             this.cursos.filter(
               item =>
-                item.idCourse !== curso.idCourse
+                item.idCourse !==
+                curso.idCourse
             );
 
           this.cursosDisponibles =
             this.cursosDisponibles.filter(
               item =>
-                item.idCourse !== curso.idCourse
+                item.idCourse !==
+                curso.idCourse
             );
 
           this.cursoSeleccionado = null;
         },
 
-
         error: err => {
-
           console.error(
             'Error eliminando curso:',
             err
@@ -1683,11 +1495,9 @@ export class RegistroComponent implements OnInit {
               'No se pudo eliminar el curso.'
             )
           );
-        } 
-
+        }
       });
   }
-
 
   seleccionarNivel(nivel: NivelFila): void {
     this.nivelSeleccionado = nivel;
@@ -1714,7 +1524,8 @@ export class RegistroComponent implements OnInit {
     this.editandoNivel = true;
     this.errorFormularioNivel = '';
 
-    const nivel = this.nivelSeleccionado;
+    const nivel =
+      this.nivelSeleccionado;
 
     this.formularioNivel = {
       idLevel: nivel.idLevel,
@@ -1734,10 +1545,12 @@ export class RegistroComponent implements OnInit {
   guardarNivel(): void {
     this.errorFormularioNivel = '';
 
-    const nombre = this.formularioNivel.nombre.trim();
+    const nombre =
+      this.formularioNivel.nombre.trim();
 
     if (!nombre) {
-      this.errorFormularioNivel = 'El nombre del nivel es obligatorio.';
+      this.errorFormularioNivel =
+        'El nombre del nivel es obligatorio.';
       return;
     }
 
@@ -1745,12 +1558,17 @@ export class RegistroComponent implements OnInit {
 
     const dto: AcademicLevelRequestDTO = {
       name: nombre,
-      description: this.formularioNivel.descripcion.trim()
+      description:
+        this.formularioNivel.descripcion.trim()
     };
 
-    const peticion = this.editandoNivel
-      ? this.horariosService.actualizarNivel(this.formularioNivel.idLevel, dto)
-      : this.horariosService.crearNivel(dto);
+    const peticion =
+      this.editandoNivel
+        ? this.horariosService.actualizarNivel(
+            this.formularioNivel.idLevel,
+            dto
+          )
+        : this.horariosService.crearNivel(dto);
 
     peticion.subscribe({
       next: () => {
@@ -1758,15 +1576,22 @@ export class RegistroComponent implements OnInit {
         this.mostrarFormularioNivel = false;
         this.nivelSeleccionado = null;
         this.cargarDatos();
+
         this.modalService.success(
           this.editandoNivel
             ? 'El nivel académico se actualizó correctamente.'
             : 'El nivel académico se agregó correctamente.'
         );
       },
+
       error: err => {
-        console.error('Error guardando nivel:', err);
+        console.error(
+          'Error guardando nivel:',
+          err
+        );
+
         this.guardandoNivel = false;
+
         this.errorFormularioNivel =
           err?.error?.message ||
           err?.error?.error ||
@@ -1780,37 +1605,59 @@ export class RegistroComponent implements OnInit {
       return;
     }
 
-    const nivel = this.nivelSeleccionado;
+    const nivel =
+      this.nivelSeleccionado;
 
-    const confirmar = await this.modalService.confirm(
-      `¿Deseas eliminar el nivel ${nivel.nombre}?`,
-      'Eliminar nivel académico'
-    );
+    const confirmar =
+      await this.modalService.confirm(
+        `¿Deseas eliminar el nivel ${nivel.nombre}?`,
+        'Eliminar nivel académico'
+      );
 
     if (!confirmar) {
       return;
     }
 
-    this.horariosService.eliminarNivel(nivel.idLevel).subscribe({
-      next: () => {
-        this.niveles = this.niveles.filter(item => item.idLevel !== nivel.idLevel);
-        this.nivelesDisponibles = this.nivelesDisponibles.filter(item => item.idLevel !== nivel.idLevel);
-        this.nivelSeleccionado = null;
-      },
-      error: err => {
-        console.error('Error eliminando nivel:', err);
-        this.modalService.error(
-          this.mensajeErrorEliminacion(
-            err,
-            'No se pudo eliminar el nivel académico.'
-          )
-        );
-      }
-    });
+    this.horariosService
+      .eliminarNivel(nivel.idLevel)
+      .subscribe({
+        next: () => {
+          this.niveles =
+            this.niveles.filter(
+              item =>
+                item.idLevel !==
+                nivel.idLevel
+            );
+
+          this.nivelesDisponibles =
+            this.nivelesDisponibles.filter(
+              item =>
+                item.idLevel !==
+                nivel.idLevel
+            );
+
+          this.nivelSeleccionado = null;
+        },
+
+        error: err => {
+          console.error(
+            'Error eliminando nivel:',
+            err
+          );
+
+          this.modalService.error(
+            this.mensajeErrorEliminacion(
+              err,
+              'No se pudo eliminar el nivel académico.'
+            )
+          );
+        }
+      });
   }
 
-
-  seleccionarPeriodo(periodo: PeriodoFila): void {
+  seleccionarPeriodo(
+    periodo: PeriodoFila
+  ): void {
     this.periodoSeleccionado = periodo;
   }
 
@@ -1836,7 +1683,8 @@ export class RegistroComponent implements OnInit {
     this.editandoPeriodo = true;
     this.errorFormularioPeriodo = '';
 
-    const periodo = this.periodoSeleccionado;
+    const periodo =
+      this.periodoSeleccionado;
 
     this.formularioPeriodo = {
       idPeriod: periodo.idPeriod,
@@ -1857,21 +1705,33 @@ export class RegistroComponent implements OnInit {
   guardarPeriodo(): void {
     this.errorFormularioPeriodo = '';
 
-    const formulario = this.formularioPeriodo;
-    const nombre = formulario.nombre.trim();
+    const formulario =
+      this.formularioPeriodo;
+
+    const nombre =
+      formulario.nombre.trim();
 
     if (!nombre) {
-      this.errorFormularioPeriodo = 'El nombre del período es obligatorio.';
+      this.errorFormularioPeriodo =
+        'El nombre del período es obligatorio.';
       return;
     }
 
-    if (!formulario.fechaInicio || !formulario.fechaFin) {
-      this.errorFormularioPeriodo = 'Las fechas de inicio y fin son obligatorias.';
+    if (
+      !formulario.fechaInicio ||
+      !formulario.fechaFin
+    ) {
+      this.errorFormularioPeriodo =
+        'Las fechas de inicio y fin son obligatorias.';
       return;
     }
 
-    if (formulario.fechaFin < formulario.fechaInicio) {
-      this.errorFormularioPeriodo = 'La fecha de fin no puede ser anterior a la fecha de inicio.';
+    if (
+      formulario.fechaFin <
+      formulario.fechaInicio
+    ) {
+      this.errorFormularioPeriodo =
+        'La fecha de fin no puede ser anterior a la fecha de inicio.';
       return;
     }
 
@@ -1879,13 +1739,21 @@ export class RegistroComponent implements OnInit {
 
     const dto: AcademicPeriodRequestDTO = {
       name: nombre,
-      startDate: formulario.fechaInicio,
-      endDate: formulario.fechaFin
+      startDate:
+        formulario.fechaInicio,
+      endDate:
+        formulario.fechaFin
     };
 
-    const peticion = this.editandoPeriodo
-      ? this.horariosService.actualizarPeriodo(formulario.idPeriod, dto)
-      : this.horariosService.crearPeriodo(dto);
+    const peticion =
+      this.editandoPeriodo
+        ? this.horariosService.actualizarPeriodo(
+            formulario.idPeriod,
+            dto
+          )
+        : this.horariosService.crearPeriodo(
+            dto
+          );
 
     peticion.subscribe({
       next: () => {
@@ -1893,15 +1761,22 @@ export class RegistroComponent implements OnInit {
         this.mostrarFormularioPeriodo = false;
         this.periodoSeleccionado = null;
         this.cargarDatos();
+
         this.modalService.success(
           this.editandoPeriodo
             ? 'El período académico se actualizó correctamente.'
             : 'El período académico se agregó correctamente.'
         );
       },
+
       error: err => {
-        console.error('Error guardando período:', err);
+        console.error(
+          'Error guardando período:',
+          err
+        );
+
         this.guardandoPeriodo = false;
+
         this.errorFormularioPeriodo =
           err?.error?.message ||
           err?.error?.error ||
@@ -1915,37 +1790,59 @@ export class RegistroComponent implements OnInit {
       return;
     }
 
-    const periodo = this.periodoSeleccionado;
+    const periodo =
+      this.periodoSeleccionado;
 
-    const confirmar = await this.modalService.confirm(
-      `¿Deseas eliminar el período ${periodo.nombre}?`,
-      'Eliminar período académico'
-    );
+    const confirmar =
+      await this.modalService.confirm(
+        `¿Deseas eliminar el período ${periodo.nombre}?`,
+        'Eliminar período académico'
+      );
 
     if (!confirmar) {
       return;
     }
 
-    this.horariosService.eliminarPeriodo(periodo.idPeriod).subscribe({
-      next: () => {
-        this.periodos = this.periodos.filter(item => item.idPeriod !== periodo.idPeriod);
-        this.periodosDisponibles = this.periodosDisponibles.filter(item => item.idPeriod !== periodo.idPeriod);
-        this.periodoSeleccionado = null;
-      },
-      error: err => {
-        console.error('Error eliminando período:', err);
-        this.modalService.error(
-          this.mensajeErrorEliminacion(
-            err,
-            'No se pudo eliminar el período académico.'
-          )
-        );
-      }
-    });
+    this.horariosService
+      .eliminarPeriodo(periodo.idPeriod)
+      .subscribe({
+        next: () => {
+          this.periodos =
+            this.periodos.filter(
+              item =>
+                item.idPeriod !==
+                periodo.idPeriod
+            );
+
+          this.periodosDisponibles =
+            this.periodosDisponibles.filter(
+              item =>
+                item.idPeriod !==
+                periodo.idPeriod
+            );
+
+          this.periodoSeleccionado = null;
+        },
+
+        error: err => {
+          console.error(
+            'Error eliminando período:',
+            err
+          );
+
+          this.modalService.error(
+            this.mensajeErrorEliminacion(
+              err,
+              'No se pudo eliminar el período académico.'
+            )
+          );
+        }
+      });
   }
 
-
-  seleccionarJornada(jornada: JornadaFila): void {
+  seleccionarJornada(
+    jornada: JornadaFila
+  ): void {
     this.jornadaSeleccionada = jornada;
   }
 
@@ -1971,7 +1868,8 @@ export class RegistroComponent implements OnInit {
     this.editandoJornada = true;
     this.errorFormularioJornada = '';
 
-    const jornada = this.jornadaSeleccionada;
+    const jornada =
+      this.jornadaSeleccionada;
 
     this.formularioJornada = {
       idShift: jornada.idShift,
@@ -1992,16 +1890,24 @@ export class RegistroComponent implements OnInit {
   guardarJornada(): void {
     this.errorFormularioJornada = '';
 
-    const formulario = this.formularioJornada;
-    const nombre = formulario.nombre.trim();
+    const formulario =
+      this.formularioJornada;
+
+    const nombre =
+      formulario.nombre.trim();
 
     if (!nombre) {
-      this.errorFormularioJornada = 'El nombre de la jornada es obligatorio.';
+      this.errorFormularioJornada =
+        'El nombre de la jornada es obligatorio.';
       return;
     }
 
-    if (!formulario.horaInicio || !formulario.horaFin) {
-      this.errorFormularioJornada = 'Las horas de inicio y fin son obligatorias.';
+    if (
+      !formulario.horaInicio ||
+      !formulario.horaFin
+    ) {
+      this.errorFormularioJornada =
+        'Las horas de inicio y fin son obligatorias.';
       return;
     }
 
@@ -2009,13 +1915,21 @@ export class RegistroComponent implements OnInit {
 
     const dto: SchoolShiftRequestDTO = {
       name: nombre,
-      startTime: formulario.horaInicio,
-      endTime: formulario.horaFin
+      startTime:
+        formulario.horaInicio,
+      endTime:
+        formulario.horaFin
     };
 
-    const peticion = this.editandoJornada
-      ? this.horariosService.actualizarJornada(formulario.idShift, dto)
-      : this.horariosService.crearJornada(dto);
+    const peticion =
+      this.editandoJornada
+        ? this.horariosService.actualizarJornada(
+            formulario.idShift,
+            dto
+          )
+        : this.horariosService.crearJornada(
+            dto
+          );
 
     peticion.subscribe({
       next: () => {
@@ -2023,15 +1937,22 @@ export class RegistroComponent implements OnInit {
         this.mostrarFormularioJornada = false;
         this.jornadaSeleccionada = null;
         this.cargarDatos();
+
         this.modalService.success(
           this.editandoJornada
             ? 'La jornada académica se actualizó correctamente.'
             : 'La jornada académica se agregó correctamente.'
         );
       },
+
       error: err => {
-        console.error('Error guardando jornada:', err);
+        console.error(
+          'Error guardando jornada:',
+          err
+        );
+
         this.guardandoJornada = false;
+
         this.errorFormularioJornada =
           err?.error?.message ||
           err?.error?.error ||
@@ -2045,38 +1966,59 @@ export class RegistroComponent implements OnInit {
       return;
     }
 
-    const jornada = this.jornadaSeleccionada;
+    const jornada =
+      this.jornadaSeleccionada;
 
-    const confirmar = await this.modalService.confirm(
-      `¿Deseas eliminar la jornada ${jornada.nombre}?`,
-      'Eliminar jornada académica'
-    );
+    const confirmar =
+      await this.modalService.confirm(
+        `¿Deseas eliminar la jornada ${jornada.nombre}?`,
+        'Eliminar jornada académica'
+      );
 
     if (!confirmar) {
       return;
     }
 
-    this.horariosService.eliminarJornada(jornada.idShift).subscribe({
-      next: () => {
-        this.jornadas = this.jornadas.filter(item => item.idShift !== jornada.idShift);
-        this.jornadasDisponibles = this.jornadasDisponibles.filter(item => item.idShift !== jornada.idShift);
-        this.jornadaSeleccionada = null;
-      },
-      error: err => {
-        console.error('Error eliminando jornada:', err);
-        this.modalService.error(
-          this.mensajeErrorEliminacion(
-            err,
-            'No se pudo eliminar la jornada académica.'
-          )
-        );
-      }
-    });
+    this.horariosService
+      .eliminarJornada(jornada.idShift)
+      .subscribe({
+        next: () => {
+          this.jornadas =
+            this.jornadas.filter(
+              item =>
+                item.idShift !==
+                jornada.idShift
+            );
+
+          this.jornadasDisponibles =
+            this.jornadasDisponibles.filter(
+              item =>
+                item.idShift !==
+                jornada.idShift
+            );
+
+          this.jornadaSeleccionada = null;
+        },
+
+        error: err => {
+          console.error(
+            'Error eliminando jornada:',
+            err
+          );
+
+          this.modalService.error(
+            this.mensajeErrorEliminacion(
+              err,
+              'No se pudo eliminar la jornada académica.'
+            )
+          );
+        }
+      });
   }
 
-
-
-  seleccionarFranja(franja: FranjaFila): void {
+  seleccionarFranja(
+    franja: FranjaFila
+  ): void {
     this.franjaSeleccionada = franja;
   }
 
@@ -2086,7 +2028,8 @@ export class RegistroComponent implements OnInit {
 
     this.formularioFranja = {
       idTimeSlot: 0,
-      idShift: this.jornadasDisponibles[0]?.idShift ?? 0,
+      idShift:
+        this.jornadasDisponibles[0]?.idShift ?? 0,
       orden: 1,
       horaInicio: '',
       horaFin: '',
@@ -2104,15 +2047,22 @@ export class RegistroComponent implements OnInit {
     this.editandoFranja = true;
     this.errorFormularioFranja = '';
 
-    const franja = this.franjaSeleccionada;
+    const franja =
+      this.franjaSeleccionada;
 
     this.formularioFranja = {
-      idTimeSlot: franja.idTimeSlot,
-      idShift: franja.idShift,
-      orden: franja.orden,
-      horaInicio: franja.horaInicio,
-      horaFin: franja.horaFin,
-      esDescanso: franja.esDescanso
+      idTimeSlot:
+        franja.idTimeSlot,
+      idShift:
+        franja.idShift,
+      orden:
+        franja.orden,
+      horaInicio:
+        franja.horaInicio,
+      horaFin:
+        franja.horaFin,
+      esDescanso:
+        franja.esDescanso
     };
 
     this.mostrarFormularioFranja = true;
@@ -2127,36 +2077,57 @@ export class RegistroComponent implements OnInit {
   guardarFranja(): void {
     this.errorFormularioFranja = '';
 
-    const formulario = this.formularioFranja;
+    const formulario =
+      this.formularioFranja;
 
     if (!formulario.idShift) {
-      this.errorFormularioFranja = 'Selecciona la jornada a la que pertenece la franja.';
+      this.errorFormularioFranja =
+        'Selecciona la jornada a la que pertenece la franja.';
       return;
     }
 
-    if (!formulario.orden || formulario.orden <= 0) {
-      this.errorFormularioFranja = 'El orden del bloque debe ser mayor que 0.';
+    if (
+      !formulario.orden ||
+      formulario.orden <= 0
+    ) {
+      this.errorFormularioFranja =
+        'El orden del bloque debe ser mayor que 0.';
       return;
     }
 
-    if (!formulario.horaInicio || !formulario.horaFin) {
-      this.errorFormularioFranja = 'Las horas de inicio y fin son obligatorias.';
+    if (
+      !formulario.horaInicio ||
+      !formulario.horaFin
+    ) {
+      this.errorFormularioFranja =
+        'Las horas de inicio y fin son obligatorias.';
       return;
     }
 
     this.guardandoFranja = true;
 
     const dto: TimeSlotRequestDTO = {
-      idShift: Number(formulario.idShift),
-      slotOrder: Number(formulario.orden),
-      startTime: formulario.horaInicio,
-      endTime: formulario.horaFin,
-      isBreak: formulario.esDescanso
+      idShift:
+        Number(formulario.idShift),
+      slotOrder:
+        Number(formulario.orden),
+      startTime:
+        formulario.horaInicio,
+      endTime:
+        formulario.horaFin,
+      isBreak:
+        formulario.esDescanso
     };
 
-    const peticion = this.editandoFranja
-      ? this.horariosService.actualizarFranja(formulario.idTimeSlot, dto)
-      : this.horariosService.crearFranja(dto);
+    const peticion =
+      this.editandoFranja
+        ? this.horariosService.actualizarFranja(
+            formulario.idTimeSlot,
+            dto
+          )
+        : this.horariosService.crearFranja(
+            dto
+          );
 
     peticion.subscribe({
       next: () => {
@@ -2164,15 +2135,22 @@ export class RegistroComponent implements OnInit {
         this.mostrarFormularioFranja = false;
         this.franjaSeleccionada = null;
         this.cargarDatos();
+
         this.modalService.success(
           this.editandoFranja
             ? 'La franja horaria se actualizó correctamente.'
             : 'La franja horaria se agregó correctamente.'
         );
       },
+
       error: err => {
-        console.error('Error guardando franja:', err);
+        console.error(
+          'Error guardando franja:',
+          err
+        );
+
         this.guardandoFranja = false;
+
         this.errorFormularioFranja =
           err?.error?.message ||
           err?.error?.error ||
@@ -2186,37 +2164,59 @@ export class RegistroComponent implements OnInit {
       return;
     }
 
-    const franja = this.franjaSeleccionada;
+    const franja =
+      this.franjaSeleccionada;
 
-    const confirmar = await this.modalService.confirm(
-      `¿Deseas eliminar la franja ${franja.horaInicio} - ${franja.horaFin}?`,
-      'Eliminar franja horaria'
-    );
+    const confirmar =
+      await this.modalService.confirm(
+        `¿Deseas eliminar la franja ${franja.horaInicio} - ${franja.horaFin}?`,
+        'Eliminar franja horaria'
+      );
 
     if (!confirmar) {
       return;
     }
 
-    this.horariosService.eliminarFranja(franja.idTimeSlot).subscribe({
-      next: () => {
-        this.franjas = this.franjas.filter(item => item.idTimeSlot !== franja.idTimeSlot);
-        this.franjasDisponibles = this.franjasDisponibles.filter(item => item.idTimeSlot !== franja.idTimeSlot);
-        this.franjaSeleccionada = null;
-      },
-      error: err => {
-        console.error('Error eliminando franja:', err);
-        this.modalService.error(
-          this.mensajeErrorEliminacion(
-            err,
-            'No se pudo eliminar la franja horaria.'
-          )
-        );
-      }
-    });
+    this.horariosService
+      .eliminarFranja(franja.idTimeSlot)
+      .subscribe({
+        next: () => {
+          this.franjas =
+            this.franjas.filter(
+              item =>
+                item.idTimeSlot !==
+                franja.idTimeSlot
+            );
+
+          this.franjasDisponibles =
+            this.franjasDisponibles.filter(
+              item =>
+                item.idTimeSlot !==
+                franja.idTimeSlot
+            );
+
+          this.franjaSeleccionada = null;
+        },
+
+        error: err => {
+          console.error(
+            'Error eliminando franja:',
+            err
+          );
+
+          this.modalService.error(
+            this.mensajeErrorEliminacion(
+              err,
+              'No se pudo eliminar la franja horaria.'
+            )
+          );
+        }
+      });
   }
 
-
-  seleccionarDisponibilidad(item: DisponibilidadFila): void {
+  seleccionarDisponibilidad(
+    item: DisponibilidadFila
+  ): void {
     this.disponibilidadSeleccionada = item;
   }
 
@@ -2226,8 +2226,10 @@ export class RegistroComponent implements OnInit {
 
     this.formularioDisponibilidad = {
       idAvailability: 0,
-      idTeacher: this.academicTeachersCatalogo[0]?.idAcademicTeacher ?? 0,
-      idTimeSlot: this.franjasDisponibles[0]?.idTimeSlot ?? 0,
+      idTeacher:
+        this.academicTeachersCatalogo[0]?.idAcademicTeacher ?? 0,
+      idTimeSlot:
+        this.franjasDisponibles[0]?.idTimeSlot ?? 0,
       diaSemana: 1,
       disponible: true
     };
@@ -2243,14 +2245,20 @@ export class RegistroComponent implements OnInit {
     this.editandoDisponibilidad = true;
     this.errorFormularioDisponibilidad = '';
 
-    const item = this.disponibilidadSeleccionada;
+    const item =
+      this.disponibilidadSeleccionada;
 
     this.formularioDisponibilidad = {
-      idAvailability: item.idAvailability,
-      idTeacher: item.idTeacher,
-      idTimeSlot: item.idTimeSlot,
-      diaSemana: item.diaSemana,
-      disponible: item.disponible
+      idAvailability:
+        item.idAvailability,
+      idTeacher:
+        item.idTeacher,
+      idTimeSlot:
+        item.idTimeSlot,
+      diaSemana:
+        item.diaSemana,
+      disponible:
+        item.disponible
     };
 
     this.mostrarFormularioDisponibilidad = true;
@@ -2265,35 +2273,49 @@ export class RegistroComponent implements OnInit {
   guardarDisponibilidad(): void {
     this.errorFormularioDisponibilidad = '';
 
-    const formulario = this.formularioDisponibilidad;
+    const formulario =
+      this.formularioDisponibilidad;
 
     if (!formulario.idTeacher) {
-      this.errorFormularioDisponibilidad = 'Selecciona un docente.';
+      this.errorFormularioDisponibilidad =
+        'Selecciona un docente.';
       return;
     }
 
     if (!formulario.idTimeSlot) {
-      this.errorFormularioDisponibilidad = 'Selecciona una franja horaria.';
+      this.errorFormularioDisponibilidad =
+        'Selecciona una franja horaria.';
       return;
     }
 
     if (!formulario.diaSemana) {
-      this.errorFormularioDisponibilidad = 'Selecciona el día de la semana.';
+      this.errorFormularioDisponibilidad =
+        'Selecciona el día de la semana.';
       return;
     }
 
     this.guardandoDisponibilidad = true;
 
     const dto: TeacherAvailabilityRequestDTO = {
-      idTeacher: Number(formulario.idTeacher),
-      idTimeSlot: Number(formulario.idTimeSlot),
-      dayOfWeek: Number(formulario.diaSemana),
-      available: formulario.disponible
+      idTeacher:
+        Number(formulario.idTeacher),
+      idTimeSlot:
+        Number(formulario.idTimeSlot),
+      dayOfWeek:
+        Number(formulario.diaSemana),
+      available:
+        formulario.disponible
     };
 
-    const peticion = this.editandoDisponibilidad
-      ? this.horariosService.actualizarDisponibilidad(formulario.idAvailability, dto)
-      : this.horariosService.crearDisponibilidad(dto);
+    const peticion =
+      this.editandoDisponibilidad
+        ? this.horariosService.actualizarDisponibilidad(
+            formulario.idAvailability,
+            dto
+          )
+        : this.horariosService.crearDisponibilidad(
+            dto
+          );
 
     peticion.subscribe({
       next: () => {
@@ -2301,15 +2323,22 @@ export class RegistroComponent implements OnInit {
         this.mostrarFormularioDisponibilidad = false;
         this.disponibilidadSeleccionada = null;
         this.cargarDatos();
+
         this.modalService.success(
           this.editandoDisponibilidad
             ? 'La disponibilidad del docente se actualizó correctamente.'
             : 'La disponibilidad del docente se agregó correctamente.'
         );
       },
+
       error: err => {
-        console.error('Error guardando disponibilidad:', err);
+        console.error(
+          'Error guardando disponibilidad:',
+          err
+        );
+
         this.guardandoDisponibilidad = false;
+
         this.errorFormularioDisponibilidad =
           err?.error?.message ||
           err?.error?.error ||
@@ -2323,34 +2352,48 @@ export class RegistroComponent implements OnInit {
       return;
     }
 
-    const item = this.disponibilidadSeleccionada;
+    const item =
+      this.disponibilidadSeleccionada;
 
-    const confirmar = await this.modalService.confirm(
-      `¿Deseas eliminar la disponibilidad de ${item.docente} el ${item.diaNombre}?`,
-      'Eliminar disponibilidad'
-    );
+    const confirmar =
+      await this.modalService.confirm(
+        `¿Deseas eliminar la disponibilidad de ${item.docente} el ${item.diaNombre}?`,
+        'Eliminar disponibilidad'
+      );
 
     if (!confirmar) {
       return;
     }
 
-    this.horariosService.eliminarDisponibilidad(item.idAvailability).subscribe({
-      next: () => {
-        this.disponibilidades = this.disponibilidades.filter(
-          registro => registro.idAvailability !== item.idAvailability
-        );
-        this.disponibilidadSeleccionada = null;
-      },
-      error: err => {
-        console.error('Error eliminando disponibilidad:', err);
-        this.modalService.error(
-          this.mensajeErrorEliminacion(
-            err,
-            'No se pudo eliminar la disponibilidad.'
-          )
-        );
-      }
-    });
-  }
+    this.horariosService
+      .eliminarDisponibilidad(
+        item.idAvailability
+      )
+      .subscribe({
+        next: () => {
+          this.disponibilidades =
+            this.disponibilidades.filter(
+              registro =>
+                registro.idAvailability !==
+                item.idAvailability
+            );
 
+          this.disponibilidadSeleccionada = null;
+        },
+
+        error: err => {
+          console.error(
+            'Error eliminando disponibilidad:',
+            err
+          );
+
+          this.modalService.error(
+            this.mensajeErrorEliminacion(
+              err,
+              'No se pudo eliminar la disponibilidad.'
+            )
+          );
+        }
+      });
+  }
 }
