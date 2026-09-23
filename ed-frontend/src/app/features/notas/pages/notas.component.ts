@@ -1,14 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { forkJoin, of, from } from 'rxjs';
-import {
-  catchError,
-  map,
-  concatMap,
-  tap,
-  delay
-} from 'rxjs/operators';
+import { Subject, forkJoin, of } from 'rxjs';
+import { catchError, finalize } from 'rxjs/operators';
 
 import {
   NotasService,
@@ -16,6 +10,7 @@ import {
   CourseResponseDTO,
   AcademicPeriodResponseDTO,
   SubjectResponseDTO,
+  AcademicLoadResponseDTO,
   UsuarioBasico,
   GradingScaleResponseDTO,
   EvaluationTypeResponseDTO,
@@ -28,13 +23,10 @@ import {
   PerfilService,
   MiPerfilDTO
 } from '../../admin/services/perfil.service';
+
 import { ModalService } from '../../../core/services/modal.service';
 
-type Tab =
-  | 'historial'
-  | 'reportes'
-  | 'notas'
-  | 'calificacion';
+type Tab = 'historial' | 'reportes' | 'notas' | 'calificacion';
 
 interface ResumenAsignatura {
   idSubject: number;
@@ -42,24 +34,31 @@ interface ResumenAsignatura {
   promedio: number;
   porcentaje: number;
   totalNotas: number;
+  estado: string;
+}
+
+interface CeldaEstado {
+  valor: number | null;
+  original: number | null;
+  guardando: boolean;
+  error: string;
+  idGrade?: number;
+  idEvaluationType?: number;
 }
 
 interface FilaNotas {
   estudiante: UsuarioBasico;
   nombreCompleto: string;
-}
-
-interface CeldaEstado {
-  valor: string;
-  idGrade: number | null;
-  guardando: boolean;
-  error: string | null;
+  celdas: Record<number, CeldaEstado>;
+  promedio: number;
 }
 
 interface PasoPeriodo {
-  idEvaluative: number | null;
+  idEvaluative?: number;
   evaluationName: string;
   weightPercentage: number;
+  startDate: string;
+  endDate: string;
   existente: boolean;
 }
 
@@ -77,27 +76,26 @@ interface ResumenReporteEstudiante {
     FormsModule
   ],
   templateUrl: './notas.component.html',
-  styleUrl: './notas.component.scss'
+  styleUrls: ['./notas.component.scss']
 })
-export class NotasComponent implements OnInit {
-  tabActiva: Tab = 'historial';
+export class NotasComponent implements OnInit, OnDestroy {
+
+  private destroy$ = new Subject<void>();
 
   niveles: AcademicLevelResponseDTO[] = [];
   cursos: CourseResponseDTO[] = [];
   periodos: AcademicPeriodResponseDTO[] = [];
   asignaturas: SubjectResponseDTO[] = [];
-
-  escalaActual: GradingScaleResponseDTO | null = null;
+  cargasAcademicas: AcademicLoadResponseDTO[] = [];
+  estudiantes: UsuarioBasico[] = [];
+  docentes: UsuarioBasico[] = [];
+  escalas: GradingScaleResponseDTO[] = [];
   tiposEvaluacion: EvaluationTypeResponseDTO[] = [];
   actividadesEvaluativas: EvaluativeActivityResponseDTO[] = [];
 
-  cargandoBase = true;
-  errorBase: string | null = null;
+  perfil: MiPerfilDTO | null = null;
 
-  idCursoSeleccionado: number | null = null;
-  idPeriodoSeleccionado: number | null = null;
-
-  perfilActual: MiPerfilDTO | null = null;
+  tabActiva: Tab = 'historial';
 
   esEstudiante = false;
   esDocente = false;
@@ -106,13 +104,40 @@ export class NotasComponent implements OnInit {
 
   idEstudianteActual: number | null = null;
   idCursoEstudiante: number | null = null;
+  idDocenteActual: number | null = null;
+
+  idNivelSeleccionado: number | null = null;
+  idCursoSeleccionado: number | null = null;
+  idPeriodoSeleccionado: number | null = null;
+  idAsignaturaSeleccionada: number | null = null;
+  idAsignaturaNotas: number | null = null;
+
+  periodoSeleccionado: AcademicPeriodResponseDTO | null = null;
+  cursoSeleccionado: CourseResponseDTO | null = null;
+  asignaturaSeleccionada: SubjectResponseDTO | null = null;
+
+  cargando = true;
+  errorGeneral = '';
 
   cargandoHistorial = false;
-  errorHistorial: string | null = null;
-  historialConsultado = false;
+  errorHistorial = '';
 
+  historialNotas: GradeDetailResponseDTO[] = [];
   resumenAsignaturas: ResumenAsignatura[] = [];
   promedioGeneral = 0;
+  estadoPromedio = '';
+
+  cargandoNotas = false;
+  errorNotas = '';
+  errorGuardado = '';
+
+  estudiantesNotas: FilaNotas[] = [];
+  actividadesNotasColumnas: EvaluativeActivityResponseDTO[] = [];
+
+  escalaActual: GradingScaleResponseDTO | null = null;
+
+  descargandoPdfCurso = false;
+  errorPdfCurso = '';
 
   idNivelReporte: number | null = null;
   idCursoReporte: number | null = null;
@@ -120,60 +145,47 @@ export class NotasComponent implements OnInit {
 
   cursosReporte: CourseResponseDTO[] = [];
   estudiantesReporte: UsuarioBasico[] = [];
-
   seleccionadosReporte = new Set<number>();
+  todosSeleccionadosReporte = false;
 
   cargandoEstudiantesReporte = false;
   cargandoVistaPrevia = false;
-
-  errorReporte: string | null = null;
+  vistaPreviaGenerada = false;
+  descargandoPdf = false;
+  errorReporte = '';
 
   vistaPrevia: ResumenReporteEstudiante[] = [];
-  vistaPreviaGenerada = false;
 
-  descargandoPdf = false;
-  descargandoPdfCurso = false;
+  idPeriodoPasos: number | null = null;
+  pasosPeriodo: PasoPeriodo[] = [];
+  pasosYaDefinidos = false;
+  totalPorcentajePasos = 0;
+  errorPasos = '';
+  guardandoPasos = false;
 
-  errorPdfCurso: string | null = null;
-
-  idAsignaturaNotas: number | null = null;
-
-  estudiantesNotas: FilaNotas[] = [];
-  actividadesNotasColumnas: EvaluativeActivityResponseDTO[] = [];
-
-  cargandoNotas = false;
-  errorNotas: string | null = null;
-  notasConsultadas = false;
-
-  celdas = new Map<string, CeldaEstado>();
-
-  errorGuardado: string | null = null;
-
-  private idTeacherAsignaturaActual: number | null = null;
-
-  formEscala = {
+  formEscala: GradingScaleResponseDTO = {
+    idScale: 0,
     minimumValue: 0,
     maximumValue: 5,
     minimumPassGrade: 3
   };
 
+  editandoEscala = false;
   guardandoEscala = false;
-  errorEscala: string | null = null;
+  errorEscala = '';
 
-  nuevoTipo = {
+  nuevoTipo: {
+    letterGrade: string;
+    numericGrade: number | null;
+  } = {
     letterGrade: '',
-    numericGrade: null as number | null
+    numericGrade: null
   };
 
   guardandoTipo = false;
-  errorTipo: string | null = null;
+  errorTipo = '';
 
-  idPeriodoPasos: number | null = null;
-  pasosPeriodo: PasoPeriodo[] = [];
-  pasosYaDefinidos = false;
-
-  guardandoPasos = false;
-  errorPasos: string | null = null;
+  actividadSeleccionada: EvaluativeActivityResponseDTO | null = null;
 
   constructor(
     private notasService: NotasService,
@@ -182,257 +194,284 @@ export class NotasComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.cargandoBase = true;
-    this.errorBase = null;
+    this.cargarInformacionInicial();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  cargarInformacionInicial(): void {
+    this.cargando = true;
+    this.errorGeneral = '';
 
     forkJoin({
-      niveles: this.notasService.listarNiveles(),
-      cursos: this.notasService.listarCursos(),
-      periodos: this.notasService.listarPeriodos(),
-      asignaturas: this.notasService.listarAsignaturas(),
-      escalas: this.notasService.listarEscalas(),
-      tipos: this.notasService.listarTiposEvaluacion(),
-      actividades:
-        this.notasService.listarActividadesEvaluativas(),
-      perfil: this.perfilService
-        .obtenerMiPerfil()
-        .pipe(
-          catchError(() => of(null))
-        )
-    }).subscribe({
-      next: ({
-        niveles,
-        cursos,
-        periodos,
-        asignaturas,
-        escalas,
-        tipos,
-        actividades,
-        perfil
-      }) => {
-        this.perfilActual =
-          perfil?.data ?? null;
+      niveles: this.notasService.listarNiveles().pipe(
+        catchError(() => of([]))
+      ),
+      cursos: this.notasService.listarCursos().pipe(
+        catchError(() => of([]))
+      ),
+      periodos: this.notasService.listarPeriodos().pipe(
+        catchError(() => of([]))
+      ),
+      asignaturas: this.notasService.listarAsignaturas().pipe(
+        catchError(() => of([]))
+      ),
+      escalas: this.notasService.listarEscalas().pipe(
+        catchError(() => of([]))
+      ),
+      tiposEvaluacion: this.notasService.listarTiposEvaluacion().pipe(
+        catchError(() => of([]))
+      ),
+      actividades: this.notasService.listarActividadesEvaluativas().pipe(
+        catchError(() => of([]))
+      ),
+      perfil: this.perfilService.obtenerMiPerfil().pipe(
+        catchError(() => of(null))
+      )
+    })
+    .pipe(
+      finalize(() => {
+        this.cargando = false;
+      })
+    )
+    .subscribe({
+      next: respuesta => {
+        this.niveles = respuesta.niveles.filter(n => n.status);
+        this.cursos = respuesta.cursos.filter(c => c.status);
+        this.periodos = respuesta.periodos;
+        this.asignaturas = respuesta.asignaturas.filter(a => a.status);
+        this.escalas = respuesta.escalas;
+        this.tiposEvaluacion = respuesta.tiposEvaluacion;
+        this.actividadesEvaluativas = respuesta.actividades;
+
+        this.perfil = respuesta.perfil?.data ?? null;
 
         this.configurarRol();
+        this.seleccionarPeriodoActivo();
+        this.configurarDatosSegunRol();
 
-        this.niveles = niveles;
-
-        this.cursos = cursos.filter(
-          c => c.status
-        );
-
-        this.periodos = periodos;
-
-        this.asignaturas = asignaturas;
-
-        this.escalaActual =
-          escalas.length
-            ? escalas[escalas.length - 1]
-            : null;
-
-        this.tiposEvaluacion = tipos;
-        this.actividadesEvaluativas =
-          actividades;
-
-        if (this.escalaActual) {
-          this.formEscala = {
-            minimumValue:
-              this.escalaActual.minimumValue,
-            maximumValue:
-              this.escalaActual.maximumValue,
-            minimumPassGrade:
-              this.escalaActual.minimumPassGrade
-          };
-        }
-
-        if (this.esEstudiante) {
-          if (
-            this.idCursoEstudiante !== null
-          ) {
-            this.idCursoSeleccionado =
-              this.idCursoEstudiante;
-          } else {
-            this.errorBase =
-              'No se encontró el curso asignado a tu usuario.';
-            this.cargandoBase = false;
-            return;
-          }
-        } else {
-          if (this.cursos.length) {
-            this.idCursoSeleccionado =
-              this.cursos[0].idCourse;
-          }
-        }
-
-        const periodoActivo =
-          this.periodos.find(
-            p => p.status
-          );
-
-        this.idPeriodoSeleccionado =
-          (
-            periodoActivo ??
-            this.periodos[0]
-          )?.idPeriod ?? null;
-
-        this.idPeriodoPasos =
-          this.idPeriodoSeleccionado;
-
-        this.idPeriodoReporte =
-          this.idPeriodoSeleccionado;
-
-        if (this.asignaturas.length) {
-          this.idAsignaturaNotas =
-            this.asignaturas[0].idSubject;
-        }
-
-        if (this.esEstudiante) {
-          this.configurarDatosEstudiante();
-          this.cargarAsignaturasEstudiante();
-        }
-
-        this.cargandoBase = false;
-
-        this.cargarHistorial();
-        this.actualizarPasosPeriodo();
-
-        if (this.esEstudiante) {
-          this.configurarReporteEstudiante();
-        } else {
+        if (!this.esDirectivo) {
+          this.configurarEscala();
+          this.configurarPasosPeriodo();
           this.configurarReporteGeneral();
         }
       },
-
       error: () => {
-        this.errorBase =
-          'No se pudo cargar la información base del módulo de notas.';
-
-        this.cargandoBase = false;
+        this.errorGeneral = 'No fue posible cargar la información académica.';
       }
     });
   }
 
-  private configurarRol(): void {
-    const rol = (
-      this.perfilActual?.roleName ?? ''
-    )
-      .trim()
-      .toUpperCase();
+  configurarRol(): void {
+    const rol = String(
+      this.perfil?.roleName ??
+      this.perfil?.position ??
+      ''
+    ).toUpperCase();
 
-    this.esEstudiante =
-      rol === 'ESTUDIANTE';
-
-    this.esDocente =
-      rol === 'DOCENTE';
-
-    this.esDirectivo =
-      rol === 'DIRECTIVO';
-
+    this.esEstudiante = rol.includes('ESTUDIANTE');
+    this.esDocente = rol.includes('DOCENTE');
+    this.esDirectivo = rol.includes('DIRECTIVO');
     this.esAdministrador =
-      rol === 'ADMINISTRADOR' ||
+      rol.includes('ADMINISTRADOR') ||
       rol === 'ADMIN';
 
-    if (this.perfilActual) {
-      this.idEstudianteActual =
-        this.perfilActual.idUser;
-
-      this.idCursoEstudiante =
-        this.perfilActual.idCourse ?? null;
-    }
-  }
-
-  private configurarDatosEstudiante(): void {
-    if (!this.perfilActual) {
-      return;
-    }
-
     this.idEstudianteActual =
-      this.perfilActual.idUser;
+      this.perfil?.idUser ??
+      null;
 
     this.idCursoEstudiante =
-      this.perfilActual.idCourse ?? null;
+      this.perfil?.idCourse ??
+      null;
 
-    if (
-      this.idCursoEstudiante !== null
-    ) {
-      this.idCursoSeleccionado =
-        this.idCursoEstudiante;
+    this.idDocenteActual =
+      this.perfil?.idUser ??
+      null;
+
+    if (this.esDirectivo) {
+      this.tabActiva = 'historial';
     }
   }
 
-  private cargarAsignaturasEstudiante(): void {
-    if (
-      !this.esEstudiante ||
-      this.idCursoEstudiante === null
-    ) {
+  configurarDatosSegunRol(): void {
+    if (this.esEstudiante) {
+      this.idCursoSeleccionado = this.idCursoEstudiante;
+
+      this.cursoSeleccionado =
+        this.cursos.find(
+          c => c.idCourse === this.idCursoSeleccionado
+        ) ?? null;
+
+      if (this.idCursoSeleccionado !== null) {
+        this.cargarCargaAcademicaEstudiante();
+      }
+
+      this.cargarHistorial();
       return;
     }
 
-    this.notasService
-      .listarCargaPorCurso(
-        this.idCursoEstudiante
-      )
-      .subscribe({
-        next: cargas => {
-          const idsAsignaturas =
-            Array.from(
-              new Set(
-                cargas
-                  .filter(
-                    c => c.status !== false
-                  )
-                  .map(
-                    c => c.idSubject
-                  )
-              )
-            );
+    if (this.cursos.length && this.idCursoSeleccionado === null) {
+      this.idCursoSeleccionado = this.cursos[0].idCourse;
+      this.cursoSeleccionado = this.cursos[0];
+    }
 
-          this.asignaturas =
-            this.asignaturas.filter(
-              asignatura =>
-                idsAsignaturas.includes(
-                  asignatura.idSubject
-                )
-            );
+    this.cargarHistorial();
 
-          if (
-            this.asignaturas.length &&
-            (
-              this.idAsignaturaNotas === null ||
-              !this.asignaturas.some(
-                a =>
-                  a.idSubject ===
-                  this.idAsignaturaNotas
-              )
-            )
-          ) {
-            this.idAsignaturaNotas =
-              this.asignaturas[0].idSubject;
-          }
+    if (this.idCursoSeleccionado !== null) {
+      this.cargarAsignaturasPorCurso(this.idCursoSeleccionado);
+    }
+  }
 
-          if (
-            this.tabActiva === 'notas'
-          ) {
-            this.notasConsultadas = false;
-            this.cargarNotas();
-          }
-        },
+  seleccionarPeriodoActivo(): void {
+    const periodo =
+      this.periodos.find(p => p.status) ??
+      this.periodos[0] ??
+      null;
 
-        error: () => {
-          this.errorBase =
-            'No se pudieron cargar las asignaturas de tu curso.';
+    if (!periodo) {
+      this.idPeriodoSeleccionado = null;
+      this.periodoSeleccionado = null;
+      return;
+    }
+
+    this.idPeriodoSeleccionado = periodo.idPeriod;
+    this.periodoSeleccionado = periodo;
+
+    this.idPeriodoReporte = periodo.idPeriod;
+    this.idPeriodoPasos = periodo.idPeriod;
+  }
+
+  seleccionarPeriodo(idPeriodo: number): void {
+    this.idPeriodoSeleccionado = idPeriodo;
+
+    this.periodoSeleccionado =
+      this.periodos.find(
+        p => p.idPeriod === idPeriodo
+      ) ?? null;
+
+    this.cargarHistorial();
+
+    if (
+      this.tabActiva === 'notas' &&
+      !this.esDirectivo &&
+      this.idCursoSeleccionado !== null &&
+      this.idAsignaturaNotas !== null
+    ) {
+      this.cargarNotas();
+    }
+
+    if (!this.esDirectivo) {
+      this.configurarPasosPeriodo();
+    }
+  }
+
+  onCambioPeriodoGlobal(): void {
+    if (this.idPeriodoSeleccionado === null) {
+      return;
+    }
+
+    this.seleccionarPeriodo(this.idPeriodoSeleccionado);
+  }
+
+  seleccionarNivel(idNivel: number): void {
+    if (this.esEstudiante) {
+      return;
+    }
+
+    this.idNivelSeleccionado = idNivel;
+
+    this.cargarCursos(idNivel);
+  }
+
+  cargarCursos(idNivel?: number): void {
+    const solicitud = idNivel
+      ? this.notasService.listarCursosPorNivel(idNivel)
+      : this.notasService.listarCursos();
+
+    solicitud.subscribe({
+      next: cursos => {
+        this.cursos = cursos.filter(c => c.status);
+
+        if (
+          this.idCursoSeleccionado === null &&
+          this.cursos.length
+        ) {
+          this.idCursoSeleccionado = this.cursos[0].idCourse;
+          this.cursoSeleccionado = this.cursos[0];
+          this.cargarHistorial();
         }
-      });
+      }
+    });
+  }
+
+  seleccionarCurso(idCurso: number): void {
+    if (this.esEstudiante) {
+      return;
+    }
+
+    this.idCursoSeleccionado = idCurso;
+
+    this.cursoSeleccionado =
+      this.cursos.find(
+        c => c.idCourse === idCurso
+      ) ?? null;
+
+    this.idAsignaturaSeleccionada = null;
+    this.asignaturaSeleccionada = null;
+
+    this.cargarAsignaturasPorCurso(idCurso);
+    this.cargarHistorial();
+
+    if (!this.esDirectivo) {
+      this.configurarReporteGeneral();
+    }
+  }
+
+  onCambioCursoGlobal(): void {
+    if (this.esEstudiante) {
+      return;
+    }
+
+    if (this.idCursoSeleccionado === null) {
+      this.cursoSeleccionado = null;
+      this.idAsignaturaSeleccionada = null;
+      this.idAsignaturaNotas = null;
+      this.asignaturaSeleccionada = null;
+      this.cargasAcademicas = [];
+      this.estudiantesNotas = [];
+      this.historialNotas = [];
+      this.resumenAsignaturas = [];
+      this.promedioGeneral = 0;
+      return;
+    }
+
+    this.seleccionarCurso(this.idCursoSeleccionado);
+  }
+
+  seleccionarAsignatura(idAsignatura: number): void {
+    if (this.esEstudiante || this.esDirectivo) {
+      return;
+    }
+
+    this.idAsignaturaSeleccionada = idAsignatura;
+    this.idAsignaturaNotas = idAsignatura;
+
+    this.asignaturaSeleccionada =
+      this.asignaturas.find(
+        a => a.idSubject === idAsignatura
+      ) ?? null;
+
+    if (this.tabActiva === 'notas') {
+      this.cargarNotas();
+    }
   }
 
   cambiarTab(tab: Tab): void {
-    if (
-      this.esDirectivo &&
-      (
-        tab === 'notas' ||
-        tab === 'calificacion'
-      )
-    ) {
+    if (this.esDirectivo) {
+      this.tabActiva = 'historial';
       return;
     }
 
@@ -445,945 +484,323 @@ export class NotasComponent implements OnInit {
 
     this.tabActiva = tab;
 
-    if (
-      tab === 'historial'
-    ) {
+    if (tab === 'historial') {
       this.cargarHistorial();
+    }
+
+    if (tab === 'reportes') {
+      this.configurarReporteGeneral();
     }
 
     if (
       tab === 'notas' &&
-      !this.notasConsultadas
+      this.idCursoSeleccionado !== null
     ) {
-      this.cargarNotas();
-    }
-
-    if (
-      tab === 'reportes'
-    ) {
-      if (this.esEstudiante) {
-        this.configurarReporteEstudiante();
-      } else {
-        this.configurarReporteGeneral();
+      if (this.idAsignaturaNotas === null) {
+        this.idAsignaturaNotas =
+          this.asignaturas[0]?.idSubject ?? null;
       }
-    }
-  }
 
-  get cursoSeleccionadoNombre(): string {
-    return this.cursos.find(
-      c =>
-        c.idCourse ===
-        this.idCursoSeleccionado
-    )?.name ??
-      'Selecciona un curso';
-  }
-
-  get nombreNivelReporte(): string {
-    if (
-      this.idNivelReporte === null
-    ) {
-      return '';
-    }
-
-    return this.niveles.find(
-      nivel =>
-        nivel.idLevel ===
-        this.idNivelReporte
-    )?.name ?? '';
-  }
-
-  onCambioCursoGlobal(): void {
-    if (this.esEstudiante) {
-      this.idCursoSeleccionado =
-        this.idCursoEstudiante;
-
-      return;
-    }
-
-    this.historialConsultado = false;
-    this.notasConsultadas = false;
-
-    this.celdas.clear();
-
-    if (
-      this.tabActiva === 'historial'
-    ) {
-      this.cargarHistorial();
-    }
-
-    if (
-      this.tabActiva === 'notas' &&
-      !this.esDirectivo
-    ) {
-      this.cargarNotas();
-    }
-  }
-
-  onCambioPeriodoGlobal(): void {
-    this.historialConsultado = false;
-    this.notasConsultadas = false;
-
-    this.celdas.clear();
-
-    if (this.esEstudiante) {
-      this.cargarHistorial();
-
-      if (
-        this.tabActiva === 'notas'
-      ) {
+      if (this.idAsignaturaNotas !== null) {
         this.cargarNotas();
       }
+    }
 
-      if (
-        this.tabActiva === 'reportes'
-      ) {
-        this.configurarReporteEstudiante();
-      }
+    if (tab === 'calificacion') {
+      this.configurarEscala();
+      this.configurarPasosPeriodo();
+    }
+  }
 
+  cargarCargaAcademicaEstudiante(): void {
+    if (this.idCursoEstudiante === null) {
       return;
     }
 
-    this.cargarHistorial();
+    this.notasService
+      .listarCargaPorCurso(this.idCursoEstudiante)
+      .subscribe({
+        next: carga => {
+          this.cargasAcademicas =
+            carga.filter(c => c.status);
 
-    if (
-      this.tabActiva === 'notas' &&
-      !this.esDirectivo
-    ) {
-      this.cargarNotas();
-    }
+          const ids = new Set(
+            this.cargasAcademicas.map(
+              c => c.idSubject
+            )
+          );
 
-    if (
-      this.tabActiva === 'reportes'
-    ) {
-      this.idPeriodoReporte =
-        this.idPeriodoSeleccionado;
-      this.vistaPreviaGenerada = false;
-      this.vistaPrevia = [];
-    }
+          this.asignaturas =
+            this.asignaturas.filter(
+              a => ids.has(a.idSubject)
+            );
+        }
+      });
+  }
+
+  cargarAsignaturasPorCurso(idCurso: number): void {
+    this.notasService
+      .listarCargaPorCurso(idCurso)
+      .subscribe({
+        next: carga => {
+          this.cargasAcademicas =
+            carga.filter(c => c.status);
+
+          const ids = new Set(
+            this.cargasAcademicas.map(
+              c => c.idSubject
+            )
+          );
+
+          const todas =
+            this.asignaturas.length
+              ? this.asignaturas
+              : [];
+
+          this.asignaturas =
+            todas.filter(
+              a => ids.has(a.idSubject)
+            );
+
+          if (
+            this.idAsignaturaNotas === null &&
+            this.asignaturas.length
+          ) {
+            this.idAsignaturaNotas =
+              this.asignaturas[0].idSubject;
+          }
+        }
+      });
   }
 
   cargarHistorial(): void {
-    if (
-      this.idCursoSeleccionado === null ||
-      this.idPeriodoSeleccionado === null
-    ) {
+    if (this.esDirectivo && this.idCursoSeleccionado === null) {
+      if (this.cursos.length) {
+        this.idCursoSeleccionado =
+          this.cursos[0].idCourse;
+
+        this.cursoSeleccionado =
+          this.cursos[0];
+      }
+    }
+
+    if (this.idPeriodoSeleccionado === null) {
+      this.historialNotas = [];
+      this.resumenAsignaturas = [];
+      this.promedioGeneral = 0;
       return;
     }
 
     this.cargandoHistorial = true;
-    this.errorHistorial = null;
-    this.historialConsultado = true;
+    this.errorHistorial = '';
 
-    const idCurso =
-      this.idCursoSeleccionado;
-
-    const idPeriodo =
-      this.idPeriodoSeleccionado;
-
-    const nombreCurso =
-      this.cursoSeleccionadoNombre;
-
-    if (this.esEstudiante) {
-      this.cargarHistorialEstudiante(
-        idCurso,
-        idPeriodo
-      );
-      return;
-    }
-
-    this.notasService
-      .listarCargaPorCurso(idCurso)
-      .subscribe({
-        next: cargas => {
-          const idsAsignaturas =
-            Array.from(
-              new Set(
-                cargas
-                  .filter(
-                    c => c.status !== false
-                  )
-                  .map(
-                    c => c.idSubject
-                  )
-              )
-            );
-
-          if (!idsAsignaturas.length) {
-            this.resumenAsignaturas = [];
-            this.promedioGeneral = 0;
-            this.cargandoHistorial = false;
-            return;
-          }
-
-          const llamadas =
-            idsAsignaturas.map(
-              idSubject =>
-                this.notasService
-                  .obtenerNotasPorCurso(
-                    idCurso,
-                    idSubject,
-                    idPeriodo
-                  )
-                  .pipe(
-                    map(notas => ({
-                      idSubject,
-                      notas
-                    })),
-                    catchError(() =>
-                      of({
-                        idSubject,
-                        notas:
-                          [] as GradeDetailResponseDTO[]
-                      })
-                    )
-                  )
-            );
-
-          forkJoin(llamadas)
-            .subscribe({
-              next: resultados => {
-                this.calcularResumenAsignaturas(
-                  resultados
-                );
-
-                this.cargandoHistorial =
-                  false;
-              },
-
-              error: () => {
-                this.errorHistorial =
-                  `No se pudo cargar el historial de notas del curso ${nombreCurso}.`;
-
-                this.cargandoHistorial =
-                  false;
-              }
-            });
-        },
-
-        error: () => {
-          this.errorHistorial =
-            `No se pudo cargar la información académica del curso ${nombreCurso}.`;
-
-          this.cargandoHistorial = false;
-        }
-      });
-  }
-
-  private cargarHistorialEstudiante(
-    idCurso: number,
-    idPeriodo: number
-  ): void {
     if (
-      this.idEstudianteActual === null
+      this.esEstudiante &&
+      this.idEstudianteActual !== null
     ) {
-      this.errorHistorial =
-        'No se pudo identificar al estudiante.';
+      this.notasService
+        .obtenerNotasPorEstudiante(
+          this.idEstudianteActual,
+          this.idPeriodoSeleccionado
+        )
+        .pipe(
+          finalize(() => {
+            this.cargandoHistorial = false;
+          })
+        )
+        .subscribe({
+          next: notas => {
+            this.historialNotas =
+              this.idCursoEstudiante !== null
+                ? notas.filter(
+                    n =>
+                      n.idCourse ===
+                      this.idCursoEstudiante
+                  )
+                : notas;
 
+            this.generarResumenAsignaturas();
+          },
+          error: () => {
+            this.errorHistorial =
+              'No fue posible cargar el historial de notas.';
+          }
+        });
+
+      return;
+    }
+
+    if (this.idCursoSeleccionado === null) {
       this.cargandoHistorial = false;
+      this.historialNotas = [];
+      this.resumenAsignaturas = [];
+      this.promedioGeneral = 0;
       return;
     }
 
     this.notasService
-      .listarCargaPorCurso(idCurso)
+      .listarCargaPorCurso(
+        this.idCursoSeleccionado
+      )
+      .pipe(
+        catchError(() => of([]))
+      )
       .subscribe({
-        next: cargas => {
-          const idsAsignaturas =
-            Array.from(
-              new Set(
-                cargas
-                  .filter(
-                    c => c.status !== false
-                  )
-                  .map(
-                    c => c.idSubject
-                  )
-              )
-            );
+        next: carga => {
+          const cargas = carga.filter(
+            c => c.status
+          );
 
-          if (!idsAsignaturas.length) {
-            this.resumenAsignaturas = [];
-            this.promedioGeneral = 0;
+          if (!cargas.length) {
+            this.historialNotas = [];
+            this.generarResumenAsignaturas();
             this.cargandoHistorial = false;
             return;
           }
 
-          this.notasService
-            .obtenerNotasPorEstudiante(
-              this.idEstudianteActual!,
-              idPeriodo
+          const solicitudes =
+            cargas.map(cargaActual =>
+              this.notasService
+                .obtenerNotasPorCurso(
+                  this.idCursoSeleccionado!,
+                  cargaActual.idSubject,
+                  this.idPeriodoSeleccionado!
+                )
+                .pipe(
+                  catchError(() => of([]))
+                )
+            );
+
+          forkJoin(solicitudes)
+            .pipe(
+              finalize(() => {
+                this.cargandoHistorial = false;
+              })
             )
             .subscribe({
-              next: notas => {
-                const notasDelCurso =
-                  notas.filter(
-                    nota =>
-                      Number(
-                        nota.idCourse
-                      ) ===
-                      Number(idCurso) &&
-                      Number(
-                        nota.idPeriod
-                      ) ===
-                      Number(idPeriodo)
-                  );
+              next: respuestas => {
+                this.historialNotas =
+                  respuestas.flat();
 
-                const resultados =
-                  idsAsignaturas.map(
-                    idSubject => ({
-                      idSubject,
-                      notas:
-                        notasDelCurso.filter(
-                          nota =>
-                            Number(
-                              nota.idSubject
-                            ) ===
-                            Number(
-                              idSubject
-                            )
-                        )
-                    })
-                  );
-
-                this.calcularResumenAsignaturas(
-                  resultados
-                );
-
-                this.cargandoHistorial =
-                  false;
+                this.generarResumenAsignaturas();
               },
-
               error: () => {
                 this.errorHistorial =
-                  'No se pudieron cargar tus notas para el periodo seleccionado.';
-
-                this.cargandoHistorial =
-                  false;
+                  'No fue posible cargar el historial de notas.';
               }
             });
         },
-
         error: () => {
           this.errorHistorial =
-            'No se pudieron cargar las asignaturas de tu curso.';
-
+            'No fue posible cargar la información del curso.';
           this.cargandoHistorial = false;
         }
       });
   }
 
-  private calcularResumenAsignaturas(
-    resultados: {
-      idSubject: number;
-      notas: GradeDetailResponseDTO[];
-    }[]
-  ): void {
-    const maximo =
-      this.escalaActual?.maximumValue ?? 5;
+  generarResumenAsignaturas(): void {
+    const grupos = new Map<
+      number,
+      GradeDetailResponseDTO[]
+    >();
 
-    this.resumenAsignaturas =
-      resultados.map(
-        ({ idSubject, notas }) => {
-          const nombre =
-            this.asignaturas.find(
-              a =>
-                a.idSubject ===
-                idSubject
-            )?.name ??
-            notas[0]?.subjectName ??
-            `Asignatura ${idSubject}`;
+    this.historialNotas.forEach(nota => {
+      const grupo =
+        grupos.get(nota.idSubject) ?? [];
 
-          const promedio =
-            notas.length
-              ? Math.round(
-                  (
-                    notas.reduce(
-                      (acc, nota) =>
-                        acc +
-                        Number(
-                          nota.gradeValue
-                        ),
-                      0
-                    ) /
-                    notas.length
-                  ) * 100
-                ) / 100
-              : 0;
+      grupo.push(nota);
+      grupos.set(nota.idSubject, grupo);
+    });
 
-          return {
-            idSubject,
-            nombre,
-            promedio,
-            porcentaje:
-              maximo > 0
-                ? Math.min(
-                    100,
-                    Math.round(
-                      (promedio / maximo) *
-                      100
-                    )
-                  )
-                : 0,
-            totalNotas:
-              notas.length
-          };
-        }
-      );
+    const resumen: ResumenAsignatura[] = [];
 
-    const conNotas =
-      this.resumenAsignaturas.filter(
-        r =>
-          r.totalNotas > 0
-      );
+    grupos.forEach((notas, idSubject) => {
+      const valores = notas
+        .map(n => Number(n.gradeValue))
+        .filter(v => Number.isFinite(v));
+
+      const promedio = valores.length
+        ? valores.reduce(
+            (total, valor) => total + valor,
+            0
+          ) / valores.length
+        : 0;
+
+      const nombre =
+        notas[0]?.subjectName ??
+        this.obtenerNombreAsignatura(idSubject);
+
+      const maximo = this.maximoEscala || 5;
+
+      resumen.push({
+        idSubject,
+        nombre,
+        promedio,
+        porcentaje:
+          maximo > 0
+            ? Math.min(
+                100,
+                Math.max(
+                  0,
+                  (promedio / maximo) * 100
+                )
+              )
+            : 0,
+        totalNotas: valores.length,
+        estado: this.obtenerEstadoNota(promedio)
+      });
+    });
+
+    this.resumenAsignaturas = resumen;
+
+    const valoresGenerales =
+      this.historialNotas
+        .map(n => Number(n.gradeValue))
+        .filter(v => Number.isFinite(v));
 
     this.promedioGeneral =
-      conNotas.length
-        ? Math.round(
-            (
-              conNotas.reduce(
-                (acc, r) =>
-                  acc + r.promedio,
-                0
-              ) /
-              conNotas.length
-            ) * 100
-          ) / 100
+      valoresGenerales.length
+        ? valoresGenerales.reduce(
+            (total, valor) => total + valor,
+            0
+          ) / valoresGenerales.length
         : 0;
-  }
 
-  get maximoEscala(): number {
-    return (
-      this.escalaActual?.maximumValue ??
-      5
-    );
-  }
-
-  private configurarReporteGeneral(): void {
-    if (this.esEstudiante) {
-      return;
-    }
-
-    if (
-      this.idNivelReporte === null
-    ) {
-      const curso =
-        this.cursos.find(
-          c =>
-            c.idCourse ===
-            this.idCursoSeleccionado
-        );
-
-      this.idNivelReporte =
-        curso?.idLevel ?? null;
-    }
-
-    this.idCursoReporte =
-      this.idCursoSeleccionado;
-
-    this.idPeriodoReporte =
-      this.idPeriodoSeleccionado;
-
-    if (
-      this.idNivelReporte !== null
-    ) {
-      this.cargarCursosReporte(
-        this.idNivelReporte,
-        this.idCursoReporte
+    this.estadoPromedio =
+      this.obtenerEstadoNota(
+        this.promedioGeneral
       );
-    }
   }
 
-  private cargarCursosReporte(
-    idNivel: number,
-    idCursoPreferido: number | null
-  ): void {
-    this.notasService
-      .listarCursosPorNivel(idNivel)
-      .subscribe({
-        next: cursos => {
-          this.cursosReporte =
-            cursos.filter(
-              c => c.status
-            );
+  obtenerEstadoNota(valor: number): string {
+    const escala = this.escalaActual;
 
-          if (
-            idCursoPreferido !== null &&
-            this.cursosReporte.some(
-              c =>
-                c.idCourse ===
-                idCursoPreferido
-            )
-          ) {
-            this.idCursoReporte =
-              idCursoPreferido;
-          } else {
-            this.idCursoReporte =
-              this.cursosReporte[0]
-                ?.idCourse ?? null;
-          }
+    if (!escala) {
+      return '';
+    }
 
-          this.onCambioCursoReporte();
-        },
-
-        error: () => {
-          this.cursosReporte = [];
-          this.estudiantesReporte = [];
-          this.seleccionadosReporte.clear();
-        }
-      });
+    return valor >= escala.minimumPassGrade
+      ? 'Aprobado'
+      : 'Reprobado';
   }
 
-  onCambioNivelReporte(): void {
-    if (this.esEstudiante) {
-      this.configurarReporteEstudiante();
-      return;
-    }
-
-    this.idCursoReporte = null;
-    this.estudiantesReporte = [];
-    this.seleccionadosReporte.clear();
-    this.vistaPreviaGenerada = false;
-    this.vistaPrevia = [];
-
-    if (
-      this.idNivelReporte === null
-    ) {
-      this.cursosReporte = [];
-      return;
-    }
-
-    this.cargarCursosReporte(
-      this.idNivelReporte,
+  obtenerEscalaActual(): GradingScaleResponseDTO | null {
+    return (
+      this.escalas.find(
+        e =>
+          e.minimumValue <= 0 &&
+          e.maximumValue >= 5
+      ) ??
+      this.escalas[0] ??
       null
     );
   }
 
-  private configurarReporteEstudiante(): void {
+  cargarNotas(): void {
     if (
-      !this.esEstudiante ||
-      this.idEstudianteActual === null ||
-      this.idCursoEstudiante === null
+      this.esDirectivo ||
+      this.esEstudiante
     ) {
-      return;
-    }
-
-    this.idCursoReporte =
-      this.idCursoEstudiante;
-
-    this.idPeriodoReporte =
-      this.idPeriodoSeleccionado;
-
-    const curso =
-      this.cursos.find(
-        c =>
-          c.idCourse ===
-          this.idCursoEstudiante
-      );
-
-    this.idNivelReporte =
-      curso?.idLevel ?? null;
-
-    const estudiante =
-      this.crearUsuarioBasicoDesdePerfil();
-
-    if (estudiante) {
-      this.estudiantesReporte =
-        [estudiante];
-
-      this.seleccionadosReporte.clear();
-
-      this.seleccionadosReporte.add(
-        estudiante.idUser
-      );
-    }
-
-    this.cursosReporte =
-      curso
-        ? [curso]
-        : [];
-
-    this.vistaPreviaGenerada = false;
-    this.vistaPrevia = [];
-    this.errorReporte = null;
-  }
-
-  private crearUsuarioBasicoDesdePerfil():
-    UsuarioBasico | null {
-    if (!this.perfilActual) {
-      return null;
-    }
-
-    return {
-      idUser:
-        this.perfilActual.idUser,
-      name:
-        this.perfilActual.name,
-      surnames:
-        this.perfilActual.surnames,
-      status:
-        this.perfilActual.status,
-      idRole:
-        this.perfilActual.idRole,
-      roleName:
-        this.perfilActual.roleName,
-      idCourse:
-        this.perfilActual.idCourse
-    };
-  }
-
-  onCambioCursoReporte(): void {
-    if (this.esEstudiante) {
-      this.configurarReporteEstudiante();
-      return;
-    }
-
-    this.estudiantesReporte = [];
-    this.seleccionadosReporte.clear();
-    this.vistaPreviaGenerada = false;
-    this.vistaPrevia = [];
-
-    if (
-      this.idCursoReporte === null
-    ) {
-      return;
-    }
-
-    this.cargandoEstudiantesReporte =
-      true;
-
-    this.errorReporte = null;
-
-    const nombreCurso =
-      this.nombreCursoReporte ||
-      'seleccionado';
-
-    this.notasService
-      .listarEstudiantesPorCurso(
-        this.idCursoReporte
-      )
-      .subscribe({
-        next: estudiantes => {
-          this.estudiantesReporte =
-            estudiantes.filter(
-              e =>
-                e.status !== false
-            );
-
-          this.cargandoEstudiantesReporte =
-            false;
-        },
-
-        error: () => {
-          this.errorReporte =
-            `No se pudo cargar el listado de estudiantes del curso ${nombreCurso}.`;
-
-          this.cargandoEstudiantesReporte =
-            false;
-        }
-      });
-  }
-
-  toggleEstudianteReporte(
-    idUser: number
-  ): void {
-    if (this.esEstudiante) {
-      return;
-    }
-
-    if (
-      this.seleccionadosReporte.has(
-        idUser
-      )
-    ) {
-      this.seleccionadosReporte.delete(
-        idUser
-      );
-    } else {
-      this.seleccionadosReporte.add(
-        idUser
-      );
-    }
-  }
-
-  get todosSeleccionadosReporte(): boolean {
-    return (
-      this.estudiantesReporte.length > 0 &&
-      this.estudiantesReporte.every(
-        e =>
-          this.seleccionadosReporte.has(
-            e.idUser
-          )
-      )
-    );
-  }
-
-  toggleTodosReporte(): void {
-    if (this.esEstudiante) {
-      return;
-    }
-
-    if (
-      this.todosSeleccionadosReporte
-    ) {
-      this.seleccionadosReporte.clear();
-    } else {
-      this.estudiantesReporte.forEach(
-        e =>
-          this.seleccionadosReporte.add(
-            e.idUser
-          )
-      );
-    }
-  }
-
-  regenerarVistaPrevia(): void {
-    if (this.esEstudiante) {
-      this.configurarReporteEstudiante();
-    }
-
-    if (
-      !this.seleccionadosReporte.size ||
-      this.idPeriodoReporte === null
-    ) {
-      this.errorReporte =
-        'Selecciona un periodo y al menos un estudiante.';
-
-      return;
-    }
-
-    this.cargandoVistaPrevia = true;
-    this.errorReporte = null;
-
-    const idPeriodo =
-      this.idPeriodoReporte;
-
-    const llamadas =
-      Array.from(
-        this.seleccionadosReporte
-      ).map(idStudent => {
-        const estudiante =
-          this.estudiantesReporte.find(
-            e =>
-              e.idUser === idStudent
-          );
-
-        if (!estudiante) {
-          return of({
-            estudiante:
-              this.crearUsuarioBasicoDesdePerfil()!,
-            notas:
-              [] as GradeDetailResponseDTO[],
-            promedio: 0
-          });
-        }
-
-        return this.notasService
-          .obtenerNotasPorEstudiante(
-            idStudent,
-            idPeriodo
-          )
-          .pipe(
-            map(notas => {
-              const notasPeriodo =
-                notas.filter(
-                  nota =>
-                    Number(
-                      nota.idPeriod
-                    ) ===
-                    Number(idPeriodo)
-                );
-
-              const promedio =
-                notasPeriodo.length
-                  ? Math.round(
-                      (
-                        notasPeriodo.reduce(
-                          (acc, n) =>
-                            acc +
-                            Number(
-                              n.gradeValue
-                            ),
-                          0
-                        ) /
-                        notasPeriodo.length
-                      ) * 100
-                    ) / 100
-                  : 0;
-
-              return {
-                estudiante,
-                notas:
-                  notasPeriodo,
-                promedio
-              };
-            }),
-            catchError(() =>
-              of({
-                estudiante,
-                notas:
-                  [] as GradeDetailResponseDTO[],
-                promedio: 0
-              })
-            )
-          );
-      });
-
-    forkJoin(llamadas)
-      .subscribe({
-        next: resultados => {
-          this.vistaPrevia =
-            resultados;
-
-          this.vistaPreviaGenerada =
-            true;
-
-          this.cargandoVistaPrevia =
-            false;
-        },
-
-        error: () => {
-          this.errorReporte =
-            'No se pudo generar la vista previa del reporte.';
-
-          this.cargandoVistaPrevia =
-            false;
-        }
-      });
-  }
-
-  get nombreCursoReporte(): string {
-    return this.cursosReporte.find(
-      c =>
-        c.idCourse ===
-        this.idCursoReporte
-    )?.name ?? '';
-  }
-
-  get nombrePeriodoReporte(): string {
-    return this.periodos.find(
-      p =>
-        p.idPeriod ===
-        this.idPeriodoReporte
-    )?.name ?? '';
-  }
-
-  descargarReportePdf(): void {
-    if (this.esEstudiante) {
-      this.configurarReporteEstudiante();
-    }
-
-    if (
-      !this.vistaPreviaGenerada ||
-      this.idPeriodoReporte === null ||
-      !this.seleccionadosReporte.size
-    ) {
-      return;
-    }
-
-    const idPeriodo =
-      this.idPeriodoReporte;
-
-    const ids =
-      Array.from(
-        this.seleccionadosReporte
-      );
-
-    this.descargandoPdf = true;
-    this.errorReporte = null;
-
-    from(ids)
-      .pipe(
-        concatMap(idStudent =>
-          this.notasService
-            .descargarPdfEstudiante(
-              idStudent,
-              idPeriodo
-            )
-            .pipe(
-              tap(blob => {
-                const estudiante =
-                  this.estudiantesReporte.find(
-                    e =>
-                      e.idUser ===
-                      idStudent
-                  );
-
-                const nombreArchivo =
-                  estudiante
-                    ? `notas_${estudiante.name}_${estudiante.surnames}_periodo_${idPeriodo}.pdf`
-                        .replace(
-                          /\s+/g,
-                          '_'
-                        )
-                    : `notas_estudiante_${idStudent}_periodo_${idPeriodo}.pdf`;
-
-                this.descargarBlob(
-                  blob,
-                  nombreArchivo
-                );
-              }),
-
-              catchError(() => {
-                this.errorReporte =
-                  'No se pudo generar el PDF de uno o más estudiantes.';
-
-                return of(null);
-              }),
-
-              delay(250)
-            )
-        )
-      )
-      .subscribe({
-        complete: () => {
-          this.descargandoPdf = false;
-        }
-      });
-  }
-
-  descargarPdfCurso(): void {
-    if (this.esEstudiante) {
-      if (
-        this.idEstudianteActual === null ||
-        this.idPeriodoSeleccionado === null
-      ) {
-        return;
-      }
-
-      this.descargandoPdfCurso = true;
-      this.errorPdfCurso = null;
-
-      this.notasService
-        .descargarPdfEstudiante(
-          this.idEstudianteActual,
-          this.idPeriodoSeleccionado
-        )
-        .subscribe({
-          next: blob => {
-            const nombreArchivo =
-              `mis_notas_${this.nombrePeriodoReporte || this.idPeriodoSeleccionado}.pdf`
-                .replace(
-                  /\s+/g,
-                  '_'
-                );
-
-            this.descargarBlob(
-              blob,
-              nombreArchivo
-            );
-
-            this.descargandoPdfCurso =
-              false;
-          },
-
-          error: () => {
-            this.errorPdfCurso =
-              'No se pudo generar tu reporte de notas.';
-
-            this.descargandoPdfCurso =
-              false;
-          }
-        });
-
       return;
     }
 
@@ -1395,556 +812,180 @@ export class NotasComponent implements OnInit {
       return;
     }
 
-    this.descargandoPdfCurso = true;
-    this.errorPdfCurso = null;
-
-    const idCurso =
-      this.idCursoSeleccionado;
-
-    const idSubject =
-      this.idAsignaturaNotas;
-
-    const idPeriodo =
-      this.idPeriodoSeleccionado;
-
-    const nombreCurso =
-      this.cursoSeleccionadoNombre;
-
-    const nombreAsignatura =
-      this.asignaturas.find(
-        a =>
-          a.idSubject ===
-          idSubject
-      )?.name ??
-      `asignatura_${idSubject}`;
-
-    const nombreArchivo =
-      `notas_${nombreCurso}_${nombreAsignatura}_periodo_${idPeriodo}.pdf`
-        .replace(
-          /\s+/g,
-          '_'
-        );
-
-    this.notasService
-      .descargarPdfCurso(
-        idCurso,
-        idSubject,
-        idPeriodo
-      )
-      .subscribe({
-        next: blob => {
-          this.descargarBlob(
-            blob,
-            nombreArchivo
-          );
-
-          this.descargandoPdfCurso =
-            false;
-        },
-
-        error: () => {
-          this.errorPdfCurso =
-            `No se pudo generar el PDF del curso ${nombreCurso}.`;
-
-          this.descargandoPdfCurso =
-            false;
-        }
-      });
-  }
-
-  private descargarBlob(
-    blob: Blob,
-    nombreArchivo: string
-  ): void {
-    const url =
-      window.URL.createObjectURL(
-        blob
-      );
-
-    const a =
-      document.createElement('a');
-
-    a.href = url;
-    a.download = nombreArchivo;
-
-    document.body.appendChild(a);
-
-    a.click();
-
-    document.body.removeChild(a);
-
-    setTimeout(() => {
-      window.URL.revokeObjectURL(
-        url
-      );
-    }, 100);
-  }
-
-  cargarNotas(): void {
-    if (this.esDirectivo) {
-      return;
-    }
-
-    if (
-      this.idCursoSeleccionado === null ||
-      this.idPeriodoSeleccionado === null
-    ) {
-      return;
-    }
-
-    if (this.esEstudiante) {
-      this.cargarNotasEstudiante();
-      return;
-    }
-
-    if (
-      this.idAsignaturaNotas === null
-    ) {
-      return;
-    }
-
     this.cargandoNotas = true;
-    this.errorNotas = null;
-    this.notasConsultadas = true;
-
-    this.celdas.clear();
-
-    const idCurso =
-      this.idCursoSeleccionado;
-
-    const idSubject =
-      this.idAsignaturaNotas;
-
-    const idPeriodo =
-      this.idPeriodoSeleccionado;
-
-    const nombreCurso =
-      this.cursoSeleccionadoNombre;
-
-    this.actividadesNotasColumnas =
-      this.actividadesEvaluativas.filter(
-        a =>
-          a.idPeriod === idPeriodo &&
-          a.isActive
-      );
-
-    if (
-      !this.actividadesNotasColumnas.length
-    ) {
-      this.errorNotas =
-        'No hay actividades evaluativas configuradas para este periodo. Ve a la pestaña "Calificación" y define los pasos del periodo.';
-    }
+    this.errorNotas = '';
+    this.errorGuardado = '';
 
     forkJoin({
       estudiantes:
-        this.notasService
-          .listarEstudiantesPorCurso(
-            idCurso
-          ),
-
-      cargas:
-        this.notasService
-          .listarCargaPorCurso(
-            idCurso
-          ),
-
+        this.notasService.listarEstudiantesPorCurso(
+          this.idCursoSeleccionado
+        ),
       notas:
-        this.notasService
-          .obtenerNotasPorCurso(
-            idCurso,
-            idSubject,
-            idPeriodo
-          )
-    }).subscribe({
-      next: ({
-        estudiantes,
-        cargas,
-        notas
-      }) => {
-        this.estudiantesNotas =
-          estudiantes
-            .filter(
-              e =>
-                e.status !== false
-            )
-            .map(e => ({
-              estudiante: e,
-              nombreCompleto:
-                `${e.name} ${e.surnames}`.trim()
-            }))
-            .sort(
-              (a, b) =>
-                a.nombreCompleto.localeCompare(
-                  b.nombreCompleto
-                )
-            );
-
-        const carga =
-          cargas.find(
-            c =>
-              c.idSubject ===
-                idSubject &&
-              c.status === true
+        this.notasService.obtenerNotasPorCurso(
+          this.idCursoSeleccionado,
+          this.idAsignaturaNotas,
+          this.idPeriodoSeleccionado
+        ),
+      carga:
+        this.notasService.listarCargaPorCurso(
+          this.idCursoSeleccionado
+        )
+    })
+    .pipe(
+      finalize(() => {
+        this.cargandoNotas = false;
+      })
+    )
+    .subscribe({
+      next: respuesta => {
+        this.estudiantes =
+          respuesta.estudiantes.filter(
+            e => e.status !== false
           );
 
-        const rolActual =
-          (
-            this.perfilActual?.roleName ??
-            ''
-          )
-            .trim()
-            .toUpperCase();
+        this.cargasAcademicas =
+          respuesta.carga.filter(
+            c => c.status
+          );
 
-        const idUsuarioActual =
-          this.perfilActual?.idUser ??
-          null;
+        this.actividadesNotasColumnas =
+          this.obtenerActividadesDelPeriodo();
 
-        if (
-          rolActual === 'DOCENTE' &&
-          idUsuarioActual !== null
-        ) {
-          this.idTeacherAsignaturaActual =
-            idUsuarioActual;
-        } else if (
-          carga?.idTeacher
-        ) {
-          this.idTeacherAsignaturaActual =
-            carga.idTeacher;
-        } else {
-          this.idTeacherAsignaturaActual =
-            null;
-        }
-
-        if (!carga) {
-          this.errorNotas =
-            (
-              this.errorNotas
-                ? this.errorNotas + ' '
-                : ''
-            ) +
-            `No hay un docente asignado a esta asignatura en el curso ${nombreCurso} (carga académica).`;
-        }
-
-        if (
-          rolActual !== 'DOCENTE'
-        ) {
-          this.errorNotas =
-            (
-              this.errorNotas
-                ? this.errorNotas + ' '
-                : ''
-            ) +
-            'El registro y edición de notas requiere una cuenta con rol Docente.';
-        }
-
-        this.estudiantesNotas
-          .forEach(fila => {
-            this.actividadesNotasColumnas
-              .forEach(
-                actividad => {
-                  const clave =
-                    this.claveCelda(
-                      fila.estudiante.idUser,
-                      actividad.idEvaluative
-                    );
-
-                  const notaExistente =
-                    notas.find(
-                      n =>
-                        n.idStudent ===
-                          fila.estudiante.idUser &&
-                        n.idEvaluative ===
-                          actividad.idEvaluative
-                    );
-
-                  this.celdas.set(
-                    clave,
-                    {
-                      valor:
-                        notaExistente
-                          ? String(
-                              notaExistente.gradeValue
-                            )
-                          : '',
-
-                      idGrade:
-                        notaExistente?.idGrade ??
-                        null,
-
-                      guardando: false,
-                      error: null
-                    }
-                  );
-                }
-              );
-          });
-
-        this.cargandoNotas = false;
+        this.construirFilasNotas(
+          this.estudiantes,
+          respuesta.notas
+        );
       },
-
-      error: err => {
-        if (
-          err?.status === 403
-        ) {
-          this.errorNotas =
-            `No tienes permisos para ver los estudiantes del curso ${nombreCurso}. Contacta al administrador para que revise tu rol de acceso.`;
-        } else {
-          this.errorNotas =
-            `No se pudo cargar el listado de estudiantes o las notas del curso ${nombreCurso}.`;
-        }
-
-        this.cargandoNotas = false;
+      error: () => {
+        this.errorNotas =
+          'No fue posible cargar las notas.';
+        this.estudiantesNotas = [];
       }
     });
   }
 
-  private cargarNotasEstudiante(): void {
-    if (
-      this.idEstudianteActual === null ||
-      this.idCursoEstudiante === null ||
-      this.idPeriodoSeleccionado === null
-    ) {
-      this.errorNotas =
-        'No se pudo identificar tu estudiante, curso o periodo.';
+  construirFilasNotas(
+    estudiantes: UsuarioBasico[],
+    notas: GradeDetailResponseDTO[]
+  ): void {
+    this.estudiantesNotas =
+      estudiantes.map(estudiante => {
+        const celdas: Record<
+          number,
+          CeldaEstado
+        > = {};
 
-      this.cargandoNotas = false;
-      return;
-    }
-
-    this.cargandoNotas = true;
-    this.errorNotas = null;
-    this.errorGuardado = null;
-    this.notasConsultadas = true;
-
-    this.celdas.clear();
-
-    const idEstudiante =
-      this.idEstudianteActual;
-
-    const idPeriodo =
-      this.idPeriodoSeleccionado;
-
-    const idCurso =
-      this.idCursoEstudiante;
-
-    this.actividadesNotasColumnas =
-      this.actividadesEvaluativas.filter(
-        a =>
-          a.idPeriod === idPeriodo &&
-          a.isActive
-      );
-
-    this.notasService
-      .listarCargaPorCurso(idCurso)
-      .subscribe({
-        next: cargas => {
-          const idsAsignaturas =
-            Array.from(
-              new Set(
-                cargas
-                  .filter(
-                    c =>
-                      c.status !== false
-                  )
-                  .map(
-                    c =>
-                      c.idSubject
-                  )
-              )
+        this.actividadesNotasColumnas.forEach(
+          actividad => {
+            const nota = notas.find(
+              n =>
+                n.idStudent ===
+                  estudiante.idUser &&
+                n.idEvaluative ===
+                  actividad.idEvaluative
             );
 
-          this.asignaturas =
-            this.asignaturas.filter(
-              asignatura =>
-                idsAsignaturas.includes(
-                  asignatura.idSubject
-                )
-            );
+            celdas[actividad.idEvaluative] = {
+              valor:
+                nota?.gradeValue ??
+                null,
+              original:
+                nota?.gradeValue ??
+                null,
+              guardando: false,
+              error: '',
+              idGrade:
+                nota?.idGrade,
+              idEvaluationType:
+                nota?.idEvaluationType
+            };
+          }
+        );
 
-          if (
-            this.idAsignaturaNotas === null ||
-            !this.asignaturas.some(
-              a =>
-                a.idSubject ===
-                this.idAsignaturaNotas
+        return {
+          estudiante,
+          nombreCompleto:
+            `${estudiante.name} ${estudiante.surnames}`.trim(),
+          celdas,
+          promedio:
+            this.obtenerPromedioFila(
+              celdas
             )
-          ) {
-            this.idAsignaturaNotas =
-              this.asignaturas.length
-                ? this.asignaturas[0].idSubject
-                : null;
-          }
-
-          if (
-            this.idAsignaturaNotas === null
-          ) {
-            this.estudiantesNotas = [];
-            this.celdas.clear();
-
-            this.errorNotas =
-              'No tienes asignaturas asignadas en este curso.';
-
-            this.cargandoNotas = false;
-            return;
-          }
-
-          const estudiante =
-            this.crearUsuarioBasicoDesdePerfil();
-
-          if (!estudiante) {
-            this.errorNotas =
-              'No se pudo obtener la información del estudiante.';
-
-            this.cargandoNotas = false;
-            return;
-          }
-
-          this.estudiantesNotas = [
-            {
-              estudiante,
-              nombreCompleto:
-                `${estudiante.name} ${estudiante.surnames}`.trim()
-            }
-          ];
-
-          this.notasService
-            .obtenerNotasPorEstudiante(
-              idEstudiante,
-              idPeriodo
-            )
-            .subscribe({
-              next: notas => {
-                const notasMateria =
-                  notas.filter(
-                    nota =>
-                      Number(
-                        nota.idCourse
-                      ) ===
-                        Number(idCurso) &&
-                      Number(
-                        nota.idSubject
-                      ) ===
-                        Number(
-                          this.idAsignaturaNotas
-                        ) &&
-                      Number(
-                        nota.idPeriod
-                      ) ===
-                        Number(idPeriodo)
-                  );
-
-                const idsActividadesConNota =
-                  new Set(
-                    notasMateria.map(
-                      nota =>
-                        nota.idEvaluative
-                    )
-                  );
-
-                if (
-                  this.actividadesNotasColumnas
-                    .length === 0
-                ) {
-                  this.actividadesNotasColumnas =
-                    this.actividadesEvaluativas.filter(
-                      actividad =>
-                        actividad.idPeriod ===
-                          idPeriodo &&
-                        idsActividadesConNota.has(
-                          actividad.idEvaluative
-                        )
-                    );
-                }
-
-                this.actividadesNotasColumnas
-                  .forEach(
-                    actividad => {
-                      const clave =
-                        this.claveCelda(
-                          idEstudiante,
-                          actividad.idEvaluative
-                        );
-
-                      const notaExistente =
-                        notasMateria.find(
-                          nota =>
-                            nota.idEvaluative ===
-                            actividad.idEvaluative
-                        );
-
-                      this.celdas.set(
-                        clave,
-                        {
-                          valor:
-                            notaExistente
-                              ? String(
-                                  notaExistente.gradeValue
-                                )
-                              : '',
-
-                          idGrade:
-                            notaExistente?.idGrade ??
-                            null,
-
-                          guardando: false,
-                          error: null
-                        }
-                      );
-                    }
-                  );
-
-                this.cargandoNotas = false;
-              },
-
-              error: () => {
-                this.errorNotas =
-                  'No se pudieron cargar tus notas para el periodo seleccionado.';
-
-                this.cargandoNotas = false;
-              }
-            });
-        },
-
-        error: () => {
-          this.errorNotas =
-            'No se pudieron cargar las asignaturas de tu curso.';
-
-          this.cargandoNotas = false;
-        }
+        };
       });
-  }
-
-  claveCelda(
-    idStudent: number,
-    idEvaluative: number
-  ): string {
-    return `${idStudent}_${idEvaluative}`;
   }
 
   obtenerCelda(
     idStudent: number,
     idEvaluative: number
   ): CeldaEstado {
-    const clave =
-      this.claveCelda(
-        idStudent,
-        idEvaluative
+    const fila =
+      this.estudiantesNotas.find(
+        f =>
+          f.estudiante.idUser ===
+          idStudent
       );
 
-    return (
-      this.celdas.get(clave) ?? {
-        valor: '',
-        idGrade: null,
+    if (!fila) {
+      return {
+        valor: null,
+        original: null,
         guardando: false,
-        error: null
-      }
+        error: ''
+      };
+    }
+
+    if (!fila.celdas[idEvaluative]) {
+      fila.celdas[idEvaluative] = {
+        valor: null,
+        original: null,
+        guardando: false,
+        error: ''
+      };
+    }
+
+    return fila.celdas[idEvaluative];
+  }
+
+  obtenerActividadesDelPeriodo(): EvaluativeActivityResponseDTO[] {
+    if (this.idPeriodoSeleccionado === null) {
+      return [];
+    }
+
+    return this.actividadesEvaluativas.filter(
+      actividad =>
+        actividad.idPeriod ===
+        this.idPeriodoSeleccionado
     );
+  }
+
+  cargarNotasEstudiante(): void {
+    if (
+      !this.esEstudiante ||
+      this.idEstudianteActual === null ||
+      this.idPeriodoSeleccionado === null
+    ) {
+      return;
+    }
+
+    this.notasService
+      .obtenerNotasPorEstudiante(
+        this.idEstudianteActual,
+        this.idPeriodoSeleccionado
+      )
+      .subscribe({
+        next: notas => {
+          this.historialNotas = notas;
+          this.generarResumenAsignaturas();
+        }
+      });
   }
 
   onCambioCelda(
     idStudent: number,
     idEvaluative: number,
-    valor: string | number
+    valor: number | string
   ): void {
     if (
       this.esEstudiante ||
@@ -1953,32 +994,30 @@ export class NotasComponent implements OnInit {
       return;
     }
 
-    const clave =
-      this.claveCelda(
+    const celda =
+      this.obtenerCelda(
         idStudent,
         idEvaluative
       );
 
-    const actual =
-      this.celdas.get(clave) ?? {
-        valor: '',
-        idGrade: null,
-        guardando: false,
-        error: null
-      };
+    const numero = Number(valor);
 
-    this.celdas.set(
-      clave,
-      {
-        ...actual,
-        valor: String(
-          valor ?? ''
-        ),
-        error: null
-      }
+    celda.error = '';
+
+    if (
+      valor === '' ||
+      valor === null ||
+      !Number.isFinite(numero)
+    ) {
+      celda.valor = null;
+      return;
+    }
+
+    celda.valor = numero;
+
+    this.actualizarPromedioFila(
+      idStudent
     );
-
-    this.errorGuardado = null;
   }
 
   guardarCelda(
@@ -1986,183 +1025,112 @@ export class NotasComponent implements OnInit {
     actividad: EvaluativeActivityResponseDTO
   ): void {
     if (
+      !this.esDocente ||
       this.esEstudiante ||
       this.esDirectivo
     ) {
       return;
     }
-
-    try {
-      this.intentarGuardarCelda(
-        fila,
-        actividad
-      );
-    } catch {
-      this.errorGuardado =
-        'Ocurrió un error inesperado al intentar guardar la nota.';
-    }
-  }
-
-  private intentarGuardarCelda(
-    fila: FilaNotas,
-    actividad: EvaluativeActivityResponseDTO
-  ): void {
-    if (
-      this.esEstudiante ||
-      this.esDirectivo
-    ) {
-      return;
-    }
-
-    if (
-      this.idCursoSeleccionado === null ||
-      this.idAsignaturaNotas === null ||
-      this.idPeriodoSeleccionado === null
-    ) {
-      return;
-    }
-
-    const clave =
-      this.claveCelda(
-        fila.estudiante.idUser,
-        actividad.idEvaluative
-      );
 
     const celda =
-      this.celdas.get(clave);
+      fila.celdas[
+        actividad.idEvaluative
+      ];
 
-    if (
-      !celda ||
-      String(celda.valor).trim() === ''
-    ) {
-      return;
-    }
-
-    const valorNumerico =
-      Number(celda.valor);
-
-    if (
-      Number.isNaN(valorNumerico)
-    ) {
-      this.celdas.set(
-        clave,
-        {
-          ...celda,
-          error: 'Valor inválido'
-        }
-      );
-
+    if (!celda) {
       return;
     }
 
     if (
-      this.escalaActual &&
-      (
-        valorNumerico <
-          this.escalaActual.minimumValue ||
-        valorNumerico >
-          this.escalaActual.maximumValue
-      )
+      celda.valor ===
+      celda.original
     ) {
-      this.celdas.set(
-        clave,
-        {
-          ...celda,
-          error:
-            `Debe estar entre ${this.escalaActual.minimumValue} y ${this.escalaActual.maximumValue}`
-        }
-      );
-
       return;
     }
 
-    const rolActual =
-      (
-        this.perfilActual?.roleName ??
-        ''
-      )
-        .trim()
-        .toUpperCase();
+    this.intentarGuardarCelda(
+      fila,
+      actividad,
+      celda
+    );
+  }
 
+  intentarGuardarCelda(
+    fila: FilaNotas,
+    actividad: EvaluativeActivityResponseDTO,
+    celda: CeldaEstado
+  ): void {
     if (
-      rolActual !== 'DOCENTE' ||
-      this.perfilActual?.idUser == null
+      !this.esDocente ||
+      this.idCursoSeleccionado === null ||
+      this.idPeriodoSeleccionado === null ||
+      this.idAsignaturaNotas === null
     ) {
-      this.celdas.set(
-        clave,
-        {
-          ...celda,
-          error: 'Sin permiso'
-        }
+      return;
+    }
+
+    if (celda.valor === null) {
+      celda.error =
+        'Ingrese una calificación válida.';
+      return;
+    }
+
+    if (!this.validarNota(celda.valor)) {
+      celda.error =
+        `La nota debe estar entre ${this.escalaActual?.minimumValue ?? 0} y ${this.escalaActual?.maximumValue ?? 5}.`;
+      return;
+    }
+
+    const tipo =
+      this.encontrarTipoEvaluacion(
+        celda.valor
       );
 
-      this.errorGuardado =
-        'Para registrar o editar notas debes iniciar sesión con una cuenta de Docente.';
-
+    if (!tipo) {
+      celda.error =
+        'No existe un tipo de evaluación para esta nota.';
       return;
     }
 
     const idTeacher =
-      this.perfilActual.idUser;
+      this.idDocenteActual ??
+      this.cargasAcademicas.find(
+        c =>
+          c.idCourse ===
+            this.idCursoSeleccionado &&
+          c.idSubject ===
+            this.idAsignaturaNotas
+      )?.idTeacher ??
+      0;
 
-    this.idTeacherAsignaturaActual =
-      idTeacher;
-
-    const tipo =
-      this.encontrarTipoEvaluacion(
-        valorNumerico
-      );
-
-    if (!tipo) {
-      this.celdas.set(
-        clave,
-        {
-          ...celda,
-          error:
-            'Configura los tipos de calificación en "Calificación"'
-        }
-      );
-
+    if (!idTeacher) {
+      celda.error =
+        'No fue posible identificar al docente.';
       return;
     }
-
-    this.celdas.set(
-      clave,
-      {
-        ...celda,
-        guardando: true,
-        error: null
-      }
-    );
-
-    this.errorGuardado = null;
 
     const dto: GradeRequestDTO = {
       idStudent:
         fila.estudiante.idUser,
-
       idCourse:
         this.idCursoSeleccionado,
-
       idTeacher,
-
       idPeriod:
         this.idPeriodoSeleccionado,
-
       idSubject:
         this.idAsignaturaNotas,
-
       idEvaluative:
         actividad.idEvaluative,
-
       idEvaluationType:
         tipo.idEvaluationType,
-
       gradeValue:
-        valorNumerico
+        celda.valor
     };
 
-    const peticion =
+    celda.guardando = true;
+    celda.error = '';
+
+    const solicitud =
       celda.idGrade
         ? this.notasService.actualizarNota(
             celda.idGrade,
@@ -2172,98 +1140,607 @@ export class NotasComponent implements OnInit {
             dto
           );
 
-    peticion.subscribe({
-      next: resultado => {
-        this.celdas.set(
-          clave,
-          {
-            valor:
-              String(
-                resultado.gradeValue
-              ),
+    solicitud
+      .pipe(
+        finalize(() => {
+          celda.guardando = false;
+        })
+      )
+      .subscribe({
+        next: respuesta => {
+          celda.original =
+            respuesta.gradeValue;
+          celda.valor =
+            respuesta.gradeValue;
+          celda.idGrade =
+            respuesta.idGrade;
+          celda.idEvaluationType =
+            respuesta.idEvaluationType;
 
-            idGrade:
-              resultado.idGrade,
-
-            guardando: false,
-            error: null
-          }
-        );
-      },
-
-      error: err => {
-        const mensaje =
-          err?.error?.message ??
-          err?.error?.error ??
-          'No se pudo guardar la nota';
-
-        if (
-          err?.status === 401 ||
-          err?.status === 403
-        ) {
-          this.celdas.set(
-            clave,
-            {
-              ...celda,
-              guardando: false,
-              error: 'Sin permiso'
-            }
+          this.actualizarPromedioFila(
+            fila.estudiante.idUser
           );
 
-          this.errorGuardado =
-            'No tienes permisos para registrar notas con tu rol actual.';
-        } else {
-          this.celdas.set(
-            clave,
-            {
-              ...celda,
-              guardando: false,
-              error: 'No se pudo guardar'
-            }
-          );
-
-          this.errorGuardado =
-            mensaje;
+          this.cargarHistorial();
+        },
+        error: () => {
+          celda.error =
+            'No fue posible guardar la calificación.';
         }
-      }
-    });
+      });
   }
 
-  private encontrarTipoEvaluacion(
+  encontrarTipoEvaluacion(
     valor: number
   ): EvaluationTypeResponseDTO | null {
     if (!this.escalaActual) {
       return null;
     }
 
-    const candidatos =
+    const disponibles =
       this.tiposEvaluacion.filter(
         t =>
           t.idScale ===
-            this.escalaActual!.idScale &&
-          t.numericGrade !== null &&
-          t.numericGrade !== undefined
+          this.escalaActual!.idScale
       );
 
-    if (!candidatos.length) {
-      return null;
+    return (
+      disponibles.find(
+        t =>
+          t.numericGrade !== null &&
+          t.numericGrade !== undefined &&
+          Number(t.numericGrade) ===
+            Number(valor)
+      ) ??
+      disponibles.find(
+        t =>
+          t.numericGrade !== null &&
+          t.numericGrade !== undefined &&
+          Math.abs(
+            Number(t.numericGrade) -
+              Number(valor)
+          ) < 0.01
+      ) ??
+      null
+    );
+  }
+
+  actualizarPromedioFila(
+    idStudent: number
+  ): void {
+    const fila =
+      this.estudiantesNotas.find(
+        f =>
+          f.estudiante.idUser ===
+          idStudent
+      );
+
+    if (!fila) {
+      return;
     }
 
-    return candidatos.reduce(
-      (mejor, actual) =>
-        Math.abs(
-          Number(
-            actual.numericGrade
-          ) - valor
-        ) <
-        Math.abs(
-          Number(
-            mejor.numericGrade
-          ) - valor
-        )
-          ? actual
-          : mejor
+    fila.promedio =
+      this.obtenerPromedioFila(
+        fila.celdas
+      );
+  }
+
+  obtenerPromedioFila(
+    celdas: Record<
+      number,
+      CeldaEstado
+    >
+  ): number {
+    const valores = Object.values(
+      celdas
+    )
+      .map(c => c.valor)
+      .filter(
+        (valor): valor is number =>
+          valor !== null &&
+          Number.isFinite(valor)
+      );
+
+    if (!valores.length) {
+      return 0;
+    }
+
+    return valores.reduce(
+      (total, valor) =>
+        total + valor,
+      0
+    ) / valores.length;
+  }
+
+  configurarReporteGeneral(): void {
+    if (this.esDirectivo) {
+      return;
+    }
+
+    if (this.periodos.length) {
+      this.idPeriodoReporte =
+        this.idPeriodoSeleccionado ??
+        this.periodos[0].idPeriod;
+    }
+
+    if (this.esEstudiante) {
+      this.configurarReporteEstudiante(
+        this.idEstudianteActual ?? 0
+      );
+      return;
+    }
+
+    if (
+      this.idNivelReporte === null &&
+      this.niveles.length
+    ) {
+      this.idNivelReporte =
+        this.niveles[0].idLevel;
+    }
+
+    this.cargarCursosReporte();
+  }
+
+  configurarReporteEstudiante(
+    idStudent: number
+  ): void {
+    if (
+      this.esDirectivo ||
+      !this.esEstudiante ||
+      !idStudent
+    ) {
+      return;
+    }
+
+    this.estudiantesReporte =
+      this.perfil
+        ? [{
+            idUser:
+              this.perfil.idUser,
+            name:
+              this.perfil.name ?? '',
+            surnames:
+              this.perfil.surnames ?? '',
+            idCourse:
+              this.perfil.idCourse ?? undefined
+          }]
+        : [];
+
+    this.seleccionadosReporte.clear();
+    this.seleccionadosReporte.add(
+      idStudent
     );
+
+    this.todosSeleccionadosReporte = true;
+  }
+
+  cargarCursosReporte(): void {
+    if (
+      this.esDirectivo ||
+      this.idNivelReporte === null
+    ) {
+      return;
+    }
+
+    this.cursosReporte =
+      this.cursos.filter(
+        c =>
+          c.idLevel ===
+          this.idNivelReporte
+      );
+
+    if (
+      this.idCursoReporte === null &&
+      this.cursosReporte.length
+    ) {
+      this.idCursoReporte =
+        this.cursosReporte[0].idCourse;
+    }
+
+    this.cargarEstudiantesReporte();
+  }
+
+  onCambioNivelReporte(): void {
+    if (this.esDirectivo) {
+      return;
+    }
+
+    this.idCursoReporte = null;
+    this.estudiantesReporte = [];
+    this.seleccionadosReporte.clear();
+    this.todosSeleccionadosReporte = false;
+    this.vistaPreviaGenerada = false;
+
+    this.cargarCursosReporte();
+  }
+
+  onCambioCursoReporte(): void {
+    if (this.esDirectivo) {
+      return;
+    }
+
+    this.seleccionadosReporte.clear();
+    this.todosSeleccionadosReporte = false;
+    this.vistaPreviaGenerada = false;
+
+    this.cargarEstudiantesReporte();
+  }
+
+  cargarEstudiantesReporte(): void {
+    if (
+      this.esDirectivo ||
+      this.esEstudiante ||
+      this.idCursoReporte === null
+    ) {
+      if (this.esEstudiante) {
+        this.configurarReporteEstudiante(
+          this.idEstudianteActual ?? 0
+        );
+      }
+      return;
+    }
+
+    this.cargandoEstudiantesReporte = true;
+
+    this.notasService
+      .listarEstudiantesPorCurso(
+        this.idCursoReporte
+      )
+      .pipe(
+        finalize(() => {
+          this.cargandoEstudiantesReporte =
+            false;
+        })
+      )
+      .subscribe({
+        next: estudiantes => {
+          this.estudiantesReporte =
+            estudiantes.filter(
+              e => e.status !== false
+            );
+
+          this.seleccionadosReporte.clear();
+          this.todosSeleccionadosReporte =
+            false;
+        },
+        error: () => {
+          this.errorReporte =
+            'No fue posible cargar los estudiantes.';
+        }
+      });
+  }
+
+  cargarPromediosReportes(): void {
+    if (
+      this.esDirectivo ||
+      this.idPeriodoReporte === null
+    ) {
+      return;
+    }
+
+    const ids =
+      Array.from(
+        this.seleccionadosReporte
+      );
+
+    if (!ids.length) {
+      this.vistaPrevia = [];
+      return;
+    }
+
+    forkJoin(
+      ids.map(idStudent =>
+        this.notasService
+          .obtenerNotasPorEstudiante(
+            idStudent,
+            this.idPeriodoReporte!
+          )
+          .pipe(
+            catchError(() => of([]))
+          )
+      )
+    ).subscribe({
+      next: respuestas => {
+        this.vistaPrevia =
+          respuestas.map(
+            (notas, indice) => {
+              const estudiante =
+                this.estudiantesReporte.find(
+                  e =>
+                    e.idUser ===
+                    ids[indice]
+                ) ?? {
+                  idUser: ids[indice],
+                  name: '',
+                  surnames: ''
+                };
+
+              const valores =
+                notas.map(
+                  n =>
+                    Number(
+                      n.gradeValue
+                    )
+                );
+
+              const promedio =
+                valores.length
+                  ? valores.reduce(
+                      (a, b) =>
+                        a + b,
+                      0
+                    ) /
+                    valores.length
+                  : 0;
+
+              return {
+                estudiante,
+                notas,
+                promedio
+              };
+            }
+          );
+      }
+    });
+  }
+
+  regenerarVistaPrevia(): void {
+    if (this.esDirectivo) {
+      return;
+    }
+
+    if (
+      this.esEstudiante &&
+      this.idEstudianteActual
+    ) {
+      this.seleccionadosReporte.clear();
+      this.seleccionadosReporte.add(
+        this.idEstudianteActual
+      );
+    }
+
+    if (
+      !this.esEstudiante &&
+      !this.seleccionadosReporte.size
+    ) {
+      this.errorReporte =
+        'Selecciona al menos un estudiante.';
+      return;
+    }
+
+    this.errorReporte = '';
+    this.cargandoVistaPrevia = true;
+
+    this.cargarPromediosReportes();
+
+    setTimeout(() => {
+      this.vistaPreviaGenerada = true;
+      this.cargandoVistaPrevia = false;
+    }, 300);
+  }
+
+  seleccionarEstudianteReporte(
+    idStudent: number
+  ): void {
+    if (this.esDirectivo) {
+      return;
+    }
+
+    if (
+      this.seleccionadosReporte.has(
+        idStudent
+      )
+    ) {
+      this.seleccionadosReporte.delete(
+        idStudent
+      );
+    } else {
+      this.seleccionadosReporte.add(
+        idStudent
+      );
+    }
+
+    this.todosSeleccionadosReporte =
+      this.estudiantesReporte.length > 0 &&
+      this.estudiantesReporte.every(
+        e =>
+          this.seleccionadosReporte.has(
+            e.idUser
+          )
+      );
+  }
+
+  toggleEstudianteReporte(
+    idStudent: number
+  ): void {
+    this.seleccionarEstudianteReporte(
+      idStudent
+    );
+  }
+
+  seleccionarTodosReportes(
+    seleccionado: boolean
+  ): void {
+    if (this.esDirectivo) {
+      return;
+    }
+
+    if (seleccionado) {
+      this.estudiantesReporte.forEach(
+        e =>
+          this.seleccionadosReporte.add(
+            e.idUser
+          )
+      );
+    } else {
+      this.seleccionadosReporte.clear();
+    }
+
+    this.todosSeleccionadosReporte =
+      seleccionado;
+  }
+
+  toggleTodosReporte(): void {
+    this.seleccionarTodosReportes(
+      !this.todosSeleccionadosReporte
+    );
+  }
+
+  descargarReportePdf(): void {
+    if (
+      this.esDirectivo ||
+      this.idPeriodoReporte === null
+    ) {
+      return;
+    }
+
+    if (this.esEstudiante) {
+      if (!this.idEstudianteActual) {
+        return;
+      }
+
+      this.descargarPdfEstudiante(
+        this.idEstudianteActual
+      );
+      return;
+    }
+
+    if (
+      this.idCursoReporte === null
+    ) {
+      return;
+    }
+
+    this.descargarPdfCurso(
+      this.idCursoReporte
+    );
+  }
+
+  descargarPdfEstudiante(
+    idStudent: number
+  ): void {
+    if (
+      this.esDirectivo ||
+      this.idPeriodoReporte === null
+    ) {
+      return;
+    }
+
+    this.descargandoPdf = true;
+
+    this.notasService
+      .descargarPdfEstudiante(
+        idStudent,
+        this.idPeriodoReporte
+      )
+      .pipe(
+        finalize(() => {
+          this.descargandoPdf = false;
+        })
+      )
+      .subscribe({
+        next: blob =>
+          this.abrirPdf(blob),
+        error: () => {
+          this.errorReporte =
+            'No fue posible generar el PDF.';
+        }
+      });
+  }
+
+  descargarPdfCurso(
+    idCurso?: number
+  ): void {
+    if (
+      this.esDirectivo ||
+      this.idPeriodoSeleccionado === null
+    ) {
+      return;
+    }
+
+    const curso =
+      idCurso ??
+      this.idCursoSeleccionado;
+
+    if (
+      curso === null ||
+      this.idAsignaturaNotas === null
+    ) {
+      this.errorPdfCurso =
+        'Selecciona un curso y una asignatura.';
+      return;
+    }
+
+    this.descargandoPdfCurso = true;
+    this.errorPdfCurso = '';
+
+    this.notasService
+      .descargarPdfCurso(
+        curso,
+        this.idAsignaturaNotas,
+        this.idPeriodoSeleccionado
+      )
+      .pipe(
+        finalize(() => {
+          this.descargandoPdfCurso = false;
+        })
+      )
+      .subscribe({
+        next: blob =>
+          this.abrirPdf(blob),
+        error: () => {
+          this.errorPdfCurso =
+            'No fue posible generar el PDF del curso.';
+        }
+      });
+  }
+
+  abrirPdf(blob: Blob): void {
+    const url =
+      window.URL.createObjectURL(blob);
+
+    window.open(
+      url,
+      '_blank'
+    );
+
+    setTimeout(() => {
+      window.URL.revokeObjectURL(
+        url
+      );
+    }, 10000);
+  }
+
+  configurarEscala(): void {
+    if (!this.escalas.length) {
+      this.escalaActual = null;
+      return;
+    }
+
+    this.escalaActual =
+      this.obtenerEscalaActual();
+
+    if (this.escalaActual) {
+      this.formEscala = {
+        ...this.escalaActual
+      };
+    }
+  }
+
+  editarEscala(): void {
+    if (
+      this.esEstudiante ||
+      this.esDirectivo
+    ) {
+      return;
+    }
+
+    this.editandoEscala = true;
+  }
+
+  cancelarEdicionEscala(): void {
+    this.editandoEscala = false;
+    this.configurarEscala();
   }
 
   guardarEscala(): void {
@@ -2274,13 +1751,25 @@ export class NotasComponent implements OnInit {
       return;
     }
 
+    this.guardarCambiosCalificacion();
+  }
+
+  guardarCambiosCalificacion(): void {
+    if (
+      this.esEstudiante ||
+      this.esDirectivo
+    ) {
+      return;
+    }
+
+    this.errorEscala = '';
+
     if (
       this.formEscala.minimumValue >=
       this.formEscala.maximumValue
     ) {
       this.errorEscala =
-        'El valor mínimo debe ser menor que el máximo.';
-
+        'El valor mínimo debe ser menor que el valor máximo.';
       return;
     }
 
@@ -2292,114 +1781,68 @@ export class NotasComponent implements OnInit {
     ) {
       this.errorEscala =
         'La meta de aprobación debe estar dentro del rango.';
-
       return;
     }
 
     this.guardandoEscala = true;
-    this.errorEscala = null;
 
     const dto = {
-      ...this.formEscala
+      minimumValue:
+        this.formEscala.minimumValue,
+      maximumValue:
+        this.formEscala.maximumValue,
+      minimumPassGrade:
+        this.formEscala.minimumPassGrade
     };
 
-    const peticion =
-      this.escalaActual
+    const solicitud =
+      this.formEscala.idScale
         ? this.notasService.actualizarEscala(
-            this.escalaActual.idScale,
+            this.formEscala.idScale,
             dto
           )
         : this.notasService.registrarEscala(
             dto
           );
 
-    peticion.subscribe({
-      next: escala => {
-        this.escalaActual = escala;
+    solicitud
+      .pipe(
+        finalize(() => {
+          this.guardandoEscala =
+            false;
+        })
+      )
+      .subscribe({
+        next: escala => {
+          this.escalaActual = escala;
 
-        this.guardandoEscala = false;
+          const indice =
+            this.escalas.findIndex(
+              e =>
+                e.idScale ===
+                escala.idScale
+            );
 
-        this.formEscala = {
-          minimumValue:
-            escala.minimumValue,
-          maximumValue:
-            escala.maximumValue,
-          minimumPassGrade:
-            escala.minimumPassGrade
-        };
+          if (indice >= 0) {
+            this.escalas[indice] =
+              escala;
+          } else {
+            this.escalas.push(
+              escala
+            );
+          }
 
-        this.modalService.success(
-          'Los cambios en la escala de calificación se guardaron correctamente.'
-        );
-      },
+          this.formEscala = {
+            ...escala
+          };
 
-      error: err => {
-        this.errorEscala =
-          err?.error?.message ??
-          'No se pudo guardar la escala de calificación.';
-
-        this.guardandoEscala = false;
-
-        this.modalService.error(
-          'No se pudo guardar la escala de calificación. Revisa los datos e intenta de nuevo.'
-        );
-      }
-    });
-  }
-
-  guardarCambiosCalificacion(): void {
-    if (
-      this.esEstudiante ||
-      this.esDirectivo
-    ) {
-      return;
-    }
-
-    this.guardarEscala();
-
-    if (!this.pasosYaDefinidos) {
-      this.guardarPasos();
-    }
-  }
-
-  descartarCambiosCalificacion(): void {
-    if (
-      this.esEstudiante ||
-      this.esDirectivo
-    ) {
-      return;
-    }
-
-    this.descartarEscala();
-    this.descartarPasos();
-  }
-
-  descartarEscala(): void {
-    if (this.escalaActual) {
-      this.formEscala = {
-        minimumValue:
-          this.escalaActual.minimumValue,
-        maximumValue:
-          this.escalaActual.maximumValue,
-        minimumPassGrade:
-          this.escalaActual.minimumPassGrade
-      };
-    }
-
-    this.errorEscala = null;
-  }
-
-  get tiposDeLaEscala():
-    EvaluationTypeResponseDTO[] {
-    if (!this.escalaActual) {
-      return [];
-    }
-
-    return this.tiposEvaluacion.filter(
-      t =>
-        t.idScale ===
-        this.escalaActual!.idScale
-    );
+          this.guardarPasos();
+        },
+        error: () => {
+          this.errorEscala =
+            'No fue posible guardar la escala.';
+        }
+      });
   }
 
   guardarNuevoTipo(): void {
@@ -2410,64 +1853,100 @@ export class NotasComponent implements OnInit {
       return;
     }
 
-    if (!this.escalaActual) {
-      this.errorTipo =
-        'Primero guarda la escala de calificación.';
-
-      return;
-    }
-
     if (
-      !this.nuevoTipo.letterGrade.trim() ||
+      !this.escalaActual ||
+      !this.nuevoTipo.letterGrade ||
       this.nuevoTipo.numericGrade === null
     ) {
       this.errorTipo =
-        'Indica un nombre y un valor numérico de referencia.';
-
+        'Completa los datos del tipo de calificación.';
       return;
     }
 
     this.guardandoTipo = true;
-    this.errorTipo = null;
+    this.errorTipo = '';
 
     this.notasService
       .registrarTipoEvaluacion({
         idScale:
           this.escalaActual.idScale,
-
-        letterGrade:
-          this.nuevoTipo.letterGrade.trim(),
-
         numericGrade:
-          this.nuevoTipo.numericGrade
+          this.nuevoTipo.numericGrade,
+        letterGrade:
+          this.nuevoTipo.letterGrade
       })
+      .pipe(
+        finalize(() => {
+          this.guardandoTipo =
+            false;
+        })
+      )
       .subscribe({
         next: tipo => {
-          this.tiposEvaluacion = [
-            ...this.tiposEvaluacion,
+          this.tiposEvaluacion.push(
             tipo
-          ];
+          );
 
           this.nuevoTipo = {
             letterGrade: '',
             numericGrade: null
           };
-
-          this.guardandoTipo = false;
-
-          this.modalService.success(
-            'El tipo de calificación se agregó correctamente.'
-          );
         },
-
-        error: err => {
+        error: () => {
           this.errorTipo =
-            err?.error?.message ??
-            'No se pudo registrar el tipo de calificación.';
-
-          this.guardandoTipo = false;
+            'No fue posible registrar el tipo de calificación.';
         }
       });
+  }
+
+  configurarPasosPeriodo(): void {
+    if (
+      this.esEstudiante ||
+      this.esDirectivo
+    ) {
+      return;
+    }
+
+    if (
+      this.idPeriodoPasos === null &&
+      this.idPeriodoSeleccionado !== null
+    ) {
+      this.idPeriodoPasos =
+        this.idPeriodoSeleccionado;
+    }
+
+    if (this.idPeriodoPasos === null) {
+      this.pasosPeriodo = [];
+      this.totalPorcentajePasos = 0;
+      return;
+    }
+
+    const actividades =
+      this.actividadesEvaluativas.filter(
+        a =>
+          a.idPeriod ===
+          this.idPeriodoPasos
+      );
+
+    this.pasosPeriodo =
+      actividades.map(a => ({
+        idEvaluative:
+          a.idEvaluative,
+        evaluationName:
+          a.evaluationName,
+        weightPercentage:
+          a.weightPercentage,
+        startDate:
+          a.startDate,
+        endDate:
+          a.endDate,
+        existente: true
+      }));
+
+    this.pasosYaDefinidos =
+      actividades.length > 0;
+
+    this.recalcularPorcentajes();
   }
 
   onCambioPeriodoPasos(): void {
@@ -2478,69 +1957,36 @@ export class NotasComponent implements OnInit {
       return;
     }
 
-    this.actualizarPasosPeriodo();
+    this.configurarPasosPeriodo();
   }
 
-  private actualizarPasosPeriodo(): void {
-    const existentes =
-      this.actividadesEvaluativas.filter(
-        a =>
-          a.idPeriod ===
-          this.idPeriodoPasos
-      );
-
-    if (existentes.length) {
-      this.pasosYaDefinidos = true;
-
-      this.pasosPeriodo =
-        existentes.map(
-          a => ({
-            idEvaluative:
-              a.idEvaluative,
-
-            evaluationName:
-              a.evaluationName,
-
-            weightPercentage:
-              a.weightPercentage,
-
-            existente: true
-          })
-        );
-    } else {
-      this.pasosYaDefinidos = false;
-
-      this.pasosPeriodo = [
-        {
-          idEvaluative: null,
-          evaluationName:
-            'Actividades',
-          weightPercentage: 30,
-          existente: false
-        },
-        {
-          idEvaluative: null,
-          evaluationName:
-            'Evaluación',
-          weightPercentage: 50,
-          existente: false
-        },
-        {
-          idEvaluative: null,
-          evaluationName:
-            'Examen final',
-          weightPercentage: 20,
-          existente: false
-        }
-      ];
+  agregarPaso(): void {
+    if (
+      this.esEstudiante ||
+      this.esDirectivo
+    ) {
+      return;
     }
 
-    this.errorPasos = null;
+    const numero =
+      this.pasosPeriodo.length + 1;
+
+    this.pasosPeriodo.push({
+      evaluationName:
+        `Actividad ${numero}`,
+      weightPercentage: 0,
+      startDate:
+        this.obtenerFechaActual(),
+      endDate:
+        this.obtenerFechaActual(),
+      existente: false
+    });
+
+    this.recalcularPorcentajes();
   }
 
-  ajustarPaso(
-    paso: PasoPeriodo,
-    delta: number
+  eliminarPaso(
+    paso: PasoPeriodo
   ): void {
     if (
       this.esEstudiante ||
@@ -2550,40 +1996,59 @@ export class NotasComponent implements OnInit {
       return;
     }
 
-    const nuevo =
-      paso.weightPercentage +
-      delta;
-
-    paso.weightPercentage =
-      Math.min(
-        100,
-        Math.max(
-          0,
-          nuevo
-        )
+    const indice =
+      this.pasosPeriodo.indexOf(
+        paso
       );
+
+    if (indice >= 0) {
+      this.pasosPeriodo.splice(
+        indice,
+        1
+      );
+    }
+
+    this.recalcularPorcentajes();
   }
 
-  get totalPorcentajePasos(): number {
-    return this.pasosPeriodo.reduce(
-      (acc, p) =>
-        acc +
-        Number(
-          p.weightPercentage || 0
-        ),
-      0
-    );
-  }
-
-  descartarPasos(): void {
+  ajustarPaso(
+    paso: PasoPeriodo,
+    cantidad: number
+  ): void {
     if (
       this.esEstudiante ||
-      this.esDirectivo
+      this.esDirectivo ||
+      paso.existente
     ) {
       return;
     }
 
-    this.actualizarPasosPeriodo();
+    paso.weightPercentage =
+      Math.max(
+        0,
+        Math.min(
+          100,
+          Number(
+            paso.weightPercentage
+          ) + cantidad
+        )
+      );
+
+    this.recalcularPorcentajes();
+  }
+
+  recalcularPorcentajes(): void {
+    this.totalPorcentajePasos =
+      Math.round(
+        this.pasosPeriodo.reduce(
+          (total, paso) =>
+            total +
+            Number(
+              paso.weightPercentage
+            ),
+          0
+        ) * 100
+      ) / 100;
   }
 
   guardarPasos(): void {
@@ -2594,96 +2059,368 @@ export class NotasComponent implements OnInit {
       return;
     }
 
-    if (this.pasosYaDefinidos) {
-      return;
-    }
-
     if (
       this.idPeriodoPasos === null
     ) {
-      this.errorPasos =
-        'Selecciona un periodo.';
-
       return;
     }
+
+    this.recalcularPorcentajes();
 
     if (
       this.totalPorcentajePasos !==
       100
     ) {
       this.errorPasos =
-        'La suma de los pasos debe ser exactamente 100%.';
-
+        'Los porcentajes deben sumar exactamente 100%.';
       return;
     }
 
-    const periodo =
-      this.periodos.find(
-        p =>
-          p.idPeriod ===
-          this.idPeriodoPasos
+    const nuevos =
+      this.pasosPeriodo.filter(
+        paso =>
+          !paso.existente
       );
 
-    if (!periodo) {
-      this.errorPasos =
-        'Periodo no encontrado.';
-
+    if (!nuevos.length) {
       return;
     }
 
     this.guardandoPasos = true;
-    this.errorPasos = null;
+    this.errorPasos = '';
 
-    const llamadas =
-      this.pasosPeriodo.map(
-        paso =>
-          this.notasService
-            .registrarActividadEvaluativa({
-              idPeriod:
-                periodo.idPeriod,
-
-              startDate:
-                periodo.startDate,
-
-              endDate:
-                periodo.endDate,
-
-              evaluationName:
-                paso.evaluationName,
-
-              weightPercentage:
-                paso.weightPercentage
-            })
+    const solicitudes =
+      nuevos.map(paso =>
+        this.notasService.registrarActividadEvaluativa(
+          {
+            idPeriod:
+              this.idPeriodoPasos!,
+            startDate:
+              paso.startDate,
+            endDate:
+              paso.endDate,
+            evaluationName:
+              paso.evaluationName,
+            weightPercentage:
+              paso.weightPercentage
+          }
+        )
       );
 
-    forkJoin(llamadas)
+    forkJoin(solicitudes)
+      .pipe(
+        finalize(() => {
+          this.guardandoPasos =
+            false;
+        })
+      )
       .subscribe({
-        next: creadas => {
-          this.actividadesEvaluativas = [
-            ...this.actividadesEvaluativas,
-            ...creadas
-          ];
+        next: actividades => {
+          this.actividadesEvaluativas =
+            [
+              ...this.actividadesEvaluativas,
+              ...actividades
+            ];
 
-          this.guardandoPasos = false;
-
-          this.actualizarPasosPeriodo();
-
-          this.modalService.success(
-            'Los pasos del periodo se guardaron correctamente.'
-          );
+          this.configurarPasosPeriodo();
         },
-
-        error: err => {
+        error: () => {
           this.errorPasos =
-            err?.error?.message ??
-            'No se pudieron guardar los pasos del periodo.';
-
-          this.guardandoPasos = false;
-
-          this.modalService.error(
-            'No se pudieron guardar los pasos del periodo. Revisa que sumen 100% e intenta de nuevo.'
-          );
+            'No fue posible guardar las actividades evaluativas.';
         }
       });
+  }
+
+  recargarActividades(): void {
+    if (
+      this.esEstudiante ||
+      this.esDirectivo
+    ) {
+      return;
+    }
+
+    this.notasService
+      .listarActividadesEvaluativas()
+      .subscribe({
+        next: actividades => {
+          this.actividadesEvaluativas =
+            actividades;
+
+          this.configurarPasosPeriodo();
+        }
+      });
+  }
+
+  descartarPasos(): void {
+    if (
+      this.esEstudiante ||
+      this.esDirectivo
+    ) {
+      return;
+    }
+
+    this.configurarPasosPeriodo();
+  }
+
+  agregarActividadEvaluativa(): void {
+    this.agregarPaso();
+  }
+
+  descartarCambiosCalificacion(): void {
+    if (
+      this.esEstudiante ||
+      this.esDirectivo
+    ) {
+      return;
+    }
+
+    this.configurarEscala();
+    this.configurarPasosPeriodo();
+  }
+
+  obtenerNombreCurso(
+    idCurso: number | null
+  ): string {
+    if (idCurso === null) {
+      return 'Sin curso';
+    }
+
+    return (
+      this.cursos.find(
+        c =>
+          c.idCourse ===
+          idCurso
+      )?.name ??
+      'Sin curso'
+    );
+  }
+
+  obtenerNombreAsignatura(
+    idAsignatura: number | null
+  ): string {
+    if (idAsignatura === null) {
+      return 'Sin asignatura';
+    }
+
+    return (
+      this.asignaturas.find(
+        a =>
+          a.idSubject ===
+          idAsignatura
+      )?.name ??
+      'Sin asignatura'
+    );
+  }
+
+  obtenerNombrePeriodo(
+    idPeriodo: number | null
+  ): string {
+    if (idPeriodo === null) {
+      return 'Sin periodo';
+    }
+
+    return (
+      this.periodos.find(
+        p =>
+          p.idPeriod ===
+          idPeriodo
+      )?.name ??
+      'Sin periodo'
+    );
+  }
+
+  obtenerNombreActividad(
+    idEvaluative: number
+  ): string {
+    return (
+      this.actividadesEvaluativas.find(
+        a =>
+          a.idEvaluative ===
+          idEvaluative
+      )?.evaluationName ??
+      'Actividad'
+    );
+  }
+
+  obtenerClaseEstado(
+    valor: number
+  ): string {
+    if (!this.escalaActual) {
+      return '';
+    }
+
+    return valor >=
+      this.escalaActual.minimumPassGrade
+      ? 'aprobado'
+      : 'reprobado';
+  }
+
+  puedeEditarNotas(): boolean {
+    return this.esDocente;
+  }
+
+  puedeExportar(): boolean {
+    return !this.esDirectivo;
+  }
+
+  puedeConfigurarCalificacion(): boolean {
+    return (
+      !this.esEstudiante &&
+      !this.esDirectivo
+    );
+  }
+
+  obtenerRolTexto(): string {
+    if (this.esAdministrador) {
+      return 'Administrador';
+    }
+
+    if (this.esDocente) {
+      return 'Docente';
+    }
+
+    if (this.esEstudiante) {
+      return 'Estudiante';
+    }
+
+    if (this.esDirectivo) {
+      return 'Directivo';
+    }
+
+    return 'Usuario';
+  }
+
+  redondear(
+    valor: number
+  ): number {
+    return Math.round(
+      valor * 100
+    ) / 100;
+  }
+
+  validarNota(
+    valor: number
+  ): boolean {
+    if (!this.escalaActual) {
+      return valor >= 0 && valor <= 5;
+    }
+
+    return (
+      valor >=
+        this.escalaActual.minimumValue &&
+      valor <=
+        this.escalaActual.maximumValue
+    );
+  }
+
+  obtenerFechaActual(): string {
+    return new Date()
+      .toISOString()
+      .slice(0, 10);
+  }
+
+  get actividadesPeriodo(): EvaluativeActivityResponseDTO[] {
+    return this.obtenerActividadesDelPeriodo();
+  }
+
+  get nombrePeriodoActual(): string {
+    return this.obtenerNombrePeriodo(
+      this.idPeriodoSeleccionado
+    );
+  }
+
+  get nombreCursoActual(): string {
+    return this.obtenerNombreCurso(
+      this.idCursoSeleccionado
+    );
+  }
+
+  get nombreAsignaturaActual(): string {
+    return this.obtenerNombreAsignatura(
+      this.idAsignaturaSeleccionada
+    );
+  }
+
+  get hayEstudiantesSeleccionados(): boolean {
+    return this.seleccionadosReporte.size > 0;
+  }
+
+  get todosLosEstudiantesSeleccionados(): boolean {
+    return this.todosSeleccionadosReporte;
+  }
+
+  get porcentajePasos(): number {
+    return this.totalPorcentajePasos;
+  }
+
+  get porcentajePasosValido(): boolean {
+    return this.totalPorcentajePasos === 100;
+  }
+
+  get hayEscala(): boolean {
+    return this.escalaActual !== null;
+  }
+
+  get puedeEditarCalificacion(): boolean {
+    return (
+      !this.esEstudiante &&
+      !this.esDirectivo &&
+      (
+        this.esDocente ||
+        this.esAdministrador
+      )
+    );
+  }
+
+  get puedeDescargarPdf(): boolean {
+    return !this.esDirectivo;
+  }
+
+  get maximoEscala(): number {
+    return this.escalaActual?.maximumValue ?? 5;
+  }
+
+  get tiposDeLaEscala(): EvaluationTypeResponseDTO[] {
+    if (!this.escalaActual) {
+      return [];
+    }
+
+    return this.tiposEvaluacion.filter(
+      tipo =>
+        tipo.idScale ===
+        this.escalaActual!.idScale
+    );
+  }
+
+  get perfilActual(): MiPerfilDTO | null {
+    return this.perfil;
+  }
+
+  get nombreNivelReporte(): string {
+    return (
+      this.niveles.find(
+        n =>
+          n.idLevel ===
+          this.idNivelReporte
+      )?.name ??
+      'Sin nivel'
+    );
+  }
+
+  get nombreCursoReporte(): string {
+    return (
+      this.cursos.find(
+        c =>
+          c.idCourse ===
+          this.idCursoReporte
+      )?.name ??
+      'Sin curso'
+    );
+  }
+
+  get nombrePeriodoReporte(): string {
+    return this.obtenerNombrePeriodo(
+      this.idPeriodoReporte
+    );
   }
 }
