@@ -26,6 +26,26 @@ public class SubjectService {
         map(req, s); return toResponse(repository.save(s));
     }
 
+    public List<SubjectResponseDTO> listSubjects() {
+    return repository.findByStatusTrue()
+            .stream()
+            .map(this::toResponse)
+            .toList();
+    }
+
+    public List<SubjectResponseDTO> searchSubjects(String name) {
+    return repository
+            .findByNameContainingIgnoreCaseAndStatusTrue(name)
+            .stream()
+            .map(this::toResponse)
+            .toList();
+    }
+
+    /**
+     * Paginación
+     * @param pageable
+     * @return
+     */
     public Page<SubjectResponseDTO> listSubjects(Pageable pageable) { return repository.findByStatusTrue(pageable).map(this::toResponse); }
 
     public SubjectResponseDTO getSubjectById(Integer id) { return toResponse(getOrThrow(id));

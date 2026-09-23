@@ -54,6 +54,18 @@ public class AcademicTeacherService {
         return toResponse(repository.save(t));
     }
 
+    public List<AcademicTeacherResponseDTO> listTeachers() {
+    return repository.findByStatusTrue()
+            .stream()
+            .map(this::toResponse)
+            .toList();
+    }
+
+    /**
+     * Paginación
+     * @param pageable
+     * @return
+     */
     public Page<AcademicTeacherResponseDTO> listTeachers(Pageable pageable) {
         return repository.findByStatusTrue(pageable).map(this::toResponse);
     }

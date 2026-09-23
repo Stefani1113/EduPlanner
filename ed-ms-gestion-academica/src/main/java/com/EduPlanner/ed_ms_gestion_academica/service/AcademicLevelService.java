@@ -26,6 +26,13 @@ public class AcademicLevelService {
         return repository.findAll(pageable).map(AcademicLevelResponseDTO::fromEntity);
     }
 
+    public List<AcademicLevelResponseDTO> findAll() {
+    return repository.findAll()
+            .stream()
+            .map(AcademicLevelResponseDTO::fromEntity)
+            .toList();
+    }
+
 
     /**
      * Buscar por Id
@@ -103,5 +110,12 @@ public class AcademicLevelService {
      */
     public Page<AcademicLevelResponseDTO> findAllActive(Pageable pageable) {
         return repository.findByStatusTrue(pageable).map(AcademicLevelResponseDTO::fromEntity);
+    }
+
+    public List<AcademicLevelResponseDTO> findAllActive() {
+    return repository.findByStatusTrue()
+            .stream()
+            .map(AcademicLevelResponseDTO::fromEntity)
+            .toList();
     }
 }
