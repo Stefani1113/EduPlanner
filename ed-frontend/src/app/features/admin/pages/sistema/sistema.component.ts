@@ -139,13 +139,6 @@ export class PanelControlComponent implements OnInit, OnDestroy {
 
       this.modoTema = modo;
 
-      /*
-       * Cuando el servicio cambia a Claro u Oscuro,
-       * guardamos esa paleta como válida.
-       *
-       * Esto permite restaurarla si el usuario intenta
-       * modificarla desde un tema protegido.
-       */
       if (modo === 'dark' || modo === 'light') {
 
         if (this.palette) {
@@ -160,9 +153,6 @@ export class PanelControlComponent implements OnInit, OnDestroy {
     });
   }
 
-  /**
-   * Cambiar entre Oscuro, Claro y Personalizado.
-   */
   cambiarModoTema(
     modo: 'dark' | 'light' | 'custom'
   ): void {
@@ -176,18 +166,6 @@ export class PanelControlComponent implements OnInit, OnDestroy {
     this.settingsService.setMode(modo);
   }
 
-  /**
-   * Se ejecuta cuando el usuario intenta abrir
-   * el selector de color.
-   *
-   * Claro y Oscuro son temas protegidos.
-   *
-   * Si intenta modificarlos:
-   * - mostramos aviso
-   * - cambiamos a Personalizado
-   * - conservamos los colores actuales
-   * - abrimos el selector
-   */
   intentarEditarColor(
     event: MouseEvent,
     input: HTMLInputElement
@@ -210,21 +188,10 @@ export class PanelControlComponent implements OnInit, OnDestroy {
         `Los colores del tema ${nombreTema} están protegidos. Se cambió a modo Personalizado para que puedas editar los colores.`
       );
 
-      /*
-       * Cambiamos a personalizado.
-       *
-       * La paleta actual se conserva como base
-       * para la personalización.
-       */
+
       this.settingsService.setMode('custom');
 
-      /*
-       * Abrimos el selector después de cambiar
-       * el modo.
-       *
-       * setTimeout permite que Angular actualice
-       * primero el estado del componente.
-       */
+
       setTimeout(() => {
 
         input.click();
@@ -234,26 +201,14 @@ export class PanelControlComponent implements OnInit, OnDestroy {
       return;
     }
 
-    /*
-     * En Personalizado no hacemos nada.
-     * El input puede abrirse normalmente.
-     */
   }
 
-  /**
-   * Cambio real del color.
-   *
-   * Solamente Personalizado puede modificar colores.
-   */
+
   onColorChange(
     key: keyof InstitutionPalette
   ): void {
 
-    /*
-     * Seguridad adicional:
-     * aunque algún cambio llegue desde otro lugar,
-     * nunca permitimos modificar Claro/Oscuro.
-     */
+
     if (
       this.modoTema === 'dark' ||
       this.modoTema === 'light'
@@ -295,19 +250,14 @@ export class PanelControlComponent implements OnInit, OnDestroy {
       return;
     }
 
-    /*
-     * El color es válido.
-     */
+
     this.colorError = '';
 
     this.lastValidPalette = {
       ...this.palette
     };
 
-    /*
-     * Como ya estamos en Personalizado,
-     * guardamos la nueva paleta.
-     */
+
     this.settingsService.updateSettings(
       this.palette,
       this.info
