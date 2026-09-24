@@ -8,10 +8,7 @@ services:
 
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
-
-    ports:
-      - "3306:3306"
-
+      
     volumes:
       - mysql_data:/var/lib/mysql
       - ./database/init:/docker-entrypoint-initdb.d:ro
@@ -38,9 +35,8 @@ services:
       -dev
       -client=0.0.0.0
 
-    ports:
-      - "8500:8500"
-      - "8600:8600/udp"
+    expose:
+      - "8600/udp"
 
     networks:
       - eduplanner-network
@@ -53,9 +49,6 @@ services:
     image: stefani1113/eduplanner-auth
     container_name: ed-ms-autenticacion
     restart: unless-stopped
-
-    ports:
-      - "8081:8081"
 
     environment:
       SPRING_PROFILES_ACTIVE: docker
@@ -83,9 +76,6 @@ services:
     image: stefani1113/eduplanner-admin
     container_name: ed-ms-administracion
     restart: unless-stopped
-
-    ports:
-      - "${ADMIN_PORT:-8082}:8082"
 
     environment:
       SPRING_PROFILES_ACTIVE: docker
@@ -115,9 +105,6 @@ services:
     container_name: ed-ms-gestion-academica
     restart: unless-stopped
 
-    ports:
-      - "8083:8083"
-
     environment:
       SPRING_PROFILES_ACTIVE: docker
 
@@ -145,9 +132,6 @@ services:
     container_name: ed-ms-notas
     restart: unless-stopped
 
-    ports:
-      - "8084:8084"
-
     environment:
       SPRING_PROFILES_ACTIVE: docker
 
@@ -174,9 +158,6 @@ services:
     image: stefani1113/eduplanner-config
     container_name: ed-ms-configuracion-institucional
     restart: unless-stopped
-
-    ports:
-      - "8086:8086"
 
     environment:
       SPRING_PROFILES_ACTIVE: docker
@@ -206,9 +187,6 @@ services:
     container_name: ed-gateway
     restart: unless-stopped
 
-    ports:
-      - "8080:8080"
-
     environment:
       SPRING_PROFILES_ACTIVE: docker
 
@@ -237,9 +215,6 @@ services:
     container_name: ed-ms-ia
     restart: unless-stopped
 
-    ports:
-      - "${IA_PORT:-5000}:5000"
-
     environment:
       SPRING_PROFILES_ACTIVE: docker
 
@@ -260,9 +235,6 @@ services:
     container_name: ed-ms-mcp
     restart: unless-stopped
 
-    ports:
-      - "${MCP_PORT:-8000}:8000"
-
     environment:
       SPRING_PROFILES_ACTIVE: docker
 
@@ -282,9 +254,6 @@ services:
     image: stefani1113/eduplanner-frontend
     container_name: ed-frontend
     restart: unless-stopped
-
-    ports:
-      - "4200:80"
 
     depends_on:
       - gateway
