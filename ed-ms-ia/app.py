@@ -6,6 +6,10 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from agent.conversational_agent import process_message
 
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
 app = Flask(__name__)
 
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -14,12 +18,12 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 @app.route("/api/status", methods=["GET"])
 def status():
     """Estado del servidor del agente."""
-
+    mcp_url = os.getenv("MCP_SERVER_URL", "http://0.0.0.0:8000")
     return jsonify({
         "status": "online",
         "mcp": {
             "online": True,
-            "url": "http://0.0.0.0:8000/mcp"
+            "url": f"${mcp_url}/mcp"
         },
         "llm": {
             "provider": "gemini",
