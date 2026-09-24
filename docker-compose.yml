@@ -215,17 +215,18 @@ services:
     container_name: ed-ms-ia
     restart: unless-stopped
 
-  env_file:
-    - .env
+    env_file:
+      - .env
 
-  depends_on:
-    consul:
-      condition: service_started
-    mcp:
-      condition: service_started
+    depends_on:
+      consul:
+        condition: service_started
+      mcp:
+        condition: service_started
 
-  networks:
-    - eduplanner-network
+    networks:
+      - eduplanner-network
+
 
   # MCP
   mcp:
@@ -233,16 +234,16 @@ services:
     container_name: ed-ms-mcp
     restart: unless-stopped
 
-  env_file:
-    - .env
+    env_file:
+      - .env
 
-  depends_on:
-    consul:
-      condition: service_started
+    depends_on:
+      consul:
+        condition: service_started
 
-  networks:
-    - eduplanner-network
-    
+    networks:
+      - eduplanner-network
+
   # FRONTEND
   frontend:
     image: stefani1113/eduplanner-frontend
