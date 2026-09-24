@@ -512,7 +512,7 @@ export class AsistenciaComponent implements OnInit, OnDestroy {
 
     const llamadas = this.tomaFilas.map(fila =>
       this.guardarFilaToma(idCurso, fila)
-    );
+    ); 
 
     forkJoin(llamadas).subscribe(resultados => {
       const mensajesError = new Set<string>();
