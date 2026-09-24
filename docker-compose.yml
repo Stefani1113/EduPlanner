@@ -1,25 +1,20 @@
 services:
 
-  
-  # MYSQL
-
+  # MySQL
   mysql:
-    image: mysql:8.0
+    image: mysql:9.4
     container_name: eduplanner-mysql
     restart: unless-stopped
 
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
-      MYSQL_DATABASE: ${MYSQL_DATABASE:-eduplanner}
 
     ports:
       - "3306:3306"
 
     volumes:
-      - eduplanner_mysql_data:/var/lib/mysql
-
-    networks:
-      - eduplanner-network
+      - mysql_data:/var/lib/mysql
+      - ./database/init:/docker-entrypoint-initdb.d:ro
 
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${MYSQL_ROOT_PASSWORD:-root}"]
@@ -27,6 +22,8 @@ services:
       timeout: 5s
       retries: 10
 
+    networks:
+      - eduplanner-network
 
 
   # CONSUL
@@ -62,7 +59,7 @@ services:
 
     environment:
       SPRING_PROFILES_ACTIVE: docker
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${DB_AUTH:-autenticacion}?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${DB_AUTH:-auth_administration}?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-root}
       SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
 
@@ -93,7 +90,7 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: docker
 
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${DB_ADMIN:-administracion}?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${DB_ADMIN:-auth_administration}?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-root}
       SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
 
@@ -114,10 +111,7 @@ services:
   # GESTION ACADEMICA
  
   gestion-academica:
-    build:
-      context: .
-      dockerfile: ./ed-ms-gestion-academica/Dockerfile
-
+    image: stefani1113/eduplanner-gestion
     container_name: ed-ms-gestion-academica
     restart: unless-stopped
 
@@ -127,7 +121,7 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: docker
 
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${DB_ACADEMICA:-gestion_academica}?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${DB_ACADEMICA:-academic_management}?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-root}
       SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
 
@@ -147,10 +141,7 @@ services:
   
   # NOTAS
   notas:
-    build:
-      context: .
-      dockerfile: ./ed_ms_notas/Dockerfile
-
+    image: stefani1113/eduplanner-notas
     container_name: ed-ms-notas
     restart: unless-stopped
 
@@ -160,7 +151,7 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: docker
 
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${DB_NOTAS:-microNotes}?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${DB_NOTAS:-grades}?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-root}
       SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
 
@@ -209,12 +200,9 @@ services:
 
   
   # GATEWAY
- 
-  gateway:
-    build:
-      context: .
-      dockerfile: ./ed-gateway/Dockerfile
 
+  gateway:
+    image: stefani1113/eduplanner-gateway
     container_name: ed-gateway
     restart: unless-stopped
 
@@ -245,15 +233,12 @@ services:
 
   # IA
   ia:
-    build:
-      context: .
-      dockerfile: ./ed-ms-ia/Dockerfile
-
+    image: stefani1113/eduplanner-ia
     container_name: ed-ms-ia
     restart: unless-stopped
 
     ports:
-      - "${IA_PORT:-8087}:8087"
+      - "${IA_PORT:-5000}:5000"
 
     environment:
       SPRING_PROFILES_ACTIVE: docker
@@ -271,15 +256,12 @@ services:
 
   # MCP
   mcp:
-    build:
-      context: .
-      dockerfile: ./ed-ms-mcp/Dockerfile
-
+    image: stefani1113/eduplanner-mcp
     container_name: ed-ms-mcp
     restart: unless-stopped
 
     ports:
-      - "${MCP_PORT:-8088}:8088"
+      - "${MCP_PORT:-8000}:8000"
 
     environment:
       SPRING_PROFILES_ACTIVE: docker
@@ -297,10 +279,7 @@ services:
 
   # FRONTEND
   frontend:
-    build:
-      context: ./ed-frontend
-      dockerfile: Dockerfile
-
+    image: stefani1113/eduplanner-frontend
     container_name: ed-frontend
     restart: unless-stopped
 
@@ -314,16 +293,14 @@ services:
       - eduplanner-network
 
 
-# VOLUMES
-volumes:
-
-  eduplanner_mysql_data:
-    name: eduplanner_mysql_data
-
-
 # NETWORK
 networks:
 
   eduplanner-network:
     name: eduplanner-network
     driver: bridge
+
+
+volumes:
+
+  mysql_data:
