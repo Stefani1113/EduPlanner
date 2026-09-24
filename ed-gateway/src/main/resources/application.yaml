@@ -73,9 +73,17 @@ spring:
 
       # ── Microservicio Inteligencia Artificial─────────────────────────
         - id: ed-ms-ia
-          uri: http://127.0.0.1:5000
+          uri: http://ia:5000
           predicates:
             - Path=/ia/**
+          filters:
+            - StripPrefix=1
+      
+      # ── Microservicio Inteligencia Artificial─────────────────────────
+        - id: ed-ms-mcp
+          uri: http://mcp:8000
+          predicates:
+            - Path=/mcp/**
           filters:
             - StripPrefix=1
 
