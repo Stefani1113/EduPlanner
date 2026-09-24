@@ -97,8 +97,6 @@ interface Usuario {
     CommonModule,
     FormsModule,
 
-    // IMPORTANTE:
-    // Permite utilizar <app-pagination> en usuarios.component.html
     PaginationComponent,
 
     RegistroUsuarioModalComponent,
@@ -172,19 +170,12 @@ export class UsuariosComponent implements OnInit, OnDestroy {
 
   paginaActual = 1;
 
-  /**
-   * Cantidad de usuarios solicitados al backend por página.
-   */
+
   readonly tamanoPagina = 10;
 
-  /**
-   * Total de páginas informado por el backend.
-   */
+
   totalPaginas = 1;
 
-  /**
-   * Total de usuarios informado por el backend.
-   */
   totalUsuarios = 0;
 
   cargando = false;
@@ -284,17 +275,6 @@ export class UsuariosComponent implements OnInit, OnDestroy {
     this.cargando = true;
     this.errorCarga = '';
 
-    /**
-     * El componente trabaja con páginas 1, 2, 3...
-     *
-     * Spring Page trabaja con índices 0, 1, 2...
-     *
-     * Por eso:
-     *
-     * Angular 1 -> Backend 0
-     * Angular 2 -> Backend 1
-     * Angular 3 -> Backend 2
-     */
     const paginaBackend = Math.max(
       0,
       pagina - 1
@@ -422,39 +402,30 @@ export class UsuariosComponent implements OnInit, OnDestroy {
       .subscribe(res => {
         const page = res.data;
 
-        // Datos correspondientes únicamente
-        // a la página solicitada.
         this.usuarios =
           (page?.content ?? []).map(
             usuario =>
               this.mapearUsuario(usuario)
           );
 
-        // Total real de registros del backend.
         this.totalUsuarios =
           page?.totalElements ??
           this.usuarios.length;
 
-        // Total real de páginas.
         this.totalPaginas =
           Math.max(
             1,
             page?.totalPages ?? 1
           );
 
-        /**
-         * Spring devuelve number desde 0.
-         * Angular necesita mostrar desde 1.
-         */
+
         this.paginaActual =
           (page?.number ??
             paginaBackend) + 1;
       });
   }
 
-  /**
-   * Cambia la página desde app-pagination.
-   */
+
   cambiarPagina(pagina: number): void {
     if (
       pagina < 1 ||
@@ -505,12 +476,7 @@ export class UsuariosComponent implements OnInit, OnDestroy {
     );
   }
 
-  /**
-   * No se vuelve a paginar en el frontend.
-   *
-   * El backend ya entregó solamente los 10
-   * registros correspondientes a la página.
-   */
+
   get usuariosPagina(): Usuario[] {
     return this.usuariosFiltrados;
   }

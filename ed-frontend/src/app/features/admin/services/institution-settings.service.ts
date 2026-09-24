@@ -105,9 +105,7 @@ const CUSTOM_PALETTE_KEY = 'eduplanner.custom-palette';
 const CUSTOM_BRAND_COLORS_KEY = 'eduplanner.custom-brand-colors';
 const SYNC_INTERVAL_MS = 15000;
 
-// Oscuro y Claro son temas FIJOS: iguales para todo el mundo, sin importar
-// lo que el administrador edite en la pestaña "Personalizado". Así se evita
-// que al cambiar de tema queden colores mezclados de otro tema.
+
 const DEFAULT_PALETTE: InstitutionPalette = {
   primary: '#0d790b',
   secondary: '#4ed10b',
@@ -203,8 +201,7 @@ export class InstitutionSettingsService {
 
   private readonly apiUrl = '/configuracion-institucional/configuration';
 
-  // Colores de marca del tema Personalizado, compartidos por backend
-  // (solo se aplican cuando el modo activo es "custom").
+
   private coloresMarcaPersonalizado: BrandColors = this.loadCustomBrandColors();
 
   private settingsSubject =
@@ -232,7 +229,6 @@ export class InstitutionSettingsService {
           this.applyModePalette('custom');
         }
       } catch {
-        // Ignorar valor inválido.
       }
     }
 
@@ -251,7 +247,6 @@ export class InstitutionSettingsService {
           this.settingsSubject.next(next);
         }
       } catch {
-        // Ignorar valores locales inválidos.
       }
     }
 

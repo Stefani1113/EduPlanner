@@ -78,12 +78,7 @@ export interface TeachingResponseDTO {
 })
 export class DocentesService {
 
-  /**
-   * Endpoint real del backend:
-   * GET /administracion/eduplanner/teacher?page=0&size=10
-   *
-   * El backend devuelve Page<TeachingResponseDTO> dentro de data.
-   */
+
   private readonly api = '/administracion/eduplanner/teacher';
 
   constructor(private http: HttpClient) {}
@@ -98,10 +93,7 @@ export class DocentesService {
     const tamano = Math.max(1, size);
     const termino = q.trim();
 
-    // El endpoint paginado /teacher NO recibe "q".
-    // Cuando hay búsqueda, el backend actual expone /teacher/search?q=...
-    // y devuelve una lista. La paginación de esa búsqueda se hace aquí,
-    // únicamente en el frontend.
+
     if (termino) {
       return this.buscar(termino).pipe(
         map(respuesta => {

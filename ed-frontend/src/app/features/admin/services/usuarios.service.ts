@@ -8,15 +8,6 @@ export interface HttpGlobalResponse<T> {
   message: string;
 }
 
-/**
- * Respuesta paginada de Spring.
- *
- * page:
- * - Frontend trabaja con páginas 1, 2, 3...
- * - Backend Spring trabaja con páginas 0, 1, 2...
- *
- * La conversión se realiza en el componente.
- */
 export interface PageResponse<T> {
   content: T[];
   totalElements: number;
@@ -217,12 +208,6 @@ export class UsuariosService {
 
   constructor(private http: HttpClient) {}
 
-  /**
-   * Lista usuarios de forma paginada.
-   *
-   * page corresponde directamente al valor que
-   * espera Spring Boot: 0, 1, 2...
-   */
   listar(
     idRole?: number,
     page?: number,
@@ -262,9 +247,6 @@ export class UsuariosService {
     );
   }
 
-  /**
-   * Lista estudiantes pertenecientes a un curso.
-   */
   listarPorCurso(
     idCourse: number,
     page?: number,
@@ -297,9 +279,6 @@ export class UsuariosService {
     );
   }
 
-  /**
-   * Busca usuarios por nombre de forma paginada.
-   */
   buscarPorNombre(
     name: string,
     page?: number,
@@ -464,13 +443,6 @@ export class UsuariosService {
     );
   }
 
-  /**
-   * Obtiene los cursos para el filtro.
-   *
-   * Se solicitan hasta 1000 cursos porque este listado
-   * se utiliza como catálogo del filtro y no como listado
-   * principal paginado.
-   */
   listarCursos(): Observable<
     HttpGlobalResponse<CourseBasicoDTO[]>
   > {

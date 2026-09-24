@@ -361,20 +361,6 @@ export class HorariosComponent
       .setExtra(null);
   }
 
-  /**
-   * Convierte cualquier respuesta de lista
-   * en un arreglo.
-   *
-   * Soporta:
-   *
-   * data: [...]
-   *
-   * y:
-   *
-   * data: {
-   *   content: [...]
-   * }
-   */
   private extraerLista<T>(
     data: any
   ): T[] {
@@ -419,9 +405,6 @@ export class HorariosComponent
       return;
     }
 
-    /*
-     * ADMINISTRADOR / DIRECTIVO
-     */
 
     this.horariosService
       .obtenerCursos()
@@ -501,10 +484,6 @@ export class HorariosComponent
         }
       });
 
-    /*
-     * Cargar docentes para ADMINISTRADOR
-     * y DIRECTIVO.
-     */
     this.horariosService
       .obtenerDocentes()
       .subscribe({
@@ -768,16 +747,6 @@ export class HorariosComponent
       });
   }
 
-  /**
-   * CORREGIDO:
-   * Consulta el horario directamente por
-   * idUser/idTeacher.
-   *
-   * Funciona para:
-   * - Administrador
-   * - Directivo
-   * - Docente
-   */
   private cargarHorarioPorDocente(
     idTeacher: number | null
   ): void {
@@ -797,24 +766,8 @@ export class HorariosComponent
       return;
     }
 
-    /*
-     * Aseguramos el modo correcto.
-     */
     this.modoConsulta = 'docente';
 
-    /*
-     * Limpiar el horario anterior inmediatamente.
-     */
-    this.horarios = [];
-    this.clasesActuales = [];
-    this.horarioDisponible = false;
-
-    /*
-     * En consulta por docente NO utilizamos
-     * cursoSeleccionado.
-     *
-     * Tampoco usamos la generación del curso.
-     */
     this.idGeneracionActual = null;
     this.idGeneracionPublicadaActual = null;
     this.borrador = null;
@@ -1384,11 +1337,6 @@ export class HorariosComponent
       return this.cursoSeleccionado;
     }
 
-    /*
-     * Cuando ADMINISTRADOR o DIRECTIVO
-     * consulta docente, mostrar el nombre
-     * del docente como respaldo.
-     */
     if (
       this.modoConsulta ===
       'docente'
@@ -1475,9 +1423,6 @@ export class HorariosComponent
     this.selectorDocentesAbierto =
       false;
 
-    /*
-     * Limpiar horario anterior.
-     */
     this.horarios = [];
     this.clasesActuales = [];
     this.horarioDisponible = false;
@@ -1506,20 +1451,11 @@ export class HorariosComponent
 
     } else {
 
-      /*
-       * Consulta por docente.
-       * No conservar información de
-       * generación del curso.
-       */
       this.idGeneracionActual = null;
       this.idGeneracionPublicadaActual =
         null;
       this.borrador = null;
 
-      /*
-       * El administrador/directivo debe
-       * seleccionar un docente.
-       */
       if (
         this.docenteSeleccionado
       ) {
@@ -1591,11 +1527,6 @@ export class HorariosComponent
       return;
     }
 
-    /*
-     * CORRECCIÓN PRINCIPAL:
-     * Cambiar explícitamente a consulta
-     * por docente.
-     */
     this.modoConsulta = 'docente';
 
     this.docenteSeleccionado =
@@ -1607,18 +1538,11 @@ export class HorariosComponent
     this.selectorCursosAbierto =
       false;
 
-    /*
-     * El horario por docente es independiente
-     * del curso seleccionado.
-     */
     this.idGeneracionActual = null;
     this.idGeneracionPublicadaActual =
       null;
     this.borrador = null;
 
-    /*
-     * Limpiar horario anterior.
-     */
     this.horarios = [];
     this.clasesActuales = [];
     this.horarioDisponible = false;
@@ -1791,9 +1715,6 @@ export class HorariosComponent
       return;
     }
 
-    /*
-     * Exportación por docente.
-     */
     if (
       this.modoConsulta ===
       'docente'
@@ -1813,13 +1734,6 @@ export class HorariosComponent
         return;
       }
 
-      /*
-       * Si tu servicio todavía no tiene
-       * descargarHorarioDocentePdf(), no
-       * hacemos una llamada inexistente.
-       *
-       * Por ahora se informa al usuario.
-       */
       this.descargandoPdf = false;
 
       this.modalService.error(

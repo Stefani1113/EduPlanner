@@ -31,7 +31,7 @@
       <button
         type="button"
         class="tab"
-        *ngIf="!esEstudiante && !esDirectivo"
+        *ngIf="puedeTomarAsistencia"
         [class.active]="tabActiva === 'tomar'"
         (click)="cambiarTab('tomar')"
       >
