@@ -118,4 +118,17 @@ public class AcademicPeriodService {
     public Page<AcademicPeriodResponseDTO> findAllActive(Pageable pageable) {
         return repository.findByStatusTrue(pageable).map(AcademicPeriodResponseDTO::fromEntity);
     }
+
+    public List<AcademicPeriodResponseDTO> findAll() {
+    return repository.findAll().stream()
+            .map(AcademicPeriodResponseDTO::fromEntity)
+            .toList();
+    }
+
+    public List<AcademicPeriodResponseDTO> findAllActive() {
+        return repository.findByStatusTrue()
+                .stream()
+                .map(AcademicPeriodResponseDTO::fromEntity)
+                .toList();
+    }
 }

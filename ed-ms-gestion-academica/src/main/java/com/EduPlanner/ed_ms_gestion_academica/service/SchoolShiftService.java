@@ -23,8 +23,8 @@ public class SchoolShiftService {
      * Listar todos las jornadas
      * @return
      */
-    public Page<SchoolShiftResponseDTO> findAll(Pageable pageable) {
-        return repository.findAll(pageable).map(SchoolShiftResponseDTO::fromEntity);
+    public List<SchoolShiftResponseDTO> findAll() {
+        return repository.findAll().stream().map(SchoolShiftResponseDTO::fromEntity).toList();
     }
 
     /**
@@ -109,7 +109,23 @@ public class SchoolShiftService {
      * Listar por activos
      * @return
      */
+    public List<SchoolShiftResponseDTO> findAllActive() {
+        return repository.findByStatusTrue().stream().map(SchoolShiftResponseDTO::fromEntity).toList();
+    }
+
+    /**
+     * Listar todas las jornadas paginadas
+     */
+    public Page<SchoolShiftResponseDTO> findAll(Pageable pageable) {
+        return repository.findAll(pageable)
+                .map(SchoolShiftResponseDTO::fromEntity);
+    }
+
+    /**
+     * Listar jornadas activas paginadas
+     */
     public Page<SchoolShiftResponseDTO> findAllActive(Pageable pageable) {
-        return repository.findByStatusTrue(pageable).map(SchoolShiftResponseDTO::fromEntity);
+        return repository.findByStatusTrue(pageable)
+                .map(SchoolShiftResponseDTO::fromEntity);
     }
 }
