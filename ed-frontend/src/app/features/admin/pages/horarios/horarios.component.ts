@@ -75,10 +75,12 @@ export class HorariosComponent
   notificaciones: NotificacionHorario[] = [];
 
   paginaActualConflictos = 1;
+
   readonly tamanoPagina = 10;
 
   cursosDisponibles: string[] = [];
   cursoSeleccionado = '';
+
   selectorCursosAbierto = false;
 
   docentesDisponibles: DocenteDTO[] = [];
@@ -218,6 +220,7 @@ export class HorariosComponent
 
   get notificacionActual():
     NotificacionHorario | null {
+
     if (!this.esAdministrador) {
       return null;
     }
@@ -227,6 +230,7 @@ export class HorariosComponent
 
   get conflictosPaginados():
     ConflictoHorario[] {
+
     const inicio =
       (this.paginaActualConflictos - 1) *
       this.tamanoPagina;
@@ -252,6 +256,7 @@ export class HorariosComponent
   ) {}
 
   ngOnInit(): void {
+
     this.mensajes =
       this.horariosService
         .obtenerMensajeInicial();
@@ -263,15 +268,18 @@ export class HorariosComponent
 
     this.idIntervaloReloj =
       setInterval(() => {
+
         this.horaActual = new Date();
 
         if (this.siguiendoHoy) {
+
           this.diaSeleccionado =
             this.nombreDiaPorIndice[
               this.horaActual.getDay()
             ] ||
             this.diaSeleccionado;
         }
+
       }, 1000);
 
     this.conflictos =
@@ -289,7 +297,9 @@ export class HorariosComponent
     this.perfilService
       .obtenerMiPerfil()
       .subscribe({
+
         next: respuesta => {
+
           const perfil: any =
             respuesta?.data;
 
@@ -321,6 +331,7 @@ export class HorariosComponent
         },
 
         error: err => {
+
           console.error(
             'Error cargando perfil:',
             err
@@ -337,6 +348,7 @@ export class HorariosComponent
   }
 
   ngOnDestroy(): void {
+
     if (
       this.idIntervaloReloj !== null
     ) {
@@ -366,6 +378,7 @@ export class HorariosComponent
   private extraerLista<T>(
     data: any
   ): T[] {
+
     if (Array.isArray(data)) {
       return data;
     }
@@ -381,6 +394,7 @@ export class HorariosComponent
   }
 
   private inicializarVista(): void {
+
     if (this.esVistaRestringida) {
 
       if (this.esEstudiante) {
@@ -389,22 +403,30 @@ export class HorariosComponent
       }
 
       if (this.esDocente) {
+
         this.cursoSeleccionado =
           'Mi horario';
 
         this.cargarMiHorario();
 
         this.cargandoPerfil = false;
+
         return;
       }
 
       this.cargandoPerfil = false;
+
       return;
     }
+
+    /*
+     * ADMINISTRADOR / DIRECTIVO
+     */
 
     this.horariosService
       .obtenerCursos()
       .subscribe({
+
         next: respuesta => {
 
           const cursos =
@@ -422,17 +444,20 @@ export class HorariosComponent
 
           cursos.forEach(
             (curso: any) => {
+
               if (
                 curso?.name !==
                   undefined &&
                 curso?.idCourse !==
                   undefined
               ) {
+
                 this.idCursoPorNombre[
                   curso.name
-                ] = Number(
-                  curso.idCourse
-                );
+                ] =
+                  Number(
+                    curso.idCourse
+                  );
               }
             }
           );
@@ -462,6 +487,7 @@ export class HorariosComponent
         },
 
         error: err => {
+
           console.error(
             'Error cargando cursos:',
             err
@@ -475,18 +501,29 @@ export class HorariosComponent
         }
       });
 
+    /*
+     * Cargar docentes para ADMINISTRADOR
+     * y DIRECTIVO.
+     */
     this.horariosService
       .obtenerDocentes()
       .subscribe({
+
         next: respuesta => {
 
           this.docentesDisponibles =
             this.extraerLista<DocenteDTO>(
               respuesta?.data
             );
+
+          console.log(
+            'Docentes disponibles:',
+            this.docentesDisponibles
+          );
         },
 
         error: err => {
+
           console.error(
             'Error cargando docentes:',
             err
@@ -507,11 +544,13 @@ export class HorariosComponent
       idCourse === null ||
       idCourse === undefined
     ) {
+
       this.cursoSeleccionado =
         'Sin curso asignado';
 
       this.horarios = [];
       this.horarioDisponible = false;
+
       this.cargandoPerfil = false;
 
       return;
@@ -520,6 +559,7 @@ export class HorariosComponent
     this.horariosService
       .obtenerCursoPorId(idCourse)
       .subscribe({
+
         next: respuesta => {
 
           this.cursoSeleccionado =
@@ -534,6 +574,7 @@ export class HorariosComponent
         },
 
         error: err => {
+
           console.error(
             'Error obteniendo curso del estudiante:',
             err
@@ -565,11 +606,13 @@ export class HorariosComponent
     this.horariosService
       .obtenerCursoPorId(idCourse)
       .subscribe({
+
         next: respuesta => {
 
           if (
             respuesta?.data?.name
           ) {
+
             this.cursoSeleccionado =
               respuesta.data.name;
           }
@@ -585,6 +628,7 @@ export class HorariosComponent
       this.esDocente &&
       this.idUsuarioActual !== null
     ) {
+
       this.cargarHorarioPorDocente(
         this.idUsuarioActual
       );
@@ -595,6 +639,7 @@ export class HorariosComponent
     this.horariosService
       .obtenerMiHorario()
       .subscribe({
+
         next: respuesta => {
 
           const clases =
@@ -611,6 +656,7 @@ export class HorariosComponent
             !this.cursoSeleccionado &&
             clases.length
           ) {
+
             this.cargarNombreCursoEstudiante(
               clases[0].idCourse
             );
@@ -618,6 +664,7 @@ export class HorariosComponent
         },
 
         error: err => {
+
           console.error(
             'Error cargando mi horario:',
             err
@@ -634,10 +681,14 @@ export class HorariosComponent
   ): void {
 
     if (idCourse === null) {
+
       this.horarios = [];
       this.horarioDisponible = false;
+
       return;
     }
+
+    this.modoConsulta = 'curso';
 
     this.actualizarGeneracionPublicadaActual(
       idCourse
@@ -654,6 +705,7 @@ export class HorariosComponent
     if (
       borradorCurso.length > 0
     ) {
+
       this.asignarHorarios(
         borradorCurso
       );
@@ -664,6 +716,7 @@ export class HorariosComponent
     this.horariosService
       .obtenerHorarioPorCurso(idCourse)
       .subscribe({
+
         next: respuesta => {
 
           const clases =
@@ -715,57 +768,94 @@ export class HorariosComponent
       });
   }
 
+  /**
+   * CORREGIDO:
+   * Consulta el horario directamente por
+   * idUser/idTeacher.
+   *
+   * Funciona para:
+   * - Administrador
+   * - Directivo
+   * - Docente
+   */
   private cargarHorarioPorDocente(
     idTeacher: number | null
   ): void {
 
-    if (idTeacher === null) {
-      this.horarios = [];
-      this.horarioDisponible = false;
-      return;
-    }
-
-    const nombre =
-      this.normalizarNombre(
-        this.nombreDocenteSeleccionado()
-      );
-
-    const clasesBorrador =
-      this.borrador?.filter(
-        clase =>
-          Number(
-            clase.idTeacher
-          ) === Number(idTeacher) ||
-          this.normalizarNombre(
-            clase.teacherName
-          ) === nombre
-      ) || [];
-
     if (
-      clasesBorrador.length > 0
+      idTeacher === null ||
+      idTeacher === undefined ||
+      !Number.isFinite(
+        Number(idTeacher)
+      )
     ) {
-      this.asignarHorarios(
-        clasesBorrador
-      );
+
+      this.horarios = [];
+      this.clasesActuales = [];
+      this.horarioDisponible = false;
 
       return;
     }
+
+    /*
+     * Aseguramos el modo correcto.
+     */
+    this.modoConsulta = 'docente';
+
+    /*
+     * Limpiar el horario anterior inmediatamente.
+     */
+    this.horarios = [];
+    this.clasesActuales = [];
+    this.horarioDisponible = false;
+
+    /*
+     * En consulta por docente NO utilizamos
+     * cursoSeleccionado.
+     *
+     * Tampoco usamos la generación del curso.
+     */
+    this.idGeneracionActual = null;
+    this.idGeneracionPublicadaActual = null;
+    this.borrador = null;
+
+    const idDocente =
+      Number(idTeacher);
+
+    console.log(
+      'Consultando horario del docente:',
+      idDocente
+    );
 
     this.horariosService
       .obtenerHorarioPorDocente(
-        idTeacher
+        idDocente
       )
       .subscribe({
+
         next: respuesta => {
+
+          console.log(
+            'Respuesta horario docente:',
+            respuesta
+          );
 
           const clases =
             this.extraerLista<ScheduleResponseDTO>(
               respuesta?.data
             );
 
+          console.log(
+            'Clases del docente:',
+            clases
+          );
+
           this.asignarHorarios(
             clases
           );
+
+          this.horarioDisponible =
+            clases.length > 0;
         },
 
         error: err => {
@@ -776,14 +866,14 @@ export class HorariosComponent
           );
 
           this.horarios = [];
+          this.clasesActuales = [];
           this.horarioDisponible = false;
         }
       });
   }
 
   private normalizarNombre(
-    texto:
-      string | null | undefined
+    texto: string | null | undefined
   ): string {
 
     return (
@@ -808,6 +898,7 @@ export class HorariosComponent
     this.horariosService
       .obtenerFranjas()
       .subscribe({
+
         next: respuesta => {
 
           this.franjasDisponibles =
@@ -819,6 +910,7 @@ export class HorariosComponent
             this.clasesActuales.length >
             0
           ) {
+
             this.asignarHorarios(
               this.clasesActuales
             );
@@ -826,6 +918,7 @@ export class HorariosComponent
         },
 
         error: err => {
+
           console.error(
             'Error cargando franjas:',
             err
@@ -1066,6 +1159,7 @@ export class HorariosComponent
           undefined &&
         franja.idShift !== null
       ) {
+
         jornadas.add(
           Number(
             franja.idShift
@@ -1094,6 +1188,7 @@ export class HorariosComponent
             if (
               jornadas.size > 0
             ) {
+
               return jornadas.has(
                 Number(
                   franja.idShift
@@ -1289,10 +1384,19 @@ export class HorariosComponent
       return this.cursoSeleccionado;
     }
 
-    return this.modoConsulta ===
+    /*
+     * Cuando ADMINISTRADOR o DIRECTIVO
+     * consulta docente, mostrar el nombre
+     * del docente como respaldo.
+     */
+    if (
+      this.modoConsulta ===
       'docente'
-      ? this.nombreDocenteSeleccionado()
-      : this.cursoSeleccionado;
+    ) {
+      return this.nombreDocenteSeleccionado();
+    }
+
+    return this.cursoSeleccionado;
   }
 
   alternarVista(
@@ -1371,7 +1475,17 @@ export class HorariosComponent
     this.selectorDocentesAbierto =
       false;
 
+    /*
+     * Limpiar horario anterior.
+     */
+    this.horarios = [];
+    this.clasesActuales = [];
+    this.horarioDisponible = false;
+
     if (modo === 'curso') {
+
+      this.docenteSeleccionado =
+        null;
 
       const idCurso =
         this.idCursoPorNombre[
@@ -1392,13 +1506,30 @@ export class HorariosComponent
 
     } else {
 
+      /*
+       * Consulta por docente.
+       * No conservar información de
+       * generación del curso.
+       */
+      this.idGeneracionActual = null;
       this.idGeneracionPublicadaActual =
         null;
+      this.borrador = null;
 
-      this.cargarHorarioPorDocente(
+      /*
+       * El administrador/directivo debe
+       * seleccionar un docente.
+       */
+      if (
         this.docenteSeleccionado
-          ?.idUser ?? null
-      );
+      ) {
+
+        this.cargarHorarioPorDocente(
+          Number(
+            this.docenteSeleccionado.idUser
+          )
+        );
+      }
     }
   }
 
@@ -1406,10 +1537,25 @@ export class HorariosComponent
     curso: string
   ): void {
 
+    if (
+      !this.esAdministrador &&
+      !this.esDirectivo
+    ) {
+      return;
+    }
+
+    this.modoConsulta = 'curso';
+
+    this.docenteSeleccionado =
+      null;
+
     this.cursoSeleccionado =
       curso;
 
     this.selectorCursosAbierto =
+      false;
+
+    this.selectorDocentesAbierto =
       false;
 
     const idCourse =
@@ -1434,14 +1580,78 @@ export class HorariosComponent
     docente: DocenteDTO
   ): void {
 
+    if (
+      !this.esAdministrador &&
+      !this.esDirectivo
+    ) {
+      return;
+    }
+
+    if (!docente) {
+      return;
+    }
+
+    /*
+     * CORRECCIÓN PRINCIPAL:
+     * Cambiar explícitamente a consulta
+     * por docente.
+     */
+    this.modoConsulta = 'docente';
+
     this.docenteSeleccionado =
       docente;
 
     this.selectorDocentesAbierto =
       false;
 
+    this.selectorCursosAbierto =
+      false;
+
+    /*
+     * El horario por docente es independiente
+     * del curso seleccionado.
+     */
+    this.idGeneracionActual = null;
+    this.idGeneracionPublicadaActual =
+      null;
+    this.borrador = null;
+
+    /*
+     * Limpiar horario anterior.
+     */
+    this.horarios = [];
+    this.clasesActuales = [];
+    this.horarioDisponible = false;
+
+    const idTeacher =
+      Number(
+        docente.idUser
+      );
+
+    console.log(
+      'Docente seleccionado:',
+      docente
+    );
+
+    console.log(
+      'ID docente utilizado:',
+      idTeacher
+    );
+
+    if (
+      !Number.isFinite(idTeacher)
+    ) {
+
+      console.error(
+        'El docente seleccionado no tiene un idUser válido.',
+        docente
+      );
+
+      return;
+    }
+
     this.cargarHorarioPorDocente(
-      docente.idUser
+      idTeacher
     );
   }
 
@@ -1554,6 +1764,7 @@ export class HorariosComponent
       this.horariosService
         .descargarMiHorarioPdf()
         .subscribe({
+
           next: blob => {
 
             this.descargarBlob(
@@ -1580,16 +1791,39 @@ export class HorariosComponent
       return;
     }
 
+    /*
+     * Exportación por docente.
+     */
     if (
       this.modoConsulta ===
       'docente'
     ) {
 
-      this.descargandoPdf =
-        false;
+      if (
+        !this.docenteSeleccionado
+      ) {
+
+        this.descargandoPdf =
+          false;
+
+        this.modalService.error(
+          'Selecciona un docente para exportar su horario.'
+        );
+
+        return;
+      }
+
+      /*
+       * Si tu servicio todavía no tiene
+       * descargarHorarioDocentePdf(), no
+       * hacemos una llamada inexistente.
+       *
+       * Por ahora se informa al usuario.
+       */
+      this.descargandoPdf = false;
 
       this.modalService.error(
-        'Selecciona un curso para exportar su horario.'
+        'La exportación del horario por docente requiere el método correspondiente en HorariosService.'
       );
 
       return;
@@ -1615,6 +1849,7 @@ export class HorariosComponent
         idCourse
       )
       .subscribe({
+
         next: blob => {
 
           const nombreCurso =
@@ -1669,6 +1904,7 @@ export class HorariosComponent
       document.createElement('a');
 
     enlace.href = url;
+
     enlace.download =
       nombreArchivo;
 
@@ -1686,7 +1922,9 @@ export class HorariosComponent
     );
 
     setTimeout(() => {
+
       URL.revokeObjectURL(url);
+
     }, 1000);
   }
 
@@ -1701,6 +1939,7 @@ export class HorariosComponent
     if (
       this.mensajes.length === 0
     ) {
+
       this.mensajes =
         this.horariosService
           .obtenerMensajeInicial();
@@ -1713,6 +1952,7 @@ export class HorariosComponent
   cerrarChat(): void {
 
     this.chatAbierto = false;
+
     this.emocionActual =
       'normal';
   }
@@ -1746,6 +1986,7 @@ export class HorariosComponent
     this.horariosService
       .enviarMensajeIA(texto)
       .subscribe({
+
         next: respuesta => {
 
           const textoRespuesta =
@@ -1840,6 +2081,7 @@ export class HorariosComponent
     }
 
     this.mensaje = pregunta;
+
     this.enviarMensaje();
   }
 
@@ -1862,6 +2104,7 @@ export class HorariosComponent
         idGeneracion
       )
       .subscribe({
+
         next: respuesta => {
 
           this.borrador =
@@ -1880,7 +2123,8 @@ export class HorariosComponent
 
             this.generacionesPendientes[
               String(idCourse)
-            ] = idGeneracion;
+            ] =
+              idGeneracion;
 
             this.guardarGeneracionesPendientes();
 
@@ -2106,6 +2350,7 @@ export class HorariosComponent
         idGeneracionNueva
       )
       .subscribe({
+
         next: () => {
 
           this.generacionesPublicadas[
@@ -2203,6 +2448,7 @@ export class HorariosComponent
         idGeneracion
       )
       .subscribe({
+
         next: () => {
 
           const idCurso =
@@ -2233,6 +2479,7 @@ export class HorariosComponent
           this.borrador = null;
 
           this.horarios = [];
+
           this.horarioDisponible =
             false;
 
@@ -2296,6 +2543,7 @@ export class HorariosComponent
         typeof datos ===
           'object'
       ) {
+
         this.generacionesPendientes =
           datos;
       }
@@ -2352,7 +2600,10 @@ export class HorariosComponent
     if (
       idGeneracion !== null
     ) {
-      this.cargarBorrador(false);
+
+      this.cargarBorrador(
+        false
+      );
     }
   }
 
@@ -2379,7 +2630,7 @@ export class HorariosComponent
           ''
         )
         .replace(
-          /[^a-zA-Z0-9\_-]+/g,
+          /[^a-zA-Z0-9\\_-]+/g,
           '-'
         )
         .replace(
