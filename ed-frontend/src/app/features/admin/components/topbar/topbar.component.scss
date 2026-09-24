@@ -1,0 +1,158 @@
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 22px 40px;
+  color: var(--inst-text);
+  font-family: 'Poppins', sans-serif;
+  gap: 20px;
+}
+
+.btn-hamburguesa {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  width: 33px;
+  height: 34px;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+
+  span {
+    display: block;
+    width: 100%;
+    height: 2px;
+    background: var(--inst-secondary);
+    border-radius: 2px;
+  }
+
+  &:hover {
+    background: color-mix(in srgb, var(--inst-primary) 12%, transparent);
+  }
+}
+
+.logo {
+  img {
+    height: 40px;
+    display: block;
+  }
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  font-size: 12px;
+  font-weight: 500;
+  padding-left: 24px;
+  color: color-mix(in srgb, var(--inst-text) 45%, transparent);
+  letter-spacing: 0.2px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.crumb {
+  display: inline-flex;
+  align-items: center;
+
+  &.is-last {
+    color: var(--inst-text)8c;
+    font-weight: 100;
+  }
+}
+
+.sep {
+  margin: 0 8px;
+  color: color-mix(in srgb, var(--inst-text) 30%, transparent);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.3;
+}
+
+.user-role {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--inst-secondary);
+  letter-spacing: 0.2px;
+}
+
+.user-subtitle {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--inst-text)8c;
+}
+
+.avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--inst-surface-alt);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+@media (max-width: 920px) {
+
+  .btn-hamburguesa {
+    display: flex;
+  }
+
+  .topbar {
+    padding: 18px 24px;
+  }
+
+  .breadcrumb {
+    display: none;
+  }
+
+  .user-info {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+
+  .topbar {
+    padding: 16px 20px;
+  }
+}
+
+@media (max-width: 480px) {
+
+  .topbar {
+    padding: 14px 16px;
+    gap: 12px;
+  }
+
+  .logo img {
+    height: 32px;
+  }
+}

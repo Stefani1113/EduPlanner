@@ -1,0 +1,275 @@
+services:
+
+  # MySQL
+  mysql:
+    image: mysql:9.4
+    container_name: eduplanner-mysql
+    restart: unless-stopped
+
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/init:/docker-entrypoint-initdb.d:ro
+
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${MYSQL_ROOT_PASSWORD:-root}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+    networks:
+      - eduplanner-network
+
+
+  # CONSUL
+
+  consul:
+    image: hashicorp/consul:1.20
+    container_name: eduplanner-consul
+    restart: unless-stopped
+
+    command: >
+      consul agent
+      -dev
+      -client=0.0.0.0
+
+    expose:
+      - "8600/udp"
+
+    networks:
+      - eduplanner-network
+
+
+
+  # AUTENTICACION
+
+  autenticacion:
+    image: stefani1113/eduplanner-auth
+    container_name: ed-ms-autenticacion
+    restart: unless-stopped
+
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${DB_AUTH:-auth_administration}?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-root}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+
+      SPRING_CLOUD_CONSUL_HOST: consul
+      SPRING_CLOUD_CONSUL_PORT: 8500
+
+    depends_on:
+      mysql:
+        condition: service_healthy
+      consul:
+        condition: service_started
+
+    networks:
+      - eduplanner-network
+
+
+
+  # ADMINISTRACION
+
+  administracion:
+    image: stefani1113/eduplanner-admin
+    container_name: ed-ms-administracion
+    restart: unless-stopped
+
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${DB_ADMIN:-auth_administration}?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-root}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+
+      SPRING_CLOUD_CONSUL_HOST: consul
+      SPRING_CLOUD_CONSUL_PORT: 8500
+
+    depends_on:
+      mysql:
+        condition: service_healthy
+      consul:
+        condition: service_started
+
+    networks:
+      - eduplanner-network
+
+
+
+  # GESTION ACADEMICA
+ 
+  gestion-academica:
+    image: stefani1113/eduplanner-gestion
+    container_name: ed-ms-gestion-academica
+    restart: unless-stopped
+
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${DB_ACADEMICA:-academic_management}?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-root}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+
+      SPRING_CLOUD_CONSUL_HOST: consul
+      SPRING_CLOUD_CONSUL_PORT: 8500
+
+    depends_on:
+      mysql:
+        condition: service_healthy
+      consul:
+        condition: service_started
+
+    networks:
+      - eduplanner-network
+
+
+  
+  # NOTAS
+  notas:
+    image: stefani1113/eduplanner-notas
+    container_name: ed-ms-notas
+    restart: unless-stopped
+
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${DB_NOTAS:-grades}?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-root}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+
+      SPRING_CLOUD_CONSUL_HOST: consul
+      SPRING_CLOUD_CONSUL_PORT: 8500
+
+    depends_on:
+      mysql:
+        condition: service_healthy
+      consul:
+        condition: service_started
+
+    networks:
+      - eduplanner-network
+
+
+  
+  # CONFIGURACION INSTITUCIONAL
+  configuracion-institucional:
+    image: stefani1113/eduplanner-config
+    container_name: ed-ms-configuracion-institucional
+    restart: unless-stopped
+
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${DB_INSTITUCIONAL:-institutional_configuration}?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-root}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+
+      SPRING_CLOUD_CONSUL_HOST: consul
+      SPRING_CLOUD_CONSUL_PORT: 8500
+
+    depends_on:
+      mysql:
+        condition: service_healthy
+      consul:
+        condition: service_started
+
+    networks:
+      - eduplanner-network
+
+
+  
+  # GATEWAY
+
+  gateway:
+    image: stefani1113/eduplanner-gateway
+    container_name: ed-gateway
+    restart: unless-stopped
+
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+
+      SPRING_CLOUD_CONSUL_HOST: consul
+      SPRING_CLOUD_CONSUL_PORT: 8500
+
+    depends_on:
+      consul:
+        condition: service_started
+      autenticacion:
+        condition: service_started
+      gestion-academica:
+        condition: service_started
+      notas:
+        condition: service_started
+      configuracion-institucional:
+        condition: service_started
+
+    networks:
+      - eduplanner-network
+
+
+  # IA
+  ia:
+    image: stefani1113/eduplanner-ia
+    container_name: ed-ms-ia
+    restart: unless-stopped
+
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+
+      SPRING_CLOUD_CONSUL_HOST: consul
+      SPRING_CLOUD_CONSUL_PORT: 8500
+
+    depends_on:
+      consul:
+        condition: service_started
+
+    networks:
+      - eduplanner-network
+
+
+  # MCP
+  mcp:
+    image: stefani1113/eduplanner-mcp
+    container_name: ed-ms-mcp
+    restart: unless-stopped
+
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+
+      SPRING_CLOUD_CONSUL_HOST: consul
+      SPRING_CLOUD_CONSUL_PORT: 8500
+
+    depends_on:
+      consul:
+        condition: service_started
+
+    networks:
+      - eduplanner-network
+
+
+  # FRONTEND
+  frontend:
+    image: stefani1113/eduplanner-frontend
+    container_name: ed-frontend
+    restart: unless-stopped
+
+    depends_on:
+      - gateway
+
+    networks:
+      - eduplanner-network
+
+
+# NETWORK
+networks:
+
+  eduplanner-network:
+    name: eduplanner-network
+    driver: bridge
+
+
+volumes:
+
+  mysql_data:

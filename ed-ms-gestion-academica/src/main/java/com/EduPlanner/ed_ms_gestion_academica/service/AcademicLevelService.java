@@ -1,0 +1,121 @@
+package com.EduPlanner.ed_ms_gestion_academica.service;
+
+import com.eduplanner.ed_lib_common.dto.AcademicLevelRequestDTO;
+import com.eduplanner.ed_lib_common.dto.AcademicLevelResponseDTO;
+import com.eduplanner.ed_lib_common.entity.AcademicLevel;
+import com.EduPlanner.ed_ms_gestion_academica.repository.AcademicLevelRepository;
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+public class AcademicLevelService {
+
+    private final AcademicLevelRepository repository;
+
+    /**
+     * Listar todos lo niveles
+     * @return
+     */
+    public Page<AcademicLevelResponseDTO> findAll(Pageable pageable) {
+        return repository.findAll(pageable).map(AcademicLevelResponseDTO::fromEntity);
+    }
+
+    public List<AcademicLevelResponseDTO> findAll() {
+    return repository.findAll()
+            .stream()
+            .map(AcademicLevelResponseDTO::fromEntity)
+            .toList();
+    }
+
+
+    /**
+     * Buscar por Id
+     * @param id
+     * @return
+     */
+    public AcademicLevelResponseDTO findById(Integer id) {
+        return AcademicLevelResponseDTO.fromEntity(getOrThrow(id));
+    }
+
+
+    /**
+     * Crear Nivel
+     * @param dto
+     * @return
+     */
+    @Transactional
+    public AcademicLevelResponseDTO create(AcademicLevelRequestDTO dto) {
+        if (repository.existsByName(dto.getName())) {
+            throw new IllegalArgumentException("Ya existe un nivel con ese nombre");
+        }
+        AcademicLevel level = new AcademicLevel();
+        level.setName(dto.getName());
+        level.setDescription(dto.getDescription());
+        level.setStatus(true);
+        return AcademicLevelResponseDTO.fromEntity(repository.save(level));
+    }
+
+    /**
+     * Editar Nivel
+     * @param id
+     * @param dto
+     * @return
+     */
+    @Transactional
+    public AcademicLevelResponseDTO update(Integer id, AcademicLevelRequestDTO dto) {
+        AcademicLevel level = getOrThrow(id);
+        level.setName(dto.getName());
+        level.setDescription(dto.getDescription());
+        return AcademicLevelResponseDTO.fromEntity(repository.save(level));
+    }
+
+    /**
+     * Desactivar Nivel
+     * @param id
+     */
+    @Transactional
+    public void deactivate(Integer id) {
+        AcademicLevel level = getOrThrow(id);
+        level.setStatus(false);
+        repository.save(level);
+    }
+
+    /**
+     * Eliminar Nivel
+     * @param id
+     */
+    @Transactional
+    public void deletePermanently(Integer id) {
+        if (!repository.existsById(id)) {
+            throw new IllegalArgumentException("Nivel académico no encontrado con id: " + id);
+        }
+        repository.deleteById(id);
+    }
+
+    private AcademicLevel getOrThrow(Integer id) {
+        return repository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Nivel académico no encontrado con id: " + id));
+    }
+
+
+    /**
+     * Listar solo activos
+     * @return
+     */
+    public Page<AcademicLevelResponseDTO> findAllActive(Pageable pageable) {
+        return repository.findByStatusTrue(pageable).map(AcademicLevelResponseDTO::fromEntity);
+    }
+
+    public List<AcademicLevelResponseDTO> findAllActive() {
+    return repository.findByStatusTrue()
+            .stream()
+            .map(AcademicLevelResponseDTO::fromEntity)
+            .toList();
+    }
+}

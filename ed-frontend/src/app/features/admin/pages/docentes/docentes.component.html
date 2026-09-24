@@ -1,0 +1,426 @@
+<div class="docentes-container">
+
+  <div class="top-section">
+
+    <div>
+      <div class="titulo-seccion">
+        Docentes
+      </div>
+      <div class="subtitulo-seccion">
+        Administra los perfiles de los docentes registrados
+      </div>
+    </div>
+
+    <div class="top-actions">
+
+      <div class="search-box">
+        <span class="search-icon"><img src="/assets/img/magnifying_glass.png" alt=""></span>
+        <input
+          type="text"
+          placeholder="Buscar docente..."
+          [(ngModel)]="busqueda"
+          (keyup.enter)="buscar()"
+        />
+        <button class="btn-search" type="button" (click)="buscar()">
+          Buscar
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+
+  <div *ngIf="cargando" class="estado-msg">
+    Cargando docentes...
+  </div>
+
+  <div *ngIf="!cargando && errorCarga" class="estado-msg error">
+    {{ errorCarga }}
+  </div>
+
+  <div *ngIf="!cargando && !errorCarga && docentes.length === 0" class="estado-msg">
+    No hay docentes registrados.
+  </div>
+
+  <div class="docentes-grid" *ngIf="!cargando && !errorCarga && docentes.length > 0">
+
+    <article class="docente-card" *ngFor="let d of docentesPagina">
+
+      <span class="status-corner" [class.activo]="d.status" [class.inactivo]="!d.status">
+        {{ d.status ? 'Activo' : 'Inactivo' }}
+      </span>
+
+      <div class="avatar-floating">
+        <img
+          [src]="obtenerFoto(d) || '/assets/img/profile.png'"
+          [alt]="d.name + ' ' + d.surnames"
+          (error)="$any($event.target).src = '/assets/img/profile.png'">
+      </div>
+
+      <div class="card-header-center">
+        <h3 class="docente-nombre">
+          {{ d.name }} {{ d.surnames }}
+        </h3>
+        <div class="docente-divider"></div>
+        <span class="docente-cargo-pill" *ngIf="d.position">
+          {{ d.position }}
+        </span>
+      </div>
+
+      <div class="card-body">
+
+        <div class="info-row">
+          <span class="info-label">Email</span>
+          <span class="info-value">{{ d.email }}</span>
+        </div>
+
+        <div class="info-row">
+          <span class="info-label">Teléfono</span>
+          <span class="info-value">{{ d.phoneNumber || 'No registrado' }}</span>
+        </div>
+
+        <div class="info-row">
+          <span class="info-label">Documento</span>
+          <span class="info-value">{{ d.documentType }} {{ d.document }}</span>
+        </div>
+
+        <div class="info-row">
+          <span class="info-label">Institución</span>
+          <span class="info-value">{{ d.idInstitution || 'No registrada' }}</span>
+        </div>
+
+      </div>
+
+      <div class="card-actions">
+
+        <button type="button" class="link-ver" (click)="verDocente(d)">
+          Ver perfil
+        </button>
+
+        <ng-container *ngIf="puedeGestionar">
+
+          <button type="button" class="link-editar" (click)="abrirEdicion(d)">
+            Editar
+          </button>
+
+          <button type="button" class="link-eliminar" (click)="eliminarDocente(d)">
+            Eliminar
+          </button>
+
+        </ng-container>
+
+      </div>
+
+    </article>
+
+  </div>
+
+  <app-pagination
+    *ngIf="!cargando && !errorCarga && totalElementos > 0"
+    [totalItems]="totalElementos"
+    [pageSize]="tamanoPagina"
+    [currentPage]="paginaActual"
+    (pageChange)="cambiarPagina($event)"
+  ></app-pagination>
+
+  <div class="modal-overlay" *ngIf="mostrarPerfil" (click)="cerrarPerfil()">
+
+    <div class="perfil-modal" (click)="$event.stopPropagation()">
+
+      <div class="perfil-cover">
+
+        <div class="perfil-avatar" *ngIf="docenteSeleccionado as d">
+          <img [src]="obtenerFoto(d) || '/assets/img/profile.png'"
+               [alt]="d.name + ' ' + d.surnames"
+               (error)="$any($event.target).src = '/assets/img/profile.png'" />
+        </div>
+
+      </div>
+
+      <button type="button" class="perfil-cerrar" (click)="cerrarPerfil()">
+        ✕
+      </button>
+
+      <div class="perfil-header" *ngIf="docenteSeleccionado">
+
+        <h2>
+          {{ docenteSeleccionado.name }}
+          {{ docenteSeleccionado.surnames }}
+        </h2>
+
+        <div class="perfil-tags">
+          <span *ngIf="docenteSeleccionado.position">
+            {{ docenteSeleccionado.position }}
+          </span>
+          <span *ngIf="docenteSeleccionado.professionalDegrees">
+            {{ docenteSeleccionado.professionalDegrees }}
+          </span>
+        </div>
+
+      </div>
+
+      <div class="perfil-body" *ngIf="docenteSeleccionado as d">
+
+        <section class="perfil-box perfil-box-contacto">
+          <p><b>Email:</b> {{ d.email }}</p>
+          <p><b>Institución Educativa:</b> {{ d.idInstitution || 'No registrada' }}</p>
+          <p><b>Teléfono:</b> {{ d.phoneNumber || 'No registrado' }}</p>
+        </section>
+
+        <section class="perfil-box">
+          <h3 class="perfil-box-titulo">
+            <span class="perfil-box-icono"><img src="/assets/img/user.png" alt=""></span>
+            Sobre
+          </h3>
+          <p><b>Email:</b> {{ d.email }}</p>
+          <p><b>Teléfono:</b> {{ d.phoneNumber || 'No registrado' }}</p>
+          <p><b>Título:</b> {{ d.professionalDegrees || 'No registrado' }}</p>
+        </section>
+
+        <section class="perfil-box">
+          <h3 class="perfil-box-titulo">
+            <span class="perfil-box-icono"><img src="/assets/img/user.png" alt=""></span>
+            Perfil profesional
+          </h3>
+
+          <ul class="perfil-lista" *ngIf="obtenerDescripcionLineas(d.qualificationsDesc).length > 0; else sinDescripcion">
+            <li *ngFor="let linea of obtenerDescripcionLineas(d.qualificationsDesc)">
+              {{ linea }}
+            </li>
+          </ul>
+
+          <ng-template #sinDescripcion>
+            <p class="sin-descripcion">Sin descripción registrada.</p>
+          </ng-template>
+        </section>
+
+      </div>
+
+      <div class="perfil-footer">
+
+        <button type="button" class="btn-cancelar" (click)="cerrarPerfil()">
+          Cerrar
+        </button>
+
+        <button
+          type="button"
+          class="btn-guardar"
+          *ngIf="puedeGestionar"
+          (click)="editarDesdePerfil()">
+          Editar perfil
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="modal-overlay" *ngIf="mostrarFormulario" (click)="cerrarFormulario()">
+
+    <div class="modal" (click)="$event.stopPropagation()">
+
+      <div class="modal-header">
+
+        <h2>
+          {{ docenteEnEdicion ? 'Editar docente' : 'Agregar docente' }}
+        </h2>
+
+        <button type="button" class="btn-cerrar" (click)="cerrarFormulario()">
+          ✕
+        </button>
+
+      </div>
+
+      <div class="modal-body">
+
+        <div class="grid-2">
+          <div class="campo">
+            <label>Nombres *</label>
+            <input type="text" [(ngModel)]="form.name" name="name" />
+          </div>
+          <div class="campo">
+            <label>Apellidos *</label>
+            <input type="text" [(ngModel)]="form.surnames" name="surnames" />
+          </div>
+        </div>
+
+        <div class="campo">
+          <label>Correo *</label>
+          <input type="email" [(ngModel)]="form.email" name="email" />
+        </div>
+
+        <div class="grid-3">
+          <div class="campo">
+            <label>Tipo documento *</label>
+            <select [(ngModel)]="form.documentType" name="documentType">
+              <option value="CC">Cédula de ciudadanía</option>
+              <option value="CE">Cédula de extranjería</option>
+              <option value="TI">Tarjeta de identidad</option>
+              <option value="PA">Pasaporte</option>
+            </select>
+          </div>
+          <div class="campo">
+            <label>N.º documento *</label>
+            <input type="text" [(ngModel)]="form.document" name="document" />
+          </div>
+          <div class="campo">
+            <label>Fecha de nacimiento *</label>
+            <input type="date" [(ngModel)]="form.birthdate" name="birthdate" />
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="campo">
+            <label>Cargo *</label>
+            <input type="text" [(ngModel)]="form.position" name="position"
+                   placeholder="Ej. Docente de matemáticas" />
+          </div>
+          <div class="campo">
+            <label>Títulos profesionales *</label>
+            <input type="text" [(ngModel)]="form.professionalDegrees" name="professionalDegrees"
+                   placeholder="Ej. Licenciado en matemáticas" />
+          </div>
+        </div>
+
+        <div class="grid-3">
+          <div class="campo">
+            <label>Género *</label>
+            <select [(ngModel)]="form.gender" name="gender">
+              <option value="Masculino">Masculino</option>
+              <option value="Femenino">Femenino</option>
+              <option value="Otro">Otro</option>
+            </select>
+          </div>
+          <div class="campo">
+            <label>Tipo de sangre *</label>
+            <select [(ngModel)]="form.bloodType" name="bloodType">
+              <option value="O+">O+</option>
+              <option value="O-">O-</option>
+              <option value="A+">A+</option>
+              <option value="A-">A-</option>
+              <option value="B+">B+</option>
+              <option value="B-">B-</option>
+              <option value="AB+">AB+</option>
+              <option value="AB-">AB-</option>
+            </select>
+          </div>
+          <div class="campo">
+            <label>Estrato *</label>
+            <input type="number" min="1" max="6" [(ngModel)]="form.stratum" name="stratum" />
+          </div>
+        </div>
+
+        <button type="button" class="btn-toggle-mas" (click)="mostrarMasCampos = !mostrarMasCampos">
+          {{ mostrarMasCampos ? 'Ocultar campos opcionales' : 'Mostrar campos opcionales' }}
+        </button>
+
+        <ng-container *ngIf="mostrarMasCampos">
+
+          <div class="grid-2">
+            <div class="campo">
+              <label>Teléfono</label>
+              <input type="text" [(ngModel)]="form.phoneNumber" name="phoneNumber" />
+            </div>
+            <div class="campo">
+              <label>Dirección</label>
+              <input type="text" [(ngModel)]="form.address" name="address" />
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="campo">
+              <label>Lugar de expedición</label>
+              <input type="text" [(ngModel)]="form.documentIssuePlace" name="documentIssuePlace" />
+            </div>
+            <div class="campo">
+              <label>Tipo de población</label>
+              <input type="text" [(ngModel)]="form.populationType" name="populationType" />
+            </div>
+          </div>
+
+          <div class="campo">
+            <label>Descripción de cualificaciones</label>
+            <textarea [(ngModel)]="form.qualificationsDesc" name="qualificationsDesc"></textarea>
+          </div>
+
+          <div class="grid-3">
+            <div class="campo">
+              <label>Régimen de salud</label>
+              <input type="text" [(ngModel)]="form.healthRegime" name="healthRegime" />
+            </div>
+            <div class="campo">
+              <label>EPS</label>
+              <input type="text" [(ngModel)]="form.eps" name="eps" />
+            </div>
+            <div class="campo">
+              <label>Discapacidades</label>
+              <input type="text" [(ngModel)]="form.disabilities" name="disabilities" />
+            </div>
+          </div>
+
+        </ng-container>
+
+        <p class="error-form" *ngIf="errorFormulario">
+          {{ errorFormulario }}
+        </p>
+
+      </div>
+
+      <div class="modal-footer">
+
+        <button type="button" class="btn-cancelar" (click)="cerrarFormulario()">
+          Cancelar
+        </button>
+
+        <button type="button" class="btn-guardar" [disabled]="guardando" (click)="guardarDocente()">
+          {{ guardando ? 'Guardando...' : (docenteEnEdicion ? 'Guardar cambios' : 'Guardar docente') }}
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="modal-overlay" *ngIf="mostrarConfirmacionEliminar" (click)="cerrarConfirmacionEliminar()">
+
+    <div class="eliminar-modal" (click)="$event.stopPropagation()">
+
+     <div class="eliminar-icono">
+        <img class="garbage" src="/assets/img/garbage.png" alt="">
+      </div>
+
+
+      <h2>Eliminar Perfil</h2>
+
+      <p>
+        ¿Estás seguro de que deseas eliminar el perfil de
+        <strong>
+          {{ docenteParaEliminar?.name }}
+          {{ docenteParaEliminar?.surnames }}
+        </strong>?
+        Esta acción no se puede deshacer.
+      </p>
+
+      <div class="eliminar-footer">
+
+        <button type="button" class="btn-confirmar-cancelar" (click)="cerrarConfirmacionEliminar()">
+          Cancelar
+        </button>
+
+        <button type="button" class="btn-confirmar-eliminar" [disabled]="eliminando" (click)="confirmarEliminacion()">
+          {{ eliminando ? 'Eliminando...' : 'Sí, eliminar' }}
+        </button>
+
+      </div>
+
+      <p class="error-form" *ngIf="errorEliminacion">
+        {{ errorEliminacion }}
+      </p>
+
+    </div>
+
+  </div>
+
+</div>

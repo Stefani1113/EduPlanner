@@ -1,0 +1,97 @@
+import { Component, EventEmitter, Input, OnChanges, Output } from '@angular/core';
+import { CommonModule } from '@angular/common';
+
+@Component({
+  selector: 'app-pagination',
+  standalone: true,
+  imports: [CommonModule],
+  templateUrl: './pagination.component.html',
+  styleUrl: './pagination.component.scss'
+})
+export class PaginationComponent implements OnChanges {
+
+  @Input() totalItems = 0;
+
+  @Input() pageSize = 10;
+
+  @Input() currentPage = 1;
+
+  @Output() pageChange = new EventEmitter<number>();
+
+  totalPages = 1;
+
+  ngOnChanges(): void {
+    this.totalPages = Math.max(
+      1,
+      Math.ceil(this.totalItems / this.pageSize)
+    );
+
+    if (this.currentPage > this.totalPages) {
+      this.currentPage = this.totalPages;
+    }
+  }
+
+  get inicioRango(): number {
+    if (this.totalItems === 0) {
+      return 0;
+    }
+    return (this.currentPage - 1) * this.pageSize + 1;
+  }
+
+  get finRango(): number {
+    return Math.min(
+      this.currentPage * this.pageSize,
+      this.totalItems
+    );
+  }
+
+  irAPagina(pagina: number): void {
+    if (pagina < 1 || pagina > this.totalPages || pagina === this.currentPage) {
+      return;
+    }
+
+    this.currentPage = pagina;
+    this.pageChange.emit(this.currentPage);
+  }
+
+  anterior(): void {
+    this.irAPagina(this.currentPage - 1);
+  }
+
+  siguiente(): void {
+    this.irAPagina(this.currentPage + 1);
+  }
+
+  get paginas(): number[] {
+    const total = this.totalPages;
+
+    if (total <= 5) {
+      return Array.from(
+        { length: total },
+        (_, i) => i + 1
+      );
+    }
+
+    let inicio = Math.max(
+      1,
+      this.currentPage - 2
+    );
+
+    let fin = Math.min(
+      total,
+      inicio + 4
+    );
+
+    if (fin - inicio < 4) {
+      inicio = Math.max(
+        1,
+        fin - 4
+      );
+    }
+
+    return Array.from(
+      { length: fin - inicio + 1 },
+      (_, i) => inicio + i
+    );
+  }
+}

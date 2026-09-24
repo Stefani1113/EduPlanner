@@ -1,0 +1,483 @@
+<div
+  class="institution-page"
+  *ngIf="info$ | async as info"
+>
+
+  <section class="hero-section">
+
+    <div class="hero-carousel">
+
+      <div
+        class="carousel-track"
+        [style.transform]="
+          'translateX(-' +
+          (currentSlide * 100) +
+          '%)'
+        "
+      >
+
+        <div
+          class="carousel-slide"
+          *ngFor="
+            let image of info.carousel;
+            let i = index
+          "
+          [style.backgroundImage]="
+            'url(' +
+            (
+              image.url ||
+              'assets/img/img-principal.png'
+            ) +
+            ')'
+          "
+        >
+
+          <div
+            class="hero-overlay"
+          ></div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+
+    <button
+      class="carousel-control prev"
+      (click)="prevSlide(info)"
+      aria-label="Anterior"
+      *ngIf="info.carousel.length > 1"
+    >
+
+      <svg
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.5"
+      >
+
+        <path d="M15 18l-6-6 6-6"/>
+
+      </svg>
+
+    </button>
+
+
+
+    <button
+      class="carousel-control next"
+      (click)="nextSlide(info)"
+      aria-label="Siguiente"
+      *ngIf="info.carousel.length > 1"
+    >
+
+      <svg
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.5"
+      >
+
+        <path d="M9 18l6-6-6-6"/>
+
+      </svg>
+
+    </button>
+
+
+
+    <div class="hero-container">
+
+      <div class="hero-content">
+
+        <span class="hero-badge">
+          {{ info.heroBadge }}
+        </span>
+
+
+        <h1 class="hero-title">
+
+          {{ info.nombreLargo }}
+
+        </h1> 
+
+
+        <p class="hero-description">
+
+          {{ info.descripcion }}
+
+        </p>
+
+
+        <div class="hero-actions">
+
+          <button
+            class="btn-primary"
+          >
+
+            Conocer institución
+
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+
+            </svg>
+
+          </button>
+
+
+          <span class="hero-location">
+
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+
+              <path
+                d="
+                  M21 10
+                  c0 7-9 13-9 13
+                  s-9-6-9-13
+                  a9 9 0 0 1 18 0z
+                "
+              />
+
+              <circle
+                cx="12"
+                cy="10"
+                r="3"
+              />
+
+            </svg>
+
+            {{ info.contactoDireccion }}
+
+          </span>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+
+    <div
+      class="hero-indicators"
+      *ngIf="info.carousel.length > 1"
+    >
+
+      <span
+        *ngFor="
+          let image of info.carousel;
+          let i = index
+        "
+        [class.active]="
+          i === currentSlide
+        "
+        (click)="
+          goToSlide(i, info)
+        "
+      ></span>
+
+    </div>
+
+  </section>
+
+
+
+
+  <section class="intro-section">
+
+    <div class="intro-container">
+
+      <div class="intro-text">
+
+        <span class="section-tag">
+          NUESTRA INSTITUCIÓN
+        </span>
+
+
+        <h2>
+
+          Un lugar para
+
+          <span class="highlight">
+
+            aprender, crecer y transformar.
+
+          </span>
+
+        </h2>
+
+
+
+        <p>
+          {{ info.descripcion }}
+        </p>
+
+      </div>
+
+
+
+      <div class="stats-grid">
+
+        <div class="stat-item">
+
+          <span class="stat-number">
+            {{ estadisticas.estudiantes }}
+          </span>
+
+          <span class="stat-label">
+            Estudiantes
+          </span>
+
+        </div>
+
+
+        <div class="stat-item">
+
+          <span class="stat-number">
+            {{ estadisticas.docentes }}
+          </span>
+
+          <span class="stat-label">
+            Docentes
+          </span>
+
+        </div>
+
+
+        <div class="stat-item">
+
+          <span class="stat-number">
+            {{ estadisticas.cursos }}
+          </span>
+
+          <span class="stat-label">
+            Cursos
+          </span>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+
+
+  <section class="cards-section">
+
+    <div class="cards-grid">
+
+
+
+      <article class="card-mission">
+
+        <div class="card-icon">
+          ⌁
+        </div>
+
+        <span class="card-tag">
+          MISIÓN
+        </span>
+
+
+        <h3>
+          {{ info.nombreCorto }}
+        </h3>
+
+
+        <p>
+          {{ info.mision }}
+        </p>
+
+      </article>
+
+
+
+      <article class="card-image">
+
+        <img
+          [src]="info.comunidadImagenUrl || 'assets/img/estudiantes-institucion.png'"
+          alt="Estudiantes"
+        >
+
+        <div class="card-image-overlay">
+
+          <span>
+            COMUNIDAD EDUCATIVA
+          </span>
+
+          <strong>
+            {{ info.comunidadTitulo }}
+          </strong>
+
+        </div>
+
+      </article>
+
+
+
+      <article class="card-vision">
+
+        <div class="card-icon light">
+          ◈
+        </div>
+
+        <span class="card-tag">
+          VISIÓN
+        </span>
+
+
+        <h3>
+          {{ info.nombreCorto }}
+        </h3>
+
+
+        <p>
+          {{ info.vision }}
+        </p>
+
+      </article>
+
+
+
+      <article class="card-image">
+
+        <img
+          [src]="info.espaciosImagenUrl || 'assets/img/carrucel-libreria.png'"
+          alt="Campus"
+        >
+
+        <div class="card-image-overlay">
+
+          <span>
+            ESPACIOS EDUCATIVOS
+          </span>
+
+          <strong>
+            {{ info.espaciosTitulo }}
+          </strong>
+
+        </div>
+
+      </article>
+
+    </div>
+
+  </section>
+
+
+
+  <section class="pillars-section">
+
+    <div class="section-header">
+
+      <span class="section-tag">
+        NUESTROS PILARES
+      </span>
+
+      <h2>
+
+        Lo que nos
+
+        <span class="highlight">
+          representa
+        </span>
+
+      </h2>
+
+    </div>
+
+
+    <div class="pillars-grid">
+
+      <article
+        class="pillar-card"
+        *ngFor="let pilar of info.pilares; let i = index"
+        [class.featured]="i === 1"
+        [class.dark]="i === 2"
+      >
+
+        <span class="pillar-number">
+          {{ (i + 1) < 10 ? '0' + (i + 1) : (i + 1) }}
+        </span>
+
+        <h3>
+          {{ pilar.titulo }}
+        </h3>
+
+        <p>
+          {{ pilar.descripcion }}
+        </p>
+
+      </article>
+
+    </div>
+
+  </section>
+
+
+
+
+  <section class="contact-section">
+
+    <div class="contact-content">
+
+      <span class="section-tag">
+        CONTACTO INSTITUCIONAL
+      </span>
+
+      <h2>
+
+        {{ info.nombreCorto }}
+
+        <span class="highlight">
+          está para acompañarte
+        </span>
+
+      </h2>
+
+    </div>
+
+
+    <div class="contact-info">
+
+      <span>
+        {{ info.contactoDireccion }}
+      </span>
+
+      <span>
+        {{ info.nombreLargo }}
+      </span>
+
+      <span>
+        {{ info.reglamentoUrl || 'Información institucional' }}
+      </span>
+
+    </div>
+
+  </section>
+
+</div>

@@ -1,0 +1,81 @@
+spring:
+  application:
+    name: ed-ms-administracion
+
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+
+      discovery:
+        enabled: true
+        register: true
+        service-name: ${spring.application.name}
+        prefer-ip-address: true
+        health-check-path: /eduplanner/actuator/health
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/auth_administration
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: eduplannerr@gmail.com
+    password: xoguovkhuxdbbgll
+    properties: 
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+server:
+  port: 8082
+  servlet:
+    context-path: /eduplanner/
+
+security:
+  jwt:
+    secret-key: czyYSEj017tCB8M8mnOSvhgV4gSdI4P5Bql+3HrWZtM=
+    token-expiration: 600000 # 10 min en ms
+
+app:
+  mail:
+    from: eduplannerr@gmail.com
+    support-team: eduplannerr@gmail.com
+  csv:
+    export-path: ./exports/
+    max-rows-import: 5000  
+
+frontend:
+  activation-url: http://localhost:4200/activate
+
+institution: 
+  id: 1  #Id fijo de la institución
+
+cloudinary:
+  cloud-name: f0qiiq22
+  api-key: 588271412933438
+  api-secret: _pVZj_anQw5kn-Hkj2RLwSt0C8k
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+
+  health:
+    mail:
+      enabled: false

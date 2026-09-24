@@ -1,0 +1,38 @@
+<div
+  class="paginacion"
+  *ngIf="totalItems > 0"
+>
+
+  <div class="paginacion-controles">
+
+    <button
+      type="button"
+      class="paginacion-btn"
+      [disabled]="currentPage === 1"
+      (click)="anterior()"
+    >
+      ‹ Anterior
+    </button>
+
+    <button
+      type="button"
+      class="paginacion-btn numero"
+      *ngFor="let p of paginas"
+      [class.activo]="p === currentPage"
+      (click)="irAPagina(p)"
+      [attr.aria-current]="p === currentPage ? 'page' : null"
+    >
+      {{ p }}
+    </button>
+
+    <button
+      type="button"
+      class="paginacion-btn"
+      [disabled]="currentPage === totalPages"
+      (click)="siguiente()"
+    >
+      Siguiente ›
+    </button>
+
+  </div>
+</div>

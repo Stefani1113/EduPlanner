@@ -1,0 +1,120 @@
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
+import { HorariosComponent } from './pages/horarios/horarios.component';
+import { AdminLayoutComponent } from './admin-layout/admin-layout.component';
+import { DashboardComponent } from './pages/dashboard/dashboard.component';
+import { authGuard } from '../auth/services/auth.guard';
+
+const routes: Routes = [
+  {
+    path: '',
+    component: AdminLayoutComponent,
+    canActivate: [authGuard],
+
+    children: [
+
+      {
+        path: '',
+        redirectTo: 'dashboard',
+        pathMatch: 'full'
+      },
+
+      {
+        path: 'dashboard',
+        component: DashboardComponent,
+        data: {
+          breadcrumb: ['Mi institución']
+        }
+      },
+
+      {
+        path: 'usuarios',
+        loadComponent: () =>
+          import('./pages/usuarios/usuarios.component')
+            .then(m => m.UsuariosComponent),
+        data: {
+          breadcrumb: ['Usuarios']
+        }
+      },
+
+      {
+        path: 'registro',
+        loadComponent: () =>
+          import('./pages/registro/registro.component')
+            .then(m => m.RegistroComponent),
+        data: {
+          breadcrumb: ['Registro']
+        }
+      },
+
+      {
+        path: 'docentes',
+        loadComponent: () =>
+          import('./pages/docentes/docentes.component')
+            .then(m => m.DocentesComponent),
+        data: {
+          breadcrumb: ['Docentes']
+        }
+      },
+
+      {
+        path: 'asistencia',
+        loadComponent: () =>
+          import('../asistencias/pages/asistencias/asistencias.component')
+            .then(m => m.AsistenciaComponent),
+        data: {
+          breadcrumb: ['Asistencia']
+        }
+      },
+
+      {
+        path: 'notas',
+        loadComponent: () =>
+          import('../notas/pages/notas.component')
+            .then(m => m.NotasComponent),
+        data: {
+          breadcrumb: ['Notas']
+        }
+      },
+
+      { 
+        path: 'importacion', 
+        loadComponent: () =>
+          import('./pages/importacion/importacion.component')
+            .then(m => m.ImportacionComponent),
+        data: {
+          breadcrumb: ['Importación']
+        }
+      },
+
+      {
+        path: 'sistema',
+        loadComponent: () =>
+          import('./pages/sistema/sistema.component')
+              .then(m => m.PanelControlComponent),
+        data: {
+          breadcrumb: ['sistema']
+        }
+      },
+
+      {
+        path: 'horarios',
+        component: HorariosComponent,
+        data: {
+          breadcrumb: ['Horarios']
+        }
+      },
+
+    ]
+  }
+];
+
+@NgModule({
+  imports: [
+    RouterModule.forChild(routes)
+  ],
+  exports: [
+    RouterModule
+  ]
+})
+export class AdminRoutingModule {}

@@ -1,0 +1,39 @@
+<header class="topbar">
+
+  <button
+    type="button"
+    class="btn-hamburguesa"
+    aria-label="Abrir menú"
+    (click)="toggleSidebar()"
+  >
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+
+  <div class="logo">
+    <img [src]="logoUrl$ | async" [alt]="nombreInstitucion$ | async">
+  </div>
+
+  <nav class="breadcrumb" aria-label="breadcrumb">
+    <span
+      *ngFor="let item of breadcrumb; let last = last"
+      class="crumb"
+      [class.is-last]="last && !extra" 
+    >
+      {{ item }}
+      <span class="sep" *ngIf="!last || extra">&rsaquo;</span>
+    </span>
+    <span class="crumb is-last" *ngIf="extra">{{ extra }}</span>
+  </nav>
+
+  <div class="topbar-right">
+    <div class="user-info">
+      <span class="user-role">{{ rolUsuario }}</span>
+      <span class="user-subtitle">{{ nombreUsuario || 'Sesión activa · EduPlanner' }}</span>
+    </div>
+
+    <app-profile-menu></app-profile-menu>
+  </div>
+
+</header>

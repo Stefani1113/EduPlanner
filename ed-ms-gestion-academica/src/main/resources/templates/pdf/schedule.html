@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+
+<head>
+    <meta charset="UTF-8"/>
+    <title>Horario Académico - EduPlanner</title>
+
+    <style>
+
+        @page {
+            size: A4 landscape;
+            margin: 18mm 14mm 16mm 14mm;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Helvetica, Arial, sans-serif;
+            background-color: #ffffff;
+            color: #111111;
+            font-size: 12px;
+        }
+
+
+
+        .header {
+            width: 100%;
+            border-bottom: 3px solid #1e7a3d;
+            padding-bottom: 12px;
+            margin-bottom: 16px;
+        }
+
+        .header-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .header-left {
+            width: 60%;
+            vertical-align: middle;
+        }
+
+        .header-right {
+            width: 40%;
+            text-align: right;
+            vertical-align: middle;
+        }
+
+        .brand-name {
+            font-size: 21px;
+            font-weight: bold;
+            color: #14532d;
+        }
+
+        .brand-name span {
+            color: #2e9e52;
+        }
+
+        .doc-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #14532d;
+            margin-bottom: 3px;
+        }
+
+        .doc-date {
+            font-size: 10px;
+            color: #4b5563;
+        }
+
+
+
+        .info-panel {
+            width: 100%;
+            margin-bottom: 18px;
+        }
+
+        .info-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 8px 0;
+        }
+
+        .info-card {
+            width: 25%;
+            background-color: #f2f9f4;
+            border: 1px solid #cdeed9;
+            border-left: 4px solid #2e9e52;
+            padding: 9px 12px;
+            vertical-align: top;
+        }
+
+        .info-card:first-child {
+            border-left: 4px solid #2e9e52;
+        }
+
+        .label {
+            font-size: 8px;
+            text-transform: uppercase;
+            color: #2e9e52;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .value {
+            font-size: 12px;
+            font-weight: bold;
+            color: #111111;
+        }
+
+
+
+        table.schedule {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        table.schedule thead th {
+            background-color: #1e7a3d;
+            color: #ffffff;
+            font-size: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+            padding: 9px 6px;
+            text-align: center;
+            border: 1px solid #1e7a3d;
+        }
+
+        table.schedule thead th.hour-header {
+            width: 105px;
+            text-align: left;
+        }
+
+        table.schedule tbody td {
+            height: 42px;
+            padding: 7px 5px;
+            text-align: center;
+            vertical-align: middle;
+            border: 1px solid #d9e9de;
+            color: #111111;
+            font-size: 10px;
+        }
+
+        table.schedule tbody td.hour-cell {
+            text-align: left;
+            font-weight: bold;
+            background-color: #e6f5eb;
+            color: #14532d;
+            font-size: 9px;
+        }
+
+        table.schedule tbody tr:nth-child(even) td {
+            background-color: #f7fbf8;
+        }
+
+        table.schedule tbody tr:nth-child(even) td.hour-cell {
+            background-color: #e6f5eb;
+        }
+
+        .empty-slot {
+            color: #aab5ae;
+            font-style: italic;
+        }
+
+
+
+        .legend {
+            margin-top: 14px;
+            font-size: 9px;
+            color: #4b5563;
+        }
+
+        .legend-table {
+            border-collapse: collapse;
+        }
+
+        .legend-dot {
+            width: 8px;
+            height: 8px;
+            background-color: #2e9e52;
+            display: inline-block;
+            margin-right: 5px;
+        }
+
+
+
+        .footer {
+            width: 100%;
+            margin-top: 20px;
+            padding-top: 9px;
+            border-top: 1px solid #d9e9de;
+            font-size: 8.5px;
+            color: #6b7280;
+        }
+
+        .footer-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .footer-left {
+            text-align: left;
+        }
+
+        .footer-right {
+            text-align: right;
+        }
+
+    </style>
+</head>
+
+<body>
+
+
+
+<div class="header">
+
+    <table class="header-table">
+        <tr>
+
+            <td class="header-left">
+
+                <div class="brand-name">
+                    Edu<span>Planner</span>
+                </div>
+
+            </td>
+
+            <td class="header-right">
+
+                <div class="doc-title">
+                    Horario académico
+                </div>
+
+                <div class="doc-date"
+                     th:text="${'Generado el ' + fechaGeneracion}">
+                    Generado el 18/09/2026
+                </div>
+
+            </td>
+
+        </tr>
+    </table>
+
+</div>
+
+
+
+
+<div class="info-panel">
+
+    <table class="info-table">
+
+        <tr>
+
+
+            <td class="info-card">
+
+                <div class="label">
+                    Curso
+                </div>
+
+                <div class="value"
+                     th:text="${curso != null and !curso.isEmpty() ? curso : 'No especificado'}">
+                    No especificado
+                </div>
+
+            </td>
+
+
+
+            <td class="info-card">
+
+                <div class="label">
+                    Periodo académico
+                </div>
+
+                <div class="value"
+                     th:text="${periodo != null and !periodo.isEmpty() ? periodo : 'No especificado'}">
+                    No especificado
+                </div>
+
+            </td>
+
+
+
+            <td class="info-card"
+                th:if="${docente != null and !docente.isEmpty()}">
+
+                <div class="label">
+                    Docente
+                </div>
+
+                <div class="value"
+                     th:text="${docente}">
+                    No especificado
+                </div>
+
+            </td>
+
+
+
+            <td class="info-card"
+                th:if="${estudiante != null and !estudiante.isEmpty()}">
+
+                <div class="label">
+                    Estudiante
+                </div>
+
+                <div class="value"
+                     th:text="${estudiante}">
+                    No especificado
+                </div>
+
+            </td>
+
+        </tr>
+
+    </table>
+
+</div>
+
+
+
+
+<table class="schedule">
+
+    <thead>
+
+    <tr>
+
+        <th class="hour-header">
+            Hora
+        </th>
+
+        <th>
+            Lunes
+        </th>
+
+        <th>
+            Martes
+        </th>
+
+        <th>
+            Miércoles
+        </th>
+
+        <th>
+            Jueves
+        </th>
+
+        <th>
+            Viernes
+        </th>
+
+    </tr>
+
+    </thead>
+
+
+    <tbody>
+
+
+
+    <tr th:each="fila : ${filas}">
+
+
+
+        <td class="hour-cell">
+
+            <span th:text="${fila.horaInicio}">
+                07:00
+            </span>
+
+            <span>
+                -
+            </span>
+
+            <span th:text="${fila.horaFin}">
+                08:00
+            </span>
+
+        </td>
+
+
+
+        <td th:text="${fila.lunes != null and !fila.lunes.isEmpty() ? fila.lunes : '—'}"
+            th:classappend="${fila.lunes == null or fila.lunes.isEmpty() ? 'empty-slot' : ''}">
+            Matemáticas
+        </td>
+
+
+
+        <td th:text="${fila.martes != null and !fila.martes.isEmpty() ? fila.martes : '—'}"
+            th:classappend="${fila.martes == null or fila.martes.isEmpty() ? 'empty-slot' : ''}">
+            Inglés
+        </td>
+
+        <td th:text="${fila.miercoles != null and !fila.miercoles.isEmpty() ? fila.miercoles : '—'}"
+            th:classappend="${fila.miercoles == null or fila.miercoles.isEmpty() ? 'empty-slot' : ''}">
+            Ciencias
+        </td>
+
+
+
+        <td th:text="${fila.jueves != null and !fila.jueves.isEmpty() ? fila.jueves : '—'}"
+            th:classappend="${fila.jueves == null or fila.jueves.isEmpty() ? 'empty-slot' : ''}">
+            Sociales
+        </td>
+
+
+
+        <td th:text="${fila.viernes != null and !fila.viernes.isEmpty() ? fila.viernes : '—'}"
+            th:classappend="${fila.viernes == null or fila.viernes.isEmpty() ? 'empty-slot' : ''}">
+            Educación Física
+        </td>
+
+    </tr>
+
+
+
+
+    <tr th:if="${filas == null or filas.isEmpty()}">
+
+        <td colspan="6"
+            style="padding: 25px; text-align: center; color: #6b7280;">
+
+            No hay horarios disponibles para mostrar.
+
+        </td>
+
+    </tr>
+
+    </tbody>
+
+</table>
+
+
+
+
+<div class="legend">
+
+    <table class="legend-table">
+
+        <tr>
+
+            <td>
+                <span class="legend-dot"></span>
+            </td>
+
+            <td>
+                Horario académico generado por EduPlanner
+            </td>
+
+        </tr>
+
+    </table>
+
+</div>
+
+
+
+
+<div class="footer">
+
+    <table class="footer-table">
+
+        <tr>
+
+            <td class="footer-left">
+                EduPlanner — Gestión académica
+            </td>
+
+            <td class="footer-right"
+                th:text="${'© ' + anio}">
+                © 2026
+            </td>
+
+        </tr>
+
+    </table>
+
+</div>
+
+</body>
+
+</html>

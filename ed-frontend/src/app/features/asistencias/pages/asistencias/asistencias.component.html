@@ -1,0 +1,1098 @@
+<div class="asistencia-container">
+
+  <div class="page-header">
+    <div class="page-header-texto">
+      <h1>Asistencia</h1>
+      <p>Estadísticas y control de asistencia por curso</p>
+    </div>
+
+    <button
+      type="button"
+      class="btn-descargar-historial"
+      (click)="abrirPanelDescarga()"
+    >
+      <span class="btn-descargar-historial-icono">⬇</span>
+      {{ esEstudiante ? 'Descargar mi asistencia' : 'Descargar historial' }}
+    </button>
+  </div>
+
+  <div class="loading" *ngIf="cargandoBase">
+    Cargando información base...
+  </div>
+
+  <div class="error" *ngIf="errorBase && !cargandoBase">
+    {{ errorBase }}
+  </div>
+
+  <ng-container *ngIf="!cargandoBase && !errorBase">
+
+    <div class="tabs">
+
+      <button
+        type="button"
+        class="tab"
+        *ngIf="puedeTomarAsistencia"
+        [class.active]="tabActiva === 'tomar'"
+        (click)="cambiarTab('tomar')"
+      >
+        Tomar asistencia
+      </button>
+
+      <button
+        type="button"
+        class="tab"
+        [class.active]="tabActiva === 'resumen'"
+        (click)="cambiarTab('resumen')"
+      >
+        Resumen
+      </button>
+
+      <button
+        type="button"
+        class="tab"
+        *ngIf="!esEstudiante"
+        [class.active]="tabActiva === 'historial'"
+        (click)="cambiarTab('historial')"
+      >
+        Historial
+      </button>
+
+      <button
+        type="button"
+        class="tab"
+        [class.active]="tabActiva === 'listado'"
+        (click)="cambiarTab('listado')"
+      >
+        Listado
+      </button>
+
+      <button
+        type="button"
+        class="tab"
+        [class.active]="tabActiva === 'conflictos'"
+        (click)="cambiarTab('conflictos')"
+      >
+        Justificaciones
+      </button>
+
+    </div>
+
+    <ng-container [ngSwitch]="tabActiva">
+
+      <ng-container *ngSwitchCase="'tomar'">
+
+        <div class="filtros-bar">
+
+          <label>
+            Curso
+            <select
+              [(ngModel)]="tomaCurso"
+              (ngModelChange)="cargarToma()"
+            >
+              <option [ngValue]="null">
+                Selecciona un curso
+              </option>
+              <option
+                *ngFor="let c of cursos"
+                [ngValue]="c.idCourse"
+              >
+                {{ c.name }}
+              </option>
+            </select>
+          </label>
+
+          <label>
+            Fecha
+            <input
+              type="date"
+              [(ngModel)]="tomaFecha"
+              (change)="cargarToma()"
+            >
+          </label>
+
+        </div>
+
+        <div class="loading" *ngIf="cargandoToma">
+          Cargando estudiantes del curso...
+        </div>
+
+        <div class="error" *ngIf="errorToma && !cargandoToma">
+          {{ errorToma }}
+        </div>
+
+        <ng-container *ngIf="!cargandoToma && !errorToma">
+
+          <div class="sin-datos" *ngIf="tomaCurso === null">
+            Selecciona un curso y una fecha para tomar asistencia.
+          </div>
+
+          <div class="sin-datos" *ngIf="tomaCurso !== null && !tomaFilas.length">
+            Este curso no tiene estudiantes matriculados.
+          </div>
+
+          <div class="tabla-toma" *ngIf="tomaCurso !== null && tomaFilas.length">
+
+            <div class="toma-fila" *ngFor="let fila of tomaFilas">
+
+              <span class="toma-nombre">
+                {{ fila.nombre }}
+              </span>
+
+              <div class="toma-acciones">
+
+                <button
+                  type="button"
+                  class="toma-btn toma-presente"
+                  [class.seleccionado]="fila.estado === 'PRESENT'"
+                  (click)="marcarEstado(fila, 'PRESENT')"
+                  title="Presente"
+                >
+                  ✓
+                </button>
+
+                <button
+                  type="button"
+                  class="toma-btn toma-falta"
+                  [class.seleccionado]="fila.estado === 'ABSENT'"
+                  (click)="marcarEstado(fila, 'ABSENT')"
+                  title="Falta"
+                >
+                  ✕
+                </button>
+
+                <button
+                  type="button"
+                  class="toma-btn toma-tardanza"
+                  [class.seleccionado]="fila.estado === 'LATE'"
+                  (click)="marcarEstado(fila, 'LATE')"
+                  title="Tardanza"
+                >
+                  T
+                </button>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <div class="toma-guardar-bar" *ngIf="tomaCurso !== null && tomaFilas.length">
+
+            <span class="error" *ngIf="errorGuardarToma">
+              {{ errorGuardarToma }}
+            </span>
+
+            <span class="toma-exito" *ngIf="exitoGuardarToma">
+              Asistencia guardada correctamente.
+            </span>
+
+            <button
+              type="button"
+              class="btn-guardar-toma"
+              [disabled]="guardandoToma"
+              (click)="guardarToma()"
+            >
+              {{ guardandoToma ? 'Guardando...' : 'Guardar asistencia' }}
+            </button>
+
+          </div>
+
+        </ng-container>
+
+      </ng-container>
+
+      <ng-container *ngSwitchCase="'resumen'">
+
+        <ng-container *ngIf="!esEstudiante; else resumenPersonalTpl">
+
+          <div class="filtros-bar">
+
+            <label>
+              Curso
+              <select
+                [(ngModel)]="filtroSesionesCurso"
+                (ngModelChange)="buscarSesiones()"
+              >
+                <option [ngValue]="null">
+                  Todos
+                </option>
+                <option
+                  *ngFor="let c of cursos"
+                  [ngValue]="c.idCourse"
+                >
+                  {{ c.name }}
+                </option>
+              </select>
+            </label>
+
+            <label>
+              Desde
+              <input
+                type="date"
+                [(ngModel)]="fechaInicioSesiones"
+                (change)="buscarSesiones()"
+              >
+            </label>
+
+            <label>
+              Hasta
+              <input
+                type="date"
+                [(ngModel)]="fechaFinSesiones"
+                (change)="buscarSesiones()"
+              >
+            </label>
+
+            <label class="filtro-busqueda">
+              Buscar
+              <input
+                type="text"
+                placeholder="Curso o docente..."
+                [(ngModel)]="busquedaSesiones"
+              >
+            </label>
+
+          </div>
+
+          <div class="loading" *ngIf="cargandoSesiones">
+            Cargando sesiones...
+          </div>
+
+          <div class="error" *ngIf="errorSesiones && !cargandoSesiones">
+            {{ errorSesiones }}
+          </div>
+
+          <div class="tabla-wrap" *ngIf="!cargandoSesiones && !errorSesiones">
+
+            <table class="tabla" *ngIf="sesionesFiltradas.length; else sinSesiones">
+
+              <thead>
+                <tr>
+                  <th>Curso</th>
+                  <th>Docente</th>
+                  <th>Fecha</th>
+                  <th>Presentes</th>
+                  <th>Ausentes</th>
+                  <th>Tardanzas</th>
+                  <th></th>
+                </tr>
+              </thead>
+
+              <tbody>
+
+                <ng-container *ngFor="let grupo of sesionesAgrupadas">
+
+                  <tr class="fila-grupo">
+                    <td colspan="7">
+                      {{ grupo.etiqueta }} · {{ grupo.items.length }} curso(s)
+                    </td>
+                  </tr>
+
+                  <tr *ngFor="let sesion of grupo.items">
+
+                    <td>{{ sesion.nombreCurso }}</td>
+                    <td>{{ sesion.docente }}</td>
+                    <td>{{ sesion.fecha }}</td>
+                    <td>{{ sesion.presentes }}</td>
+                    <td>{{ sesion.ausentes }}</td>
+                    <td>{{ sesion.tardanzas }}</td>
+
+                    <td>
+                      <button
+                        type="button"
+                        class="btn-link"
+                        (click)="verSesion(sesion)"
+                      >
+                        Ver
+                      </button>
+                    </td>
+
+                  </tr>
+
+                </ng-container>
+
+              </tbody>
+
+            </table>
+
+            <ng-template #sinSesiones>
+              <div class="sin-datos">
+                No hay sesiones registradas en este periodo.
+              </div>
+            </ng-template>
+
+          </div>
+
+        </ng-container>
+
+        <ng-template #resumenPersonalTpl>
+
+          <div class="section-heading">
+            <div>
+              <span class="eyebrow">MI ASISTENCIA</span>
+              <h2>Resumen personal</h2>
+              <p>Consulta tu asistencia y revisa cada registro por día.</p>
+            </div>
+            <div class="heading-badge" *ngIf="idCursoEstudiante !== null">
+              <span>Curso</span>
+              <strong>{{ nombreCurso(idCursoEstudiante) || 'Mi curso' }}</strong>
+            </div>
+          </div>
+
+          <div class="filtros-card filtros-personales">
+            <div class="filtro-titulo">
+              <span class="filtro-icono">◷</span>
+              <div><strong>Periodo</strong><span>Selecciona el rango que quieres revisar</span></div>
+            </div>
+            <label>Desde<input type="date" [(ngModel)]="fechaInicioSesiones" (change)="buscarMiResumen()"></label>
+            <label>Hasta<input type="date" [(ngModel)]="fechaFinSesiones" (change)="buscarMiResumen()"></label>
+            <button type="button" class="btn-secundario" (click)="buscarMiResumen()" [disabled]="cargandoMiResumen">
+              {{ cargandoMiResumen ? 'Actualizando...' : 'Actualizar' }}
+            </button>
+          </div>
+
+          <div class="loading-card" *ngIf="cargandoMiResumen">
+            <span class="spinner"></span>
+            <div><strong>Cargando tu asistencia</strong><span>Estamos actualizando tus registros.</span></div>
+          </div>
+
+          <div class="error-card" *ngIf="errorMiResumen && !cargandoMiResumen">{{ errorMiResumen }}</div>
+
+          <ng-container *ngIf="!cargandoMiResumen && !errorMiResumen">
+            <div class="personal-stats" *ngIf="miResumenPersonal as r">
+              <article class="stat-card stat-principal">
+                <div class="stat-ring" [style.--porcentaje]="r.attendancePercentage + '%'">
+                  <div><strong>{{ r.attendancePercentage }}%</strong><span>asistencia</span></div>
+                </div>
+                <div class="stat-copy"><span class="stat-kicker">TOTAL DEL PERIODO</span><h3>Tu asistencia</h3><p>{{ r.totalRecords }} registro{{ r.totalRecords === 1 ? '' : 's' }} consultado{{ r.totalRecords === 1 ? '' : 's' }}</p></div>
+              </article>
+              <article class="stat-card stat-present"><span class="stat-icon">✓</span><div><strong>{{ r.presentCount }}</strong><span>Presentes</span></div></article>
+              <article class="stat-card stat-late"><span class="stat-icon">T</span><div><strong>{{ r.lateCount }}</strong><span>Tardanzas</span></div></article>
+              <article class="stat-card stat-absent"><span class="stat-icon">!</span><div><strong>{{ r.unjustifiedAbsenceCount }}</strong><span>Faltas sin justificar</span></div></article>
+            </div>
+
+            <div class="timeline-card">
+              <div class="timeline-header"><div><span class="eyebrow">DETALLE</span><h3>Historial por día</h3></div><span class="records-count">{{ misRegistros.length }} registros</span></div>
+              <div class="timeline-empty" *ngIf="!misRegistros.length"><span class="empty-icon">✓</span><strong>No hay asistencias registradas</strong><span>No existen registros dentro del periodo seleccionado.</span></div>
+              <div class="timeline" *ngIf="misRegistros.length">
+                <section class="timeline-group" *ngFor="let grupo of misRegistrosAgrupados">
+                  <div class="timeline-date"><span class="date-dot"></span><div><strong>{{ grupo.etiqueta }}</strong><span>{{ formatoFechaCorta(grupo.fecha) }}</span></div></div>
+                  <div class="timeline-items">
+                    <article class="attendance-item" *ngFor="let registro of grupo.items">
+                      <div class="attendance-item-main"><span class="status-mark" [class]="claseEstado(registro.attendanceStatus)">{{ registro.attendanceStatus === 'PRESENT' ? '✓' : registro.attendanceStatus === 'ABSENT' ? '!' : '•' }}</span><div><strong>{{ etiquetaEstado(registro.attendanceStatus) }}</strong><span>{{ nombreCurso(registro.idCourse) }}</span></div></div>
+                      <span class="badge" [class]="claseJustificacion(registro.justificationStatus || 'NONE')">{{ etiquetaJustificacion(registro.justificationStatus || 'NONE') }}</span>
+                    </article>
+                  </div>
+                </section>
+              </div>
+            </div>
+          </ng-container>
+        </ng-template>
+
+      </ng-container>
+
+      <ng-container *ngSwitchCase="'historial'">
+        <div class="section-heading historial-heading">
+          <div><span class="eyebrow">ANÁLISIS</span><h2>{{ esEstudiante ? 'Mi historial de asistencia' : 'Historial de asistencia' }}</h2><p>{{ esEstudiante ? 'Visualiza tu comportamiento de asistencia durante el periodo seleccionado.' : 'Consulta el comportamiento de asistencia de los cursos.' }}</p></div>
+          <div class="heading-badge" *ngIf="esEstudiante && idCursoEstudiante !== null"><span>Curso</span><strong>{{ nombreCurso(idCursoEstudiante) || 'Mi curso' }}</strong></div>
+        </div>
+        <div class="filtros-card" *ngIf="!cargandoHistorialGrafico">
+          <div class="filtro-titulo"><span class="filtro-icono">◷</span><div><strong>Periodo</strong><span>Actualiza las estadísticas de asistencia</span></div></div>
+          <label>Desde<input type="date" [(ngModel)]="fechaInicioHistorial" (change)="cargarGraficoHistorial()"></label>
+          <label>Hasta<input type="date" [(ngModel)]="fechaFinHistorial" (change)="cargarGraficoHistorial()"></label>
+          <button type="button" class="btn-secundario" (click)="cargarGraficoHistorial()" [disabled]="cargandoHistorialGrafico">Actualizar</button>
+        </div>
+
+        <div class="loading" *ngIf="cargandoHistorialGrafico">
+          Calculando historial de asistencia...
+        </div>
+
+        <div class="error" *ngIf="errorHistorialGrafico && !cargandoHistorialGrafico">
+          {{ errorHistorialGrafico }}
+        </div>
+
+        <div class="resumen-grid" *ngIf="!cargandoHistorialGrafico && !errorHistorialGrafico">
+
+          <section class="panel panel-global">
+
+            <h3>Global</h3>
+
+            <div class="barras-scroll" *ngIf="barras.length > 0; else sinBarras">
+
+              <div
+                class="barra-item"
+                *ngFor="let barra of barras; let i = index"
+                (click)="seleccionarCurso(resumenPorCurso[i].idCourse)"
+              >
+
+                <div class="barra-pista">
+                  <div
+                    class="barra-relleno"
+                    [style.background]="barra.color"
+                    [style.height.%]="barra.porcentaje"
+                  ></div>
+                </div>
+
+                <span class="barra-punto" [style.background]="barra.color"></span>
+                <span class="barra-porcentaje">{{ barra.porcentaje }}%</span>
+                <span class="barra-nombre">{{ barra.nombre }}</span>
+
+              </div>
+
+            </div>
+
+            <ng-template #sinBarras>
+              <div class="sin-datos">
+                No hay cursos con registros de asistencia en este periodo.
+              </div>
+            </ng-template>
+
+          </section>
+
+          <section class="panel panel-total">
+
+            <h3>Porcentaje Total</h3>
+
+            <svg class="dona dona-grande" viewBox="0 0 110 110">
+
+              <circle
+                class="dona-fondo"
+                cx="55"
+                cy="55"
+                [attr.r]="radioDonaGrande"
+              ></circle>
+
+              <circle
+                class="dona-progreso"
+                cx="55"
+                cy="55"
+                [attr.r]="radioDonaGrande"
+                stroke="#8e44ec"
+                [attr.stroke-dasharray]="circunferenciaGrande"
+                [attr.stroke-dashoffset]="dashOffset(porcentajeTotal, circunferenciaGrande)"
+              ></circle>
+
+            </svg>
+
+            <span class="dona-valor dona-valor-grande">
+              {{ porcentajeTotal }}%
+            </span>
+
+            <div class="mini-donas">
+
+              <div class="mini-dona-item">
+
+                <svg class="dona" viewBox="0 0 90 90">
+
+                  <circle
+                    class="dona-fondo"
+                    cx="45"
+                    cy="45"
+                    [attr.r]="radioDonaPequena"
+                  ></circle>
+
+                  <circle
+                    class="dona-progreso"
+                    cx="45"
+                    cy="45"
+                    [attr.r]="radioDonaPequena"
+                    stroke="#e0a83a"
+                    [attr.stroke-dasharray]="circunferenciaPequena"
+                    [attr.stroke-dashoffset]="dashOffset(porcentajeNoJustificadas, circunferenciaPequena)"
+                  ></circle>
+
+                </svg>
+
+                <span class="dona-valor">{{ totalTardanzas }}</span>
+                <span class="mini-dona-label">Tardanzas</span>
+
+              </div>
+
+              <div class="mini-dona-item">
+
+                <svg class="dona" viewBox="0 0 90 90">
+
+                  <circle
+                    class="dona-fondo"
+                    cx="45"
+                    cy="45"
+                    [attr.r]="radioDonaPequena"
+                  ></circle>
+
+                  <circle
+                    class="dona-progreso"
+                    cx="45"
+                    cy="45"
+                    [attr.r]="radioDonaPequena"
+                    stroke="#2bbfa0"
+                    [attr.stroke-dasharray]="circunferenciaPequena"
+                    [attr.stroke-dashoffset]="dashOffset(porcentajeJustificadas, circunferenciaPequena)"
+                  ></circle>
+
+                </svg>
+
+                <span class="dona-valor">{{ totalFaltas }}</span>
+                <span class="mini-dona-label">Faltas</span>
+
+              </div>
+
+            </div>
+
+            <button
+              type="button"
+              class="btn-secundario"
+              (click)="descargarPdfHistorial()"
+              [disabled]="idCursoSeleccionado === null"
+            >
+              Descargar PDF
+            </button>
+
+          </section>
+
+          <section class="panel panel-barras-horizontales">
+
+            <div class="barra-h-item">
+
+              <div class="barra-h-pista">
+                <div
+                  class="barra-h-relleno barra-h-justificadas"
+                  [style.width.%]="porcentajeJustificadas"
+                >
+                  <span>{{ porcentajeJustificadas }}%</span>
+                </div>
+              </div>
+
+              <span class="barra-h-label">Ausencias justificadas</span>
+
+            </div>
+
+            <div class="barra-h-item">
+
+              <div class="barra-h-pista">
+                <div
+                  class="barra-h-relleno barra-h-no-justificadas"
+                  [style.width.%]="porcentajeNoJustificadas"
+                >
+                  <span>{{ porcentajeNoJustificadas }}%</span>
+                </div>
+              </div>
+
+              <span class="barra-h-label">Ausencias no justificadas</span>
+
+            </div>
+
+          </section>
+
+        </div>
+
+      </ng-container>
+
+      <ng-container *ngSwitchCase="'listado'">
+
+        <div class="filtros-bar">
+
+          <label *ngIf="!esEstudiante">
+            Curso
+            <select
+              [(ngModel)]="filtroListadoCurso"
+              (ngModelChange)="buscarListado()"
+            >
+              <option
+                *ngFor="let c of cursos"
+                [ngValue]="c.idCourse"
+              >
+                {{ c.name }}
+              </option>
+            </select>
+          </label>
+
+          <div class="curso-fijo" *ngIf="esEstudiante">
+            <span class="picker-label">Curso</span>
+            <strong>{{ nombreCurso(filtroListadoCurso) || 'Mi curso' }}</strong>
+          </div>
+
+          <label>
+            Desde
+            <input
+              type="date"
+              [(ngModel)]="filtroListadoInicio"
+              (change)="buscarListado()"
+            >
+          </label>
+
+          <label>
+            Hasta
+            <input
+              type="date"
+              [(ngModel)]="filtroListadoFin"
+              (change)="buscarListado()"
+            >
+          </label>
+
+          <label class="filtro-busqueda" *ngIf="!esEstudiante">
+            Buscar
+            <input
+              type="text"
+              placeholder="Nombre del estudiante..."
+              [(ngModel)]="busquedaListado"
+            >
+          </label>
+
+          <button
+            type="button"
+            class="btn-secundario"
+            (click)="descargarPdfListado()"
+            [disabled]="filtroListadoCurso === null"
+          >
+            Descargar PDF
+          </button>
+
+        </div>
+
+        <div class="loading" *ngIf="cargandoListado">
+          Cargando listado...
+        </div>
+
+        <div class="error" *ngIf="errorListado && !cargandoListado">
+          {{ errorListado }}
+        </div>
+
+        <div class="tabla-wrap tabla-wrap-scroll" *ngIf="!cargandoListado && !errorListado">
+
+          <table class="tabla" *ngIf="filasListadoVisibles.length > 0; else sinListado">
+
+            <thead>
+              <tr>
+                <th>Estudiante</th>
+                <th *ngFor="let fecha of columnasListado">
+                  {{ fecha }}
+                </th>
+              </tr>
+            </thead>
+
+            <tbody>
+
+              <tr *ngFor="let fila of filasListadoPagina">
+
+                <td>
+                  {{ fila.primerNombre }}
+                  {{ fila.segundoNombre }}
+                  {{ fila.primerApellido }}
+                  {{ fila.segundoApellido }}
+                </td>
+
+                <td *ngFor="let fecha of columnasListado">
+
+                  <ng-container *ngIf="fila.porFecha.get(fecha) as registro; else sinRegistro">
+
+                    <button
+                      *ngIf="!esEstudiante"
+                      type="button"
+                      class="celda-asistencia"
+                      [class]="claseEstado(registro.attendanceStatus)"
+                      [disabled]="guardandoCelda === (fila.idStudent + '-' + fecha)"
+                      (click)="alternarCelda(fila, fecha)"
+                      [title]="etiquetaEstado(registro.attendanceStatus)"
+                    >
+                      {{ etiquetaEstado(registro.attendanceStatus) }}
+                    </button>
+
+                    <span
+                      *ngIf="esEstudiante"
+                      class="celda-asistencia celda-solo-lectura"
+                      [class]="claseEstado(registro.attendanceStatus)"
+                    >
+                      {{ etiquetaEstado(registro.attendanceStatus) }}
+                    </span>
+
+                  </ng-container>
+
+                  <ng-template #sinRegistro>
+                    <span class="celda-sin-registro">—</span>
+                  </ng-template>
+
+                </td>
+
+              </tr>
+
+            </tbody>
+
+          </table>
+
+          <app-pagination
+            *ngIf="filasListadoVisibles.length > 0"
+            [totalItems]="filasListadoVisibles.length"
+            [pageSize]="tamanoPaginaListado"
+            [currentPage]="paginaListado"
+            (pageChange)="cambiarPaginaListado($event)"
+          ></app-pagination>
+
+          <ng-template #sinListado>
+            <div class="sin-datos listado-vacio">
+              <strong>No hay registros de asistencia.</strong>
+              <span>No existen registros para el curso seleccionado en el periodo indicado.</span>
+            </div>
+          </ng-template>
+
+        </div>
+
+      </ng-container>
+
+      <ng-container *ngSwitchCase="'conflictos'">
+
+        <div class="filtros-bar">
+
+          <label *ngIf="!esEstudiante">
+            Curso
+            <select
+              [(ngModel)]="filtroExcusasCurso"
+              (ngModelChange)="buscarExcusas()"
+            >
+              <option [ngValue]="null">Todos</option>
+              <option *ngFor="let c of cursos" [ngValue]="c.idCourse">
+                {{ c.name }}
+              </option>
+            </select>
+          </label>
+
+          <div class="curso-fijo" *ngIf="esEstudiante">
+            <span class="picker-label">Curso</span>
+            <strong>{{ nombreCurso(filtroExcusasCurso) || 'Mi curso' }}</strong>
+          </div>
+
+          <label>
+            Desde
+            <input type="date" [(ngModel)]="filtroExcusasInicio" (change)="buscarExcusas()">
+          </label>
+
+          <label>
+            Hasta
+            <input type="date" [(ngModel)]="filtroExcusasFin" (change)="buscarExcusas()">
+          </label>
+
+        </div>
+
+        <div class="loading" *ngIf="cargandoExcusas">
+          Cargando información de asistencia...
+        </div>
+
+        <div class="error" *ngIf="errorExcusas && !cargandoExcusas">
+          {{ errorExcusas }}
+        </div>
+
+        <ng-container *ngIf="!cargandoExcusas && !errorExcusas">
+
+          <h3 class="subtitulo-seccion">Faltas sin justificar</h3>
+
+          <div class="error" *ngIf="errorGuardarJustificacion">
+            {{ errorGuardarJustificacion }}
+          </div>
+
+          <div class="lista-excusas" *ngIf="faltasSinJustificar.length">
+
+            <div class="excusa-card" *ngFor="let falta of faltasSinJustificar">
+
+              <div class="excusa-info">
+
+                <strong>{{ nombreEstudiante(falta.idStudent) }}</strong>
+
+                <span>
+                  {{ nombreCurso(falta.idCourse) }} · {{ falta.attendanceDate }}
+                </span>
+
+                <span class="badge" [class]="claseEstado(falta.attendanceStatus)">
+                  {{ etiquetaEstado(falta.attendanceStatus) }}
+                </span>
+
+              </div>
+
+              <div class="justificacion-form" *ngIf="!esDirectivo">
+
+                <textarea
+                  rows="2"
+                  placeholder="Escribe aquí la justificación de la falta..."
+                  [ngModel]="textoJustificacionDe(falta.idAttendance)"
+                  (ngModelChange)="actualizarTextoJustificacion(falta.idAttendance, $event)"
+                ></textarea>
+
+                <button
+                  type="button"
+                  class="btn-guardar-justificacion"
+                  [disabled]="!textoJustificacionDe(falta.idAttendance).trim() || guardandoJustificacionId === falta.idAttendance"
+                  (click)="guardarJustificacion(falta)"
+                >
+                  {{ guardandoJustificacionId === falta.idAttendance ? 'Guardando...' : 'Guardar justificación' }}
+                </button>
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <div class="sin-datos" *ngIf="!faltasSinJustificar.length">
+            No hay faltas sin justificar en este periodo.
+          </div>
+
+          <h3 class="subtitulo-seccion">Justificaciones registradas</h3>
+
+        </ng-container>
+
+        <div class="lista-excusas" *ngIf="!cargandoExcusas && !errorExcusas">
+
+          <div class="excusa-card" *ngFor="let excusa of excusas">
+
+            <div class="excusa-info">
+
+              <strong>{{ nombreEstudiante(excusa.idStudent) }}</strong>
+
+              <span>
+                {{ nombreCurso(excusa.idCourse) }} · {{ excusa.attendanceDate }}
+              </span>
+
+              <span class="badge" [class]="claseEstado(excusa.attendanceStatus)">
+                {{ etiquetaEstado(excusa.attendanceStatus) }}
+              </span>
+
+              <span class="badge" [class]="claseJustificacion(excusa.justificationStatus || 'NONE')">
+                {{ etiquetaJustificacion(excusa.justificationStatus || 'NONE') }}
+              </span>
+
+              <p *ngIf="excusa.justificationText" class="excusa-texto">
+                {{ excusa.justificationText }}
+              </p>
+
+            </div>
+
+            <div class="excusa-acciones" *ngIf="!esEstudiante && !esDirectivo && excusa.justificationStatus === 'PENDING'">
+
+              <button
+                type="button"
+                class="btn-aprobar"
+                [disabled]="revisandoId === excusa.idAttendance"
+                (click)="revisarJustificacion(excusa, true)"
+              >
+                Aprobar
+              </button>
+
+              <button
+                type="button"
+                class="btn-rechazar"
+                [disabled]="revisandoId === excusa.idAttendance"
+                (click)="revisarJustificacion(excusa, false)"
+              >
+                Rechazar
+              </button>
+
+            </div>
+
+          </div>
+
+          <div class="sin-datos" *ngIf="!excusas.length">
+            No hay justificaciones registradas en este periodo.
+          </div>
+
+        </div>
+
+      </ng-container>
+
+    </ng-container>
+
+  </ng-container>
+
+</div>
+
+<div class="panel-descarga-overlay" *ngIf="panelDescargaAbierto" (click)="cerrarPanelDescarga()"></div>
+
+<aside class="panel-descarga" [class.abierto]="panelDescargaAbierto">
+
+  <div class="panel-descarga-header">
+    <button
+      type="button"
+      class="panel-descarga-volver"
+      (click)="cerrarPanelDescarga()"
+      aria-label="Cerrar"
+    >
+      ←
+    </button>
+    <span>Descargar el historial<br>de asistencia</span>
+  </div>
+
+  <div class="panel-descarga-body">
+
+    <div class="panel-descarga-tabs">
+      <button
+        type="button"
+        class="panel-descarga-tab"
+        [class.active]="panelDescargaTab === 'estudiante'"
+        (click)="cambiarPanelDescargaTab('estudiante')"
+      >
+        Estudiante
+      </button>
+      <button
+        type="button"
+        class="panel-descarga-tab"
+        [class.active]="panelDescargaTab === 'curso'"
+        (click)="cambiarPanelDescargaTab('curso')"
+      >
+        Curso
+      </button>
+    </div>
+
+    <div class="panel-descarga-busqueda" *ngIf="!esEstudiante">
+      <span class="panel-descarga-busqueda-icono">⌕</span>
+      <input
+        type="text"
+        [placeholder]="panelDescargaTab === 'estudiante' ? 'Buscar estudiante por nombre' : 'Buscar por grado'"
+        [(ngModel)]="panelDescargaBusqueda"
+      >
+    </div>
+
+    <div class="panel-descarga-filtro-grupo" *ngIf="!esEstudiante">
+      <span class="panel-descarga-filtro-label">Nivel</span>
+      <div class="panel-descarga-chips">
+        <button
+          type="button"
+          class="panel-descarga-chip"
+          *ngFor="let nivel of niveles"
+          [class.active]="panelDescargaNivel === nivel.idLevel"
+          (click)="seleccionarPanelDescargaNivel(nivel.idLevel)"
+        >
+          {{ nivel.name }}
+        </button>
+      </div>
+    </div>
+
+    <div class="panel-descarga-filtro-grupo" *ngIf="!esEstudiante">
+      <span class="panel-descarga-filtro-label">Grado</span>
+      <div class="panel-descarga-chips">
+        <button
+          type="button"
+          class="panel-descarga-chip"
+          [class.active]="panelDescargaGrado === 'todos'"
+          (click)="seleccionarPanelDescargaGrado('todos')"
+        >
+          Todos
+        </button>
+        <button
+          type="button"
+          class="panel-descarga-chip"
+          *ngFor="let curso of panelDescargaCursosDelNivel"
+          [class.active]="panelDescargaGrado === curso.idCourse"
+          (click)="seleccionarPanelDescargaGrado(curso.idCourse)"
+        >
+          {{ curso.name }}
+        </button>
+      </div>
+    </div>
+
+    <div class="panel-descarga-lista-header">
+      <span class="panel-descarga-lista-contador">
+        <strong>{{ panelDescargaTotalDisponible }}</strong>
+        {{ panelDescargaTab === 'estudiante'
+          ? (panelDescargaTotalDisponible === 1 ? 'estudiante' : 'estudiantes')
+          : (panelDescargaTotalDisponible === 1 ? 'curso' : 'cursos') }}
+      </span>
+      <button
+        type="button"
+        class="panel-descarga-seleccionar-todo"
+        (click)="toggleSeleccionarTodoPanel()"
+        [disabled]="panelDescargaTotalDisponible === 0"
+      >
+        {{ panelDescargaTodoSeleccionado ? 'Quitar selección' : 'Seleccionar todo' }}
+      </button>
+    </div>
+
+    <div class="panel-descarga-error" *ngIf="panelDescargaError">
+      {{ panelDescargaError }}
+    </div>
+
+    <div class="panel-descarga-lista">
+
+      <div class="panel-descarga-cargando" *ngIf="panelDescargaCargando">
+        <span class="spinner"></span>
+        Cargando...
+      </div>
+
+      <ng-container *ngIf="!panelDescargaCargando">
+
+        <ng-container *ngIf="panelDescargaTab === 'estudiante'; else listaCursosPanel">
+
+          <label
+            class="panel-descarga-item"
+            *ngFor="let est of panelDescargaEstudiantesFiltrados"
+            [class.seleccionado]="panelDescargaSeleccionEstudiantes.has(est.idStudent)"
+          >
+            <span class="panel-descarga-checkbox-wrap">
+              <input
+                type="checkbox"
+                [checked]="panelDescargaSeleccionEstudiantes.has(est.idStudent)"
+                (change)="toggleSeleccionPanelEstudiante(est.idStudent)"
+              >
+            </span>
+            <span class="panel-descarga-item-texto">
+              <span class="panel-descarga-item-nombre">{{ est.nombre }}</span>
+              <span class="panel-descarga-item-grado">{{ est.grado }}</span>
+            </span>
+            <span class="panel-descarga-item-porcentaje">{{ est.porcentaje ?? 0 }}%</span>
+          </label>
+
+          <div class="panel-descarga-vacio" *ngIf="!panelDescargaEstudiantesFiltrados.length">
+            No hay estudiantes para este filtro.
+          </div>
+
+        </ng-container>
+
+        <ng-template #listaCursosPanel>
+
+          <label
+            class="panel-descarga-item"
+            *ngFor="let curso of panelDescargaCursosFiltrados"
+            [class.seleccionado]="panelDescargaSeleccionCursos.has(curso.idCourse)"
+          >
+            <span class="panel-descarga-checkbox-wrap">
+              <input
+                type="checkbox"
+                [checked]="panelDescargaSeleccionCursos.has(curso.idCourse)"
+                (change)="toggleSeleccionPanelCurso(curso.idCourse)"
+              >
+            </span>
+            <span class="panel-descarga-item-texto">
+              <span class="panel-descarga-item-nombre">{{ curso.nombre }}</span>
+            </span>
+            <span class="panel-descarga-item-porcentaje">{{ curso.porcentaje ?? 0 }}%</span>
+          </label>
+
+          <div class="panel-descarga-vacio" *ngIf="!panelDescargaCursosFiltrados.length">
+            No hay cursos para este filtro.
+          </div>
+
+        </ng-template>
+
+      </ng-container>
+
+    </div>
+
+  </div>
+
+  <div class="panel-descarga-footer">
+
+    <span class="panel-descarga-resumen-seleccion" *ngIf="panelDescargaTotalSeleccionado > 0">
+      {{ panelDescargaTotalSeleccionado }}
+      {{ panelDescargaTab === 'estudiante'
+        ? (panelDescargaTotalSeleccionado === 1 ? 'estudiante seleccionado' : 'estudiantes seleccionados')
+        : (panelDescargaTotalSeleccionado === 1 ? 'curso seleccionado' : 'cursos seleccionados') }}
+    </span>
+
+    <button
+      type="button"
+      class="panel-descarga-generar"
+      [disabled]="panelDescargaTotalSeleccionado === 0 || panelDescargaGenerando"
+      (click)="generarReportePanel()"
+    >
+      {{ panelDescargaGenerando ? 'Generando...' : 'Generar Reporte PDF' }}
+    </button>
+
+  </div>
+
+</aside>
