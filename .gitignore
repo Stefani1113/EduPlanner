@@ -56,4 +56,6 @@ ed-ms-ia/data/history/
 
 # Archivos de python
 __pycache__/
-*.pyc
+*.pyced-ms-administracion.zip
+ed-ms-gestion-academica.zip
+ed-frontend.zip
