@@ -304,9 +304,10 @@
   background-color: var(--inst-dark);
   color: var(--inst-text);
   font-size: 13px;
-  font-weight: 600;
-  font-family: inherit;
-  padding: 10px 14px; 
+  font-weight: 600; 
+  
+  font-family: inherit; 
+  padding: 10px 14px;  
   transition: border-color 0.2s ease, box-shadow 0.2s ease,
     background-color 0.2s ease;
 }
