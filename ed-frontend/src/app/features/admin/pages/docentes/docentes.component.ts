@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { PaginationComponent } from '../../../../core/components/pagination/pagination.component';
 import {
   DocentesService,
   TeachingRequestDTO,
@@ -73,7 +74,8 @@ function formDesdeDocente(
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule
+    FormsModule,
+    PaginationComponent
   ],
   templateUrl: './docentes.component.html',
   styleUrl: './docentes.component.scss'
@@ -100,6 +102,8 @@ export class DocentesComponent implements OnInit {
 
   paginaActual = 1;
   readonly tamanoPagina = 10;
+  totalPaginas = 1;
+  totalElementos = 0;
 
   constructor(
     private docentesService: DocentesService,
@@ -108,7 +112,7 @@ export class DocentesComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.cargarDocentes();
+    this.cargarDocentes(1);
     this.cargarPermisos();
   }
 
@@ -116,6 +120,7 @@ export class DocentesComponent implements OnInit {
     this.perfilService.obtenerMiPerfil().subscribe({
       next: respuesta => {
         const rol = (respuesta.data?.roleName || '').toLowerCase();
+
         this.puedeGestionar =
           rol.includes('admin') && !rol.includes('direct');
       },
@@ -125,58 +130,49 @@ export class DocentesComponent implements OnInit {
     });
   }
 
-  private extraerLista(
-    respuesta: any
-  ): TeachingResponseDTO[] {
-    if (Array.isArray(respuesta)) {
-      return respuesta;
-    }
-
-    if (Array.isArray(respuesta?.data)) {
-      return respuesta.data;
-    }
-
-    if (Array.isArray(respuesta?.data?.data)) {
-      return respuesta.data.data;
-    }
-
-    if (Array.isArray(respuesta?.data?.content)) {
-      return respuesta.data.content;
-    }
-
-    if (Array.isArray(respuesta?.data?.items)) {
-      return respuesta.data.items;
-    }
-
-    if (Array.isArray(respuesta?.content)) {
-      return respuesta.content;
-    }
-
-    if (Array.isArray(respuesta?.items)) {
-      return respuesta.items;
-    }
-
-    return [];
-  }
-
-  cargarDocentes(): void {
+  cargarDocentes(pagina = 1): void {
     this.cargando = true;
     this.errorCarga = '';
 
-    this.docentesService.listar().subscribe({
-      next: res => {
-        const lista = this.extraerLista(res);
+    const paginaSolicitada = Math.max(1, pagina);
+    const paginaBackend = paginaSolicitada - 1;
+    const term = this.busqueda.trim();
 
-        this.docentes = lista.map(docente =>
+    this.docentesService.listar(
+      paginaBackend,
+      this.tamanoPagina,
+      term
+    ).subscribe({
+      next: respuesta => {
+        const data = respuesta?.data;
+
+        this.docentes = (data?.content ?? []).map(docente =>
           this.prepararDocente(docente)
         );
 
-        this.paginaActual = 1;
+        this.paginaActual =
+          (data?.number ?? paginaBackend) + 1;
+
+        this.totalPaginas =
+          Math.max(1, data?.totalPages ?? 1);
+
+        this.totalElementos =
+          data?.totalElements ?? this.docentes.length;
+
         this.cargando = false;
       },
+
       error: err => {
         this.cargando = false;
         this.docentes = [];
+        this.paginaActual = 1;
+        this.totalPaginas = 1;
+        this.totalElementos = 0;
+
+        if (err.status === 404 && term) {
+          this.errorCarga = '';
+          return;
+        }
 
         this.errorCarga =
           err.error?.message ??
@@ -253,119 +249,46 @@ export class DocentesComponent implements OnInit {
   }
 
   get docentesFiltrados(): TeachingResponseDTO[] {
-    const term = this.busqueda
-      .trim()
-      .toLowerCase();
-
-    if (!term) {
-      return this.docentes;
-    }
-
-    return this.docentes.filter(d =>
-      `${d.name ?? ''} ${d.surnames ?? ''}`
-        .toLowerCase()
-        .includes(term) ||
-
-      (d.email ?? '')
-        .toLowerCase()
-        .includes(term) ||
-
-      (d.position ?? '')
-        .toLowerCase()
-        .includes(term) ||
-
-      (d.professionalDegrees ?? '')
-        .toLowerCase()
-        .includes(term) ||
-
-      (d.qualificationsDesc ?? '')
-        .toLowerCase()
-        .includes(term)
-    );
-  }
-
-  get totalPaginas(): number {
-    return Math.max(
-      1,
-      Math.ceil(
-        this.docentesFiltrados.length /
-        this.tamanoPagina
-      )
-    );
+    return this.docentes;
   }
 
   get docentesPagina(): TeachingResponseDTO[] {
-    const inicio =
-      (this.paginaActual - 1) *
-      this.tamanoPagina;
+    return this.docentes;
+  }
 
-    return this.docentesFiltrados.slice(
-      inicio,
-      inicio + this.tamanoPagina
-    );
+  cambiarPagina(pagina: number): void {
+    if (
+      pagina < 1 ||
+      pagina > this.totalPaginas ||
+      pagina === this.paginaActual ||
+      this.cargando
+    ) {
+      return;
+    }
+
+    this.cargarDocentes(pagina);
   }
 
   irPaginaAnterior(): void {
-    if (this.paginaActual > 1) {
-      this.paginaActual--;
-      this.enfocarListado();
-    }
+    this.cambiarPagina(this.paginaActual - 1);
   }
 
   irPaginaSiguiente(): void {
-    if (this.paginaActual < this.totalPaginas) {
-      this.paginaActual++;
-      this.enfocarListado();
-    }
+    this.cambiarPagina(this.paginaActual + 1);
   }
 
   private enfocarListado(): void {
     setTimeout(() => {
-      document
-        .querySelector('.docentes-grid')
-        ?.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start'
-        });
+      document.querySelector('.docentes-grid')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
     });
   }
 
   buscar(): void {
-    const term = this.busqueda.trim();
-
     this.paginaActual = 1;
-
-    if (!term) {
-      this.cargarDocentes();
-      return;
-    }
-
-    this.cargando = true;
-    this.errorCarga = '';
-
-    this.docentesService.buscar(term).subscribe({
-      next: res => {
-        const lista = this.extraerLista(res);
-
-        this.docentes = lista.map(docente =>
-          this.prepararDocente(docente)
-        );
-
-        this.cargando = false;
-      },
-      error: err => {
-        this.cargando = false;
-
-        if (err.status === 404) {
-          this.docentes = [];
-        } else {
-          this.docentes = [];
-          this.errorCarga =
-            err.error?.message ??
-            'Error al buscar docentes.';
-        }
-      }
-    });
+    this.cargarDocentes(1);
   }
 
   verDocente(
@@ -450,9 +373,7 @@ export class DocentesComponent implements OnInit {
           this.docenteEnEdicion.idUser,
           this.form
         )
-      : this.docentesService.crear(
-          this.form
-        );
+      : this.docentesService.crear(this.form);
 
     const eraEdicion = !!this.docenteEnEdicion;
 
@@ -463,7 +384,7 @@ export class DocentesComponent implements OnInit {
         this.docenteEnEdicion = null;
         this.form = emptyForm();
 
-        this.cargarDocentes();
+        this.cargarDocentes(this.paginaActual);
 
         this.modalService.success(
           eraEdicion
@@ -471,6 +392,7 @@ export class DocentesComponent implements OnInit {
             : 'El docente se agregó correctamente.'
         );
       },
+
       error: err => {
         this.guardando = false;
 
@@ -515,20 +437,24 @@ export class DocentesComponent implements OnInit {
 
     this.docentesService.eliminar(id).subscribe({
       next: () => {
-        this.docentes = this.docentes.filter(
-          d => d.idUser !== id
-        );
-
-        if (
-          this.docenteSeleccionado?.idUser === id
-        ) {
+        if (this.docenteSeleccionado?.idUser === id) {
           this.cerrarPerfil();
         }
 
         this.eliminando = false;
+
+        const paginaRecargar =
+          this.paginaActual > 1 &&
+          this.docentes.length === 1
+            ? this.paginaActual - 1
+            : this.paginaActual;
+
+        this.cargarDocentes(paginaRecargar);
+
         this.mostrarConfirmacionEliminar = false;
         this.docenteParaEliminar = null;
       },
+
       error: err => {
         this.eliminando = false;
 

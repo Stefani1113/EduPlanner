@@ -31,11 +31,13 @@
 
     </div>
 
+    <!-- CONSULTA POR CURSO / DOCENTE -->
     <div
       class="query-toggle"
       *ngIf="esAdministrador || esDirectivo"
     >
 
+      <!-- POR CURSO: ADMINISTRADOR Y DIRECTIVO -->
       <button
         type="button"
         class="query-toggle-btn"
@@ -45,7 +47,9 @@
         Por curso
       </button>
 
+      <!-- POR DOCENTE: SOLO DIRECTIVO -->
       <button
+        *ngIf="esDirectivo"
         type="button"
         class="query-toggle-btn"
         [class.active]="modoConsulta === 'docente'"
@@ -58,6 +62,7 @@
 
     <div class="toolbar-bar">
 
+      <!-- SELECTOR DE CURSO -->
       <div
         class="course-picker"
         *ngIf="modoConsulta === 'curso'"
@@ -65,7 +70,9 @@
         (click)="alternarSelectorCursos()"
       >
 
-        <div class="picker-icon">▦</div>
+        <div class="picker-icon">
+          ▦
+        </div>
 
         <div class="picker-text">
 
@@ -111,11 +118,12 @@
 
       </div>
 
+      <!-- SELECTOR DE DOCENTE: SOLO DIRECTIVO -->
       <div
         class="course-picker"
         *ngIf="
-          modoConsulta === 'docente' &&
-          (esAdministrador || esDirectivo)
+          esDirectivo &&
+          modoConsulta === 'docente'
         "
         (click)="alternarSelectorDocentes()"
       >
@@ -169,6 +177,7 @@
 
       </div>
 
+      <!-- RELOJ -->
       <div class="clock-block">
 
         <span class="clock-dot"></span>
@@ -187,6 +196,7 @@
 
       </div>
 
+      <!-- PDF -->
       <button
         type="button"
         class="pdf-button"
@@ -210,6 +220,7 @@
 
   </div>
 
+  <!-- TÍTULO -->
   <div class="page-heading">
 
     <h1>
@@ -222,6 +233,7 @@
 
   </div>
 
+  <!-- ACCIONES DEL ADMINISTRADOR -->
   <div
     class="horario-actions"
     *ngIf="
@@ -268,6 +280,7 @@
 
   </div>
 
+  <!-- RESUMEN DEL HORARIO -->
   <div
     class="summary-card"
     *ngIf="vistaActual === 'horario'"
@@ -299,6 +312,7 @@
 
     <div class="summary-right">
 
+      <!-- BORRADOR SOLO ADMINISTRADOR -->
       <span
         class="draft-tag"
         *ngIf="
@@ -309,6 +323,7 @@
         Borrador sin publicar
       </span>
 
+      <!-- PUBLICADO SOLO ADMINISTRADOR -->
       <span
         class="published-tag"
         *ngIf="
@@ -333,6 +348,7 @@
 
   </div>
 
+  <!-- RESUMEN DE CONFLICTOS -->
   <div
     class="summary-card"
     *ngIf="
@@ -367,6 +383,7 @@
 
   </div>
 
+  <!-- NOTIFICACIÓN DE PUBLICACIÓN -->
   <div
     class="publication-alert"
     *ngIf="
@@ -393,8 +410,10 @@
 
   </div>
 
+  <!-- VISTA DEL HORARIO -->
   <ng-container *ngIf="vistaActual === 'horario'">
 
+    <!-- SIN HORARIO -->
     <div
       class="empty-state"
       *ngIf="
@@ -447,6 +466,7 @@
 
     </div>
 
+    <!-- GRILLA DEL HORARIO -->
     <section
       class="schedule-wrapper"
       *ngIf="
@@ -508,12 +528,14 @@
 
       </div>
 
+      <!-- FILAS -->
       <div
         class="schedule-row"
         *ngFor="let horario of horarios; let i = index"
         [class.break-row]="horario.descanso"
       >
 
+        <!-- HORA -->
         <div
           *ngIf="!horario.descanso"
           class="time-cell"
@@ -529,6 +551,7 @@
 
         </div>
 
+        <!-- DESCANSO -->
         <div
           *ngIf="horario.descanso"
           class="break-cell"
@@ -544,6 +567,7 @@
 
         </div>
 
+        <!-- LUNES -->
         <div
           *ngIf="!horario.descanso"
           class="subject-cell"
@@ -564,6 +588,7 @@
 
         </div>
 
+        <!-- MARTES -->
         <div
           *ngIf="!horario.descanso"
           class="subject-cell"
@@ -584,6 +609,7 @@
 
         </div>
 
+        <!-- MIÉRCOLES -->
         <div
           *ngIf="!horario.descanso"
           class="subject-cell"
@@ -604,6 +630,7 @@
 
         </div>
 
+        <!-- JUEVES -->
         <div
           *ngIf="!horario.descanso"
           class="subject-cell"
@@ -624,6 +651,7 @@
 
         </div>
 
+        <!-- VIERNES -->
         <div
           *ngIf="!horario.descanso"
           class="subject-cell"
@@ -650,6 +678,7 @@
 
   </ng-container>
 
+  <!-- CONFLICTOS -->
   <section
     class="conflicts-wrapper"
     *ngIf="
@@ -750,6 +779,7 @@
 
   </section>
 
+  <!-- ASISTENTE IA: SOLO ADMINISTRADOR -->
   <button
     *ngIf="esAdministrador"
     type="button"
@@ -767,6 +797,7 @@
 
 </main>
 
+<!-- CHAT IA: SOLO ADMINISTRADOR -->
 <ng-container *ngIf="esAdministrador">
 
   <div
@@ -876,5 +907,5 @@
     </div>
 
   </aside>
-
-</ng-container>
+ 
+</ng-container>    

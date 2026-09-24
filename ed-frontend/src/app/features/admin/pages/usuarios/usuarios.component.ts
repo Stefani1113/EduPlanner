@@ -8,12 +8,9 @@ import {
 
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { catchError, finalize, of } from 'rxjs';
 
-import {
-  catchError,
-  finalize,
-  of
-} from 'rxjs';
+import { PaginationComponent } from '../../../../core/components/pagination/pagination.component';
 
 import { BreadcrumbService } from '../../services/breadcrumb.service';
 
@@ -45,7 +42,6 @@ import {
 
 import { ModalService } from '../../../../core/services/modal.service';
 
-
 type Rol =
   | 'Todos'
   | 'Administrador'
@@ -61,7 +57,6 @@ type Tab =
   | 'listado'
   | 'importacion';
 
-
 const ROL_A_ID: Partial<Record<Rol, number>> = {
   Administrador: ID_ROL_ADMINISTRADOR,
   Docente: ID_ROL_DOCENTE,
@@ -69,24 +64,18 @@ const ROL_A_ID: Partial<Record<Rol, number>> = {
   Directivo: ID_ROL_DIRECTIVO
 };
 
-
-const ID_A_ROL: Record<
-  number,
-  Exclude<Rol, 'Todos'>
-> = {
+const ID_A_ROL: Record<number, Exclude<Rol, 'Todos'>> = {
   [ID_ROL_ADMINISTRADOR]: 'Administrador',
   [ID_ROL_DOCENTE]: 'Docente',
   [ID_ROL_ESTUDIANTE]: 'Estudiante',
   [ID_ROL_DIRECTIVO]: 'Directivo'
 };
 
-
 interface Curso {
   idCourse: number;
   name: string;
   status: boolean;
 }
-
 
 interface Usuario {
   id: number;
@@ -101,35 +90,30 @@ interface Usuario {
   detalle: UserResponseDTO;
 }
 
-
 @Component({
   selector: 'app-usuarios',
   standalone: true,
-
   imports: [
     CommonModule,
     FormsModule,
+
+    // IMPORTANTE:
+    // Permite utilizar <app-pagination> en usuarios.component.html
+    PaginationComponent,
+
     RegistroUsuarioModalComponent,
     EditarUsuarioModalComponent,
     ImportacionComponent
   ],
-
   templateUrl: './usuarios.component.html',
   styleUrl: './usuarios.component.scss'
 })
-export class UsuariosComponent
-  implements OnInit, OnDestroy {
+export class UsuariosComponent implements OnInit, OnDestroy {
 
-  @ViewChild(
-    RegistroUsuarioModalComponent
-  )
+  @ViewChild(RegistroUsuarioModalComponent)
   modalRegistro?: RegistroUsuarioModalComponent;
 
-
-  tabs: {
-    key: Tab;
-    label: string;
-  }[] = [
+  tabs: { key: Tab; label: string }[] = [
     {
       key: 'listado',
       label: 'Listado'
@@ -140,9 +124,7 @@ export class UsuariosComponent
     }
   ];
 
-
   activeTab: Tab = 'listado';
-
 
   roles: Rol[] = [
     'Todos',
@@ -152,17 +134,13 @@ export class UsuariosComponent
     'Estudiante'
   ];
 
-
   rolSeleccionado: Rol = 'Todos';
 
-
-  gradoSeleccionado =
-    'Todos los cursos';
+  gradoSeleccionado = 'Todos los cursos';
 
   grados: string[] = [
     'Todos los cursos'
   ];
-
 
   cursos: Curso[] = [];
 
@@ -174,26 +152,40 @@ export class UsuariosComponent
 
   mostrarMenuRegistrar = false;
 
-
   tipoRegistro: TipoRegistro | null = null;
 
   guardandoUsuario = false;
 
+  usuarioEnEdicion: UserResponseDTO | null = null;
 
-  usuarioEnEdicion:
-    UserResponseDTO | null = null;
-
-  tipoEdicion:
-    TipoEdicion | null = null;
+  tipoEdicion: TipoEdicion | null = null;
 
   guardandoEdicion = false;
 
   cargandoEdicion = false;
 
-
   busqueda = '';
 
   usuarios: Usuario[] = [];
+
+  
+
+  paginaActual = 1;
+
+  /**
+   * Cantidad de usuarios solicitados al backend por página.
+   */
+  readonly tamanoPagina = 10;
+
+  /**
+   * Total de páginas informado por el backend.
+   */
+  totalPaginas = 1;
+
+  /**
+   * Total de usuarios informado por el backend.
+   */
+  totalUsuarios = 0;
 
   cargando = false;
 
@@ -201,48 +193,16 @@ export class UsuariosComponent
 
   errorCarga = '';
 
-
-  cambiandoEstado =
-    new Set<number>();
-
-
-  /*
-   * PAGINACIÓN REAL
-   *
-   * paginaActual empieza en 1 para
-   * mostrarla normalmente en pantalla.
-   *
-   * Spring normalmente trabaja desde 0,
-   * por eso al consultar al backend
-   * se usa paginaActual - 1.
-   */
-  paginaActual = 1;
-
-  readonly tamanoPagina = 10;
-
-  totalUsuarios = 0;
-
+  cambiandoEstado = new Set<number>();
 
   constructor(
-    private breadcrumbService:
-      BreadcrumbService,
-
-    private usuariosService:
-      UsuariosService,
-
-    private modalService:
-      ModalService
+    private breadcrumbService: BreadcrumbService,
+    private usuariosService: UsuariosService,
+    private modalService: ModalService
   ) {}
 
-
-  @HostListener(
-    'document:click',
-    ['$event']
-  )
-  onDocumentClick(
-    event: MouseEvent
-  ): void {
-
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
     if (
       !this.mostrarFiltroRol &&
       !this.mostrarMenuRegistrar
@@ -250,56 +210,36 @@ export class UsuariosComponent
       return;
     }
 
-    const target =
-      event.target as HTMLElement;
+    const target = event.target as HTMLElement;
 
-    if (
-      !target.closest('.role-box')
-    ) {
-      this.mostrarFiltroRol =
-        false;
+    if (!target.closest('.role-box')) {
+      this.mostrarFiltroRol = false;
     }
 
-    if (
-      !target.closest('.registrar-box')
-    ) {
-      this.mostrarMenuRegistrar =
-        false;
+    if (!target.closest('.registrar-box')) {
+      this.mostrarMenuRegistrar = false;
     }
   }
 
-
   ngOnInit(): void {
-
     this.actualizarBreadcrumb();
 
     this.cargarCursos();
   }
 
-
   ngOnDestroy(): void {
-
-    this.breadcrumbService
-      .setExtra(null);
+    this.breadcrumbService.setExtra(null);
   }
 
 
-  /*
-   * ==============================
-   * CURSOS
-   * ==============================
-   */
 
   private cargarCursos(): void {
-
     this.cargandoCursos = true;
 
     this.usuariosService
       .listarCursos()
-
       .pipe(
         catchError(err => {
-
           console.error(
             'Error cargando cursos:',
             err
@@ -312,413 +252,278 @@ export class UsuariosComponent
         }),
 
         finalize(() => {
-
-          this.cargandoCursos =
-            false;
+          this.cargandoCursos = false;
         })
       )
-
       .subscribe(res => {
+        this.todosLosCursos = res.data ?? [];
 
-        const data: any =
-          res?.data;
-
-
-        /*
-         * El backend puede devolver:
-         *
-         * data: [...]
-         *
-         * o:
-         *
-         * data: {
-         *   content: [...]
-         * }
-         */
-
-        const cursos: Curso[] =
-          Array.isArray(data)
-            ? data
-            : Array.isArray(data?.content)
-              ? data.content
-              : [];
-
-
-        this.todosLosCursos =
-          cursos;
-
-
-        this.cursos =
-          cursos
-            .filter(
-              (curso: Curso) =>
-                curso.status
+        this.cursos = (res.data ?? [])
+          .filter(curso => curso.status)
+          .sort((a, b) =>
+            a.name.localeCompare(
+              b.name,
+              'es'
             )
-            .sort(
-              (
-                a: Curso,
-                b: Curso
-              ) =>
-                a.name.localeCompare(
-                  b.name,
-                  'es'
-                )
-            );
-
+          );
 
         this.grados = [
           'Todos los cursos',
           ...this.cursos.map(
-            (curso: Curso) =>
-              curso.name
+            curso => curso.name
           )
         ];
 
-
-        this.cargarUsuarios();
+        this.cargarUsuarios(1);
       });
   }
 
 
-  /*
-   * ==============================
-   * USUARIOS
-   * ==============================
-   */
 
-  private cargarUsuarios(): void {
-
+  private cargarUsuarios(pagina = 1): void {
     this.cargando = true;
-
     this.errorCarga = '';
 
-
-    /*
-     * Angular muestra páginas desde 1.
+    /**
+     * El componente trabaja con páginas 1, 2, 3...
      *
-     * Spring recibe páginas desde 0.
-     */
-    const paginaBackend =
-      this.paginaActual - 1;
-
-    const tamano =
-      this.tamanoPagina;
-
-
-    /*
-     * Procesa cualquier respuesta:
+     * Spring Page trabaja con índices 0, 1, 2...
      *
-     * Array
+     * Por eso:
      *
-     * o Spring PageResponse
+     * Angular 1 -> Backend 0
+     * Angular 2 -> Backend 1
+     * Angular 3 -> Backend 2
      */
-    const procesarRespuesta =
-      (res: any): void => {
+    const paginaBackend = Math.max(
+      0,
+      pagina - 1
+    );
 
-        const data: any =
-          res?.data;
+    const termino = this.busqueda.trim();
 
-
-        /*
-         * IMPORTANTE:
-         *
-         * Convertimos siempre a array
-         * antes de usar .map()
-         */
-        const usuariosData:
-          UserResponseDTO[] =
-          Array.isArray(data)
-            ? data
-            : Array.isArray(
-                data?.content
-              )
-              ? data.content
-              : [];
+    let peticion;
 
 
-        this.usuarios =
-          usuariosData.map(
-            (
-              usuario: UserResponseDTO
-            ) =>
-              this.mapearUsuario(
-                usuario
-              )
-          );
-
-
-        /*
-         * Si backend devuelve Page,
-         * utilizamos su total real.
-         */
-        if (
-          data &&
-          !Array.isArray(data)
-        ) {
-
-          this.totalUsuarios =
-            Number(
-              data.totalElements ?? 0
-            );
-
-
-          const totalPages =
-            Number(
-              data.totalPages ?? 0
-            );
-
-
-          /*
-           * Si la página actual
-           * ya no existe, volvemos
-           * a la última disponible.
-           */
-          if (
-            totalPages > 0 &&
-            this.paginaActual >
-              totalPages
-          ) {
-
-            this.paginaActual =
-              totalPages;
-
-            this.cargarUsuarios();
-
-            return;
-          }
-
-
-          if (
-            totalPages === 0
-          ) {
-
-            this.paginaActual = 1;
-          }
-
-        } else {
-
-          /*
-           * Compatibilidad con backend
-           * que todavía devuelva array.
-           */
-          this.totalUsuarios =
-            usuariosData.length;
-        }
-      };
-
-
-    const procesarError =
-      (
-        err: any,
-        mensaje: string
-      ): void => {
-
-        console.error(
-          'Error cargando usuarios:',
-          err
-        );
-
-
-        this.errorCarga =
-          this.obtenerMensajeError(
-            err,
-            mensaje
-          );
-
-
-        this.usuarios = [];
-
-        this.totalUsuarios = 0;
-      };
-
-
-    /*
-     * ============================
-     * TODOS
-     * ============================
-     */
 
     if (
-      this.rolSeleccionado ===
-      'Todos'
+      termino &&
+      this.rolSeleccionado === 'Todos'
     ) {
+      peticion =
+        this.usuariosService.buscarPorNombre(
+          termino,
+          paginaBackend,
+          this.tamanoPagina
+        );
+    }
 
-      this.usuariosService
-        .listar(
+
+
+    else if (
+      this.rolSeleccionado === 'Todos'
+    ) {
+      peticion =
+        this.usuariosService.listar(
           undefined,
           paginaBackend,
-          tamano
-        )
+          this.tamanoPagina
+        );
+    }
 
-        .pipe(
 
-          catchError(err => {
 
-            procesarError(
+    else if (
+      this.rolSeleccionado === 'Estudiante' &&
+      this.gradoSeleccionado !==
+        'Todos los cursos'
+    ) {
+      const idCurso =
+        this.obtenerIdCursoSeleccionado();
+
+      if (idCurso === null) {
+        this.usuarios = [];
+        this.totalUsuarios = 0;
+        this.totalPaginas = 1;
+        this.paginaActual = 1;
+        this.cargando = false;
+
+        return;
+      }
+
+      peticion =
+        this.usuariosService.listarPorCurso(
+          idCurso,
+          paginaBackend,
+          this.tamanoPagina
+        );
+    }
+
+
+
+    else {
+      const idRol =
+        ROL_A_ID[this.rolSeleccionado];
+
+      if (idRol === undefined) {
+        this.usuarios = [];
+        this.totalUsuarios = 0;
+        this.totalPaginas = 1;
+        this.paginaActual = 1;
+        this.cargando = false;
+
+        return;
+      }
+
+      peticion =
+        this.usuariosService.listar(
+          idRol,
+          paginaBackend,
+          this.tamanoPagina
+        );
+    }
+
+
+
+    peticion
+      .pipe(
+        catchError(err => {
+          console.error(
+            'Error cargando usuarios:',
+            err
+          );
+
+          this.errorCarga =
+            this.obtenerMensajeError(
               err,
               'No se pudo cargar el listado de usuarios. Verifica tu conexión con el servidor.'
             );
 
-            return of(null);
-          }),
-
-          finalize(() => {
-
-            this.cargando =
-              false;
-          })
-        )
-
-        .subscribe(res => {
-
-          if (res) {
-            procesarRespuesta(res);
-          }
-        });
-
-      return;
-    }
-
-
-    /*
-     * ============================
-     * ESTUDIANTES POR CURSO
-     * ============================
-     */
-
-    if (
-      this.rolSeleccionado ===
-        'Estudiante' &&
-
-      this.gradoSeleccionado !==
-        'Todos los cursos'
-    ) {
-
-      const idCurso =
-        this.obtenerIdCursoSeleccionado();
-
-
-      if (
-        idCurso !== null
-      ) {
-
-        this.usuariosService
-          .listarPorCurso(
-            idCurso,
-            paginaBackend,
-            tamano
-          )
-
-          .pipe(
-
-            catchError(err => {
-
-              procesarError(
-                err,
-                'No se pudo cargar los estudiantes del curso.'
-              );
-
-              return of(null);
-            }),
-
-            finalize(() => {
-
-              this.cargando =
-                false;
-            })
-          )
-
-          .subscribe(res => {
-
-            if (res) {
-              procesarRespuesta(
-                res
-              );
-            }
+          return of({
+            data: {
+              content: [],
+              totalElements: 0,
+              totalPages: 1,
+              size: this.tamanoPagina,
+              number: paginaBackend,
+              numberOfElements: 0,
+              first: true,
+              last: true,
+              empty: true
+            },
+            message: ''
           });
-
-        return;
-      }
-    }
-
-
-    /*
-     * ============================
-     * USUARIOS POR ROL
-     * ============================
-     */
-
-    const idRol =
-      ROL_A_ID[
-        this.rolSeleccionado
-      ];
-
-
-    if (
-      idRol === undefined
-    ) {
-
-      this.usuarios = [];
-
-      this.totalUsuarios = 0;
-
-      this.cargando = false;
-
-      return;
-    }
-
-
-    this.usuariosService
-      .listar(
-        idRol,
-        paginaBackend,
-        tamano
-      )
-
-      .pipe(
-
-        catchError(err => {
-
-          procesarError(
-            err,
-            'No se pudo cargar el listado de usuarios. Verifica tu conexión con el servidor.'
-          );
-
-          return of(null);
         }),
 
         finalize(() => {
-
-          this.cargando =
-            false;
+          this.cargando = false;
         })
       )
-
       .subscribe(res => {
+        const page = res.data;
 
-        if (res) {
-          procesarRespuesta(res);
-        }
+        // Datos correspondientes únicamente
+        // a la página solicitada.
+        this.usuarios =
+          (page?.content ?? []).map(
+            usuario =>
+              this.mapearUsuario(usuario)
+          );
+
+        // Total real de registros del backend.
+        this.totalUsuarios =
+          page?.totalElements ??
+          this.usuarios.length;
+
+        // Total real de páginas.
+        this.totalPaginas =
+          Math.max(
+            1,
+            page?.totalPages ?? 1
+          );
+
+        /**
+         * Spring devuelve number desde 0.
+         * Angular necesita mostrar desde 1.
+         */
+        this.paginaActual =
+          (page?.number ??
+            paginaBackend) + 1;
       });
   }
 
-
-  /*
-   * ==============================
-   * CURSO SELECCIONADO
-   * ==============================
+  /**
+   * Cambia la página desde app-pagination.
    */
+  cambiarPagina(pagina: number): void {
+    if (
+      pagina < 1 ||
+      pagina > this.totalPaginas ||
+      pagina === this.paginaActual ||
+      this.cargando
+    ) {
+      return;
+    }
 
-  private obtenerIdCursoSeleccionado():
-    number | null {
+    this.cargarUsuarios(pagina);
+  }
 
+
+
+  get usuariosFiltrados(): Usuario[] {
+    const term =
+      this.busqueda
+        .trim()
+        .toLowerCase();
+
+    if (
+      !term ||
+      this.rolSeleccionado === 'Todos'
+    ) {
+      return this.usuarios;
+    }
+
+    return this.usuarios.filter(
+      usuario => {
+        const valores = [
+          usuario.nombre,
+          usuario.correo,
+          usuario.telefono,
+          usuario.detalle.document,
+          usuario.rol,
+          usuario.grado ?? '',
+          String(usuario.id)
+        ];
+
+        return valores.some(
+          valor =>
+            String(valor)
+              .toLowerCase()
+              .includes(term)
+        );
+      }
+    );
+  }
+
+  /**
+   * No se vuelve a paginar en el frontend.
+   *
+   * El backend ya entregó solamente los 10
+   * registros correspondientes a la página.
+   */
+  get usuariosPagina(): Usuario[] {
+    return this.usuariosFiltrados;
+  }
+
+
+
+  private obtenerIdCursoSeleccionado(): number | null {
     if (
       this.rolSeleccionado !==
       'Estudiante'
     ) {
       return null;
     }
-
 
     if (
       this.gradoSeleccionado ===
@@ -727,7 +532,6 @@ export class UsuariosComponent
       return null;
     }
 
-
     const curso =
       this.cursos.find(
         c =>
@@ -735,16 +539,12 @@ export class UsuariosComponent
           this.gradoSeleccionado
       );
 
-
     return curso?.idCourse ?? null;
   }
 
-
   private obtenerNombreCurso(
-    idCourse:
-      number | null | undefined
+    idCourse: number | null | undefined
   ): string | null {
-
     if (
       idCourse === null ||
       idCourse === undefined
@@ -752,14 +552,11 @@ export class UsuariosComponent
       return null;
     }
 
-
     const curso =
       this.todosLosCursos.find(
         c =>
-          c.idCourse ===
-          idCourse
+          c.idCourse === idCourse
       );
-
 
     return (
       curso?.name ??
@@ -768,38 +565,24 @@ export class UsuariosComponent
   }
 
 
-  /*
-   * ==============================
-   * MAPEAR USUARIO
-   * ==============================
-   */
 
   private mapearUsuario(
     dto: UserResponseDTO
   ): Usuario {
-
     const nombreCurso =
-      dto.idRole ===
-      ID_ROL_ESTUDIANTE
-
+      dto.idRole === ID_ROL_ESTUDIANTE
         ? this.obtenerNombreCurso(
             dto.idCourse
           )
-
         : null;
 
-
     return {
+      id: dto.idUser,
 
-      id:
-        dto.idUser,
-
-      idRole:
-        dto.idRole,
+      idRole: dto.idRole,
 
       foto:
-        dto.photoUrl ??
-        null,
+        dto.photoUrl ?? null,
 
       nombre:
         `${dto.name ?? ''} ${
@@ -813,9 +596,8 @@ export class UsuariosComponent
         dto.phoneNumber ?? '',
 
       rol:
-        ID_A_ROL[
-          dto.idRole
-        ] ?? 'Docente',
+        ID_A_ROL[dto.idRole] ??
+        'Docente',
 
       grado:
         nombreCurso,
@@ -831,166 +613,12 @@ export class UsuariosComponent
   }
 
 
-  /*
-   * ==============================
-   * BUSCADOR
-   * ==============================
-   */
-
-  get usuariosFiltrados():
-    Usuario[] {
-
-    const term =
-      this.busqueda
-        .trim()
-        .toLowerCase();
-
-
-    if (!term) {
-      return this.usuarios;
-    }
-
-
-    return this.usuarios.filter(
-      usuario => {
-
-        const valores = [
-
-          usuario.nombre,
-
-          usuario.correo,
-
-          usuario.telefono,
-
-          usuario.detalle.document,
-
-          usuario.rol,
-
-          usuario.grado ?? '',
-
-          String(usuario.id)
-        ];
-
-
-        return valores.some(
-          valor =>
-            String(valor)
-              .toLowerCase()
-              .includes(term)
-        );
-      }
-    );
-  }
-
-
-  /*
-   * ==============================
-   * PAGINACIÓN
-   * ==============================
-   *
-   * Ya NO usamos slice().
-   *
-   * El backend entrega solamente
-   * los 10 registros de la página.
-   */
-
-  get totalPaginas(): number {
-
-    return Math.max(
-      1,
-      Math.ceil(
-        this.totalUsuarios /
-        this.tamanoPagina
-      )
-    );
-  }
-
-
-  get usuariosPagina():
-    Usuario[] {
-
-    /*
-     * El backend ya entregó
-     * solamente los registros
-     * correspondientes a esta página.
-     */
-    return this.usuariosFiltrados;
-  }
-
-
-  irPaginaAnterior(): void {
-
-    if (
-      this.paginaActual <= 1 ||
-      this.cargando
-    ) {
-      return;
-    }
-
-
-    this.paginaActual--;
-
-
-    this.cargarUsuarios();
-
-
-    this.enfocarListado();
-  }
-
-
-  irPaginaSiguiente(): void {
-
-    if (
-      this.paginaActual >=
-        this.totalPaginas ||
-      this.cargando
-    ) {
-      return;
-    }
-
-
-    this.paginaActual++;
-
-
-    this.cargarUsuarios();
-
-
-    this.enfocarListado();
-  }
-
-
-  private enfocarListado(): void {
-
-    setTimeout(() => {
-
-      document
-        .querySelector(
-          '.usuarios-table'
-        )
-        ?.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start'
-        });
-
-    });
-  }
-
-
-  /*
-   * ==============================
-   * ESTADÍSTICAS
-   * ==============================
-   */
 
   get totalRol(): number {
-
-    return this.usuariosFiltrados
-      .length;
+    return this.usuariosFiltrados.length;
   }
 
-
   get activosRol(): number {
-
     return this.usuariosFiltrados
       .filter(
         usuario =>
@@ -1000,9 +628,7 @@ export class UsuariosComponent
       .length;
   }
 
-
   get inactivosRol(): number {
-
     return this.usuariosFiltrados
       .filter(
         usuario =>
@@ -1013,41 +639,48 @@ export class UsuariosComponent
   }
 
 
-  /*
-   * ==============================
-   * FILTROS
-   * ==============================
-   */
+
+  cambiarBusqueda(
+    valor: string
+  ): void {
+    this.busqueda = valor;
+
+    this.paginaActual = 1;
+
+    this.cargarUsuarios(1);
+  }
+
+  buscarUsuarios(): void {
+    this.paginaActual = 1;
+
+    this.cargarUsuarios(1);
+  }
+
+
 
   seleccionarRol(
     rol: Rol
   ): void {
-
-    this.rolSeleccionado =
-      rol;
+    this.rolSeleccionado = rol;
 
     this.gradoSeleccionado =
       'Todos los cursos';
 
     this.busqueda = '';
 
-    this.paginaActual = 1;
-
-    this.totalUsuarios = 0;
-
     this.mostrarFiltroRol =
       false;
 
     this.actualizarBreadcrumb();
 
-    this.cargarUsuarios();
-  }
+    this.paginaActual = 1;
 
+    this.cargarUsuarios(1);
+  }
 
   seleccionarGrado(
     grado: string
   ): void {
-
     this.rolSeleccionado =
       'Estudiante';
 
@@ -1056,31 +689,22 @@ export class UsuariosComponent
 
     this.busqueda = '';
 
-    this.paginaActual = 1;
-
-    this.totalUsuarios = 0;
-
     this.mostrarFiltroRol =
       false;
 
     this.actualizarBreadcrumb();
 
-    this.cargarUsuarios();
+    this.paginaActual = 1;
+
+    this.cargarUsuarios(1);
   }
 
 
-  /*
-   * ==============================
-   * TABS
-   * ==============================
-   */
 
   cambiarTab(
     tab: Tab
   ): void {
-
-    this.activeTab =
-      tab;
+    this.activeTab = tab;
 
     this.mostrarFiltroRol =
       false;
@@ -1092,16 +716,10 @@ export class UsuariosComponent
   }
 
 
-  /*
-   * ==============================
-   * ESTADO
-   * ==============================
-   */
 
   toggleEstado(
     usuario: Usuario
   ): void {
-
     if (
       this.cambiandoEstado.has(
         usuario.id
@@ -1110,23 +728,18 @@ export class UsuariosComponent
       return;
     }
 
-
     const nuevoEstado =
-      usuario.estado !==
-      'Activo';
-
+      usuario.estado !== 'Activo';
 
     this.cambiandoEstado.add(
       usuario.id
     );
-
 
     this.usuariosService
       .actualizarEstado(
         usuario.id,
         nuevoEstado
       )
-
       .pipe(
         finalize(() =>
           this.cambiandoEstado.delete(
@@ -1134,43 +747,30 @@ export class UsuariosComponent
           )
         )
       )
-
       .subscribe({
-
         next: res => {
-
           usuario.estado =
             nuevoEstado
               ? 'Activo'
               : 'Inactivo';
 
-
           usuario.detalle.status =
             nuevoEstado;
 
-
           this.modalService.success(
-
             res.message ||
-
-            (
-              nuevoEstado
-
-                ? 'El usuario fue activado exitosamente.'
-
-                : 'El usuario fue desactivado exitosamente.'
-            )
+              (
+                nuevoEstado
+                  ? 'El usuario fue activado exitosamente.'
+                  : 'El usuario fue desactivado exitosamente.'
+              )
           );
         },
 
-
         error: err => {
-
           console.error(err);
 
-
           this.modalService.error(
-
             this.obtenerMensajeError(
               err,
               'No se pudo actualizar el estado del usuario. Intenta de nuevo.'
@@ -1180,29 +780,18 @@ export class UsuariosComponent
       });
   }
 
-
   estaCambiandoEstado(
     id: number
   ): boolean {
-
-    return this.cambiandoEstado.has(
-      id
-    );
+    return this.cambiandoEstado.has(id);
   }
 
 
-  /*
-   * ==============================
-   * REGISTRO
-   * ==============================
-   */
 
   abrirRegistro(
     tipo: TipoRegistro
   ): void {
-
-    this.tipoRegistro =
-      tipo;
+    this.tipoRegistro = tipo;
 
     this.mostrarMenuRegistrar =
       false;
@@ -1211,49 +800,37 @@ export class UsuariosComponent
       false;
   }
 
-
   cerrarModal(): void {
-
     if (
       !this.guardandoUsuario
     ) {
-      this.tipoRegistro =
-        null;
+      this.tipoRegistro = null;
     }
   }
-
 
   guardarUsuario(
     evento: UsuarioRegistrado
   ): void {
-
     if (
       this.guardandoUsuario
     ) {
       return;
     }
 
-
-    this.guardandoUsuario =
-      true;
-
+    this.guardandoUsuario = true;
 
     if (
-      evento.tipo ===
-      'Docente'
+      evento.tipo === 'Docente'
     ) {
-
       this.usuariosService
         .registrarDocente(
           evento.payload
         )
-
         .subscribe({
-
           next: res =>
             this.onRegistroExitoso(
               res.message ||
-              'Docente registrado correctamente. Se envió un correo de activación.'
+                'Docente registrado correctamente. Se envió un correo de activación.'
             ),
 
           error: err =>
@@ -1263,27 +840,21 @@ export class UsuariosComponent
             )
         });
 
-
       return;
     }
 
-
     if (
-      evento.tipo ===
-      'Estudiante'
+      evento.tipo === 'Estudiante'
     ) {
-
       this.usuariosService
         .registrarEstudiante(
           evento.payload
         )
-
         .subscribe({
-
           next: res =>
             this.onRegistroExitoso(
               res.message ||
-              'Estudiante registrado correctamente. Se envió un correo de activación.'
+                'Estudiante registrado correctamente. Se envió un correo de activación.'
             ),
 
           error: err =>
@@ -1293,22 +864,18 @@ export class UsuariosComponent
             )
         });
 
-
       return;
     }
-
 
     this.usuariosService
       .registrarPersonal(
         evento.payload
       )
-
       .subscribe({
-
         next: res =>
           this.onRegistroExitoso(
             res.message ||
-            'Usuario registrado correctamente. Se envió un correo de activación.'
+              'Usuario registrado correctamente. Se envió un correo de activación.'
           ),
 
         error: err =>
@@ -1319,37 +886,31 @@ export class UsuariosComponent
       });
   }
 
-
   private onRegistroExitoso(
     mensaje: string
   ): void {
-
     this.guardandoUsuario =
       false;
 
-    this.tipoRegistro =
-      null;
+    this.tipoRegistro = null;
 
     this.paginaActual = 1;
 
-    this.cargarUsuarios();
+    this.cargarUsuarios(1);
 
     this.modalService.success(
       mensaje
     );
   }
 
-
   private onRegistroFallido(
     err: any,
     mensajePorDefecto: string
   ): void {
-
     this.guardandoUsuario =
       false;
 
     console.error(err);
-
 
     const mensajeError =
       this.obtenerMensajeError(
@@ -1357,18 +918,13 @@ export class UsuariosComponent
         mensajePorDefecto
       );
 
-
     if (
       this.modalRegistro
     ) {
-
-      this.modalRegistro
-        .onErrorGuardado(
-          mensajeError
-        );
-
+      this.modalRegistro.onErrorGuardado(
+        mensajeError
+      );
     } else {
-
       this.modalService.error(
         mensajeError
       );
@@ -1376,23 +932,16 @@ export class UsuariosComponent
   }
 
 
-  /*
-   * ==============================
-   * EDITAR
-   * ==============================
-   */
 
   editar(
     usuario: Usuario
   ): void {
-
     if (
       this.cargandoEdicion ||
       this.guardandoEdicion
     ) {
       return;
     }
-
 
     this.mostrarFiltroRol =
       false;
@@ -1403,26 +952,20 @@ export class UsuariosComponent
     this.cargandoEdicion =
       true;
 
-
     this.usuariosService
       .obtenerPorId(
         usuario.id
       )
-
       .pipe(
         finalize(() =>
           this.cargandoEdicion =
             false
         )
       )
-
       .subscribe({
-
         next: res => {
-
           this.usuarioEnEdicion =
             res.data;
-
 
           this.tipoEdicion =
             this.obtenerTipoEdicion(
@@ -1430,14 +973,10 @@ export class UsuariosComponent
             );
         },
 
-
         error: err => {
-
           console.error(err);
 
-
           this.modalService.error(
-
             this.obtenerMensajeError(
               err,
               'No se pudieron cargar los datos del usuario.'
@@ -1447,16 +986,13 @@ export class UsuariosComponent
       });
   }
 
-
   cerrarEdicion(): void {
-
     if (
       this.guardandoEdicion ||
       this.cargandoEdicion
     ) {
       return;
     }
-
 
     this.usuarioEnEdicion =
       null;
@@ -1465,88 +1001,67 @@ export class UsuariosComponent
       null;
   }
 
-
   guardarEdicion(
     evento: UsuarioEditado
   ): void {
-
     if (
       this.guardandoEdicion
     ) {
       return;
     }
 
-
     this.guardandoEdicion =
       true;
 
-
     if (
-      evento.tipo ===
-      'Docente'
+      evento.tipo === 'Docente'
     ) {
-
       this.usuariosService
         .actualizarDocente(
           evento.id,
-          evento.payload as
-            TeachingRequestDTO
+          evento.payload as TeachingRequestDTO
         )
-
         .subscribe({
-
           next: res =>
             this.finalizarEdicion(
               res.message ||
-              'Docente actualizado correctamente.'
+                'Docente actualizado correctamente.'
             ),
 
           error: err =>
             this.errorEdicion(err)
         });
 
-
       return;
     }
 
-
     if (
-      evento.tipo ===
-      'Estudiante'
+      evento.tipo === 'Estudiante'
     ) {
-
       const payloadEstudiante =
-        evento.payload as
-          UpdateStudentDTO;
-
+        evento.payload as UpdateStudentDTO;
 
       this.usuariosService
         .actualizarEstudiante(
           evento.id,
           payloadEstudiante
         )
-
         .subscribe({
-
           next: res => {
-
             const idCourseNuevo =
               payloadEstudiante.idCourse ??
               null;
-
 
             this.usuariosService
               .asignarCurso(
                 evento.id,
                 idCourseNuevo
               )
-
               .subscribe({
-
                 next: () =>
                   this.finalizarEdicion(
                     res.message ||
-                    'Estudiante actualizado correctamente.'
+                      'Estudiante actualizado correctamente.'
                   ),
 
                 error: err =>
@@ -1557,43 +1072,32 @@ export class UsuariosComponent
           },
 
           error: err =>
-            this.errorEdicion(
-              err
-            )
+            this.errorEdicion(err)
         });
-
 
       return;
     }
 
-
     this.usuariosService
       .actualizarStaff(
         evento.id,
-        evento.payload as
-          UpdateStaffDTO
+        evento.payload as UpdateStaffDTO
       )
-
       .subscribe({
-
         next: res =>
           this.finalizarEdicion(
             res.message ||
-            'Usuario actualizado correctamente.'
+              'Usuario actualizado correctamente.'
           ),
 
         error: err =>
-          this.errorEdicion(
-            err
-          )
+          this.errorEdicion(err)
       });
   }
-
 
   private finalizarEdicion(
     mensaje: string
   ): void {
-
     this.guardandoEdicion =
       false;
 
@@ -1603,26 +1107,24 @@ export class UsuariosComponent
     this.tipoEdicion =
       null;
 
-    this.cargarUsuarios();
+    this.cargarUsuarios(
+      this.paginaActual
+    );
 
     this.modalService.success(
       mensaje
     );
   }
 
-
   private errorEdicion(
     err: any
   ): void {
-
     this.guardandoEdicion =
       false;
 
     console.error(err);
 
-
     this.modalService.error(
-
       this.obtenerMensajeError(
         err,
         'No se pudieron guardar los cambios del usuario.'
@@ -1630,50 +1132,33 @@ export class UsuariosComponent
     );
   }
 
-
   private obtenerTipoEdicion(
     idRole: number
   ): TipoEdicion {
-
     return idRole ===
       ID_ROL_DOCENTE
-
       ? 'Docente'
-
       : idRole ===
           ID_ROL_ESTUDIANTE
-
         ? 'Estudiante'
-
         : 'Staff';
   }
 
 
-  /*
-   * ==============================
-   * EXPORTAR CSV
-   * ==============================
-   */
 
   exportarCSV(): void {
-
     if (
       this.exportando ||
       this.cargando ||
-      this.usuariosFiltrados
-        .length === 0
+      this.usuariosFiltrados.length === 0
     ) {
       return;
     }
 
-
     this.exportando = true;
 
-
     try {
-
       const headers = [
-
         'ID',
         'Nombre',
         'Apellidos',
@@ -1699,61 +1184,35 @@ export class UsuariosComponent
         'Estado'
       ];
 
-
       const rows =
         this.usuariosFiltrados.map(
           usuario => {
-
             const u =
               usuario.detalle;
 
-
             return [
-
               u.idUser,
-
               u.name,
-
               u.surnames,
-
               u.email,
-
               u.phoneNumber,
-
               u.document,
-
               u.documentType,
-
               u.documentIssuePlace,
-
               u.gender,
-
               u.birthdate,
-
               u.address,
-
               u.bloodType,
-
               u.disabilities,
-
               u.stratum,
-
               u.populationType,
-
               u.healthRegime,
-
               u.eps,
-
               u.position,
-
               u.professionalDegrees,
-
               u.qualificationsDesc,
-
               u.roleName,
-
               usuario.grado ?? '',
-
               u.status
                 ? 'Activo'
                 : 'Inactivo'
@@ -1761,27 +1220,19 @@ export class UsuariosComponent
           }
         );
 
-
       const csv =
         '\uFEFF' +
         [headers, ...rows]
-
-          .map(
-            row =>
-              row
-
-                .map(
-                  value =>
-                    this.escaparCSV(
-                      value
-                    )
+          .map(row =>
+            row
+              .map(value =>
+                this.escaparCSV(
+                  value
                 )
-
-                .join(',')
+              )
+              .join(',')
           )
-
           .join('\r\n');
-
 
       const blob =
         new Blob(
@@ -1792,54 +1243,36 @@ export class UsuariosComponent
           }
         );
 
-
       const url =
-        URL.createObjectURL(
-          blob
-        );
-
+        URL.createObjectURL(blob);
 
       const link =
-        document.createElement(
-          'a'
-        );
-
+        document.createElement('a');
 
       link.href = url;
-
 
       link.download =
         `usuarios_${this.normalizarNombreArchivo(
           this.rolSeleccionado
         )}_${this.fechaArchivo()}.csv`;
 
-
       document.body.appendChild(
         link
       );
-
 
       link.click();
 
       link.remove();
 
-
-      URL.revokeObjectURL(
-        url
-      );
-
+      URL.revokeObjectURL(url);
     } finally {
-
-      this.exportando =
-        false;
+      this.exportando = false;
     }
   }
-
 
   private escaparCSV(
     value: unknown
   ): string {
-
     if (
       value === null ||
       value === undefined
@@ -1847,60 +1280,42 @@ export class UsuariosComponent
       return '';
     }
 
-
     const texto =
       String(value);
-
 
     return /[",\r\n]/.test(
       texto
     )
-
       ? `"${texto.replace(
           /"/g,
           '""'
         )}"`
-
       : texto;
   }
-
 
   private normalizarNombreArchivo(
     texto: string
   ): string {
-
     return texto
-
       .normalize('NFD')
-
       .replace(
         /[\u0300-\u036f]/g,
         ''
       )
-
       .toLowerCase();
   }
 
-
   private fechaArchivo(): string {
-
     return new Date()
       .toISOString()
       .slice(0, 10);
   }
 
 
-  /*
-   * ==============================
-   * ERRORES
-   * ==============================
-   */
-
   private obtenerMensajeError(
     err: any,
     defecto: string
   ): string {
-
     return (
       err?.error?.message ||
       err?.message ||
@@ -1909,14 +1324,8 @@ export class UsuariosComponent
   }
 
 
-  /*
-   * ==============================
-   * BREADCRUMB
-   * ==============================
-   */
 
   private actualizarBreadcrumb(): void {
-
     const tabLabel =
       this.tabs.find(
         tab =>
@@ -1924,30 +1333,24 @@ export class UsuariosComponent
           this.activeTab
       )?.label ?? '';
 
-
     const partes = [
       tabLabel,
       this.rolSeleccionado
     ];
 
-
     if (
       this.rolSeleccionado ===
         'Estudiante' &&
-
       this.gradoSeleccionado !==
         'Todos los cursos'
     ) {
-
       partes.push(
         this.gradoSeleccionado
       );
     }
 
-
-    this.breadcrumbService
-      .setExtra(
-        partes.join(' · ')
-      );
+    this.breadcrumbService.setExtra(
+      partes.join(' · ')
+    );
   }
 }

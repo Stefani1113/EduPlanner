@@ -67,6 +67,35 @@ export class PaginationComponent implements OnChanges {
   }
 
   get paginas(): number[] {
-    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+    const total = this.totalPages;
+
+    if (total <= 5) {
+      return Array.from(
+        { length: total },
+        (_, i) => i + 1
+      );
+    }
+
+    let inicio = Math.max(
+      1,
+      this.currentPage - 2
+    );
+
+    let fin = Math.min(
+      total,
+      inicio + 4
+    );
+
+    if (fin - inicio < 4) {
+      inicio = Math.max(
+        1,
+        fin - 4
+      );
+    }
+
+    return Array.from(
+      { length: fin - inicio + 1 },
+      (_, i) => inicio + i
+    );
   }
 }

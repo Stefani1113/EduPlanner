@@ -66,755 +66,965 @@
   </div>
 
 
-
-  <div *ngIf="pestanaActivaDatos === 'academico'" class="panel-grupo">
-
-  <section class="datos-card">
-
-    <div class="datos-card-header">
-
-      <h3>Datos de Docentes</h3>
-
-      <button
-        type="button"
-        class="btn-agregar"
-        (click)="abrirAgregarDocente()">
-        + Agregar
-      </button>
-
-    </div>
+  <div
+    *ngIf="pestanaActivaDatos === 'academico'"
+    class="panel-grupo">
 
 
-    <div class="tabla-scroll">
 
-      <table class="tabla-datos">
+    <section class="datos-card">
 
-        <thead>
-          <tr>
-            <th>DOCENTE</th>
-            <th>ÁREA</th>
-            <th>CURSO</th>
-            <th>H/SEMANA</th>
-          </tr>
-        </thead>
+      <div class="datos-card-header">
+
+        <h3>Datos de Docentes</h3>
+
+        <button
+          type="button"
+          class="btn-agregar"
+          (click)="abrirAgregarDocente()">
+          + Agregar
+        </button>
+
+      </div>
 
 
-        <tbody>
+      <div class="tabla-scroll">
 
-          <tr
-            *ngFor="let docente of docentes"
-            (click)="seleccionarDocente(docente)"
-            [class.fila-seleccionada]="
-              docenteSeleccionado?.idAcademicLoad === docente.idAcademicLoad
-            ">
+        <table class="tabla-datos">
 
-            <td>
+          <thead>
+            <tr>
+              <th>DOCENTE</th>
+              <th>ÁREA</th>
+              <th>CURSO</th>
+              <th>H/SEMANA</th>
+            </tr>
+          </thead>
 
-              <div class="docente-nombre">
 
-                <img
-                  *ngIf="docente.photoUrl"
-                  [src]="docente.photoUrl"
-                  class="docente-avatar-foto"
-                  alt="Foto de {{ docente.nombre }}">
+          <tbody>
 
-                <div
-                  *ngIf="!docente.photoUrl"
-                  class="docente-avatar">
-                  {{ docente.nombre.charAt(0) || '?' }}
+            <tr
+              *ngFor="let docente of docentesPagina"
+              (click)="seleccionarDocente(docente)"
+              [class.fila-seleccionada]="
+                docenteSeleccionado?.idAcademicLoad === docente.idAcademicLoad
+              ">
+
+              <td>
+
+                <div class="docente-nombre">
+
+                  <img
+                    *ngIf="docente.photoUrl"
+                    [src]="docente.photoUrl"
+                    class="docente-avatar-foto"
+                    alt="Foto de {{ docente.nombre }}">
+
+                  <div
+                    *ngIf="!docente.photoUrl"
+                    class="docente-avatar">
+                    {{ docente.nombre?.charAt(0) || '?' }}
+                  </div>
+
+                  <span>
+                    {{ docente.nombre }} {{ docente.apellidos }}
+                  </span>
+
                 </div>
 
-                <span>
-                  {{ docente.nombre }} {{ docente.apellidos }}
+              </td>
+
+              <td>{{ docente.area }}</td>
+
+              <td>{{ docente.curso }}</td>
+
+              <td>{{ docente.horasSemanaArea }} H</td>
+
+            </tr>
+
+
+            <tr
+              *ngIf="
+                !cargandoDatos &&
+                docentesPagina.length === 0
+              ">
+
+              <td
+                colspan="4"
+                class="sin-registros">
+
+                No hay docentes registrados.
+
+              </td>
+
+            </tr>
+
+          </tbody>
+
+        </table>
+
+
+        <app-pagination
+          [totalItems]="totalDocentes"
+          [pageSize]="tamanoPagina"
+          [currentPage]="paginaDocentes"
+          (pageChange)="paginaDocentes = $event">
+
+        </app-pagination>
+
+      </div>
+
+
+      <div class="acciones-datos">
+
+        <button
+          type="button"
+          class="btn-editar"
+          [disabled]="!docenteSeleccionado"
+          (click)="abrirEditarDocente()">
+
+          ✎ Editar
+
+        </button>
+
+
+        <button
+          type="button"
+          class="btn-eliminar"
+          [disabled]="!docenteSeleccionado"
+          (click)="eliminarDocente()">
+
+          × Eliminar
+
+        </button>
+
+      </div>
+
+    </section>
+
+
+
+
+    <section class="datos-card">
+
+      <div class="datos-card-header">
+
+        <h3>Datos de Asignaturas</h3>
+
+        <button
+          type="button"
+          class="btn-agregar"
+          (click)="abrirAgregarAsignatura()">
+
+          + Agregar
+
+        </button>
+
+      </div>
+
+
+      <div class="tabla-scroll">
+
+        <table class="tabla-datos">
+
+          <thead>
+            <tr>
+              <th>NOMBRE</th>
+              <th>DESCRIPCIÓN</th>
+            </tr>
+          </thead>
+
+
+          <tbody>
+
+            <tr
+              *ngFor="let asignatura of asignaturasPagina"
+              (click)="seleccionarAsignatura(asignatura)"
+              [class.fila-seleccionada]="
+                asignaturaSeleccionada?.idSubject === asignatura.idSubject
+              ">
+
+              <td>
+
+                <span
+                  class="punto-color"
+                  [style.background]="asignatura.color">
                 </span>
 
-              </div>
+                {{ asignatura.nombre }}
 
-            </td>
+              </td>
 
-            <td>{{ docente.area }}</td>
+              <td>
+                {{ asignatura.descripcion || 'Sin descripción' }}
+              </td>
 
-            <td>{{ docente.curso }}</td>
+            </tr>
 
-            <td>{{ docente.horasSemanaArea }} H</td>
 
-          </tr>
+            <tr
+              *ngIf="
+                !cargandoDatos &&
+                asignaturasPagina.length === 0
+              ">
 
+              <td
+                colspan="2"
+                class="sin-registros">
 
-          <tr *ngIf="!cargandoDatos && docentes.length === 0">
+                No hay asignaturas registradas.
 
-            <td
-              colspan="4"
-              class="sin-registros">
+              </td>
 
-              No hay docentes registrados.
+            </tr>
 
-            </td>
+          </tbody>
 
-          </tr>
+        </table>
 
-        </tbody>
 
-      </table>
+        <app-pagination
+          [totalItems]="totalAsignaturas"
+          [pageSize]="tamanoPagina"
+          [currentPage]="paginaAsignaturas"
+          (pageChange)="paginaAsignaturas = $event">
 
-    </div>
+        </app-pagination>
 
+      </div>
 
-    <div class="acciones-datos">
 
-      <button
-        type="button"
-        class="btn-editar"
-        [disabled]="!docenteSeleccionado"
-        (click)="abrirEditarDocente()">
+      <div class="acciones-datos">
 
-        ✎ Editar
+        <button
+          type="button"
+          class="btn-editar"
+          [disabled]="!asignaturaSeleccionada"
+          (click)="abrirEditarAsignatura()">
 
-      </button>
+          ✎ Editar
 
+        </button>
 
-      <button
-        type="button"
-        class="btn-eliminar"
-        [disabled]="!docenteSeleccionado"
-        (click)="eliminarDocente()">
 
-        × Eliminar
+        <button
+          type="button"
+          class="btn-eliminar"
+          [disabled]="!asignaturaSeleccionada"
+          (click)="eliminarAsignatura()">
 
-      </button>
+          × Eliminar
 
-    </div>
+        </button>
 
-  </section>
+      </div>
 
+    </section>
 
-  <section class="datos-card">
 
-    <div class="datos-card-header">
 
-      <h3>Datos de Asignaturas</h3>
 
-      <button
-        type="button"
-        class="btn-agregar"
-        (click)="abrirAgregarAsignatura()">
+    <section class="datos-card">
 
-        + Agregar
+      <div class="datos-card-header">
 
-      </button>
+        <h3>Datos de Cursos</h3>
 
-    </div>
+        <button
+          type="button"
+          class="btn-agregar"
+          (click)="abrirAgregarCurso()">
 
+          + Agregar
 
-    <div class="tabla-scroll">
+        </button>
 
-      <table class="tabla-datos">
+      </div>
 
-        <thead>
-          <tr>
-            <th>NOMBRE</th>
-            <th>DESCRIPCIÓN</th>
-          </tr>
-        </thead>
 
+      <div class="tabla-scroll">
 
-        <tbody>
+        <table class="tabla-datos">
 
-          <tr
-            *ngFor="let asignatura of asignaturas"
-            (click)="seleccionarAsignatura(asignatura)"
-            [class.fila-seleccionada]="
-              asignaturaSeleccionada?.idSubject === asignatura.idSubject
-            ">
+          <thead>
+            <tr>
+              <th>CURSO</th>
+              <th>DOCENTE TITULAR</th>
+              <th>ESTUDIANTES</th>
+            </tr>
+          </thead>
 
-            <td>
 
-              <span
-                class="punto-color"
-                [style.background]="asignatura.color">
-              </span>
+          <tbody>
 
-              {{ asignatura.nombre }}
+            <tr
+              *ngFor="let curso of cursosPagina"
+              (click)="seleccionarCurso(curso)"
+              [class.fila-seleccionada]="
+                cursoSeleccionado?.idCourse === curso.idCourse
+              ">
 
-            </td>
+              <td>{{ curso.nombre }}</td>
 
-            <td>
-              {{ asignatura.descripcion || 'Sin descripción' }}
-            </td>
+              <td>
+                {{ curso.docenteTitular || 'Sin asignar' }}
+              </td>
 
-          </tr>
+              <td>{{ curso.estudiantes }}</td>
 
+            </tr>
 
-          <tr
-            *ngIf="!cargandoDatos && asignaturas.length === 0">
 
-            <td
-              colspan="2"
-              class="sin-registros">
+            <tr
+              *ngIf="
+                !cargandoDatos &&
+                cursosPagina.length === 0
+              ">
 
-              No hay asignaturas registradas.
+              <td
+                colspan="3"
+                class="sin-registros">
 
-            </td>
+                No hay cursos registrados todavía.
 
-          </tr>
+              </td>
 
-        </tbody>
+            </tr>
 
-      </table>
+          </tbody>
 
-    </div>
+        </table>
 
 
-    <div class="acciones-datos">
+        <app-pagination
+          [totalItems]="totalCursos"
+          [pageSize]="tamanoPagina"
+          [currentPage]="paginaCursos"
+          (pageChange)="paginaCursos = $event">
 
-      <button
-        type="button"
-        class="btn-editar"
-        [disabled]="!asignaturaSeleccionada"
-        (click)="abrirEditarAsignatura()">
+        </app-pagination>
 
-        ✎ Editar
+      </div>
 
-      </button>
 
+      <div class="acciones-datos">
 
-      <button
-        type="button"
-        class="btn-eliminar"
-        [disabled]="!asignaturaSeleccionada"
-        (click)="eliminarAsignatura()">
+        <button
+          type="button"
+          class="btn-editar"
+          [disabled]="!cursoSeleccionado"
+          (click)="abrirEditarCurso()">
 
-        × Eliminar
+          ✎ Editar
 
-      </button>
+        </button>
 
-    </div>
 
-  </section>
+        <button
+          type="button"
+          class="btn-eliminar"
+          [disabled]="!cursoSeleccionado"
+          (click)="eliminarCurso()">
 
+          × Eliminar
 
-  <section class="datos-card">
+        </button>
 
-    <div class="datos-card-header">
+      </div>
 
-      <h3>Datos de Cursos</h3>
-
-      <button
-        type="button"
-        class="btn-agregar"
-        (click)="abrirAgregarCurso()">
-
-        + Agregar
-
-      </button>
-
-    </div>
-
-
-    <div class="tabla-scroll">
-
-      <table class="tabla-datos">
-
-        <thead>
-          <tr>
-            <th>CURSO</th>
-            <th>DOCENTE TITULAR</th>
-            <th>ESTUDIANTES</th>
-          </tr>
-        </thead>
-
-
-        <tbody>
-
-          <tr
-            *ngFor="let curso of cursos"
-            (click)="seleccionarCurso(curso)"
-            [class.fila-seleccionada]="
-              cursoSeleccionado?.idCourse === curso.idCourse
-            ">
-
-            <td>{{ curso.nombre }}</td>
-
-            <td>
-              {{ curso.docenteTitular || 'Sin asignar' }}
-            </td>
-
-            <td>{{ curso.estudiantes }}</td>
-
-          </tr>
-
-
-          <tr
-            *ngIf="!cargandoDatos && cursos.length === 0">
-
-            <td
-              colspan="3"
-              class="sin-registros">
-
-              No hay cursos registrados todavía.
-
-            </td>
-
-          </tr>
-
-        </tbody>
-
-      </table>
-
-    </div>
-
-
-    <div class="acciones-datos">
-
-      <button
-        type="button"
-        class="btn-editar"
-        [disabled]="!cursoSeleccionado"
-        (click)="abrirEditarCurso()">
-
-        ✎ Editar
-
-      </button>
-
-
-      <button
-        type="button"
-        class="btn-eliminar"
-        [disabled]="!cursoSeleccionado"
-        (click)="eliminarCurso()">
-
-        × Eliminar
-
-      </button>
-
-    </div>
-
-  </section>
+    </section>
 
   </div>
 
 
 
-  <div *ngIf="pestanaActivaDatos === 'calendario'" class="panel-grupo">
 
-  <section class="datos-card">
+  <div
+    *ngIf="pestanaActivaDatos === 'calendario'"
+    class="panel-grupo">
 
-    <div class="datos-card-header">
 
-      <h3>Nivel Académico</h3>
 
-      <button
-        type="button"
-        class="btn-agregar"
-        (click)="abrirAgregarNivel()">
+    <section class="datos-card">
 
-        + Agregar
+      <div class="datos-card-header">
 
-      </button>
+        <h3>Nivel Académico</h3>
 
-    </div>
+        <button
+          type="button"
+          class="btn-agregar"
+          (click)="abrirAgregarNivel()">
 
+          + Agregar
 
-    <div class="tabla-scroll">
+        </button>
 
-      <table class="tabla-datos">
+      </div>
 
-        <thead>
-          <tr>
-            <th>NOMBRE</th>
-            <th>DESCRIPCIÓN</th>
-          </tr>
-        </thead>
 
-        <tbody>
+      <div class="tabla-scroll">
 
-          <tr
-            *ngFor="let nivel of niveles"
-            (click)="seleccionarNivel(nivel)"
-            [class.fila-seleccionada]="
-              nivelSeleccionado?.idLevel === nivel.idLevel
-            ">
+        <table class="tabla-datos">
 
-            <td>{{ nivel.nombre }}</td>
-            <td>{{ nivel.descripcion || 'Sin descripción' }}</td>
+          <thead>
+            <tr>
+              <th>NOMBRE</th>
+              <th>DESCRIPCIÓN</th>
+            </tr>
+          </thead>
 
-          </tr>
 
-          <tr *ngIf="!cargandoDatos && niveles.length === 0">
-            <td colspan="2" class="sin-registros">
-              No hay niveles académicos registrados.
-            </td>
-          </tr>
+          <tbody>
 
-        </tbody>
+            <tr
+              *ngFor="let nivel of nivelesPagina"
+              (click)="seleccionarNivel(nivel)"
+              [class.fila-seleccionada]="
+                nivelSeleccionado?.idLevel === nivel.idLevel
+              ">
 
-      </table>
+              <td>{{ nivel.nombre }}</td>
 
-    </div>
+              <td>
+                {{ nivel.descripcion || 'Sin descripción' }}
+              </td>
 
+            </tr>
 
-    <div class="acciones-datos">
 
-      <button
-        type="button"
-        class="btn-editar"
-        [disabled]="!nivelSeleccionado"
-        (click)="abrirEditarNivel()">
-        ✎ Editar
-      </button>
+            <tr
+              *ngIf="
+                !cargandoDatos &&
+                nivelesPagina.length === 0
+              ">
 
-      <button
-        type="button"
-        class="btn-eliminar"
-        [disabled]="!nivelSeleccionado"
-        (click)="eliminarNivel()">
-        × Eliminar
-      </button>
+              <td
+                colspan="2"
+                class="sin-registros">
 
-    </div>
+                No hay niveles académicos registrados.
 
-  </section>
+              </td>
 
+            </tr>
 
-  <section class="datos-card">
+          </tbody>
 
-    <div class="datos-card-header">
+        </table>
 
-      <h3>Periodo Académico</h3>
 
-      <button
-        type="button"
-        class="btn-agregar"
-        (click)="abrirAgregarPeriodo()">
+        <app-pagination
+          [totalItems]="totalNiveles"
+          [pageSize]="tamanoPagina"
+          [currentPage]="paginaNiveles"
+          (pageChange)="paginaNiveles = $event">
 
-        + Agregar
+        </app-pagination>
 
-      </button>
+      </div>
 
-    </div>
 
+      <div class="acciones-datos">
 
-    <div class="tabla-scroll">
+        <button
+          type="button"
+          class="btn-editar"
+          [disabled]="!nivelSeleccionado"
+          (click)="abrirEditarNivel()">
 
-      <table class="tabla-datos">
+          ✎ Editar
 
-        <thead>
-          <tr>
-            <th>NOMBRE</th>
-            <th>INICIO</th>
-            <th>FIN</th>
-          </tr>
-        </thead>
+        </button>
 
-        <tbody>
 
-          <tr
-            *ngFor="let periodo of periodos"
-            (click)="seleccionarPeriodo(periodo)"
-            [class.fila-seleccionada]="
-              periodoSeleccionado?.idPeriod === periodo.idPeriod
-            ">
+        <button
+          type="button"
+          class="btn-eliminar"
+          [disabled]="!nivelSeleccionado"
+          (click)="eliminarNivel()">
 
-            <td>{{ periodo.nombre }}</td>
-            <td>{{ periodo.fechaInicio }}</td>
-            <td>{{ periodo.fechaFin }}</td>
+          × Eliminar
 
-          </tr>
+        </button>
 
-          <tr *ngIf="!cargandoDatos && periodos.length === 0">
-            <td colspan="3" class="sin-registros">
-              No hay períodos académicos registrados.
-            </td>
-          </tr>
+      </div>
 
-        </tbody>
+    </section>
 
-      </table>
 
-    </div>
 
 
-    <div class="acciones-datos">
+    <section class="datos-card">
 
-      <button
-        type="button"
-        class="btn-editar"
-        [disabled]="!periodoSeleccionado"
-        (click)="abrirEditarPeriodo()">
-        ✎ Editar
-      </button>
+      <div class="datos-card-header">
 
-      <button
-        type="button"
-        class="btn-eliminar"
-        [disabled]="!periodoSeleccionado"
-        (click)="eliminarPeriodo()">
-        × Eliminar
-      </button>
+        <h3>Periodo Académico</h3>
 
-    </div>
+        <button
+          type="button"
+          class="btn-agregar"
+          (click)="abrirAgregarPeriodo()">
 
-  </section>
+          + Agregar
 
+        </button>
 
-  <section class="datos-card">
+      </div>
 
-    <div class="datos-card-header">
 
-      <h3>Jornadas Académicas</h3>
+      <div class="tabla-scroll">
 
-      <button
-        type="button"
-        class="btn-agregar"
-        (click)="abrirAgregarJornada()">
+        <table class="tabla-datos">
 
-        + Agregar
+          <thead>
+            <tr>
+              <th>NOMBRE</th>
+              <th>INICIO</th>
+              <th>FIN</th>
+            </tr>
+          </thead>
 
-      </button>
 
-    </div>
+          <tbody>
 
+            <tr
+              *ngFor="let periodo of periodosPagina"
+              (click)="seleccionarPeriodo(periodo)"
+              [class.fila-seleccionada]="
+                periodoSeleccionado?.idPeriod === periodo.idPeriod
+              ">
 
-    <div class="tabla-scroll">
+              <td>{{ periodo.nombre }}</td>
 
-      <table class="tabla-datos">
+              <td>{{ periodo.fechaInicio }}</td>
 
-        <thead>
-          <tr>
-            <th>NOMBRE</th>
-            <th>INICIO</th>
-            <th>FIN</th>
-          </tr>
-        </thead>
+              <td>{{ periodo.fechaFin }}</td>
 
-        <tbody>
+            </tr>
 
-          <tr
-            *ngFor="let jornada of jornadas"
-            (click)="seleccionarJornada(jornada)"
-            [class.fila-seleccionada]="
-              jornadaSeleccionada?.idShift === jornada.idShift
-            ">
 
-            <td>{{ jornada.nombre }}</td>
-            <td>{{ jornada.horaInicio }}</td>
-            <td>{{ jornada.horaFin }}</td>
+            <tr
+              *ngIf="
+                !cargandoDatos &&
+                periodosPagina.length === 0
+              ">
 
-          </tr>
+              <td
+                colspan="3"
+                class="sin-registros">
 
-          <tr *ngIf="!cargandoDatos && jornadas.length === 0">
-            <td colspan="3" class="sin-registros">
-              No hay jornadas académicas registradas.
-            </td>
-          </tr>
+                No hay períodos académicos registrados.
 
-        </tbody>
+              </td>
 
-      </table>
+            </tr>
 
-    </div>
+          </tbody>
 
+        </table>
 
-    <div class="acciones-datos">
 
-      <button
-        type="button"
-        class="btn-editar"
-        [disabled]="!jornadaSeleccionada"
-        (click)="abrirEditarJornada()">
-        ✎ Editar
-      </button>
+        <app-pagination
+          [totalItems]="totalPeriodos"
+          [pageSize]="tamanoPagina"
+          [currentPage]="paginaPeriodos"
+          (pageChange)="paginaPeriodos = $event">
 
-      <button
-        type="button"
-        class="btn-eliminar"
-        [disabled]="!jornadaSeleccionada"
-        (click)="eliminarJornada()">
-        × Eliminar
-      </button>
+        </app-pagination>
 
-    </div>
+      </div>
 
-  </section>
 
+      <div class="acciones-datos">
 
-  <section class="datos-card">
+        <button
+          type="button"
+          class="btn-editar"
+          [disabled]="!periodoSeleccionado"
+          (click)="abrirEditarPeriodo()">
 
-    <div class="datos-card-header">
+          ✎ Editar
 
-      <h3>Franja Académica</h3>
+        </button>
 
-      <button
-        type="button"
-        class="btn-agregar"
-        (click)="abrirAgregarFranja()">
 
-        + Agregar
+        <button
+          type="button"
+          class="btn-eliminar"
+          [disabled]="!periodoSeleccionado"
+          (click)="eliminarPeriodo()">
 
-      </button>
+          × Eliminar
 
-    </div>
+        </button>
 
+      </div>
 
-    <div class="tabla-scroll">
+    </section>
 
-      <table class="tabla-datos">
 
-        <thead>
-          <tr>
-            <th>JORNADA</th>
-            <th>ORDEN</th>
-            <th>INICIO</th>
-            <th>FIN</th>
-            <th>DESCANSO</th>
-          </tr>
-        </thead>
 
-        <tbody>
 
-          <tr
-            *ngFor="let franja of franjas"
-            (click)="seleccionarFranja(franja)"
-            [class.fila-seleccionada]="
-              franjaSeleccionada?.idTimeSlot === franja.idTimeSlot
-            ">
+    <section class="datos-card">
 
-            <td>{{ franja.jornada }}</td>
-            <td>{{ franja.orden }}</td>
-            <td>{{ franja.horaInicio }}</td>
-            <td>{{ franja.horaFin }}</td>
-            <td>{{ franja.esDescanso ? 'Sí' : 'No' }}</td>
+      <div class="datos-card-header">
 
-          </tr>
+        <h3>Jornadas Académicas</h3>
 
-          <tr *ngIf="!cargandoDatos && franjas.length === 0">
-            <td colspan="5" class="sin-registros">
-              No hay franjas horarias registradas.
-            </td>
-          </tr>
+        <button
+          type="button"
+          class="btn-agregar"
+          (click)="abrirAgregarJornada()">
 
-        </tbody>
+          + Agregar
 
-      </table>
+        </button>
 
-    </div>
+      </div>
 
 
-    <div class="acciones-datos">
+      <div class="tabla-scroll">
 
-      <button
-        type="button"
-        class="btn-editar"
-        [disabled]="!franjaSeleccionada"
-        (click)="abrirEditarFranja()">
-        ✎ Editar
-      </button>
+        <table class="tabla-datos">
 
-      <button
-        type="button"
-        class="btn-eliminar"
-        [disabled]="!franjaSeleccionada"
-        (click)="eliminarFranja()">
-        × Eliminar
-      </button>
+          <thead>
+            <tr>
+              <th>NOMBRE</th>
+              <th>INICIO</th>
+              <th>FIN</th>
+            </tr>
+          </thead>
 
-    </div>
 
-  </section>
+          <tbody>
+
+            <tr
+              *ngFor="let jornada of jornadasPagina"
+              (click)="seleccionarJornada(jornada)"
+              [class.fila-seleccionada]="
+                jornadaSeleccionada?.idShift === jornada.idShift
+              ">
+
+              <td>{{ jornada.nombre }}</td>
+
+              <td>{{ jornada.horaInicio }}</td>
+
+              <td>{{ jornada.horaFin }}</td>
+
+            </tr>
+
+
+            <tr
+              *ngIf="
+                !cargandoDatos &&
+                jornadasPagina.length === 0
+              ">
+
+              <td
+                colspan="3"
+                class="sin-registros">
+
+                No hay jornadas académicas registradas.
+
+              </td>
+
+            </tr>
+
+          </tbody>
+
+        </table>
+
+
+        <app-pagination
+          [totalItems]="totalJornadas"
+          [pageSize]="tamanoPagina"
+          [currentPage]="paginaJornadas"
+          (pageChange)="paginaJornadas = $event">
+
+        </app-pagination>
+
+      </div>
+
+
+      <div class="acciones-datos">
+
+        <button
+          type="button"
+          class="btn-editar"
+          [disabled]="!jornadaSeleccionada"
+          (click)="abrirEditarJornada()">
+
+          ✎ Editar
+
+        </button>
+
+
+        <button
+          type="button"
+          class="btn-eliminar"
+          [disabled]="!jornadaSeleccionada"
+          (click)="eliminarJornada()">
+
+          × Eliminar
+
+        </button>
+
+      </div>
+
+    </section>
+
+
+
+
+    <section class="datos-card">
+
+      <div class="datos-card-header">
+
+        <h3>Franja Académica</h3>
+
+        <button
+          type="button"
+          class="btn-agregar"
+          (click)="abrirAgregarFranja()">
+
+          + Agregar
+
+        </button>
+
+      </div>
+
+
+      <div class="tabla-scroll">
+
+        <table class="tabla-datos">
+
+          <thead>
+            <tr>
+              <th>JORNADA</th>
+              <th>ORDEN</th>
+              <th>INICIO</th>
+              <th>FIN</th>
+              <th>DESCANSO</th>
+            </tr>
+          </thead>
+
+
+          <tbody>
+
+            <tr
+              *ngFor="let franja of franjasPagina"
+              (click)="seleccionarFranja(franja)"
+              [class.fila-seleccionada]="
+                franjaSeleccionada?.idTimeSlot === franja.idTimeSlot
+              ">
+
+              <td>{{ franja.jornada }}</td>
+
+              <td>{{ franja.orden }}</td>
+
+              <td>{{ franja.horaInicio }}</td>
+
+              <td>{{ franja.horaFin }}</td>
+
+              <td>
+                {{ franja.esDescanso ? 'Sí' : 'No' }}
+              </td>
+
+            </tr>
+
+
+            <tr
+              *ngIf="
+                !cargandoDatos &&
+                franjasPagina.length === 0
+              ">
+
+              <td
+                colspan="5"
+                class="sin-registros">
+
+                No hay franjas horarias registradas.
+
+              </td>
+
+            </tr>
+
+          </tbody>
+
+        </table>
+
+
+        <app-pagination
+          [totalItems]="totalFranjas"
+          [pageSize]="tamanoPagina"
+          [currentPage]="paginaFranjas"
+          (pageChange)="paginaFranjas = $event">
+
+        </app-pagination>
+
+      </div>
+
+
+      <div class="acciones-datos">
+
+        <button
+          type="button"
+          class="btn-editar"
+          [disabled]="!franjaSeleccionada"
+          (click)="abrirEditarFranja()">
+
+          ✎ Editar
+
+        </button>
+
+
+        <button
+          type="button"
+          class="btn-eliminar"
+          [disabled]="!franjaSeleccionada"
+          (click)="eliminarFranja()">
+
+          × Eliminar
+
+        </button>
+
+      </div>
+
+    </section>
 
   </div>
 
 
 
-  <div *ngIf="pestanaActivaDatos === 'disponibilidad'" class="panel-grupo">
 
-  <section class="datos-card">
-
-    <div class="datos-card-header">
-
-      <h3>Disponibilidad Docentes</h3>
-
-      <button
-        type="button"
-        class="btn-agregar"
-        (click)="abrirAgregarDisponibilidad()">
-
-        + Agregar
-
-      </button>
-
-    </div>
+  <div
+    *ngIf="pestanaActivaDatos === 'disponibilidad'"
+    class="panel-grupo">
 
 
-    <div class="tabla-scroll">
 
-      <table class="tabla-datos">
+    <section class="datos-card">
 
-        <thead>
-          <tr>
-            <th>DOCENTE</th>
-            <th>DÍA</th>
-            <th>FRANJA</th>
-            <th>DISPONIBLE</th>
-          </tr>
-        </thead>
+      <div class="datos-card-header">
 
-        <tbody>
+        <h3>Disponibilidad Docentes</h3>
 
-          <tr
-            *ngFor="let item of disponibilidades"
-            (click)="seleccionarDisponibilidad(item)"
-            [class.fila-seleccionada]="
-              disponibilidadSeleccionada?.idAvailability === item.idAvailability
-            ">
+        <button
+          type="button"
+          class="btn-agregar"
+          (click)="abrirAgregarDisponibilidad()">
 
-            <td>{{ item.docente }}</td>
-            <td>{{ item.diaNombre }}</td>
-            <td>{{ item.franja }}</td>
-            <td>{{ item.disponible ? 'Sí' : 'No' }}</td>
+          + Agregar
 
-          </tr>
+        </button>
 
-          <tr *ngIf="!cargandoDatos && disponibilidades.length === 0">
-            <td colspan="4" class="sin-registros">
-              No hay disponibilidad de docentes registrada.
-            </td>
-          </tr>
-
-        </tbody>
-
-      </table>
-
-    </div>
+      </div>
 
 
-    <div class="acciones-datos">
+      <div class="tabla-scroll">
 
-      <button
-        type="button"
-        class="btn-editar"
-        [disabled]="!disponibilidadSeleccionada"
-        (click)="abrirEditarDisponibilidad()">
-        ✎ Editar
-      </button>
+        <table class="tabla-datos">
 
-      <button
-        type="button"
-        class="btn-eliminar"
-        [disabled]="!disponibilidadSeleccionada"
-        (click)="eliminarDisponibilidad()">
-        × Eliminar
-      </button>
+          <thead>
+            <tr>
+              <th>DOCENTE</th>
+              <th>DÍA</th>
+              <th>FRANJA</th>
+              <th>DISPONIBLE</th>
+            </tr>
+          </thead>
 
-    </div>
 
-  </section>
+          <tbody>
+
+            <tr
+              *ngFor="let item of disponibilidadesPagina"
+              (click)="seleccionarDisponibilidad(item)"
+              [class.fila-seleccionada]="
+                disponibilidadSeleccionada?.idAvailability === item.idAvailability
+              ">
+
+              <td>{{ item.docente }}</td>
+
+              <td>{{ item.diaNombre }}</td>
+
+              <td>{{ item.franja }}</td>
+
+              <td>
+                {{ item.disponible ? 'Sí' : 'No' }}
+              </td>
+
+            </tr>
+
+
+            <tr
+              *ngIf="
+                !cargandoDatos &&
+                disponibilidadesPagina.length === 0
+              ">
+
+              <td
+                colspan="4"
+                class="sin-registros">
+
+                No hay disponibilidad de docentes registrada.
+
+              </td>
+
+            </tr>
+
+          </tbody>
+
+        </table>
+
+
+        <app-pagination
+          [totalItems]="totalDisponibilidades"
+          [pageSize]="tamanoPagina"
+          [currentPage]="paginaDisponibilidades"
+          (pageChange)="paginaDisponibilidades = $event">
+
+        </app-pagination>
+
+      </div>
+
+
+      <div class="acciones-datos">
+
+        <button
+          type="button"
+          class="btn-editar"
+          [disabled]="!disponibilidadSeleccionada"
+          (click)="abrirEditarDisponibilidad()">
+
+          ✎ Editar
+
+        </button>
+
+
+        <button
+          type="button"
+          class="btn-eliminar"
+          [disabled]="!disponibilidadSeleccionada"
+          (click)="eliminarDisponibilidad()">
+
+          × Eliminar
+
+        </button>
+
+      </div>
+
+    </section>
 
   </div>
 
 </aside>
 
 </div>
+
+
 
 
 <div
@@ -1006,6 +1216,8 @@
 </div>
 
 
+
+
 <div
   class="modal-overlay"
   *ngIf="mostrarFormularioAsignatura"
@@ -1045,6 +1257,7 @@
 
     </div>
 
+
     <div
       *ngIf="errorFormularioAsignatura"
       class="mensaje-error">
@@ -1052,6 +1265,7 @@
       {{ errorFormularioAsignatura }}
 
     </div>
+
 
     <div class="form-grid">
 
@@ -1068,6 +1282,7 @@
 
       </div>
 
+
       <div class="campo campo-completo">
 
         <label>Descripción</label>
@@ -1078,6 +1293,7 @@
           placeholder="Descripción de la asignatura">
 
       </div>
+
 
       <div class="campo campo-completo">
 
@@ -1128,6 +1344,8 @@
 </div>
 
 
+
+
 <div
   class="modal-overlay"
   *ngIf="mostrarFormularioCurso"
@@ -1155,6 +1373,7 @@
 
       </div>
 
+
       <button
         type="button"
         class="btn-cerrar-panel"
@@ -1166,6 +1385,7 @@
 
     </div>
 
+
     <div
       *ngIf="errorFormularioCurso"
       class="mensaje-error">
@@ -1174,7 +1394,9 @@
 
     </div>
 
+
     <div class="form-grid">
+
 
       <div class="campo campo-completo">
 
@@ -1187,6 +1409,8 @@
           placeholder="Ej. 10° A">
 
       </div>
+
+
 
       <div class="campo">
 
@@ -1207,6 +1431,7 @@
           </option>
 
         </select>
+
 
         <small
           *ngIf="periodosDisponibles.length === 0"
@@ -1344,50 +1569,112 @@
 </div>
 
 
+
+
 <div
   class="modal-overlay"
   *ngIf="mostrarFormularioNivel"
   (click)="cerrarFormularioNivel()">
 
-  <div class="modal-datos" (click)="$event.stopPropagation()">
+  <div
+    class="modal-datos"
+    (click)="$event.stopPropagation()">
 
     <div class="modal-header">
 
       <div>
-        <span>{{ editandoNivel ? 'EDITAR NIVEL' : 'NUEVO NIVEL' }}</span>
-        <h2>{{ editandoNivel ? 'Editar información' : 'Registrar nivel académico' }}</h2>
+
+        <span>
+          {{ editandoNivel ? 'EDITAR NIVEL' : 'NUEVO NIVEL' }}
+        </span>
+
+        <h2>
+          {{
+            editandoNivel
+              ? 'Editar información'
+              : 'Registrar nivel académico'
+          }}
+        </h2>
+
       </div>
 
-      <button type="button" class="btn-cerrar-panel" (click)="cerrarFormularioNivel()">×</button>
+
+      <button
+        type="button"
+        class="btn-cerrar-panel"
+        (click)="cerrarFormularioNivel()">
+
+        ×
+
+      </button>
 
     </div>
 
-    <div *ngIf="errorFormularioNivel" class="mensaje-error">
+
+    <div
+      *ngIf="errorFormularioNivel"
+      class="mensaje-error">
+
       {{ errorFormularioNivel }}
+
     </div>
+
 
     <div class="form-grid">
 
-      <div class="campo campo-completo">
-        <label>Nombre del nivel</label>
-        <input type="text" maxlength="100" [(ngModel)]="formularioNivel.nombre" placeholder="Ej. Básica primaria">
-      </div>
 
       <div class="campo campo-completo">
+
+        <label>Nombre del nivel</label>
+
+        <input
+          type="text"
+          maxlength="100"
+          [(ngModel)]="formularioNivel.nombre"
+          placeholder="Ej. Básica primaria">
+
+      </div>
+
+
+      <div class="campo campo-completo">
+
         <label>Descripción</label>
-        <input type="text" [(ngModel)]="formularioNivel.descripcion" placeholder="Descripción del nivel">
+
+        <input
+          type="text"
+          [(ngModel)]="formularioNivel.descripcion"
+          placeholder="Descripción del nivel">
+
       </div>
 
     </div>
 
+
     <div class="modal-acciones">
 
-      <button type="button" class="btn-cancelar" [disabled]="guardandoNivel" (click)="cerrarFormularioNivel()">
+      <button
+        type="button"
+        class="btn-cancelar"
+        [disabled]="guardandoNivel"
+        (click)="cerrarFormularioNivel()">
+
         Cancelar
+
       </button>
 
-      <button type="button" class="btn-guardar" [disabled]="guardandoNivel" (click)="guardarNivel()">
-        {{ guardandoNivel ? 'Guardando...' : (editandoNivel ? 'Actualizar' : 'Guardar') }}
+
+      <button
+        type="button"
+        class="btn-guardar"
+        [disabled]="guardandoNivel"
+        (click)="guardarNivel()">
+
+        {{
+          guardandoNivel
+            ? 'Guardando...'
+            : (editandoNivel ? 'Actualizar' : 'Guardar')
+        }}
+
       </button>
 
     </div>
@@ -1395,6 +1682,8 @@
   </div>
 
 </div>
+
+
 
 
 <div
@@ -1402,50 +1691,115 @@
   *ngIf="mostrarFormularioPeriodo"
   (click)="cerrarFormularioPeriodo()">
 
-  <div class="modal-datos" (click)="$event.stopPropagation()">
+  <div
+    class="modal-datos"
+    (click)="$event.stopPropagation()">
 
     <div class="modal-header">
 
       <div>
-        <span>{{ editandoPeriodo ? 'EDITAR PERÍODO' : 'NUEVO PERÍODO' }}</span>
-        <h2>{{ editandoPeriodo ? 'Editar información' : 'Registrar período académico' }}</h2>
+
+        <span>
+          {{ editandoPeriodo ? 'EDITAR PERÍODO' : 'NUEVO PERÍODO' }}
+        </span>
+
+        <h2>
+          {{
+            editandoPeriodo
+              ? 'Editar información'
+              : 'Registrar período académico'
+          }}
+        </h2>
+
       </div>
 
-      <button type="button" class="btn-cerrar-panel" (click)="cerrarFormularioPeriodo()">×</button>
+
+      <button
+        type="button"
+        class="btn-cerrar-panel"
+        (click)="cerrarFormularioPeriodo()">
+
+        ×
+
+      </button>
 
     </div>
 
-    <div *ngIf="errorFormularioPeriodo" class="mensaje-error">
+
+    <div
+      *ngIf="errorFormularioPeriodo"
+      class="mensaje-error">
+
       {{ errorFormularioPeriodo }}
+
     </div>
+
 
     <div class="form-grid">
 
+
       <div class="campo campo-completo">
+
         <label>Nombre del período</label>
-        <input type="text" maxlength="100" [(ngModel)]="formularioPeriodo.nombre" placeholder="Ej. 2026-1">
+
+        <input
+          type="text"
+          maxlength="100"
+          [(ngModel)]="formularioPeriodo.nombre"
+          placeholder="Ej. 2026-1">
+
       </div>
 
+
       <div class="campo">
+
         <label>Fecha de inicio</label>
-        <input type="date" [(ngModel)]="formularioPeriodo.fechaInicio">
+
+        <input
+          type="date"
+          [(ngModel)]="formularioPeriodo.fechaInicio">
+
       </div>
 
+
       <div class="campo">
+
         <label>Fecha de fin</label>
-        <input type="date" [(ngModel)]="formularioPeriodo.fechaFin">
+
+        <input
+          type="date"
+          [(ngModel)]="formularioPeriodo.fechaFin">
+
       </div>
 
     </div>
 
+
     <div class="modal-acciones">
 
-      <button type="button" class="btn-cancelar" [disabled]="guardandoPeriodo" (click)="cerrarFormularioPeriodo()">
+      <button
+        type="button"
+        class="btn-cancelar"
+        [disabled]="guardandoPeriodo"
+        (click)="cerrarFormularioPeriodo()">
+
         Cancelar
+
       </button>
 
-      <button type="button" class="btn-guardar" [disabled]="guardandoPeriodo" (click)="guardarPeriodo()">
-        {{ guardandoPeriodo ? 'Guardando...' : (editandoPeriodo ? 'Actualizar' : 'Guardar') }}
+
+      <button
+        type="button"
+        class="btn-guardar"
+        [disabled]="guardandoPeriodo"
+        (click)="guardarPeriodo()">
+
+        {{
+          guardandoPeriodo
+            ? 'Guardando...'
+            : (editandoPeriodo ? 'Actualizar' : 'Guardar')
+        }}
+
       </button>
 
     </div>
@@ -1453,6 +1807,8 @@
   </div>
 
 </div>
+
+
 
 
 <div
@@ -1460,50 +1816,115 @@
   *ngIf="mostrarFormularioJornada"
   (click)="cerrarFormularioJornada()">
 
-  <div class="modal-datos" (click)="$event.stopPropagation()">
+  <div
+    class="modal-datos"
+    (click)="$event.stopPropagation()">
 
     <div class="modal-header">
 
       <div>
-        <span>{{ editandoJornada ? 'EDITAR JORNADA' : 'NUEVA JORNADA' }}</span>
-        <h2>{{ editandoJornada ? 'Editar información' : 'Registrar jornada académica' }}</h2>
+
+        <span>
+          {{ editandoJornada ? 'EDITAR JORNADA' : 'NUEVA JORNADA' }}
+        </span>
+
+        <h2>
+          {{
+            editandoJornada
+              ? 'Editar información'
+              : 'Registrar jornada académica'
+          }}
+        </h2>
+
       </div>
 
-      <button type="button" class="btn-cerrar-panel" (click)="cerrarFormularioJornada()">×</button>
+
+      <button
+        type="button"
+        class="btn-cerrar-panel"
+        (click)="cerrarFormularioJornada()">
+
+        ×
+
+      </button>
 
     </div>
 
-    <div *ngIf="errorFormularioJornada" class="mensaje-error">
+
+    <div
+      *ngIf="errorFormularioJornada"
+      class="mensaje-error">
+
       {{ errorFormularioJornada }}
+
     </div>
+
 
     <div class="form-grid">
 
+
       <div class="campo campo-completo">
+
         <label>Nombre de la jornada</label>
-        <input type="text" maxlength="100" [(ngModel)]="formularioJornada.nombre" placeholder="Ej. Mañana">
+
+        <input
+          type="text"
+          maxlength="100"
+          [(ngModel)]="formularioJornada.nombre"
+          placeholder="Ej. Mañana">
+
       </div>
 
+
       <div class="campo">
+
         <label>Hora de inicio</label>
-        <input type="time" [(ngModel)]="formularioJornada.horaInicio">
+
+        <input
+          type="time"
+          [(ngModel)]="formularioJornada.horaInicio">
+
       </div>
 
+
       <div class="campo">
+
         <label>Hora de fin</label>
-        <input type="time" [(ngModel)]="formularioJornada.horaFin">
+
+        <input
+          type="time"
+          [(ngModel)]="formularioJornada.horaFin">
+
       </div>
 
     </div>
 
+
     <div class="modal-acciones">
 
-      <button type="button" class="btn-cancelar" [disabled]="guardandoJornada" (click)="cerrarFormularioJornada()">
+      <button
+        type="button"
+        class="btn-cancelar"
+        [disabled]="guardandoJornada"
+        (click)="cerrarFormularioJornada()">
+
         Cancelar
+
       </button>
 
-      <button type="button" class="btn-guardar" [disabled]="guardandoJornada" (click)="guardarJornada()">
-        {{ guardandoJornada ? 'Guardando...' : (editandoJornada ? 'Actualizar' : 'Guardar') }}
+
+      <button
+        type="button"
+        class="btn-guardar"
+        [disabled]="guardandoJornada"
+        (click)="guardarJornada()">
+
+        {{
+          guardandoJornada
+            ? 'Guardando...'
+            : (editandoJornada ? 'Actualizar' : 'Guardar')
+        }}
+
       </button>
 
     </div>
@@ -1511,6 +1932,7 @@
   </div>
 
 </div>
+
 
 
 <div
@@ -1518,67 +1940,157 @@
   *ngIf="mostrarFormularioFranja"
   (click)="cerrarFormularioFranja()">
 
-  <div class="modal-datos" (click)="$event.stopPropagation()">
+  <div
+    class="modal-datos"
+    (click)="$event.stopPropagation()">
 
     <div class="modal-header">
 
       <div>
-        <span>{{ editandoFranja ? 'EDITAR FRANJA' : 'NUEVA FRANJA' }}</span>
-        <h2>{{ editandoFranja ? 'Editar información' : 'Registrar franja horaria' }}</h2>
+
+        <span>
+          {{ editandoFranja ? 'EDITAR FRANJA' : 'NUEVA FRANJA' }}
+        </span>
+
+        <h2>
+          {{
+            editandoFranja
+              ? 'Editar información'
+              : 'Registrar franja horaria'
+          }}
+        </h2>
+
       </div>
 
-      <button type="button" class="btn-cerrar-panel" (click)="cerrarFormularioFranja()">×</button>
+
+      <button
+        type="button"
+        class="btn-cerrar-panel"
+        (click)="cerrarFormularioFranja()">
+
+        ×
+
+      </button>
 
     </div>
 
-    <div *ngIf="errorFormularioFranja" class="mensaje-error">
+
+    <div
+      *ngIf="errorFormularioFranja"
+      class="mensaje-error">
+
       {{ errorFormularioFranja }}
+
     </div>
+
 
     <div class="form-grid">
 
+
       <div class="campo">
+
         <label>Jornada</label>
+
         <select [(ngModel)]="formularioFranja.idShift">
-          <option [ngValue]="0" disabled>Selecciona una jornada</option>
-          <option *ngFor="let jornada of jornadasDisponibles" [ngValue]="jornada.idShift">
-            {{ jornada.name }}
+
+          <option
+            [ngValue]="0"
+            disabled>
+
+            Selecciona una jornada
+
           </option>
+
+          <option
+            *ngFor="let jornada of jornadasDisponibles"
+            [ngValue]="jornada.idShift">
+
+            {{ jornada.name }}
+
+          </option>
+
         </select>
+
       </div>
 
+
       <div class="campo">
+
         <label>Orden del bloque</label>
-        <input type="number" min="1" [(ngModel)]="formularioFranja.orden">
+
+        <input
+          type="number"
+          min="1"
+          [(ngModel)]="formularioFranja.orden">
+
       </div>
 
+
       <div class="campo">
+
         <label>Hora de inicio</label>
-        <input type="time" [(ngModel)]="formularioFranja.horaInicio">
+
+        <input
+          type="time"
+          [(ngModel)]="formularioFranja.horaInicio">
+
       </div>
+
 
       <div class="campo">
+
         <label>Hora de fin</label>
-        <input type="time" [(ngModel)]="formularioFranja.horaFin">
+
+        <input
+          type="time"
+          [(ngModel)]="formularioFranja.horaFin">
+
       </div>
 
-      <div class="campo campo-completo campo-checkbox">
+
+      <div
+        class="campo campo-completo campo-checkbox">
+
         <label>
-          <input type="checkbox" [(ngModel)]="formularioFranja.esDescanso">
+
+          <input
+            type="checkbox"
+            [(ngModel)]="formularioFranja.esDescanso">
+
           Este bloque es un descanso
+
         </label>
+
       </div>
 
     </div>
 
+
     <div class="modal-acciones">
 
-      <button type="button" class="btn-cancelar" [disabled]="guardandoFranja" (click)="cerrarFormularioFranja()">
+      <button
+        type="button"
+        class="btn-cancelar"
+        [disabled]="guardandoFranja"
+        (click)="cerrarFormularioFranja()">
+
         Cancelar
+
       </button>
 
-      <button type="button" class="btn-guardar" [disabled]="guardandoFranja" (click)="guardarFranja()">
-        {{ guardandoFranja ? 'Guardando...' : (editandoFranja ? 'Actualizar' : 'Guardar') }}
+
+      <button
+        type="button"
+        class="btn-guardar"
+        [disabled]="guardandoFranja"
+        (click)="guardarFranja()">
+
+        {{
+          guardandoFranja
+            ? 'Guardando...'
+            : (editandoFranja ? 'Actualizar' : 'Guardar')
+        }}
+
       </button>
 
     </div>
@@ -1588,76 +2100,183 @@
 </div>
 
 
+
+
 <div
   class="modal-overlay"
   *ngIf="mostrarFormularioDisponibilidad"
   (click)="cerrarFormularioDisponibilidad()">
 
-  <div class="modal-datos" (click)="$event.stopPropagation()">
+  <div
+    class="modal-datos"
+    (click)="$event.stopPropagation()">
 
     <div class="modal-header">
 
       <div>
-        <span>{{ editandoDisponibilidad ? 'EDITAR DISPONIBILIDAD' : 'NUEVA DISPONIBILIDAD' }}</span>
-        <h2>{{ editandoDisponibilidad ? 'Editar información' : 'Registrar disponibilidad de docente' }}</h2>
+
+        <span>
+          {{
+            editandoDisponibilidad
+              ? 'EDITAR DISPONIBILIDAD'
+              : 'NUEVA DISPONIBILIDAD'
+          }}
+        </span>
+
+        <h2>
+          {{
+            editandoDisponibilidad
+              ? 'Editar información'
+              : 'Registrar disponibilidad de docente'
+          }}
+        </h2>
+
       </div>
 
-      <button type="button" class="btn-cerrar-panel" (click)="cerrarFormularioDisponibilidad()">×</button>
+
+      <button
+        type="button"
+        class="btn-cerrar-panel"
+        (click)="cerrarFormularioDisponibilidad()">
+
+        ×
+
+      </button>
 
     </div>
 
-    <div *ngIf="errorFormularioDisponibilidad" class="mensaje-error">
+
+    <div
+      *ngIf="errorFormularioDisponibilidad"
+      class="mensaje-error">
+
       {{ errorFormularioDisponibilidad }}
+
     </div>
+
 
     <div class="form-grid">
 
+
       <div class="campo campo-completo">
+
         <label>Docente</label>
-        <select [(ngModel)]="formularioDisponibilidad.idTeacher">
-          <option [ngValue]="0" disabled>Selecciona un docente</option>
-          <option *ngFor="let academico of academicTeachersCatalogo" [ngValue]="academico.idAcademicTeacher">
+
+        <select
+          [(ngModel)]="formularioDisponibilidad.idTeacher">
+
+          <option
+            [ngValue]="0"
+            disabled>
+
+            Selecciona un docente
+
+          </option>
+
+          <option
+            *ngFor="let academico of academicTeachersCatalogo"
+            [ngValue]="academico.idAcademicTeacher">
+
             {{ nombreDocenteAcademico(academico) }}
+
           </option>
+
         </select>
+
       </div>
 
+
       <div class="campo">
+
         <label>Franja horaria</label>
-        <select [(ngModel)]="formularioDisponibilidad.idTimeSlot">
-          <option [ngValue]="0" disabled>Selecciona una franja</option>
-          <option *ngFor="let franja of franjasDisponibles" [ngValue]="franja.idTimeSlot">
-            {{ franja.startTime }} - {{ franja.endTime }}
+
+        <select
+          [(ngModel)]="formularioDisponibilidad.idTimeSlot">
+
+          <option
+            [ngValue]="0"
+            disabled>
+
+            Selecciona una franja
+
           </option>
+
+          <option
+            *ngFor="let franja of franjasDisponibles"
+            [ngValue]="franja.idTimeSlot">
+
+            {{ franja.startTime }} - {{ franja.endTime }}
+
+          </option>
+
         </select>
+
       </div>
+
 
       <div class="campo">
+
         <label>Día de la semana</label>
-        <select [(ngModel)]="formularioDisponibilidad.diaSemana">
-          <option *ngFor="let dia of diasSemana" [ngValue]="dia.valor">
+
+        <select
+          [(ngModel)]="formularioDisponibilidad.diaSemana">
+
+          <option
+            *ngFor="let dia of diasSemana"
+            [ngValue]="dia.valor">
+
             {{ dia.nombre }}
+
           </option>
+
         </select>
+
       </div>
 
-      <div class="campo campo-completo campo-checkbox">
+
+      <div
+        class="campo campo-completo campo-checkbox">
+
         <label>
-          <input type="checkbox" [(ngModel)]="formularioDisponibilidad.disponible">
+
+          <input
+            type="checkbox"
+            [(ngModel)]="formularioDisponibilidad.disponible">
+
           Docente disponible en este horario
+
         </label>
+
       </div>
 
     </div>
 
+
     <div class="modal-acciones">
 
-      <button type="button" class="btn-cancelar" [disabled]="guardandoDisponibilidad" (click)="cerrarFormularioDisponibilidad()">
+      <button
+        type="button"
+        class="btn-cancelar"
+        [disabled]="guardandoDisponibilidad"
+        (click)="cerrarFormularioDisponibilidad()">
+
         Cancelar
+
       </button>
 
-      <button type="button" class="btn-guardar" [disabled]="guardandoDisponibilidad" (click)="guardarDisponibilidad()">
-        {{ guardandoDisponibilidad ? 'Guardando...' : (editandoDisponibilidad ? 'Actualizar' : 'Guardar') }}
+
+      <button
+        type="button"
+        class="btn-guardar"
+        [disabled]="guardandoDisponibilidad"
+        (click)="guardarDisponibilidad()">
+
+        {{
+          guardandoDisponibilidad
+            ? 'Guardando...'
+            : (editandoDisponibilidad ? 'Actualizar' : 'Guardar')
+        }}
+
       </button>
 
     </div>

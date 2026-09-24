@@ -1,12 +1,15 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { PaginationComponent } from '../../../../core/components/pagination/pagination.component';
 import { forkJoin } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
+
 import {
   DocentesService,
   TeachingResponseDTO
 } from '../../services/docentes.service';
+
 import {
   HorariosService,
   SubjectResponseDTO,
@@ -25,6 +28,7 @@ import {
   TeacherAvailabilityResponseDTO,
   TeacherAvailabilityRequestDTO
 } from '../../services/registro.service';
+
 import { ModalService } from '../../../../core/services/modal.service';
 
 interface DocenteFila {
@@ -116,13 +120,21 @@ const DIAS_SEMANA = [
 @Component({
   selector: 'app-registro',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    PaginationComponent
+  ],
   templateUrl: './registro.component.html',
   styleUrl: './registro.component.scss'
 })
 export class RegistroComponent implements OnInit {
+
   mostrarDatos = true;
-  pestanaActivaDatos: 'academico' | 'calendario' | 'disponibilidad' = 'academico';
+
+  pestanaActivaDatos:
+    'academico' | 'calendario' | 'disponibilidad' = 'academico';
+
   mostrarFormularioDocente = false;
   mostrarFormularioAsignatura = false;
   mostrarFormularioCurso = false;
@@ -131,6 +143,7 @@ export class RegistroComponent implements OnInit {
   mostrarFormularioJornada = false;
   mostrarFormularioFranja = false;
   mostrarFormularioDisponibilidad = false;
+
   editandoDocente = false;
   editandoAsignatura = false;
   editandoCurso = false;
@@ -139,7 +152,9 @@ export class RegistroComponent implements OnInit {
   editandoJornada = false;
   editandoFranja = false;
   editandoDisponibilidad = false;
+
   cargandoDatos = false;
+
   guardandoDocente = false;
   guardandoAsignatura = false;
   guardandoCurso = false;
@@ -150,6 +165,7 @@ export class RegistroComponent implements OnInit {
   guardandoDisponibilidad = false;
 
   errorCarga = '';
+
   errorFormularioDocente = '';
   errorFormularioAsignatura = '';
   errorFormularioCurso = '';
@@ -167,7 +183,137 @@ export class RegistroComponent implements OnInit {
   jornadas: JornadaFila[] = [];
   franjas: FranjaFila[] = [];
   disponibilidades: DisponibilidadFila[] = [];
+
   diasSemana = DIAS_SEMANA;
+
+  readonly tamanoPagina = 10;
+
+  paginaDocentes = 1;
+  paginaAsignaturas = 1;
+  paginaCursos = 1;
+  paginaNiveles = 1;
+  paginaPeriodos = 1;
+  paginaJornadas = 1;
+  paginaFranjas = 1;
+  paginaDisponibilidades = 1;
+
+ 
+  get totalDocentes(): number {
+    return this.docentes.length;
+  }
+
+  get totalAsignaturas(): number {
+    return this.asignaturas.length;
+  }
+
+  get totalCursos(): number {
+    return this.cursos.length;
+  }
+
+  get totalNiveles(): number {
+    return this.niveles.length;
+  }
+
+  get totalPeriodos(): number {
+    return this.periodos.length;
+  }
+
+  get totalJornadas(): number {
+    return this.jornadas.length;
+  }
+
+  get totalFranjas(): number {
+    return this.franjas.length;
+  }
+
+  get totalDisponibilidades(): number {
+    return this.disponibilidades.length;
+  }
+
+  get docentesPagina(): DocenteFila[] {
+    return this.pagina(
+      this.docentes,
+      this.paginaDocentes
+    );
+  }
+
+  get asignaturasPagina(): AsignaturaFila[] {
+    return this.pagina(
+      this.asignaturas,
+      this.paginaAsignaturas
+    );
+  }
+
+  get cursosPagina(): CursoFila[] {
+    return this.pagina(
+      this.cursos,
+      this.paginaCursos
+    );
+  }
+
+  get nivelesPagina(): NivelFila[] {
+    return this.pagina(
+      this.niveles,
+      this.paginaNiveles
+    );
+  }
+
+  get periodosPagina(): PeriodoFila[] {
+    return this.pagina(
+      this.periodos,
+      this.paginaPeriodos
+    );
+  }
+
+  get jornadasPagina(): JornadaFila[] {
+    return this.pagina(
+      this.jornadas,
+      this.paginaJornadas
+    );
+  }
+
+  get franjasPagina(): FranjaFila[] {
+    return this.pagina(
+      this.franjas,
+      this.paginaFranjas
+    );
+  }
+
+  get disponibilidadesPagina(): DisponibilidadFila[] {
+    return this.pagina(
+      this.disponibilidades,
+      this.paginaDisponibilidades
+    );
+  }
+
+  private pagina<T>(
+    items: T[],
+    pagina: number
+  ): T[] {
+    const paginaSegura = Math.max(
+      1,
+      pagina
+    );
+
+    const inicio =
+      (paginaSegura - 1) * this.tamanoPagina;
+
+    return items.slice(
+      inicio,
+      inicio + this.tamanoPagina
+    );
+  }
+
+  reiniciarPaginas(): void {
+    this.paginaDocentes = 1;
+    this.paginaAsignaturas = 1;
+    this.paginaCursos = 1;
+    this.paginaNiveles = 1;
+    this.paginaPeriodos = 1;
+    this.paginaJornadas = 1;
+    this.paginaFranjas = 1;
+    this.paginaDisponibilidades = 1;
+  }
 
   docenteSeleccionado: DocenteFila | null = null;
   asignaturaSeleccionada: AsignaturaFila | null = null;
@@ -176,7 +322,8 @@ export class RegistroComponent implements OnInit {
   periodoSeleccionado: PeriodoFila | null = null;
   jornadaSeleccionada: JornadaFila | null = null;
   franjaSeleccionada: FranjaFila | null = null;
-  disponibilidadSeleccionada: DisponibilidadFila | null = null;
+  disponibilidadSeleccionada:
+    DisponibilidadFila | null = null;
 
   docentesDisponibles: TeachingResponseDTO[] = [];
   cursosDisponibles: CourseResponseDTO[] = [];
@@ -185,7 +332,8 @@ export class RegistroComponent implements OnInit {
   nivelesDisponibles: AcademicLevelResponseDTO[] = [];
   jornadasDisponibles: SchoolShiftResponseDTO[] = [];
   franjasDisponibles: TimeSlotResponseDTO[] = [];
-  academicTeachersCatalogo: AcademicTeacherResponseDTO[] = [];
+  academicTeachersCatalogo:
+    AcademicTeacherResponseDTO[] = [];
 
   private academicTeachersPorUsuario =
     new Map<number, AcademicTeacherResponseDTO>();
@@ -272,12 +420,17 @@ export class RegistroComponent implements OnInit {
     this.cargarDatos();
   }
 
-  private extraerLista<T>(respuesta: any): T[] {
+  private extraerLista<T>(
+    respuesta: any
+  ): T[] {
     if (Array.isArray(respuesta)) {
       return respuesta;
     }
 
-    if (!respuesta || typeof respuesta !== 'object') {
+    if (
+      !respuesta ||
+      typeof respuesta !== 'object'
+    ) {
       return [];
     }
 
@@ -297,14 +450,22 @@ export class RegistroComponent implements OnInit {
       return respuesta.results;
     }
 
-    if (respuesta.data && typeof respuesta.data === 'object') {
-      return this.extraerLista<T>(respuesta.data);
+    if (
+      respuesta.data &&
+      typeof respuesta.data === 'object'
+    ) {
+      return this.extraerLista<T>(
+        respuesta.data
+      );
     }
 
     return [];
   }
 
-  private mensajeErrorEliminacion(err: any, fallback: string): string {
+  private mensajeErrorEliminacion(
+    err: any,
+    fallback: string
+  ): string {
     const mensaje: string =
       err?.error?.message ||
       err?.error?.error ||
@@ -315,8 +476,11 @@ export class RegistroComponent implements OnInit {
       /foreign key/i.test(mensaje);
 
     if (pareceViolacionDeIntegridad) {
-      return 'No se puede eliminar: todavía hay otros registros del sistema que dependen de este elemento. ' +
-        'Elimina o reasigna esos registros primero e inténtalo de nuevo.';
+      return (
+        'No se puede eliminar: todavía hay otros registros ' +
+        'del sistema que dependen de este elemento. ' +
+        'Elimina o reasigna esos registros primero e inténtalo de nuevo.'
+      );
     }
 
     return mensaje || fallback;
@@ -329,14 +493,22 @@ export class RegistroComponent implements OnInit {
     forkJoin({
       docentes: this.docentesService.listar(),
       cursos: this.horariosService.listarCursos(),
-      asignaturas: this.horariosService.listarAsignaturas(),
-      academicTeachers: this.horariosService.listarDocentesAcademicos(),
-      cargas: this.horariosService.listarCargasAcademicas(),
-      periodos: this.horariosService.listarPeriodos(),
-      niveles: this.horariosService.listarNiveles(),
-      jornadas: this.horariosService.listarJornadas(),
-      franjas: this.horariosService.listarFranjas(),
-      disponibilidad: this.horariosService.listarDisponibilidad()
+      asignaturas:
+        this.horariosService.listarAsignaturas(),
+      academicTeachers:
+        this.horariosService.listarDocentesAcademicos(),
+      cargas:
+        this.horariosService.listarCargasAcademicas(),
+      periodos:
+        this.horariosService.listarPeriodos(),
+      niveles:
+        this.horariosService.listarNiveles(),
+      jornadas:
+        this.horariosService.listarJornadas(),
+      franjas:
+        this.horariosService.listarFranjas(),
+      disponibilidad:
+        this.horariosService.listarDisponibilidad()
     }).subscribe({
       next: ({
         docentes,
@@ -350,29 +522,46 @@ export class RegistroComponent implements OnInit {
         franjas,
         disponibilidad
       }) => {
+
         this.docentesDisponibles =
-          this.extraerLista<TeachingResponseDTO>(docentes);
+          this.extraerLista<TeachingResponseDTO>(
+            docentes
+          );
 
         this.cursosDisponibles =
-          this.extraerLista<CourseResponseDTO>(cursos);
+          this.extraerLista<CourseResponseDTO>(
+            cursos
+          );
 
         this.asignaturasCatalogo =
-          this.extraerLista<SubjectResponseDTO>(asignaturas);
+          this.extraerLista<SubjectResponseDTO>(
+            asignaturas
+          );
 
         this.periodosDisponibles =
-          this.extraerLista<AcademicPeriodResponseDTO>(periodos);
+          this.extraerLista<AcademicPeriodResponseDTO>(
+            periodos
+          );
 
         this.nivelesDisponibles =
-          this.extraerLista<AcademicLevelResponseDTO>(niveles);
+          this.extraerLista<AcademicLevelResponseDTO>(
+            niveles
+          );
 
         this.jornadasDisponibles =
-          this.extraerLista<SchoolShiftResponseDTO>(jornadas);
+          this.extraerLista<SchoolShiftResponseDTO>(
+            jornadas
+          );
 
         this.franjasDisponibles =
-          this.extraerLista<TimeSlotResponseDTO>(franjas);
+          this.extraerLista<TimeSlotResponseDTO>(
+            franjas
+          );
 
         const cargasDisponibles =
-          this.extraerLista<AcademicLoadResponseDTO>(cargas);
+          this.extraerLista<AcademicLoadResponseDTO>(
+            cargas
+          );
 
         const disponibilidadData =
           this.extraerLista<TeacherAvailabilityResponseDTO>(
@@ -386,26 +575,32 @@ export class RegistroComponent implements OnInit {
 
         const docentesPorId =
           new Map<number, TeachingResponseDTO>(
-            this.docentesDisponibles.map(docente => [
-              docente.idUser,
-              docente
-            ])
+            this.docentesDisponibles.map(
+              docente => [
+                docente.idUser,
+                docente
+              ]
+            )
           );
 
         const cursosPorId =
           new Map<number, CourseResponseDTO>(
-            this.cursosDisponibles.map(curso => [
-              curso.idCourse,
-              curso
-            ])
+            this.cursosDisponibles.map(
+              curso => [
+                curso.idCourse,
+                curso
+              ]
+            )
           );
 
         const asignaturasPorId =
           new Map<number, SubjectResponseDTO>(
-            this.asignaturasCatalogo.map(asignatura => [
-              asignatura.idSubject,
-              asignatura
-            ])
+            this.asignaturasCatalogo.map(
+              asignatura => [
+                asignatura.idSubject,
+                asignatura
+              ]
+            )
           );
 
         this.academicTeachersCatalogo =
@@ -413,67 +608,105 @@ export class RegistroComponent implements OnInit {
 
         this.academicTeachersPorUsuario =
           new Map<number, AcademicTeacherResponseDTO>(
-            academicTeachersData.map(docente => [
-              docente.idUser,
-              docente
-            ])
+            academicTeachersData.map(
+              docente => [
+                docente.idUser,
+                docente
+              ]
+            )
           );
 
         const academicTeacherPorId =
           new Map<number, AcademicTeacherResponseDTO>(
-            academicTeachersData.map(docente => [
-              docente.idAcademicTeacher,
-              docente
-            ])
+            academicTeachersData.map(
+              docente => [
+                docente.idAcademicTeacher,
+                docente
+              ]
+            )
           );
 
         this.asignaturas =
-          this.asignaturasCatalogo.map(asignatura => ({
-            idSubject: asignatura.idSubject,
-            nombre: asignatura.name ?? '',
-            descripcion: asignatura.description ?? '',
-            color: asignatura.color ?? '#347d1c'
-          }));
+          this.asignaturasCatalogo.map(
+            asignatura => ({
+              idSubject:
+                asignatura.idSubject,
+              nombre:
+                asignatura.name ?? '',
+              descripcion:
+                asignatura.description ?? '',
+              color:
+                asignatura.color ?? '#347d1c'
+            })
+          );
 
         this.cursos =
-          this.cursosDisponibles.map(curso => {
-            const academicTeacher =
-              curso.homeroomTeacher !== null &&
-              curso.homeroomTeacher !== undefined
-                ? academicTeacherPorId.get(curso.homeroomTeacher)
-                : undefined;
+          this.cursosDisponibles.map(
+            curso => {
 
-            const docenteTitular =
-              academicTeacher
-                ? docentesPorId.get(academicTeacher.idUser)
-                : undefined;
+              const academicTeacher =
+                curso.homeroomTeacher !== null &&
+                curso.homeroomTeacher !== undefined
+                  ? academicTeacherPorId.get(
+                      curso.homeroomTeacher
+                    )
+                  : undefined;
 
-            return {
-              idCourse: curso.idCourse,
-              idPeriod: Number(curso.idPeriod ?? 0),
-              idLevel: Number(curso.idLevel ?? 0),
-              idShift: Number(curso.idShift ?? 0),
-              homeroomTeacher:
-                curso.homeroomTeacher ?? null,
-              nombre: curso.name ?? '',
-              docenteTitular: docenteTitular
-                ? `${docenteTitular.name ?? ''} ${docenteTitular.surnames ?? ''}`.trim()
-                : 'Sin asignar',
-              nivel: this.obtenerNombreNivel(
-                Number(curso.idLevel ?? 0)
-              ),
-              jornada: this.obtenerNombreJornada(
-                Number(curso.idShift ?? 0)
-              ),
-              estudiantes: Number(
-                curso.studentCount ?? 0
-              )
-            };
-          });
+              const docenteTitular =
+                academicTeacher
+                  ? docentesPorId.get(
+                      academicTeacher.idUser
+                    )
+                  : undefined;
+
+              return {
+                idCourse:
+                  curso.idCourse,
+
+                idPeriod:
+                  Number(curso.idPeriod ?? 0),
+
+                idLevel:
+                  Number(curso.idLevel ?? 0),
+
+                idShift:
+                  Number(curso.idShift ?? 0),
+
+                homeroomTeacher:
+                  curso.homeroomTeacher ?? null,
+
+                nombre:
+                  curso.name ?? '',
+
+                docenteTitular:
+                  docenteTitular
+                    ? `${docenteTitular.name ?? ''} ${
+                        docenteTitular.surnames ?? ''
+                      }`.trim()
+                    : 'Sin asignar',
+
+                nivel:
+                  this.obtenerNombreNivel(
+                    Number(curso.idLevel ?? 0)
+                  ),
+
+                jornada:
+                  this.obtenerNombreJornada(
+                    Number(curso.idShift ?? 0)
+                  ),
+
+                estudiantes:
+                  Number(
+                    curso.studentCount ?? 0
+                  )
+              };
+            }
+          );
 
         this.docentes =
           cargasDisponibles
             .map(carga => {
+
               const academicTeacher =
                 academicTeacherPorId.get(
                   carga.idTeacher
@@ -493,7 +726,9 @@ export class RegistroComponent implements OnInit {
               }
 
               const curso =
-                cursosPorId.get(carga.idCourse);
+                cursosPorId.get(
+                  carga.idCourse
+                );
 
               const asignatura =
                 asignaturasPorId.get(
@@ -503,126 +738,214 @@ export class RegistroComponent implements OnInit {
               return {
                 idAcademicLoad:
                   carga.idAcademicLoad,
+
                 idAcademicTeacher:
                   academicTeacher.idAcademicTeacher,
+
                 idUser:
                   academicTeacher.idUser,
+
                 idCourse:
                   carga.idCourse,
+
                 idSubject:
                   carga.idSubject,
+
                 nombre:
                   docente.name ?? '',
+
                 apellidos:
                   docente.surnames ?? '',
+
                 photoUrl:
                   docente.photoUrl ?? null,
-                area: asignatura
-                  ? (asignatura.name ?? 'Asignatura sin nombre')
-                  : 'Asignatura no encontrada',
-                curso: curso
-                  ? (curso.name ?? 'Curso sin nombre')
-                  : `Curso #${carga.idCourse}`,
+
+                area:
+                  asignatura
+                    ? (
+                        asignatura.name ??
+                        'Asignatura sin nombre'
+                      )
+                    : 'Asignatura no encontrada',
+
+                curso:
+                  curso
+                    ? (
+                        curso.name ??
+                        'Curso sin nombre'
+                      )
+                    : `Curso #${carga.idCourse}`,
+
                 maxDailyHours:
                   academicTeacher.maxDailyHours ?? 0,
+
                 maxWeeklyHours:
                   academicTeacher.maxWeeklyHours ?? 0,
+
                 horasSemanaArea:
                   carga.weeklyHours ?? 0
               } as DocenteFila;
             })
             .filter(
-              (fila): fila is DocenteFila =>
+              (
+                fila
+              ): fila is DocenteFila =>
                 fila !== null
             );
 
         this.niveles =
-          this.nivelesDisponibles.map(nivel => ({
-            idLevel: nivel.idLevel,
-            nombre: nivel.name ?? '',
-            descripcion: nivel.description ?? ''
-          }));
+          this.nivelesDisponibles.map(
+            nivel => ({
+              idLevel:
+                nivel.idLevel,
+              nombre:
+                nivel.name ?? '',
+              descripcion:
+                nivel.description ?? ''
+            })
+          );
 
         this.periodos =
-          this.periodosDisponibles.map(periodo => ({
-            idPeriod: periodo.idPeriod,
-            nombre: periodo.name ?? '',
-            fechaInicio: periodo.startDate ?? '',
-            fechaFin: periodo.endDate ?? ''
-          }));
+          this.periodosDisponibles.map(
+            periodo => ({
+              idPeriod:
+                periodo.idPeriod,
+              nombre:
+                periodo.name ?? '',
+              fechaInicio:
+                periodo.startDate ?? '',
+              fechaFin:
+                periodo.endDate ?? ''
+            })
+          );
 
         this.jornadas =
-          this.jornadasDisponibles.map(jornada => ({
-            idShift: jornada.idShift,
-            nombre: jornada.name ?? '',
-            horaInicio: jornada.startTime ?? '',
-            horaFin: jornada.endTime ?? ''
-          }));
+          this.jornadasDisponibles.map(
+            jornada => ({
+              idShift:
+                jornada.idShift,
+              nombre:
+                jornada.name ?? '',
+              horaInicio:
+                jornada.startTime ?? '',
+              horaFin:
+                jornada.endTime ?? ''
+            })
+          );
 
         const jornadasPorId =
           new Map<number, SchoolShiftResponseDTO>(
-            this.jornadasDisponibles.map(jornada => [
-              jornada.idShift,
-              jornada
-            ])
+            this.jornadasDisponibles.map(
+              jornada => [
+                jornada.idShift,
+                jornada
+              ]
+            )
           );
 
         this.franjas =
-          this.franjasDisponibles.map(franja => ({
-            idTimeSlot: franja.idTimeSlot,
-            idShift: franja.idShift,
-            jornada:
-              jornadasPorId.get(franja.idShift)?.name ??
-              `Jornada ${franja.idShift}`,
-            orden: franja.slotOrder,
-            horaInicio: franja.startTime ?? '',
-            horaFin: franja.endTime ?? '',
-            esDescanso: !!franja.isBreak
-          }));
+          this.franjasDisponibles.map(
+            franja => ({
+              idTimeSlot:
+                franja.idTimeSlot,
+
+              idShift:
+                franja.idShift,
+
+              jornada:
+                jornadasPorId.get(
+                  franja.idShift
+                )?.name ??
+                `Jornada ${franja.idShift}`,
+
+              orden:
+                franja.slotOrder,
+
+              horaInicio:
+                franja.startTime ?? '',
+
+              horaFin:
+                franja.endTime ?? '',
+
+              esDescanso:
+                !!franja.isBreak
+            })
+          );
 
         const franjasPorId =
           new Map<number, TimeSlotResponseDTO>(
-            this.franjasDisponibles.map(franja => [
-              franja.idTimeSlot,
-              franja
-            ])
+            this.franjasDisponibles.map(
+              franja => [
+                franja.idTimeSlot,
+                franja
+              ]
+            )
           );
 
         this.disponibilidades =
-          disponibilidadData.map(item => {
-            const academicTeacher =
-              academicTeacherPorId.get(item.idTeacher);
+          disponibilidadData.map(
+            item => {
 
-            const docente =
-              academicTeacher
-                ? docentesPorId.get(academicTeacher.idUser)
-                : undefined;
+              const academicTeacher =
+                academicTeacherPorId.get(
+                  item.idTeacher
+                );
 
-            const franja =
-              franjasPorId.get(item.idTimeSlot);
+              const docente =
+                academicTeacher
+                  ? docentesPorId.get(
+                      academicTeacher.idUser
+                    )
+                  : undefined;
 
-            const diaNombre =
-              DIAS_SEMANA.find(
-                dia => dia.valor === item.dayOfWeek
-              )?.nombre ??
-              `Día ${item.dayOfWeek}`;
+              const franja =
+                franjasPorId.get(
+                  item.idTimeSlot
+                );
 
-            return {
-              idAvailability: item.idAvailability,
-              idTeacher: item.idTeacher,
-              docente: docente
-                ? `${docente.name ?? ''} ${docente.surnames ?? ''}`.trim()
-                : `Docente #${item.idTeacher}`,
-              idTimeSlot: item.idTimeSlot,
-              franja: franja
-                ? `${franja.startTime ?? ''} - ${franja.endTime ?? ''}`
-                : `Franja #${item.idTimeSlot}`,
-              diaSemana: item.dayOfWeek,
-              diaNombre,
-              disponible: item.available
-            };
-          });
+              const diaNombre =
+                DIAS_SEMANA.find(
+                  dia =>
+                    dia.valor === item.dayOfWeek
+                )?.nombre ??
+                `Día ${item.dayOfWeek}`;
 
+              return {
+                idAvailability:
+                  item.idAvailability,
+
+                idTeacher:
+                  item.idTeacher,
+
+                docente:
+                  docente
+                    ? `${docente.name ?? ''} ${
+                        docente.surnames ?? ''
+                      }`.trim()
+                    : `Docente #${item.idTeacher}`,
+
+                idTimeSlot:
+                  item.idTimeSlot,
+
+                franja:
+                  franja
+                    ? `${franja.startTime ?? ''} - ${
+                        franja.endTime ?? ''
+                      }`
+                    : `Franja #${item.idTimeSlot}`,
+
+                diaSemana:
+                  item.dayOfWeek,
+
+                diaNombre,
+
+                disponible:
+                  item.available
+              };
+            }
+          );
+
+        this.reiniciarPaginas();
         this.cargandoDatos = false;
       },
 
@@ -642,19 +965,25 @@ export class RegistroComponent implements OnInit {
     });
   }
 
-  obtenerNombreNivel(idLevel: number): string {
+  obtenerNombreNivel(
+    idLevel: number
+  ): string {
     return (
       this.nivelesDisponibles.find(
-        nivel => nivel.idLevel === idLevel
+        nivel =>
+          nivel.idLevel === idLevel
       )?.name ??
       `Nivel ${idLevel}`
     );
   }
 
-  obtenerNombreJornada(idShift: number): string {
+  obtenerNombreJornada(
+    idShift: number
+  ): string {
     return (
       this.jornadasDisponibles.find(
-        jornada => jornada.idShift === idShift
+        jornada =>
+          jornada.idShift === idShift
       )?.name ??
       `Jornada ${idShift}`
     );
@@ -665,37 +994,50 @@ export class RegistroComponent implements OnInit {
   ): string {
     const docente =
       this.docentesDisponibles.find(
-        d => d.idUser === academico.idUser
+        d =>
+          d.idUser === academico.idUser
       );
 
     return docente
-      ? `${docente.name ?? ''} ${docente.surnames ?? ''}`.trim()
+      ? `${docente.name ?? ''} ${
+          docente.surnames ?? ''
+        }`.trim()
       : `Docente #${academico.idUser}`;
   }
 
   cambiarPestanaDatos(
-    pestana: 'academico' | 'calendario' | 'disponibilidad'
+    pestana:
+      'academico' |
+      'calendario' |
+      'disponibilidad'
   ): void {
     this.pestanaActivaDatos = pestana;
   }
 
-  seleccionarDocente(docente: DocenteFila): void {
+  seleccionarDocente(
+    docente: DocenteFila
+  ): void {
     this.docenteSeleccionado = docente;
   }
 
   private refrescarCursosDisponibles(): void {
-    this.horariosService.listarCursos().subscribe({
-      next: respuesta => {
-        this.cursosDisponibles =
-          this.extraerLista<CourseResponseDTO>(respuesta);
-      },
-      error: err => {
-        console.error(
-          'No se pudo refrescar la lista de cursos:',
-          err
-        );
-      }
-    });
+    this.horariosService
+      .listarCursos()
+      .subscribe({
+        next: respuesta => {
+          this.cursosDisponibles =
+            this.extraerLista<CourseResponseDTO>(
+              respuesta
+            );
+        },
+
+        error: err => {
+          console.error(
+            'No se pudo refrescar la lista de cursos:',
+            err
+          );
+        }
+      });
   }
 
   abrirAgregarDocente(): void {
@@ -728,13 +1070,26 @@ export class RegistroComponent implements OnInit {
       this.docenteSeleccionado;
 
     this.formularioDocente = {
-      idAcademicLoad: docente.idAcademicLoad,
-      idUser: docente.idUser,
-      idCourse: docente.idCourse,
-      idSubject: docente.idSubject,
-      maxDailyHours: docente.maxDailyHours,
-      maxWeeklyHours: docente.maxWeeklyHours,
-      horasSemanaArea: docente.horasSemanaArea
+      idAcademicLoad:
+        docente.idAcademicLoad,
+
+      idUser:
+        docente.idUser,
+
+      idCourse:
+        docente.idCourse,
+
+      idSubject:
+        docente.idSubject,
+
+      maxDailyHours:
+        docente.maxDailyHours,
+
+      maxWeeklyHours:
+        docente.maxWeeklyHours,
+
+      horasSemanaArea:
+        docente.horasSemanaArea
     };
 
     this.refrescarCursosDisponibles();
@@ -767,7 +1122,9 @@ export class RegistroComponent implements OnInit {
 
     if (
       !this.cursosDisponibles.some(
-        curso => curso.idCourse === formulario.idCourse
+        curso =>
+          curso.idCourse ===
+          formulario.idCourse
       )
     ) {
       this.errorFormularioDocente =
@@ -800,39 +1157,54 @@ export class RegistroComponent implements OnInit {
         formulario.idUser
       );
 
-    const guardarDisponibilidad$ =
+    const guardarDocenteAcademico$ =
       academicTeacherExistente
         ? this.horariosService.actualizarDocenteAcademico(
             academicTeacherExistente.idAcademicTeacher,
             {
-              idUser: formulario.idUser,
-              maxDailyHours: formulario.maxDailyHours,
-              maxWeeklyHours: formulario.maxWeeklyHours
+              idUser:
+                formulario.idUser,
+              maxDailyHours:
+                formulario.maxDailyHours,
+              maxWeeklyHours:
+                formulario.maxWeeklyHours
             }
           )
         : this.horariosService.crearDocenteAcademico({
-            idUser: formulario.idUser,
-            maxDailyHours: formulario.maxDailyHours,
-            maxWeeklyHours: formulario.maxWeeklyHours
+            idUser:
+              formulario.idUser,
+            maxDailyHours:
+              formulario.maxDailyHours,
+            maxWeeklyHours:
+              formulario.maxWeeklyHours
           });
 
-    guardarDisponibilidad$.subscribe({
+    guardarDocenteAcademico$.subscribe({
       next: respuesta => {
+
         const idAcademicTeacher =
           respuesta?.data?.idAcademicTeacher ??
           academicTeacherExistente?.idAcademicTeacher;
 
         if (!idAcademicTeacher) {
           this.guardandoDocente = false;
+
           this.errorFormularioDocente =
             'El backend no devolvió el ID del docente académico.';
+
           return;
         }
 
         const carga = {
-          idTeacher: idAcademicTeacher,
-          idCourse: formulario.idCourse,
-          idSubject: formulario.idSubject,
+          idTeacher:
+            idAcademicTeacher,
+
+          idCourse:
+            formulario.idCourse,
+
+          idSubject:
+            formulario.idSubject,
+
           weeklyHours:
             formulario.horasSemanaArea > 0
               ? formulario.horasSemanaArea
@@ -851,9 +1223,11 @@ export class RegistroComponent implements OnInit {
 
         guardarCarga$.subscribe({
           next: () => {
+
             this.guardandoDocente = false;
             this.mostrarFormularioDocente = false;
             this.docenteSeleccionado = null;
+
             this.cargarDatos();
 
             this.modalService.success(
@@ -890,7 +1264,7 @@ export class RegistroComponent implements OnInit {
         this.errorFormularioDocente =
           err?.error?.message ||
           err?.error?.error ||
-          'No se pudo guardar la disponibilidad del docente.';
+          'No se pudo guardar el docente académico.';
       }
     });
   }
@@ -919,6 +1293,7 @@ export class RegistroComponent implements OnInit {
       )
       .subscribe({
         next: () => {
+
           this.docentes =
             this.docentes.filter(
               item =>
@@ -948,7 +1323,8 @@ export class RegistroComponent implements OnInit {
   seleccionarAsignatura(
     asignatura: AsignaturaFila
   ): void {
-    this.asignaturaSeleccionada = asignatura;
+    this.asignaturaSeleccionada =
+      asignatura;
   }
 
   abrirAgregarAsignatura(): void {
@@ -1025,9 +1401,11 @@ export class RegistroComponent implements OnInit {
 
     peticion.subscribe({
       next: () => {
+
         this.guardandoAsignatura = false;
         this.mostrarFormularioAsignatura = false;
         this.asignaturaSeleccionada = null;
+
         this.cargarDatos();
 
         this.modalService.success(
@@ -1075,6 +1453,7 @@ export class RegistroComponent implements OnInit {
       .listarCargasAcademicas()
       .subscribe({
         next: async respuesta => {
+
           const cargasRelacionadas =
             this.extraerLista<AcademicLoadResponseDTO>(
               respuesta
@@ -1084,7 +1463,9 @@ export class RegistroComponent implements OnInit {
                 asignatura.idSubject
             );
 
-          if (cargasRelacionadas.length > 0) {
+          if (
+            cargasRelacionadas.length > 0
+          ) {
             const confirmarCascada =
               await this.modalService.confirm(
                 `"${asignatura.nombre}" está asignada a ${cargasRelacionadas.length} docente(s)/curso(s) en carga académica. Si continúas, también se eliminarán esas asignaciones. ¿Deseas continuar?`,
@@ -1119,6 +1500,7 @@ export class RegistroComponent implements OnInit {
     asignatura: AsignaturaFila,
     cargasRelacionadas: AcademicLoadResponseDTO[]
   ): void {
+
     const eliminacionesCargas =
       cargasRelacionadas.map(
         carga =>
@@ -1140,6 +1522,7 @@ export class RegistroComponent implements OnInit {
       )
       .subscribe({
         next: () => {
+
           this.asignaturas =
             this.asignaturas.filter(
               item =>
@@ -1157,6 +1540,10 @@ export class RegistroComponent implements OnInit {
           this.asignaturaSeleccionada = null;
 
           this.cargarDatos();
+
+          this.modalService.success(
+            'La asignatura se eliminó correctamente.'
+          );
         },
 
         error: err => {
@@ -1175,7 +1562,9 @@ export class RegistroComponent implements OnInit {
       });
   }
 
-  seleccionarCurso(curso: CursoFila): void {
+  seleccionarCurso(
+    curso: CursoFila
+  ): void {
     this.cursoSeleccionado = curso;
   }
 
@@ -1184,13 +1573,16 @@ export class RegistroComponent implements OnInit {
     this.errorFormularioCurso = '';
 
     const primerPeriodoDisponible =
-      this.periodosDisponibles[0]?.idPeriod ?? null;
+      this.periodosDisponibles[0]?.idPeriod ??
+      null;
 
     const primerNivelDisponible =
-      this.nivelesDisponibles[0]?.idLevel ?? 0;
+      this.nivelesDisponibles[0]?.idLevel ??
+      0;
 
     const primeraJornadaDisponible =
-      this.jornadasDisponibles[0]?.idShift ?? 0;
+      this.jornadasDisponibles[0]?.idShift ??
+      0;
 
     this.formularioCurso = {
       idCourse: 0,
@@ -1217,14 +1609,24 @@ export class RegistroComponent implements OnInit {
       this.cursoSeleccionado;
 
     this.formularioCurso = {
-      idCourse: curso.idCourse,
-      idPeriod: curso.idPeriod ?? null,
-      idLevel: curso.idLevel,
-      idShift: curso.idShift,
+      idCourse:
+        curso.idCourse,
+
+      idPeriod:
+        curso.idPeriod ?? null,
+
+      idLevel:
+        curso.idLevel,
+
+      idShift:
+        curso.idShift,
+
       homeroomTeacher:
         curso.homeroomTeacher,
+
       nombre:
         curso.nombre ?? '',
+
       estudiantes:
         curso.estudiantes
     };
@@ -1333,7 +1735,9 @@ export class RegistroComponent implements OnInit {
     let homeroomTeacher:
       number | null = null;
 
-    if (idUserHomeroomTeacher !== null) {
+    if (
+      idUserHomeroomTeacher !== null
+    ) {
       const academicTeacher =
         this.academicTeachersPorUsuario.get(
           idUserHomeroomTeacher
@@ -1377,6 +1781,7 @@ export class RegistroComponent implements OnInit {
 
     peticion.subscribe({
       next: respuesta => {
+
         console.log(
           'Curso guardado correctamente:',
           respuesta
@@ -1385,6 +1790,7 @@ export class RegistroComponent implements OnInit {
         this.guardandoCurso = false;
         this.mostrarFormularioCurso = false;
         this.cursoSeleccionado = null;
+
         this.cargarDatos();
 
         this.modalService.success(
@@ -1395,6 +1801,7 @@ export class RegistroComponent implements OnInit {
       },
 
       error: err => {
+
         this.guardandoCurso = false;
 
         console.error(
@@ -1404,13 +1811,21 @@ export class RegistroComponent implements OnInit {
 
         let mensaje = '';
 
-        if (typeof err?.error === 'string') {
+        if (
+          typeof err?.error === 'string'
+        ) {
           mensaje = err.error;
-        } else if (err?.error?.message) {
+        } else if (
+          err?.error?.message
+        ) {
           mensaje = err.error.message;
-        } else if (err?.error?.error) {
+        } else if (
+          err?.error?.error
+        ) {
           mensaje = err.error.error;
-        } else if (err?.message) {
+        } else if (
+          err?.message
+        ) {
           mensaje = err.message;
         }
 
@@ -1418,21 +1833,33 @@ export class RegistroComponent implements OnInit {
           mensaje.toLowerCase();
 
         if (
-          mensajeLower.includes('fk_course_period') ||
-          mensajeLower.includes('academic_period') ||
-          mensajeLower.includes('foreign key')
+          mensajeLower.includes(
+            'fk_course_period'
+          ) ||
+          mensajeLower.includes(
+            'academic_period'
+          ) ||
+          mensajeLower.includes(
+            'foreign key'
+          )
         ) {
           this.errorFormularioCurso =
             'El período seleccionado no existe. Selecciona un período válido.';
-        } else if (err?.status === 500) {
+        } else if (
+          err?.status === 500
+        ) {
           this.errorFormularioCurso =
             mensaje ||
             'El servidor no pudo registrar el curso.';
-        } else if (err?.status === 400) {
+        } else if (
+          err?.status === 400
+        ) {
           this.errorFormularioCurso =
             mensaje ||
             'Los datos del curso no son válidos.';
-        } else if (err?.status === 401) {
+        } else if (
+          err?.status === 401
+        ) {
           this.errorFormularioCurso =
             'Tu sesión ha expirado. Inicia sesión nuevamente.';
         } else {
@@ -1466,6 +1893,7 @@ export class RegistroComponent implements OnInit {
       .eliminarCurso(curso.idCourse)
       .subscribe({
         next: () => {
+
           this.cursos =
             this.cursos.filter(
               item =>
@@ -1499,7 +1927,9 @@ export class RegistroComponent implements OnInit {
       });
   }
 
-  seleccionarNivel(nivel: NivelFila): void {
+  seleccionarNivel(
+    nivel: NivelFila
+  ): void {
     this.nivelSeleccionado = nivel;
   }
 
@@ -1528,9 +1958,14 @@ export class RegistroComponent implements OnInit {
       this.nivelSeleccionado;
 
     this.formularioNivel = {
-      idLevel: nivel.idLevel,
-      nombre: nivel.nombre,
-      descripcion: nivel.descripcion
+      idLevel:
+        nivel.idLevel,
+
+      nombre:
+        nivel.nombre,
+
+      descripcion:
+        nivel.descripcion
     };
 
     this.mostrarFormularioNivel = true;
@@ -1568,13 +2003,17 @@ export class RegistroComponent implements OnInit {
             this.formularioNivel.idLevel,
             dto
           )
-        : this.horariosService.crearNivel(dto);
+        : this.horariosService.crearNivel(
+            dto
+          );
 
     peticion.subscribe({
       next: () => {
+
         this.guardandoNivel = false;
         this.mostrarFormularioNivel = false;
         this.nivelSeleccionado = null;
+
         this.cargarDatos();
 
         this.modalService.success(
@@ -1622,6 +2061,7 @@ export class RegistroComponent implements OnInit {
       .eliminarNivel(nivel.idLevel)
       .subscribe({
         next: () => {
+
           this.niveles =
             this.niveles.filter(
               item =>
@@ -1687,10 +2127,17 @@ export class RegistroComponent implements OnInit {
       this.periodoSeleccionado;
 
     this.formularioPeriodo = {
-      idPeriod: periodo.idPeriod,
-      nombre: periodo.nombre,
-      fechaInicio: periodo.fechaInicio,
-      fechaFin: periodo.fechaFin
+      idPeriod:
+        periodo.idPeriod,
+
+      nombre:
+        periodo.nombre,
+
+      fechaInicio:
+        periodo.fechaInicio,
+
+      fechaFin:
+        periodo.fechaFin
     };
 
     this.mostrarFormularioPeriodo = true;
@@ -1757,9 +2204,11 @@ export class RegistroComponent implements OnInit {
 
     peticion.subscribe({
       next: () => {
+
         this.guardandoPeriodo = false;
         this.mostrarFormularioPeriodo = false;
         this.periodoSeleccionado = null;
+
         this.cargarDatos();
 
         this.modalService.success(
@@ -1807,6 +2256,7 @@ export class RegistroComponent implements OnInit {
       .eliminarPeriodo(periodo.idPeriod)
       .subscribe({
         next: () => {
+
           this.periodos =
             this.periodos.filter(
               item =>
@@ -1872,10 +2322,17 @@ export class RegistroComponent implements OnInit {
       this.jornadaSeleccionada;
 
     this.formularioJornada = {
-      idShift: jornada.idShift,
-      nombre: jornada.nombre,
-      horaInicio: jornada.horaInicio,
-      horaFin: jornada.horaFin
+      idShift:
+        jornada.idShift,
+
+      nombre:
+        jornada.nombre,
+
+      horaInicio:
+        jornada.horaInicio,
+
+      horaFin:
+        jornada.horaFin
     };
 
     this.mostrarFormularioJornada = true;
@@ -1933,9 +2390,11 @@ export class RegistroComponent implements OnInit {
 
     peticion.subscribe({
       next: () => {
+
         this.guardandoJornada = false;
         this.mostrarFormularioJornada = false;
         this.jornadaSeleccionada = null;
+
         this.cargarDatos();
 
         this.modalService.success(
@@ -1983,6 +2442,7 @@ export class RegistroComponent implements OnInit {
       .eliminarJornada(jornada.idShift)
       .subscribe({
         next: () => {
+
           this.jornadas =
             this.jornadas.filter(
               item =>
@@ -2028,8 +2488,11 @@ export class RegistroComponent implements OnInit {
 
     this.formularioFranja = {
       idTimeSlot: 0,
+
       idShift:
-        this.jornadasDisponibles[0]?.idShift ?? 0,
+        this.jornadasDisponibles[0]?.idShift ??
+        0,
+
       orden: 1,
       horaInicio: '',
       horaFin: '',
@@ -2053,14 +2516,19 @@ export class RegistroComponent implements OnInit {
     this.formularioFranja = {
       idTimeSlot:
         franja.idTimeSlot,
+
       idShift:
         franja.idShift,
+
       orden:
         franja.orden,
+
       horaInicio:
         franja.horaInicio,
+
       horaFin:
         franja.horaFin,
+
       esDescanso:
         franja.esDescanso
     };
@@ -2109,12 +2577,16 @@ export class RegistroComponent implements OnInit {
     const dto: TimeSlotRequestDTO = {
       idShift:
         Number(formulario.idShift),
+
       slotOrder:
         Number(formulario.orden),
+
       startTime:
         formulario.horaInicio,
+
       endTime:
         formulario.horaFin,
+
       isBreak:
         formulario.esDescanso
     };
@@ -2131,9 +2603,11 @@ export class RegistroComponent implements OnInit {
 
     peticion.subscribe({
       next: () => {
+
         this.guardandoFranja = false;
         this.mostrarFormularioFranja = false;
         this.franjaSeleccionada = null;
+
         this.cargarDatos();
 
         this.modalService.success(
@@ -2178,9 +2652,12 @@ export class RegistroComponent implements OnInit {
     }
 
     this.horariosService
-      .eliminarFranja(franja.idTimeSlot)
+      .eliminarFranja(
+        franja.idTimeSlot
+      )
       .subscribe({
         next: () => {
+
           this.franjas =
             this.franjas.filter(
               item =>
@@ -2217,7 +2694,8 @@ export class RegistroComponent implements OnInit {
   seleccionarDisponibilidad(
     item: DisponibilidadFila
   ): void {
-    this.disponibilidadSeleccionada = item;
+    this.disponibilidadSeleccionada =
+      item;
   }
 
   abrirAgregarDisponibilidad(): void {
@@ -2226,10 +2704,15 @@ export class RegistroComponent implements OnInit {
 
     this.formularioDisponibilidad = {
       idAvailability: 0,
+
       idTeacher:
-        this.academicTeachersCatalogo[0]?.idAcademicTeacher ?? 0,
+        this.academicTeachersCatalogo[0]
+          ?.idAcademicTeacher ?? 0,
+
       idTimeSlot:
-        this.franjasDisponibles[0]?.idTimeSlot ?? 0,
+        this.franjasDisponibles[0]
+          ?.idTimeSlot ?? 0,
+
       diaSemana: 1,
       disponible: true
     };
@@ -2238,7 +2721,9 @@ export class RegistroComponent implements OnInit {
   }
 
   abrirEditarDisponibilidad(): void {
-    if (!this.disponibilidadSeleccionada) {
+    if (
+      !this.disponibilidadSeleccionada
+    ) {
       return;
     }
 
@@ -2251,12 +2736,16 @@ export class RegistroComponent implements OnInit {
     this.formularioDisponibilidad = {
       idAvailability:
         item.idAvailability,
+
       idTeacher:
         item.idTeacher,
+
       idTimeSlot:
         item.idTimeSlot,
+
       diaSemana:
         item.diaSemana,
+
       disponible:
         item.disponible
     };
@@ -2266,7 +2755,8 @@ export class RegistroComponent implements OnInit {
 
   cerrarFormularioDisponibilidad(): void {
     if (!this.guardandoDisponibilidad) {
-      this.mostrarFormularioDisponibilidad = false;
+      this.mostrarFormularioDisponibilidad =
+        false;
     }
   }
 
@@ -2299,10 +2789,13 @@ export class RegistroComponent implements OnInit {
     const dto: TeacherAvailabilityRequestDTO = {
       idTeacher:
         Number(formulario.idTeacher),
+
       idTimeSlot:
         Number(formulario.idTimeSlot),
+
       dayOfWeek:
         Number(formulario.diaSemana),
+
       available:
         formulario.disponible
     };
@@ -2319,9 +2812,13 @@ export class RegistroComponent implements OnInit {
 
     peticion.subscribe({
       next: () => {
+
         this.guardandoDisponibilidad = false;
-        this.mostrarFormularioDisponibilidad = false;
+        this.mostrarFormularioDisponibilidad =
+          false;
+
         this.disponibilidadSeleccionada = null;
+
         this.cargarDatos();
 
         this.modalService.success(
@@ -2348,7 +2845,9 @@ export class RegistroComponent implements OnInit {
   }
 
   async eliminarDisponibilidad(): Promise<void> {
-    if (!this.disponibilidadSeleccionada) {
+    if (
+      !this.disponibilidadSeleccionada
+    ) {
       return;
     }
 
@@ -2371,6 +2870,7 @@ export class RegistroComponent implements OnInit {
       )
       .subscribe({
         next: () => {
+
           this.disponibilidades =
             this.disponibilidades.filter(
               registro =>
@@ -2378,7 +2878,8 @@ export class RegistroComponent implements OnInit {
                 item.idAvailability
             );
 
-          this.disponibilidadSeleccionada = null;
+          this.disponibilidadSeleccionada =
+            null;
         },
 
         error: err => {

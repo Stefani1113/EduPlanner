@@ -368,29 +368,13 @@
 
         </table>
 
-        <div class="paginacion" *ngIf="estudiantesNotas.length > 0">
-          <button
-            type="button"
-            class="btn-paginacion"
-            (click)="irPaginaAnteriorNotas()"
-            [disabled]="paginaActualNotas === 1"
-          >
-            Anteriores 10
-          </button>
-
-          <span class="paginacion-info">
-            Página {{ paginaActualNotas }} de {{ totalPaginasNotas }}
-          </span>
-
-          <button
-            type="button"
-            class="btn-paginacion"
-            (click)="irPaginaSiguienteNotas()"
-            [disabled]="paginaActualNotas === totalPaginasNotas"
-          >
-            Siguientes 10
-          </button>
-        </div>
+        <app-pagination
+          *ngIf="estudiantesNotas.length > 0"
+          [totalItems]="estudiantesNotas.length"
+          [pageSize]="tamanoPaginaNotas"
+          [currentPage]="paginaActualNotas"
+          (pageChange)="paginaActualNotas = $event"
+        ></app-pagination>
 
       </div>
 
@@ -859,29 +843,13 @@
 
             </div>
 
-            <div class="paginacion" *ngIf="estudiantesReporte.length > 0">
-              <button
-                type="button"
-                class="btn-paginacion"
-                (click)="irPaginaAnteriorReporte()"
-                [disabled]="paginaActualReporte === 1"
-              >
-                Anteriores 10
-              </button>
-
-              <span class="paginacion-info">
-                Página {{ paginaActualReporte }} de {{ totalPaginasReporte }}
-              </span>
-
-              <button
-                type="button"
-                class="btn-paginacion"
-                (click)="irPaginaSiguienteReporte()"
-                [disabled]="paginaActualReporte === totalPaginasReporte"
-              >
-                Siguientes 10
-              </button>
-            </div>
+            <app-pagination
+              *ngIf="estudiantesReporte.length > 0"
+              [totalItems]="estudiantesReporte.length"
+              [pageSize]="tamanoPaginaReporte"
+              [currentPage]="paginaActualReporte"
+              (pageChange)="paginaActualReporte = $event"
+            ></app-pagination>
 
           </div>
 
