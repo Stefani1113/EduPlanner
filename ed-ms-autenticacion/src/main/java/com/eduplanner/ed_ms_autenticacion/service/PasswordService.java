@@ -3,6 +3,7 @@ package com.eduplanner.ed_ms_autenticacion.service;
 import java.util.Map;
 import java.util.Optional;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -31,6 +32,9 @@ public class PasswordService {
 
     private static final int EXPIRATION_MINUTES = 10;
 
+    @Value("${frontend.reset-password-url}")
+    private String resetPasswordUrl;
+
     /**
      * Recuperación de contraseña
      */
@@ -47,7 +51,7 @@ public class PasswordService {
         User user = userFound.get();
 
         String token = jwtService.generatePasswordResetToken(request.getEmail());
-        String link = "http://localhost:4200/auth/reset-password?token=" + token;
+        String link = resetPasswordUrl + "?token=" + token;
 
         Map<String, Object> variables = Map.of(
                 "name", user.getName(),

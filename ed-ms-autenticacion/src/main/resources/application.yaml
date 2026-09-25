@@ -50,3 +50,6 @@ management:
   endpoint:
     health:
       show-details: never
+
+frontend:
+  reset-password-url: ${RESET_PASSWORD_URL:http://localhost:4200/auth/reset-password}
