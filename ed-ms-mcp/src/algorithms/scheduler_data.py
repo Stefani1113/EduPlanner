@@ -32,6 +32,7 @@ def get_all_pages(client, endpoint, page_size=100):
             raise ValueError(
                 f"Formato de respuesta inesperado para {endpoint}"
             )
+            
 
     return all_items
 
@@ -110,18 +111,29 @@ def adapt_time_slots(
 def load_scheduler_data(client, course_names: list[str] | None = None):
 
     # Cargas acdémicas
-    academic_loads_data = client.get(
-        "/academic-loads"
+    academic_loads_data = get_all_pages(
+    client,
+    "/academic-loads"
     )
 
+    print("DEBUG academic_loads_data:")
+    print(academic_loads_data)
+
+    academic_loads = adapt_academic_loads(
+        academic_loads_data
+    )
     academic_loads = adapt_academic_loads(
         academic_loads_data
     )
 
     # Cursos
-    courses_data = client.get(
-        "/courses"
+    courses_data = get_all_pages(
+    client,
+    "/courses"
     )
+
+    print("DEBUG courses_data:")
+    print(courses_data)
 
     courses = adapt_courses(
         courses_data
@@ -234,10 +246,12 @@ def load_scheduler_data(client, course_names: list[str] | None = None):
     teachers = []
 
     for teacher_id in teacher_ids:
-
         teacher_response = client.get(
             f"/academic-teachers/{teacher_id}"
         )
+
+        print("DEBUG teacher_response:")
+        print(teacher_response)
 
         teachers.append(
             adapt_teacher(
@@ -277,7 +291,7 @@ def load_scheduler_data(client, course_names: list[str] | None = None):
 
         time_slots.extend(
             adapt_time_slots(
-                time_slots_data["data"]
+                time_slots_data
             )
         )
 

@@ -1,4 +1,5 @@
 from typing import Any
+import traceback
 
 from algorithms.scheduler import generate_and_validate_schedule
 import algorithms.scheduler as scheduler_module
@@ -223,23 +224,17 @@ def create_scheduler_tool(server, client):
                 )
             }
 
-        except Exception as exc:
-
-            print(
-                f"❌ Error generando o guardando horario: {exc}"
-            )
+        except Exception as e:
+            traceback.print_exc()
 
             return {
                 "success": False,
                 "conflicts": [
                     {
                         "type": "SYSTEM_ERROR",
-                        "message": str(exc)
+                        "message": str(e)
                     }
                 ],
                 "total_conflicts": 1,
-                "message": (
-                    "Ocurrió un error durante la generación "
-                    "o almacenamiento del horario."
-                )
+                "message": "Ocurrió un error durante la generación o almacenamiento del horario."
             }
