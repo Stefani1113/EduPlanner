@@ -46,6 +46,7 @@
       </button>
 
       <button
+        *ngIf="esDirectivo"
         type="button"
         class="query-toggle-btn"
         [class.active]="modoConsulta === 'docente'"
@@ -65,7 +66,9 @@
         (click)="alternarSelectorCursos()"
       >
 
-        <div class="picker-icon">▦</div>
+        <div class="picker-icon">
+          ▦
+        </div>
 
         <div class="picker-text">
 
@@ -114,8 +117,8 @@
       <div
         class="course-picker"
         *ngIf="
-          modoConsulta === 'docente' &&
-          (esAdministrador || esDirectivo)
+          esDirectivo &&
+          modoConsulta === 'docente'
         "
         (click)="alternarSelectorDocentes()"
       >
@@ -876,5 +879,5 @@
     </div>
 
   </aside>
-
-</ng-container>
+ 
+</ng-container>    

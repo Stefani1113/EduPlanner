@@ -2227,3 +2227,55 @@
     flex-direction: column;
   }
 }
+.paginacion {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 16px 0;
+}
+
+.paginacion .btn-paginacion {
+  padding: 8px 16px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.paginacion .btn-paginacion:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.paginacion .paginacion-info {
+  font-size: 14px;
+  color: #555;
+}
+.tabla-wrap {
+  max-height: 520px;
+  overflow-x: auto;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--inst-primary) var(--inst-dark);
+}
+
+.tabla-wrap::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+.tabla-wrap::-webkit-scrollbar-track {
+  background: var(--inst-dark);
+  border-radius: 10px;
+}
+
+.tabla-wrap::-webkit-scrollbar-thumb {
+  background: var(--inst-primary);
+  border-radius: 10px;
+}
+
+.tabla-wrap::-webkit-scrollbar-thumb:hover {
+  background: var(--inst-secondary);
+}

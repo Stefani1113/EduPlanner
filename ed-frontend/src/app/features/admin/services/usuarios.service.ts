@@ -1,10 +1,23 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 export interface HttpGlobalResponse<T> {
   data: T;
   message: string;
+}
+
+export interface PageResponse<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
+  numberOfElements?: number;
+  first?: boolean;
+  last?: boolean;
+  empty?: boolean;
 }
 
 export interface UserResponseDTO {
@@ -191,44 +204,113 @@ export const ID_ROL_DIRECTIVO = 4;
 })
 export class UsuariosService {
 
-  private api = '/administracion/eduplanner';
+  private readonly api = '/administracion/eduplanner';
 
   constructor(private http: HttpClient) {}
 
   listar(
-    idRole?: number
-  ): Observable<HttpGlobalResponse<UserResponseDTO[]>> {
+    idRole?: number,
+    page?: number,
+    size?: number
+  ): Observable<
+    HttpGlobalResponse<PageResponse<UserResponseDTO>>
+  > {
 
-    const params: Record<string, string> = {};
+    let params = new HttpParams();
 
     if (idRole !== undefined) {
-      params['idRole'] = idRole.toString();
+      params = params.set(
+        'idRole',
+        idRole.toString()
+      );
     }
 
-    return this.http.get<HttpGlobalResponse<UserResponseDTO[]>>(
+    if (page !== undefined) {
+      params = params.set(
+        'page',
+        page.toString()
+      );
+    }
+
+    if (size !== undefined) {
+      params = params.set(
+        'size',
+        size.toString()
+      );
+    }
+
+    return this.http.get<
+      HttpGlobalResponse<PageResponse<UserResponseDTO>>
+    >(
       `${this.api}/users`,
       { params }
     );
   }
 
   listarPorCurso(
-    idCourse: number
-  ): Observable<HttpGlobalResponse<UserResponseDTO[]>> {
+    idCourse: number,
+    page?: number,
+    size?: number
+  ): Observable<
+    HttpGlobalResponse<PageResponse<UserResponseDTO>>
+  > {
 
-    return this.http.get<HttpGlobalResponse<UserResponseDTO[]>>(
-      `${this.api}/users/course/${idCourse}`
+    let params = new HttpParams();
+
+    if (page !== undefined) {
+      params = params.set(
+        'page',
+        page.toString()
+      );
+    }
+
+    if (size !== undefined) {
+      params = params.set(
+        'size',
+        size.toString()
+      );
+    }
+
+    return this.http.get<
+      HttpGlobalResponse<PageResponse<UserResponseDTO>>
+    >(
+      `${this.api}/users/course/${idCourse}`,
+      { params }
     );
   }
 
   buscarPorNombre(
-    name: string
-  ): Observable<HttpGlobalResponse<UserResponseDTO[]>> {
+    name: string,
+    page?: number,
+    size?: number
+  ): Observable<
+    HttpGlobalResponse<PageResponse<UserResponseDTO>>
+  > {
 
-    return this.http.get<HttpGlobalResponse<UserResponseDTO[]>>(
+    let params = new HttpParams().set(
+      'name',
+      name
+    );
+
+    if (page !== undefined) {
+      params = params.set(
+        'page',
+        page.toString()
+      );
+    }
+
+    if (size !== undefined) {
+      params = params.set(
+        'size',
+        size.toString()
+      );
+    }
+
+    return this.http.get<
+      HttpGlobalResponse<PageResponse<UserResponseDTO>>
+    >(
       `${this.api}/users/search`,
-      {
-        params: { name }
-      }
+      { params }
     );
   }
 
@@ -237,7 +319,9 @@ export class UsuariosService {
     status: boolean
   ): Observable<HttpGlobalResponse<void>> {
 
-    return this.http.patch<HttpGlobalResponse<void>>(
+    return this.http.patch<
+      HttpGlobalResponse<void>
+    >(
       `${this.api}/users/${idUser}/status`,
       { status }
     );
@@ -247,7 +331,9 @@ export class UsuariosService {
     dto: RegisterStaffDTO
   ): Observable<HttpGlobalResponse<void>> {
 
-    return this.http.post<HttpGlobalResponse<void>>(
+    return this.http.post<
+      HttpGlobalResponse<void>
+    >(
       `${this.api}/users/register/staff`,
       dto
     );
@@ -257,7 +343,9 @@ export class UsuariosService {
     dto: RegisterTeacherDTO
   ): Observable<HttpGlobalResponse<void>> {
 
-    return this.http.post<HttpGlobalResponse<void>>(
+    return this.http.post<
+      HttpGlobalResponse<void>
+    >(
       `${this.api}/users/register/teacher`,
       dto
     );
@@ -267,7 +355,9 @@ export class UsuariosService {
     dto: RegisterStudentDTO
   ): Observable<HttpGlobalResponse<void>> {
 
-    return this.http.post<HttpGlobalResponse<void>>(
+    return this.http.post<
+      HttpGlobalResponse<void>
+    >(
       `${this.api}/users/register/student`,
       dto
     );
@@ -275,9 +365,13 @@ export class UsuariosService {
 
   obtenerPorId(
     idUser: number
-  ): Observable<HttpGlobalResponse<UserResponseDTO>> {
+  ): Observable<
+    HttpGlobalResponse<UserResponseDTO>
+  > {
 
-    return this.http.get<HttpGlobalResponse<UserResponseDTO>>(
+    return this.http.get<
+      HttpGlobalResponse<UserResponseDTO>
+    >(
       `${this.api}/users/${idUser}`
     );
   }
@@ -285,10 +379,14 @@ export class UsuariosService {
   actualizarDocente(
     idUser: number,
     dto: TeachingRequestDTO
-  ): Observable<HttpGlobalResponse<TeachingResponseDTO>> {
+  ): Observable<
+    HttpGlobalResponse<TeachingResponseDTO>
+  > {
 
-    return this.http.put<HttpGlobalResponse<TeachingResponseDTO>>(
-      `/administracion/eduplanner/teacher/${idUser}`,
+    return this.http.put<
+      HttpGlobalResponse<TeachingResponseDTO>
+    >(
+      `${this.api}/teacher/${idUser}`,
       dto
     );
   }
@@ -298,7 +396,9 @@ export class UsuariosService {
     dto: UpdateStudentDTO
   ): Observable<HttpGlobalResponse<void>> {
 
-    return this.http.put<HttpGlobalResponse<void>>(
+    return this.http.put<
+      HttpGlobalResponse<void>
+    >(
       `${this.api}/users/${idUser}/student`,
       dto
     );
@@ -309,7 +409,9 @@ export class UsuariosService {
     idCourse: number | null
   ): Observable<HttpGlobalResponse<void>> {
 
-    return this.http.put<HttpGlobalResponse<void>>(
+    return this.http.put<
+      HttpGlobalResponse<void>
+    >(
       `${this.api}/users/${idUser}/course`,
       { idCourse }
     );
@@ -320,7 +422,9 @@ export class UsuariosService {
     dto: UpdateStaffDTO
   ): Observable<HttpGlobalResponse<void>> {
 
-    return this.http.put<HttpGlobalResponse<void>>(
+    return this.http.put<
+      HttpGlobalResponse<void>
+    >(
       `${this.api}/users/${idUser}/staff`,
       dto
     );
@@ -331,16 +435,33 @@ export class UsuariosService {
     dto: UpdateRoleDTO
   ): Observable<HttpGlobalResponse<void>> {
 
-    return this.http.put<HttpGlobalResponse<void>>(
+    return this.http.put<
+      HttpGlobalResponse<void>
+    >(
       `${this.api}/users/${idUser}/role`,
       dto
     );
   }
 
-  listarCursos(): Observable<HttpGlobalResponse<CourseBasicoDTO[]>> {
+  listarCursos(): Observable<
+    HttpGlobalResponse<CourseBasicoDTO[]>
+  > {
 
-    return this.http.get<HttpGlobalResponse<CourseBasicoDTO[]>>(
-      '/gestion-academica/eduplanner/courses'
+    return this.http.get<
+      HttpGlobalResponse<PageResponse<CourseBasicoDTO>>
+    >(
+      '/gestion-academica/eduplanner/courses',
+      {
+        params: {
+          page: '0',
+          size: '1000'
+        }
+      }
+    ).pipe(
+      map(response => ({
+        data: response.data?.content ?? [],
+        message: response.message
+      }))
     );
-  } 
+  }
 }

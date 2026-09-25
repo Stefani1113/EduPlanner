@@ -887,3 +887,284 @@
     transform: translateY(0);
   }
 }
+
+.paginacion {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+
+  margin-top: 0;
+  padding: 18px 32px;
+
+  box-sizing: border-box;
+
+  border-top: 1px solid #e5e7eb;
+  background: #ffffff;
+
+  min-height: 76px;
+}
+
+
+
+.paginacion-resumen {
+  flex: 1 1 0;
+
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 400;
+
+  white-space: nowrap;
+}
+
+.paginacion-resumen strong {
+  color: #111827;
+  font-weight: 600;
+}
+
+
+
+.paginacion-controles {
+  flex: 0 0 auto;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 12px;
+}
+
+
+
+.btn-paginacion {
+  height: 40px;
+  min-width: 84px;
+
+  padding: 0 16px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid #d9dee7;
+  border-radius: 9px;
+
+  background: #ffffff;
+  color: #374151;
+
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+
+  line-height: 1;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+}
+
+.btn-paginacion:hover:not(:disabled) {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #1f2937;
+
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+}
+
+.btn-paginacion:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.btn-paginacion:focus-visible {
+  outline: none;
+
+  border-color: #2563eb;
+
+  box-shadow:
+    0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.btn-paginacion:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+
+  background: #ffffff;
+  box-shadow: none;
+}
+
+
+
+.paginacion-info {
+  min-width: 110px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #6b7280;
+
+  font-size: 14px;
+  font-weight: 400;
+
+  white-space: nowrap;
+  text-align: center;
+}
+
+.paginacion-info strong {
+  margin: 0 3px;
+
+  color: #111827;
+  font-weight: 600;
+}
+
+
+
+@media (max-width: 900px) {
+
+  .paginacion {
+    padding: 16px 24px;
+    gap: 18px;
+  }
+
+  .paginacion-resumen {
+    font-size: 13px;
+  }
+
+  .paginacion-controles {
+    gap: 8px;
+  }
+
+  .btn-paginacion {
+    height: 38px;
+    min-width: 78px;
+
+    padding: 0 14px;
+
+    font-size: 13px;
+  }
+
+  .paginacion-info {
+    min-width: 100px;
+    font-size: 13px;
+  }
+}
+
+
+
+@media (max-width: 600px) {
+
+  .paginacion {
+    flex-direction: column;
+    justify-content: center;
+
+    gap: 12px;
+
+    padding: 16px;
+  }
+
+  .paginacion-resumen {
+    width: 100%;
+
+    text-align: center;
+  }
+
+  .paginacion-controles {
+    width: 100%;
+
+    justify-content: center;
+
+    gap: 8px;
+  }
+
+  .btn-paginacion {
+    height: 36px;
+    min-width: 76px;
+
+    padding: 0 12px;
+
+    font-size: 13px;
+  }
+
+  .paginacion-info {
+    min-width: auto;
+    font-size: 13px;
+  }
+}
+
+
+@media (max-width: 400px) {
+
+  .paginacion {
+    padding: 14px 10px;
+  }
+
+  .paginacion-controles {
+    gap: 6px;
+  }
+
+  .btn-paginacion {
+    min-width: 70px;
+    padding: 0 10px;
+  }
+
+  .paginacion-info {
+    font-size: 12px;
+  }
+
+  .paginacion-resumen {
+    font-size: 12px;
+  }
+}
+.table-wrapper {
+  max-height: 520px;
+  overflow-x: auto;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--inst-primary) var(--inst-dark);
+}
+
+.table-wrapper::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+.table-wrapper::-webkit-scrollbar-track {
+  background: var(--inst-dark);
+  border-radius: 10px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb {
+  background: var(--inst-primary);
+  border-radius: 10px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb:hover {
+  background: var(--inst-secondary);
+}
+
+.role-menu {
+  max-height: 280px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--inst-primary) var(--inst-dark);
+}
+
+.role-menu::-webkit-scrollbar {
+  width: 7px;
+}
+
+.role-menu::-webkit-scrollbar-track {
+  background: var(--inst-dark);
+  border-radius: 10px;
+}
+
+.role-menu::-webkit-scrollbar-thumb {
+  background: var(--inst-primary);
+  border-radius: 10px;
+}

@@ -9,7 +9,6 @@
     <button
       type="button"
       class="btn-descargar-historial"
-      *ngIf="!esDirectivo"
       (click)="abrirPanelDescarga()"
     >
       <span class="btn-descargar-historial-icono">⬇</span>
@@ -32,7 +31,7 @@
       <button
         type="button"
         class="tab"
-        *ngIf="esDocente"
+        *ngIf="puedeTomarAsistencia"
         [class.active]="tabActiva === 'tomar'"
         (click)="cambiarTab('tomar')"
       >
@@ -51,6 +50,7 @@
       <button
         type="button"
         class="tab"
+        *ngIf="!esEstudiante"
         [class.active]="tabActiva === 'historial'"
         (click)="cambiarTab('historial')"
       >
@@ -69,7 +69,6 @@
       <button
         type="button"
         class="tab"
-        *ngIf="esDocente || esEstudiante"
         [class.active]="tabActiva === 'conflictos'"
         (click)="cambiarTab('conflictos')"
       >
@@ -542,7 +541,6 @@
             <button
               type="button"
               class="btn-secundario"
-              *ngIf="!esDirectivo"
               (click)="descargarPdfHistorial()"
               [disabled]="idCursoSeleccionado === null"
             >
@@ -637,14 +635,12 @@
               type="text"
               placeholder="Nombre del estudiante..."
               [(ngModel)]="busquedaListado"
-              (ngModelChange)="paginaActualListado = 1"
             >
           </label>
 
           <button
             type="button"
             class="btn-secundario"
-            *ngIf="!esDirectivo"
             (click)="descargarPdfListado()"
             [disabled]="filtroListadoCurso === null"
           >
@@ -676,7 +672,7 @@
 
             <tbody>
 
-              <tr *ngFor="let fila of filasListadoPaginadas">
+              <tr *ngFor="let fila of filasListadoPagina">
 
                 <td>
                   {{ fila.primerNombre }}
@@ -726,8 +722,8 @@
           <app-pagination
             *ngIf="filasListadoVisibles.length > 0"
             [totalItems]="filasListadoVisibles.length"
-            [pageSize]="tamanoPagina"
-            [currentPage]="paginaActualListado"
+            [pageSize]="tamanoPaginaListado"
+            [currentPage]="paginaListado"
             (pageChange)="cambiarPaginaListado($event)"
           ></app-pagination>
 

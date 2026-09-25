@@ -38,13 +38,13 @@
     {{ errorCarga }}
   </div>
 
-  <div *ngIf="!cargando && !errorCarga && docentesFiltrados.length === 0" class="estado-msg">
+  <div *ngIf="!cargando && !errorCarga && docentes.length === 0" class="estado-msg">
     No hay docentes registrados.
   </div>
 
-  <div class="docentes-grid" *ngIf="!cargando && !errorCarga && docentesFiltrados.length > 0">
+  <div class="docentes-grid" *ngIf="!cargando && !errorCarga && docentes.length > 0">
 
-    <article class="docente-card" *ngFor="let d of docentesPaginados">
+    <article class="docente-card" *ngFor="let d of docentesPagina">
 
       <span class="status-corner" [class.activo]="d.status" [class.inactivo]="!d.status">
         {{ d.status ? 'Activo' : 'Inactivo' }}
@@ -116,8 +116,8 @@
   </div>
 
   <app-pagination
-    *ngIf="!cargando && !errorCarga && docentesFiltrados.length > 0"
-    [totalItems]="docentesFiltrados.length"
+    *ngIf="!cargando && !errorCarga && totalElementos > 0"
+    [totalItems]="totalElementos"
     [pageSize]="tamanoPagina"
     [currentPage]="paginaActual"
     (pageChange)="cambiarPagina($event)"

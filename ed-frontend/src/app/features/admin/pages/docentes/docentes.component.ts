@@ -1,23 +1,21 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
+import { PaginationComponent } from '../../../../core/components/pagination/pagination.component';
 import {
   DocentesService,
   TeachingRequestDTO,
   TeachingResponseDTO
 } from '../../services/docentes.service';
-
 import { PerfilService } from '../../services/perfil.service';
 import { ModalService } from '../../../../core/services/modal.service';
-import { PaginationComponent } from '../../../../core/components/pagination/pagination.component';
 
 const ID_INSTITUCION_FIJO = 1;
 const API_BASE_URL = 'http://localhost:8080';
 
 function emptyForm(): TeachingRequestDTO {
   return {
-    name: '',  
+    name: '',
     surnames: '',
     email: '',
     password: '',
@@ -85,29 +83,27 @@ function formDesdeDocente(
 export class DocentesComponent implements OnInit {
 
   docentes: TeachingResponseDTO[] = [];
-
   cargando = false;
   errorCarga = '';
   busqueda = '';
-
   mostrarFormulario = false;
   mostrarPerfil = false;
   mostrarConfirmacionEliminar = false;
   mostrarMasCampos = false;
-
   guardando = false;
   eliminando = false;
-
   errorFormulario = '';
   errorEliminacion = '';
-
   docenteEnEdicion: TeachingResponseDTO | null = null;
   docenteSeleccionado: TeachingResponseDTO | null = null;
   docenteParaEliminar: TeachingResponseDTO | null = null;
-
   form: TeachingRequestDTO = emptyForm();
-
   puedeGestionar = false;
+
+  paginaActual = 1;
+  readonly tamanoPagina = 10;
+  totalPaginas = 1;
+  totalElementos = 0;
 
   constructor(
     private docentesService: DocentesService,
@@ -116,7 +112,7 @@ export class DocentesComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.cargarDocentes();
+    this.cargarDocentes(1);
     this.cargarPermisos();
   }
 
@@ -124,7 +120,9 @@ export class DocentesComponent implements OnInit {
     this.perfilService.obtenerMiPerfil().subscribe({
       next: respuesta => {
         const rol = (respuesta.data?.roleName || '').toLowerCase();
-        this.puedeGestionar = rol.includes('admin') && !rol.includes('direct');
+
+        this.puedeGestionar =
+          rol.includes('admin') && !rol.includes('direct');
       },
       error: () => {
         this.puedeGestionar = false;
@@ -132,20 +130,49 @@ export class DocentesComponent implements OnInit {
     });
   }
 
-  cargarDocentes(): void {
+  cargarDocentes(pagina = 1): void {
     this.cargando = true;
     this.errorCarga = '';
 
-    this.docentesService.listar().subscribe({
-      next: (res) => {
-        this.docentes = (res.data ?? []).map(
-          docente => this.prepararDocente(docente)
+    const paginaSolicitada = Math.max(1, pagina);
+    const paginaBackend = paginaSolicitada - 1;
+    const term = this.busqueda.trim();
+
+    this.docentesService.listar(
+      paginaBackend,
+      this.tamanoPagina,
+      term
+    ).subscribe({
+      next: respuesta => {
+        const data = respuesta?.data;
+
+        this.docentes = (data?.content ?? []).map(docente =>
+          this.prepararDocente(docente)
         );
+
+        this.paginaActual =
+          (data?.number ?? paginaBackend) + 1;
+
+        this.totalPaginas =
+          Math.max(1, data?.totalPages ?? 1);
+
+        this.totalElementos =
+          data?.totalElements ?? this.docentes.length;
 
         this.cargando = false;
       },
-      error: (err) => {
+
+      error: err => {
         this.cargando = false;
+        this.docentes = [];
+        this.paginaActual = 1;
+        this.totalPaginas = 1;
+        this.totalElementos = 0;
+
+        if (err.status === 404 && term) {
+          this.errorCarga = '';
+          return;
+        }
 
         this.errorCarga =
           err.error?.message ??
@@ -208,9 +235,9 @@ export class DocentesComponent implements OnInit {
     return this.normalizarFoto(docente.photoUrl);
   }
 
-
- 
-  obtenerDescripcionLineas(desc: string | null | undefined): string[] {
+  obtenerDescripcionLineas(
+    desc: string | null | undefined
+  ): string[] {
     if (!desc) {
       return [];
     }
@@ -221,82 +248,47 @@ export class DocentesComponent implements OnInit {
       .filter(linea => linea.length > 0);
   }
 
-  paginaActual = 1;
-  readonly tamanoPagina = 10;
+  get docentesFiltrados(): TeachingResponseDTO[] {
+    return this.docentes;
+  }
+
+  get docentesPagina(): TeachingResponseDTO[] {
+    return this.docentes;
+  }
 
   cambiarPagina(pagina: number): void {
-    this.paginaActual = pagina;
-  }
-
-  get docentesPaginados(): TeachingResponseDTO[] {
-    const inicio = (this.paginaActual - 1) * this.tamanoPagina;
-    return this.docentesFiltrados.slice(inicio, inicio + this.tamanoPagina);
-  }
-
-  get docentesFiltrados(): TeachingResponseDTO[] {
-    const term = this.busqueda
-      .trim()
-      .toLowerCase();
-
-    if (!term) {
-      return this.docentes;
+    if (
+      pagina < 1 ||
+      pagina > this.totalPaginas ||
+      pagina === this.paginaActual ||
+      this.cargando
+    ) {
+      return;
     }
 
-    return this.docentes.filter(d =>
-      `${d.name ?? ''} ${d.surnames ?? ''}`
-        .toLowerCase()
-        .includes(term) ||
+    this.cargarDocentes(pagina);
+  }
 
-      (d.email ?? '')
-        .toLowerCase()
-        .includes(term) ||
+  irPaginaAnterior(): void {
+    this.cambiarPagina(this.paginaActual - 1);
+  }
 
-      (d.position ?? '')
-        .toLowerCase()
-        .includes(term) ||
+  irPaginaSiguiente(): void {
+    this.cambiarPagina(this.paginaActual + 1);
+  }
 
-      (d.professionalDegrees ?? '')
-        .toLowerCase()
-        .includes(term) ||
-
-      (d.qualificationsDesc ?? '')
-        .toLowerCase()
-        .includes(term)
-    );
+  private enfocarListado(): void {
+    setTimeout(() => {
+      document.querySelector('.docentes-grid')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+      });
+    });
   }
 
   buscar(): void {
     this.paginaActual = 1;
-    const term = this.busqueda.trim();
-
-    if (!term) {
-      this.cargarDocentes();
-      return;
-    }
-
-    this.cargando = true;
-    this.errorCarga = '';
-
-    this.docentesService.buscar(term).subscribe({
-      next: (res) => {
-        this.docentes = (res.data ?? []).map(
-          docente => this.prepararDocente(docente)
-        );
-
-        this.cargando = false;
-      },
-      error: (err) => {
-        this.cargando = false;
-
-        if (err.status === 404) {
-          this.docentes = [];
-        } else {
-          this.errorCarga =
-            err.error?.message ??
-            'Error al buscar docentes.';
-        }
-      }
-    });
+    this.cargarDocentes(1);
   }
 
   verDocente(
@@ -371,7 +363,6 @@ export class DocentesComponent implements OnInit {
         this.docenteEnEdicion
           ? 'Completa todos los campos obligatorios para guardar los cambios.'
           : 'Por favor completa todos los campos obligatorios.';
-
       return;
     }
 
@@ -382,9 +373,7 @@ export class DocentesComponent implements OnInit {
           this.docenteEnEdicion.idUser,
           this.form
         )
-      : this.docentesService.crear(
-          this.form
-        );
+      : this.docentesService.crear(this.form);
 
     const eraEdicion = !!this.docenteEnEdicion;
 
@@ -394,14 +383,17 @@ export class DocentesComponent implements OnInit {
         this.mostrarFormulario = false;
         this.docenteEnEdicion = null;
         this.form = emptyForm();
-        this.cargarDocentes();
+
+        this.cargarDocentes(this.paginaActual);
+
         this.modalService.success(
           eraEdicion
             ? 'El docente se actualizó correctamente.'
             : 'El docente se agregó correctamente.'
         );
       },
-      error: (err) => {
+
+      error: err => {
         this.guardando = false;
 
         this.errorFormulario =
@@ -445,21 +437,25 @@ export class DocentesComponent implements OnInit {
 
     this.docentesService.eliminar(id).subscribe({
       next: () => {
-        this.docentes = this.docentes.filter(
-          d => d.idUser !== id
-        );
-
-        if (
-          this.docenteSeleccionado?.idUser === id
-        ) {
+        if (this.docenteSeleccionado?.idUser === id) {
           this.cerrarPerfil();
         }
 
         this.eliminando = false;
+
+        const paginaRecargar =
+          this.paginaActual > 1 &&
+          this.docentes.length === 1
+            ? this.paginaActual - 1
+            : this.paginaActual;
+
+        this.cargarDocentes(paginaRecargar);
+
         this.mostrarConfirmacionEliminar = false;
         this.docenteParaEliminar = null;
       },
-      error: (err) => {
+
+      error: err => {
         this.eliminando = false;
 
         this.errorEliminacion =

@@ -31,7 +31,6 @@
             font-size: 11.5px;
         }
 
-        /* ===================== BANNER ===================== */
 
         .banner {
             display: table;
@@ -85,7 +84,6 @@
             color: #d6f0dd;
         }
 
-        /* ===================== RESUMEN ===================== */
 
         .summary {
             display: table;
@@ -142,7 +140,6 @@
             letter-spacing: 0.4px;
         }
 
-        /* ===================== TABLE ===================== */
 
         table.attendance {
             width: 100%;
@@ -191,11 +188,7 @@
             display: table-header-group;
         }
 
-        /* ===================== BADGES ===================== */
-        /* Predomina el verde (Presente / Justificado / Aprobada);
-           se mantienen acentos funcionales en ámbar y rojo para que
-           tardanzas, ausencias y rechazos sigan siendo detectables
-           de un vistazo dentro de la tabla. */
+
 
         .badge {
             display: inline-block;
@@ -252,7 +245,6 @@
             color: #b91c1c;
         }
 
-        /* ===================== EMPTY STATE ===================== */
 
         .empty-state {
             text-align: center;
@@ -262,7 +254,6 @@
             font-size: 11px;
         }
 
-        /* ===================== FOOTER ===================== */
 
         .footer {
             display: table;
@@ -288,7 +279,6 @@
 </head>
 <body>
 
-    <!-- ===================== BANNER ===================== -->
     <div class="banner">
         <div class="brand-cell">
             <div class="brand-text">
@@ -301,10 +291,7 @@
         </div>
     </div>
 
-    <!-- ===================== RESUMEN ===================== -->
-    <!-- 'summary' es un AttendanceSummaryDTO opcional: totalRecords, presentCount,
-         lateCount, earlyDepartureCount, justifiedAbsenceCount,
-         unjustifiedAbsenceCount, attendancePercentage -->
+
     <div class="summary" th:if="${summary != null}">
         <div class="stats-cell">
             <div class="summary-title">Resumen del periodo</div>
@@ -327,7 +314,6 @@
         </div>
     </div>
 
-    <!-- ===================== TABLA DE ASISTENCIAS ===================== -->
     <table class="attendance" th:if="${!records.isEmpty()}">
         <thead>
             <tr>
@@ -381,12 +367,10 @@
         </tbody>
     </table>
 
-    <!-- ===================== ESTADO VACÍO ===================== -->
     <div class="empty-state" th:if="${records.isEmpty()}">
         No se encontraron registros de asistencia en el periodo indicado.
     </div>
 
-    <!-- ===================== FOOTER ===================== -->
     <div class="footer">
         <div class="footer-left">EduPlanner &#169; <span th:text="${#calendars.format(#calendars.createNow(), 'yyyy')}">2026</span></div>
         <div class="footer-right" th:text="${'Documento generado automáticamente — ' + subtitle}">Documento generado automáticamente — Curso 10-A · Periodo 2026-2</div>

@@ -311,7 +311,7 @@
           <tbody>
 
             <tr
-              *ngFor="let fila of estudiantesNotasPaginados">
+              *ngFor="let fila of estudiantesNotasPagina">
 
               <td class="col-estudiante">
                 {{ fila.nombreCompleto }}
@@ -371,9 +371,9 @@
         <app-pagination
           *ngIf="estudiantesNotas.length > 0"
           [totalItems]="estudiantesNotas.length"
-          [pageSize]="tamanoPagina"
+          [pageSize]="tamanoPaginaNotas"
           [currentPage]="paginaActualNotas"
-          (pageChange)="cambiarPaginaNotas($event)"
+          (pageChange)="paginaActualNotas = $event"
         ></app-pagination>
 
       </div>
@@ -830,7 +830,7 @@
 
             <div
               class="estudiante-item"
-              *ngFor="let e of estudiantesReporte">
+              *ngFor="let e of estudiantesReportePagina">
 
               <input
                 type="checkbox"
@@ -842,6 +842,14 @@
               </span>
 
             </div>
+
+            <app-pagination
+              *ngIf="estudiantesReporte.length > 0"
+              [totalItems]="estudiantesReporte.length"
+              [pageSize]="tamanoPaginaReporte"
+              [currentPage]="paginaActualReporte"
+              (pageChange)="paginaActualReporte = $event"
+            ></app-pagination>
 
           </div>
 

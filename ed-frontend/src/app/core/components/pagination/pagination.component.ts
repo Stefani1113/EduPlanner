@@ -10,16 +10,12 @@ import { CommonModule } from '@angular/common';
 })
 export class PaginationComponent implements OnChanges {
 
-  /** Total de elementos de la lista completa */
   @Input() totalItems = 0;
 
-  /** Elementos mostrados por página (10 en 10 por defecto) */
   @Input() pageSize = 10;
 
-  /** Página actual (1-indexada) */
   @Input() currentPage = 1;
 
-  /** Se emite cuando el usuario cambia de página */
   @Output() pageChange = new EventEmitter<number>();
 
   totalPages = 1;
@@ -67,6 +63,35 @@ export class PaginationComponent implements OnChanges {
   }
 
   get paginas(): number[] {
-    return Array.from({ length: this.totalPages }, (_, i) => i + 1);
+    const total = this.totalPages;
+
+    if (total <= 5) {
+      return Array.from(
+        { length: total },
+        (_, i) => i + 1
+      );
+    }
+
+    let inicio = Math.max(
+      1,
+      this.currentPage - 2
+    );
+
+    let fin = Math.min(
+      total,
+      inicio + 4
+    );
+
+    if (fin - inicio < 4) {
+      inicio = Math.max(
+        1,
+        fin - 4
+      );
+    }
+
+    return Array.from(
+      { length: fin - inicio + 1 },
+      (_, i) => inicio + i
+    );
   }
 }

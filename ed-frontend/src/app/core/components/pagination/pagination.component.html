@@ -1,8 +1,7 @@
-<div class="paginacion" *ngIf="totalItems > 0">
-
-  <span class="paginacion-info">
-    Mostrando {{ inicioRango }}–{{ finRango }} de {{ totalItems }}
-  </span>
+<div
+  class="paginacion"
+  *ngIf="totalItems > 0"
+>
 
   <div class="paginacion-controles">
 
@@ -12,7 +11,7 @@
       [disabled]="currentPage === 1"
       (click)="anterior()"
     >
-      ‹ Anteriores
+      ‹ Anterior
     </button>
 
     <button
@@ -21,6 +20,7 @@
       *ngFor="let p of paginas"
       [class.activo]="p === currentPage"
       (click)="irAPagina(p)"
+      [attr.aria-current]="p === currentPage ? 'page' : null"
     >
       {{ p }}
     </button>
@@ -31,9 +31,8 @@
       [disabled]="currentPage === totalPages"
       (click)="siguiente()"
     >
-      Siguientes ›
+      Siguiente ›
     </button>
 
   </div>
-
 </div>

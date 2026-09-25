@@ -1,7 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { PaginationComponent } from '../../../../core/components/pagination/pagination.component';
 import { HttpErrorResponse } from '@angular/common/http';
 import { forkJoin, of, from, Observable } from 'rxjs';
 import { catchError, concatMap, map, switchMap } from 'rxjs/operators';
@@ -21,6 +20,7 @@ import {
 } from '../../services/Asistencia.service';
 import { PerfilService } from '../../../admin/services/perfil.service';
 import { BreadcrumbService } from '../../../admin/services/breadcrumb.service';
+import { PaginationComponent } from '../../../../core/components/pagination/pagination.component';
 
 type Tab =
   | 'tomar'
@@ -78,7 +78,6 @@ export class AsistenciaComponent implements OnInit, OnDestroy {
 
   tabActiva: Tab = 'tomar';
 
-  // --- Perfil / rol ---
   esDirectivo = false;
   esDocente = false;
   esEstudiante = false;
@@ -87,11 +86,33 @@ export class AsistenciaComponent implements OnInit, OnDestroy {
   nombreUsuarioActual = '';
   idCursoEstudiante: number | null = null;
 
+  /**
+   * Solo el docente puede tomar asistencia.
+   * Estudiante, directivo y administrador NO ven ni pueden usar esta pestaña.
+   */
+  get puedeTomarAsistencia(): boolean {
+    return !this.esEstudiante && !this.esDirectivo && !this.esAdministrador;
+  }
+
   get tabPorDefecto(): Tab {
     if (this.esEstudiante) return 'resumen';
     if (this.esDirectivo) return 'listado';
-    if (this.esDocente) return 'tomar';
-    return 'resumen';
+    if (this.esAdministrador) return 'resumen';
+    return 'tomar';
+  }
+
+  /** Pestañas que se deben mostrar según el rol (útil si el HTML usa *ngFor). */
+  get tabsVisibles(): Tab[] {
+    const todas: Tab[] = ['tomar', 'resumen', 'historial', 'listado', 'conflictos'];
+
+    return todas.filter(t =>
+      (t !== 'tomar' || this.puedeTomarAsistencia) &&
+      (t !== 'historial' || !this.esEstudiante)
+    );
+  }
+
+  etiquetaTab(tab: Tab): string {
+    return ETIQUETA_TAB[tab];
   }
 
   tomaCurso: number | null = null;
@@ -129,7 +150,6 @@ export class AsistenciaComponent implements OnInit, OnDestroy {
   sesionesConsultadas = false;
   busquedaSesiones = '';
 
-  // --- Resumen personal (solo Estudiante) ---
   misRegistros: AttendanceResponseDTO[] = [];
   miResumenPersonal: AttendanceSummaryDTO | null = null;
   cargandoMiResumen = false;
@@ -153,6 +173,8 @@ export class AsistenciaComponent implements OnInit, OnDestroy {
   listadoConsultado = false;
   guardandoCelda: string | null = null;
   busquedaListado = '';
+  paginaListado = 1;
+  readonly tamanoPaginaListado = 10;
 
   filtroExcusasCurso: number | null = null;
   filtroExcusasInicio = this.primerDiaMesISO();
@@ -167,7 +189,6 @@ export class AsistenciaComponent implements OnInit, OnDestroy {
   excusasConsultadas = false;
   revisandoId: number | null = null;
 
-  // --- Panel lateral: descargar historial por estudiante o por curso ---
   panelDescargaAbierto = false;
   panelDescargaTab: 'estudiante' | 'curso' = 'estudiante';
   panelDescargaBusqueda = '';
@@ -253,7 +274,6 @@ export class AsistenciaComponent implements OnInit, OnDestroy {
 
         let cursosVisibles = cursos.filter(c => c.status);
 
-        // El Docente solo debe ver los cursos donde da clase.
         if (this.esDocente && this.idUsuarioActual !== null) {
           cursosVisibles = cursosVisibles.filter(
             c => c.homeroomTeacher === this.idUsuarioActual
@@ -294,8 +314,6 @@ export class AsistenciaComponent implements OnInit, OnDestroy {
           this.filtroListadoCurso = this.idCursoEstudiante;
           this.filtroExcusasCurso = this.idCursoEstudiante;
           this.filtroSesionesCurso = this.idCursoEstudiante;
-
-          this.tabActiva = 'resumen';
         } else if (this.cursos.length > 0) {
           const primerCurso = this.cursos[0].idCourse;
 
@@ -303,13 +321,11 @@ export class AsistenciaComponent implements OnInit, OnDestroy {
           this.filtroListadoCurso = primerCurso;
           this.filtroExcusasCurso = primerCurso;
           this.tomaCurso = primerCurso;
-
-          if (this.esDirectivo) {
-            this.tabActiva = 'listado';
-          } else if (this.esAdministrador) {
-            this.tabActiva = 'resumen';
-          }
         }
+
+        // La pestaña inicial depende del rol (admin -> resumen, directivo -> listado,
+        // estudiante -> resumen, docente -> tomar). Se asigna siempre, aunque no haya cursos.
+        this.tabActiva = this.tabPorDefecto;
 
         this.cargandoBase = false;
         this.breadcrumbService.setExtra(
@@ -323,7 +339,11 @@ export class AsistenciaComponent implements OnInit, OnDestroy {
           this.buscarMiResumen();
         } else {
           this.buscarSesiones();
-          this.cargarToma();
+
+          // Solo el docente carga la lista para tomar asistencia
+          if (this.puedeTomarAsistencia) {
+            this.cargarToma();
+          }
         }
       },
       error: () => {
@@ -339,13 +359,12 @@ export class AsistenciaComponent implements OnInit, OnDestroy {
   }
 
   cambiarTab(tab: Tab): void {
-    // "Tomar asistencia" es exclusivo del Docente.
-    if (tab === 'tomar' && !this.esDocente) {
+
+    if (tab === 'tomar' && !this.puedeTomarAsistencia) {
       return;
     }
 
-    // "Justificaciones" es solo para Docente (gestiona) y Estudiante (escribe la suya).
-    if (tab === 'conflictos' && !this.esDocente && !this.esEstudiante) {
+    if (tab === 'historial' && this.esEstudiante) {
       return;
     }
 
@@ -391,6 +410,10 @@ export class AsistenciaComponent implements OnInit, OnDestroy {
   }
 
   cargarToma(): void {
+    if (!this.puedeTomarAsistencia) {
+      return;
+    }
+
     this.errorGuardarToma = null;
     this.exitoGuardarToma = false;
 
@@ -456,13 +479,16 @@ export class AsistenciaComponent implements OnInit, OnDestroy {
     },
     estado: AttendanceStatus
   ): void {
+    if (!this.puedeTomarAsistencia) {
+      return;
+    }
+
     fila.estado = estado;
     this.exitoGuardarToma = false;
   }
 
   guardarToma(): void {
-    // Un Directivo no puede tomar asistencia (el tab ya está oculto para él, esto es un respaldo).
-    if (this.esDirectivo) {
+    if (!this.puedeTomarAsistencia) {
       return;
     }
 
@@ -1268,7 +1294,6 @@ export class AsistenciaComponent implements OnInit, OnDestroy {
       idCourse;
   }
 
-  // --- Panel lateral: descargar historial por estudiante o por curso ---
 
   get panelDescargaCursosDelNivel(): CourseResponseDTO[] {
     return this.cursos.filter(
@@ -1432,8 +1457,7 @@ export class AsistenciaComponent implements OnInit, OnDestroy {
   }
 
   private cargarPanelDescargaEstudiantes(): void {
-    // El Estudiante solo puede descargar su propio historial, nunca el de
-    // sus compañeros.
+
     if (this.esEstudiante) {
       if (this.idUsuarioActual === null) {
         this.panelDescargaEstudiantes = [];
@@ -1553,7 +1577,6 @@ export class AsistenciaComponent implements OnInit, OnDestroy {
   }
 
   private cargarPanelDescargaCursos(): void {
-    // El Estudiante solo puede descargar el reporte de su propio curso.
     const cursosObjetivo = this.esEstudiante
       ? this.cursos.filter(c => c.idCourse === this.idCursoEstudiante)
       : this.panelDescargaCursosDelNivel;
@@ -1793,20 +1816,33 @@ export class AsistenciaComponent implements OnInit, OnDestroy {
     return filas;
   }
 
-  paginaActualListado = 1;
-  readonly tamanoPagina = 10;
 
-  cambiarPaginaListado(pagina: number): void {
-    this.paginaActualListado = pagina;
+  get filasListadoPagina(): FilaGridListado[] {
+    const inicio = (this.paginaListado - 1) * this.tamanoPaginaListado;
+    return this.filasListadoVisibles.slice(
+      inicio,
+      inicio + this.tamanoPaginaListado
+    );
   }
 
-  get filasListadoPaginadas(): FilaGridListado[] {
-    const inicio = (this.paginaActualListado - 1) * this.tamanoPagina;
-    return this.filasListadoVisibles.slice(inicio, inicio + this.tamanoPagina);
+  cambiarPaginaListado(pagina: number): void {
+    const totalPaginas = Math.max(
+      1,
+      Math.ceil(
+        this.filasListadoVisibles.length /
+        this.tamanoPaginaListado
+      )
+    );
+
+    if (pagina < 1 || pagina > totalPaginas) {
+      return;
+    }
+
+    this.paginaListado = pagina;
   }
 
   buscarListado(): void {
-    this.paginaActualListado = 1;
+    this.paginaListado = 1;
     this.errorListado = null;
     this.columnasListado = [];
     this.filasListado = [];
@@ -2224,7 +2260,6 @@ export class AsistenciaComponent implements OnInit, OnDestroy {
   guardarJustificacion(
     registro: AttendanceResponseDTO
   ): void {
-    // Solo Administrador/Docente pueden escribir la justificación (el Directivo solo consulta).
     if (this.esDirectivo) {
       return;
     }
@@ -2296,7 +2331,6 @@ export class AsistenciaComponent implements OnInit, OnDestroy {
     registro: AttendanceResponseDTO,
     aprobar: boolean
   ): void {
-    // Solo Administrador/Docente pueden revisar justificaciones (el Directivo solo consulta).
     if (this.esEstudiante || this.esDirectivo) {
       return;
     }
@@ -2463,9 +2497,7 @@ export class AsistenciaComponent implements OnInit, OnDestroy {
 
     return [
       d.getFullYear(),
-      String(
-        d.getMonth() + 1
-      ).padStart(2, '0'),
+      String(d.getMonth() + 1).padStart(2, '0'),
       '01'
     ].join('-');
   }

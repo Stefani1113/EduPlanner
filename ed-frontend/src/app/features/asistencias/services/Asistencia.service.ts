@@ -14,6 +14,15 @@ interface HttpGlobalResponse<T> {
   message: string;
 }
 
+interface PageResponse<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+  size: number;
+}
+
+
 export type AttendanceStatus =
   | 'PRESENT'
   | 'ABSENT'
@@ -177,29 +186,17 @@ export class AsistenciaService {
   ) {}
 
   listarCursos(): Observable<CourseResponseDTO[]> {
-    return this.http
-      .get<
-        HttpGlobalResponse<CourseResponseDTO[]>
-      >(
-        `${this.base}/courses`
-      )
-      .pipe(
-        map(r => r.data ?? []),
-        catchError(() => of([]))
-      );
+    return this.http.get<HttpGlobalResponse<PageResponse<CourseResponseDTO>>>(
+      `${this.base}/courses`,
+      { params: { page: '0', size: '1000' } }
+    ).pipe(map(r => r.data?.content ?? []), catchError(() => of([])));
   }
 
   listarNiveles(): Observable<AcademicLevelResponseDTO[]> {
-    return this.http
-      .get<
-        HttpGlobalResponse<AcademicLevelResponseDTO[]>
-      >(
-        `${this.base}/academic-levels`
-      )
-      .pipe(
-        map(r => r.data ?? []),
-        catchError(() => of([]))
-      );
+    return this.http.get<HttpGlobalResponse<PageResponse<AcademicLevelResponseDTO>>>(
+      `${this.base}/academic-levels`,
+      { params: { page: '0', size: '1000' } }
+    ).pipe(map(r => r.data?.content ?? []), catchError(() => of([])));
   }
 
   listarDocentesAcademicos(): Observable<AcademicTeacherResponseDTO[]> {
@@ -216,50 +213,26 @@ export class AsistenciaService {
   }
 
   listarEstudiantes(): Observable<UsuarioBasico[]> {
-    return this.http
-      .get<
-        HttpGlobalResponse<UsuarioBasico[]>
-      >(
-        this.administracionUsers,
-        {
-          params: {
-            idRole:
-              this.ID_ROL_ESTUDIANTE
-          }
-        }
-      )
-      .pipe(
-        map(r => r.data ?? []),
-        catchError(() => of([]))
-      );
+    return this.http.get<HttpGlobalResponse<PageResponse<UsuarioBasico>>>(
+      this.administracionUsers,
+      { params: { idRole: this.ID_ROL_ESTUDIANTE, page: '0', size: '1000' } }
+    ).pipe(map(r => r.data?.content ?? []), catchError(() => of([])));
   }
 
   listarEstudiantesPorCurso(
     idCourse: number
   ): Observable<UsuarioBasico[]> {
-    return this.http
-      .get<
-        HttpGlobalResponse<UsuarioBasico[]>
-      >(
-        `${this.administracionUsers}/course/${idCourse}`
-      )
-      .pipe(
-        map(r => r.data ?? []),
-        catchError(() => of([]))
-      );
+    return this.http.get<HttpGlobalResponse<PageResponse<UsuarioBasico>>>(
+      `${this.administracionUsers}/course/${idCourse}`,
+      { params: { page: '0', size: '1000' } }
+    ).pipe(map(r => r.data?.content ?? []), catchError(() => of([])));
   }
 
   listarDocentes(): Observable<UsuarioBasico[]> {
-    return this.http
-      .get<
-        HttpGlobalResponse<UsuarioBasico[]>
-      >(
-        this.administracionTeachers
-      )
-      .pipe(
-        map(r => r.data ?? []),
-        catchError(() => of([]))
-      );
+    return this.http.get<HttpGlobalResponse<PageResponse<UsuarioBasico>>>(
+      this.administracionTeachers,
+      { params: { page: '0', size: '1000' } }
+    ).pipe(map(r => r.data?.content ?? []), catchError(() => of([])));
   }
 
   registrarAsistencia(
@@ -353,6 +326,21 @@ export class AsistenciaService {
           }
         )
       );
+  }
+
+  obtenerHistorialPorCursoPaginado(
+    idCourse: number,
+    startDate: string,
+    endDate: string,
+    page = 0,
+    size = 10
+  ): Observable<AttendanceResponseDTO[]> {
+    return this.obtenerHistorialPorCurso(idCourse, startDate, endDate).pipe(
+      map(registros => {
+        const inicio = Math.max(0, page) * Math.max(1, size);
+        return registros.slice(inicio, inicio + Math.max(1, size));
+      })
+    );
   }
 
   obtenerResumenPorEstudiante(
