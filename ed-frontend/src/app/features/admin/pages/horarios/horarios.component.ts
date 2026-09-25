@@ -1698,4 +1698,4 @@ export class HorariosComponent implements OnInit, OnDestroy {
         String(idCourse)
       ] ?? null;
   }
-}
+} 
