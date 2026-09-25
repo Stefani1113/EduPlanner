@@ -57,7 +57,7 @@ app:
     max-rows-import: 5000  
 
 frontend:
-  activation-url: http://localhost:4200/activate
+  activation-url: ${ACTIVATION_URL:http://localhost:4200/activate}
 
 institution: 
   id: 1  #Id fijo de la institución

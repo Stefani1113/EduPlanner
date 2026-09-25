@@ -50,6 +50,9 @@ services:
     container_name: ed-ms-autenticacion
     restart: unless-stopped
 
+    env_file:
+      - .env
+
     environment:
       SPRING_PROFILES_ACTIVE: docker
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${DB_AUTH:-auth_administration}?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
@@ -77,8 +80,13 @@ services:
     container_name: ed-ms-administracion
     restart: unless-stopped
 
+    env_file:
+      - .env
+
     environment:
       SPRING_PROFILES_ACTIVE: docker
+      ACTIVATION_URL: https://eduplanner.areasoftccyt.com/activate
+      RESET_PASSWORD_URL: https://eduplanner.areasoftccyt.com/auth/reset-password
 
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${DB_ADMIN:-auth_administration}?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-root}
@@ -104,6 +112,8 @@ services:
     image: stefani1113/eduplanner-gestion
     container_name: ed-ms-gestion-academica
     restart: unless-stopped
+    env_file:
+      - .env
 
     environment:
       SPRING_PROFILES_ACTIVE: docker
@@ -132,6 +142,9 @@ services:
     container_name: ed-ms-notas
     restart: unless-stopped
 
+    env_file:
+      - .env
+
     environment:
       SPRING_PROFILES_ACTIVE: docker
 
@@ -158,6 +171,10 @@ services:
     image: stefani1113/eduplanner-config
     container_name: ed-ms-configuracion-institucional
     restart: unless-stopped
+
+    env_file:
+      - .env
+
 
     environment:
       SPRING_PROFILES_ACTIVE: docker
@@ -215,14 +232,13 @@ services:
     container_name: ed-ms-ia
     restart: unless-stopped
 
-    environment:
-      SPRING_PROFILES_ACTIVE: docker
-
-      SPRING_CLOUD_CONSUL_HOST: consul
-      SPRING_CLOUD_CONSUL_PORT: 8500
+    env_file:
+      - .env
 
     depends_on:
       consul:
+        condition: service_started
+      mcp:
         condition: service_started
 
     networks:
@@ -235,11 +251,8 @@ services:
     container_name: ed-ms-mcp
     restart: unless-stopped
 
-    environment:
-      SPRING_PROFILES_ACTIVE: docker
-
-      SPRING_CLOUD_CONSUL_HOST: consul
-      SPRING_CLOUD_CONSUL_PORT: 8500
+    env_file:
+      - .env
 
     depends_on:
       consul:
@@ -247,7 +260,6 @@ services:
 
     networks:
       - eduplanner-network
-
 
   # FRONTEND
   frontend:
