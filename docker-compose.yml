@@ -50,6 +50,9 @@ services:
     container_name: ed-ms-autenticacion
     restart: unless-stopped
 
+    env_file:
+      - .env
+
     environment:
       SPRING_PROFILES_ACTIVE: docker
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${DB_AUTH:-auth_administration}?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
@@ -76,6 +79,9 @@ services:
     image: stefani1113/eduplanner-admin
     container_name: ed-ms-administracion
     restart: unless-stopped
+
+    env_file:
+      - .env
 
     environment:
       SPRING_PROFILES_ACTIVE: docker
@@ -104,6 +110,8 @@ services:
     image: stefani1113/eduplanner-gestion
     container_name: ed-ms-gestion-academica
     restart: unless-stopped
+    env_file:
+      - .env
 
     environment:
       SPRING_PROFILES_ACTIVE: docker
@@ -132,6 +140,9 @@ services:
     container_name: ed-ms-notas
     restart: unless-stopped
 
+    env_file:
+      - .env
+
     environment:
       SPRING_PROFILES_ACTIVE: docker
 
@@ -158,6 +169,10 @@ services:
     image: stefani1113/eduplanner-config
     container_name: ed-ms-configuracion-institucional
     restart: unless-stopped
+
+    env_file:
+      - .env
+
 
     environment:
       SPRING_PROFILES_ACTIVE: docker
