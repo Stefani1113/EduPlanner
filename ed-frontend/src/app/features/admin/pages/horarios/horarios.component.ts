@@ -887,6 +887,23 @@ export class HorariosComponent implements OnInit, OnDestroy {
     return `${horas}:${minutos}:${segundos}`;
   }
 
+  /**
+   * CORREGIDO:
+   * Antes, para estudiantes y docentes (vista restringida) este método
+   * dependía de `modoConsulta` (que nunca cambia a 'docente' fuera del
+   * panel de administrador) y de `idCursoPorNombre` (que nunca se llena
+   * en la vista restringida, porque `inicializarVista()` hace `return`
+   * antes de poblarlo para estudiante/docente). Como resultado, al
+   * presionar "Exportar" en la vista de estudiante o de docente, el
+   * idCourse siempre daba `null` y se mostraba el error "No se pudo
+   * identificar el curso para exportar el horario." sin descargar nada.
+   *
+   * Ahora la vista restringida se resuelve primero y de forma directa:
+   * - Docente: usa siempre el endpoint de "mi horario" (descargarMiHorarioPdf).
+   * - Estudiante: usa directamente `idCursoEstudiante` (ya disponible
+   *   desde el perfil), sin pasar por `idCursoPorNombre`.
+   * El flujo de administrador/directivo (por curso o por docente) queda igual.
+   */
   exportarHorario(): void {
     if (this.descargandoPdf) {
       return;
@@ -905,30 +922,76 @@ export class HorariosComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.descargandoPdf = true;
+    // --- Vista restringida: docente exportando su propio horario ---
+    if (this.esVistaRestringida && this.esDocente) {
+      this.descargandoPdf = true;
 
-    if (this.modoConsulta === 'docente') {
-      if (this.esDocente && !this.esAdministrador) {
-        this.horariosService.descargarMiHorarioPdf().subscribe({
+      this.horariosService.descargarMiHorarioPdf().subscribe({
+        next: blob => {
+          this.descargarBlob(
+            blob,
+            'mi-horario.pdf'
+          );
+          this.descargandoPdf = false;
+        },
+        error: err => {
+          this.descargandoPdf = false;
+          this.modalService.error(
+            err?.error?.message ||
+            'No se pudo descargar el PDF de tu horario.'
+          );
+        }
+      });
+
+      return;
+    }
+
+    // --- Vista restringida: estudiante exportando el horario de su curso ---
+    if (this.esVistaRestringida && this.esEstudiante) {
+      const idCourse = this.idCursoEstudiante;
+
+      if (idCourse === null || idCourse === undefined) {
+        this.modalService.error(
+          'No se pudo identificar el curso para exportar el horario.'
+        );
+        return;
+      }
+
+      this.descargandoPdf = true;
+
+      this.horariosService
+        .descargarHorarioCursoPdf(idCourse)
+        .subscribe({
           next: blob => {
+            const nombreCurso =
+              this.normalizarNombreArchivo(
+                this.cursoSeleccionado || 'horario'
+              );
+
             this.descargarBlob(
               blob,
-              'mi-horario.pdf'
+              `horario-${nombreCurso}.pdf`
             );
+
             this.descargandoPdf = false;
           },
           error: err => {
             this.descargandoPdf = false;
+
             this.modalService.error(
               err?.error?.message ||
-              'No se pudo descargar el PDF de tu horario.'
+              'No se pudo descargar el PDF del horario.'
             );
           }
         });
 
-        return;
-      }
+      return;
+    }
 
+    // --- Vista de administrador/directivo ---
+    this.descargandoPdf = true;
+
+    if (this.modoConsulta === 'docente') {
       this.descargandoPdf = false;
 
       this.modalService.error(
