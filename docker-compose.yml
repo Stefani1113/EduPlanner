@@ -85,6 +85,8 @@ services:
 
     environment:
       SPRING_PROFILES_ACTIVE: docker
+      ACTIVATION_URL: https://eduplanner.areasoftccyt.com/activate
+      RESET_PASSWORD_URL: https://eduplanner.areasoftccyt.com/auth/reset-password
 
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${DB_ADMIN:-auth_administration}?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-root}
